@@ -1,8 +1,8 @@
 # 接口契约（interface.md）
 
-> **状态：草案 v0.92 —— 待 A / B / C 三方会签后冻结为 v1.0。**
+> **状态：草案 v0.94 —— 待 A / B / C 三方会签后冻结为 v1.0。**
 > 起草：C 线（2026-09-10）。对应《02》任务 **C2：定义 IP 接口（AXI-Stream + 控制寄存器）**，验收标准"与 A/B 线的数据契约对齐"。
-> 当前已实现并通过 csim+综合的 IP：`roi_statistic`(3.2) / `motion_quality`(3.3) / `rgb2gray`(3.4)。
+> 当前已实现并通过 csim+综合的 IP：`roi_statistic`(3.2) / `motion_quality` v2(3.3) / `rgb2gray` v2(3.4)。
 > 本文件是"三线并行不干扰"的唯一技术保障。**谁改契约谁发公告**，并在第 6 节变更记录签名。
 
 ---
@@ -140,19 +140,22 @@ void roi_statistic(
 | ROI 超出 `width/height` | 自然裁剪（越界范围无像素匹配），**不做 clamp**，PS 应传合法值 |
 | `total = width*height` 与实际流长度不一致 | 会错位/挂死，**契约规定：流长度必须恰为 `width*height`** |
 
-### 3.3 `motion_quality` v1 —— ✅ 已实现，csim + 综合通过
+### 3.3 `motion_quality` v2 —— ✅ 已实现，csim + 综合通过
 
+> **工作尺寸：384×288**（`rgb2gray` 缩小后的灰度，见 3.4 节）。**不是** 640×480。
+>
 > 实测（2026-09-10）：csim 6/6 + 9/9、`0 errors`；**Final II = 1**；Estimated **7.140 ns** < 10 ns → **140.05 MHz**；
-> LUT 1503 / FF 1162 / **BRAM 256** / DSP 1。完整记录见 `fpga/report/c4_rgb2gray_motion_quality_v1.md`。
+> LUT 1501 / FF 1158 / **BRAM 64** / DSP 1。
+> 完整记录见 `fpga/report/c4_rgb2gray_motion_quality_v1.md`。
 >
-> 🚨 **BRAM 占用 256/280 = 器件的 91%** —— 这是目前最大的上板风险：M3 还要放 AXI DMA 与互连，
-> 只剩 24 个 BRAM18 极可能不够。**方案待决策**（降分辨率 / 双流 / 接受），见上述报告第 5 节。
+> ✅ **BRAM 已从 256（91%）降到 64（23%）**，代价是运动检测在 384×288 上做而不是 640×480。
 >
-> **根因（已用对照实验坐实）**：片内数组按 **2 的幂地址空间**分配，不是按真实深度。
-> `depth=307200` 落在 2¹⁸~2¹⁹ 之间 → 按 **2¹⁹ = 524288** 实现 → 524288÷2048 = **256** 个 BRAM18。
-> 三组对照（320×240→64、512×512→128、640×480→256）**全部**符合该规律。
-> ⚠️ 推论：**缓存成本是台阶式的**，跨过 2 的幂就翻倍；而像素数 ≤ 131072 的任意尺寸都只需 **64** 个
-> （即 320×240 与 384×288 同价），选分辨率时应贴着台阶挑。
+> **为什么必须降**：片内数组按 **2 的幂地址空间**分配，不是按真实深度。
+> `depth=307200`（640×480）落在 2¹⁸~2¹⁹ 之间 → 按 **2¹⁹ = 524288** 实现 → **256** 个 BRAM18 = 91%，
+> 而 M3 还要放 AXI DMA 与互连，只剩 24 个必然放不下。
+> **根因已用三组对照实验坐实**：320×240→**64**、512×512→**128**、640×480→**256**，全部符合该规律。
+> ⚠️ 由此得出一条**设计规律**：**缓存成本是台阶式的**，跨过 2 的幂就翻倍；
+> 像素数 ≤ 131072（=2¹⁷）的任意尺寸都只需 **64** 个 —— 所以选了 384×288（110,592）而不是 320×240（76,800）：**同价、更清晰**。
 
 **功能**：用片内 BRAM 缓存**上一帧**灰度，逐像素求绝对差，输出运动量与运动像素比例。
 
@@ -160,9 +163,9 @@ void roi_statistic(
 
 ```cpp
 void motion_quality(
-    hls::stream<axis_gray_t> &gray_in,     // axis, TDATA=8
+    hls::stream<axis_gray_t> &gray_in,     // axis, TDATA=8（384x288 灰度）
     hls::stream<axis_gray_t> &gray_out,    // axis, 原样透传
-    ap_uint<16> width, ap_uint<16> height,
+    ap_uint<16> width, ap_uint<16> height, // 384, 288
     ap_uint<8>  motion_thresh,
     ap_uint<32> &diff_total,        // Σ|cur - prev|
     ap_uint<32> &motion_pixels,     // |cur - prev| > motion_thresh 的像素数
@@ -176,21 +179,21 @@ void motion_quality(
 | 偏移 | 名称 | 访问 | 说明 |
 |---|---|---|---|
 | `0x00`~`0x0c` | `CTRL` / `GIER` / `IP_IER` / `IP_ISR` | RW | 同 3.2 节 |
-| `0x10` | `width` | W | 图像宽（640） |
-| `0x18` | `height` | W | 图像高（480） |
-| `0x20` | `motion_thresh` | W | 运动判定阈值（u8） |
+| `0x10` | `width` | W | **工作**灰度宽 = **384**（不是 640） |
+| `0x18` | `height` | W | **工作**灰度高 = **288**（不是 480） |
+| `0x20` | `motion_thresh` | W | 运动判定阈值（u8，暂定 16） |
 | `0x28` | `diff_total` | R | 帧差总量（+ 0x2c `diff_total_ctrl`） |
 | `0x30` | `motion_pixels` | R | 运动像素个数（+ 0x34 `_ctrl`） |
 | `0x38` | `motion_ratio_q16` | R | 运动比例 Q16（+ 0x3c `_ctrl`） |
-| `0x40` | `count` | R | 本帧像素数（+ 0x44 `_ctrl`） |
+| `0x40` | `count` | R | 本帧像素数 = 110,592（+ 0x44 `_ctrl`） |
 | `0x48` | `frame_id` | R | 已处理帧计数（+ 0x4c `_ctrl`） |
 
 **数值精度**
 
-| 量 | 上限 | 结论 |
+| 量 | 上限（384×288 = 110,592 像素） | 结论 |
 |---|---|---|
-| `diff_total` | 640×480×255 = 78,336,000 < 2³² | ✅ |
-| `motion_pixels` | ≤ 307,200 | ✅ |
+| `diff_total` | 110,592×255 = 28,200,960 < 2³² | ✅ |
+| `motion_pixels` | ≤ 110,592 | ✅ |
 | `motion_ratio_q16` | ≤ 65,536 | ✅ |
 
 **三条必须记住的语义（已冻结）**
@@ -206,11 +209,15 @@ void motion_quality(
 > ⚠️ **`motion_thresh` 暂定 16，属"待确认"**：需 A 线用其 OpenCV 口径复核后冻结。
 > 改这个值必须**同步重新生成黄金参考**（`gen_motion_vectors.py --motion-thresh`）。
 
-### 3.4 `rgb2gray` v1 —— ✅ 已实现，csim + 综合通过（C4 期间新增）
+### 3.4 `rgb2gray` v2 —— ✅ 已实现，csim + 综合通过（灰度化 + 3/5 缩放）
 
-> 实测（2026-09-10）：csim 9/9 + 10/10、**不一致像素 0**、`0 errors`；**Final II = 1**；
-> Estimated **6.580 ns** < 10 ns → **151.98 MHz**；LUT 927 / FF 763 / **BRAM 0** / DSP 3。
+> 实测（2026-09-10）：csim **8/8 + 10/10**、**不一致像素 0**、`0 errors`；**Final II = 1**；
+> Estimated **7.28 ns** < 10 ns → **137.46 MHz**；LUT 1410 / FF 918 / **BRAM 0** / DSP 5。
 > 寄存器映射已与实综合逐行核对一致。
+>
+> v1（只做灰度化、不缩放）曾通过（9/9+10/10、151.98 MHz、LUT 927/DSP 3）；
+> v2 增加 3/5 抽取是为了把 `motion_quality` 的片内缓存从 **256 个 BRAM18（91%）** 压到 **64 个（23%）**，
+> 这是"贴着 2 的幂台阶挑尺寸"的直接应用（见 3.3 节）。
 
 **为什么需要它**：3.3 节的 `motion_quality` 要吃 `gray_in`，但原设计中**没有任何环节产生灰度**，
 而 `docs/00` §3.4 明确要求"PL 端完成 RGB/YUV 转换、缩放灰度化"。
@@ -221,11 +228,13 @@ void motion_quality(
 
 ```cpp
 void rgb2gray(
-    hls::stream<axis_pix_t>  &rgb_in,    // axis, TDATA=24 (RGB888)
-    hls::stream<axis_gray_t> &gray_out,  // axis, TDATA=8
-    ap_uint<16> width, ap_uint<16> height,
-    ap_uint<32> &pixel_count,            // 本帧像素数
-    ap_uint<32> &sum_gray,               // 本帧灰度累加和（供光照质量评分）
+    hls::stream<axis_pix_t>  &rgb_in,    // axis, TDATA=24 (RGB888, 640x480)
+    hls::stream<axis_gray_t> &gray_out,  // axis, TDATA=8 (缩小灰度, 384x288)
+    ap_uint<16> width, ap_uint<16> height,   // 输入尺寸 640, 480（须为 5 的整数倍）
+    ap_uint<16> &out_width,              // 输出：384
+    ap_uint<16> &out_height,             // 输出：288
+    ap_uint<32> &pixel_count,            // 输出：本帧输出像素数 110,592
+    ap_uint<32> &sum_gray,               // 输出：本帧灰度累加和（供光照质量评分）
     ap_uint<32> &frame_id);
 ```
 
@@ -234,13 +243,15 @@ void rgb2gray(
 | 偏移 | 名称 | 访问 | 说明 |
 |---|---|---|---|
 | `0x00`~`0x0c` | `CTRL` / `GIER` / `IP_IER` / `IP_ISR` | RW | 同 3.2 节 |
-| `0x10` | `width` | W | 图像宽（640） |
-| `0x18` | `height` | W | 图像高（480） |
-| `0x20` | `pixel_count` | R | （+ 0x24 `pixel_count_ctrl`） |
-| `0x28` | `sum_gray` | R | （+ 0x2c `sum_gray_ctrl`） |
-| `0x30` | `frame_id` | R | （+ 0x34 `frame_id_ctrl`） |
+| `0x10` | `width` | W | **输入**宽 640（必须能被 5 整除） |
+| `0x18` | `height` | W | **输入**高 480（必须能被 5 整除） |
+| `0x20` | `out_width` | R | 输出宽 384（+ 0x24 `_ctrl`） |
+| `0x28` | `out_height` | R | 输出高 288（+ 0x2c `_ctrl`） |
+| `0x30` | `pixel_count` | R | 输出像素数 110,592（+ 0x34 `_ctrl`） |
+| `0x38` | `sum_gray` | R | 灰度累加和（+ 0x3c `_ctrl`） |
+| `0x40` | `frame_id` | R | （+ 0x44 `_ctrl`） |
 
-**🔒 冻结的灰度公式（A 线必须实现同一式）**
+**🔒 冻结口径一：灰度公式（A 线必须实现同一式）**
 
 ```
 Y = (77*R + 150*G + 29*B + 128) >> 8
@@ -251,35 +262,111 @@ Y = (77*R + 150*G + 29*B + 128) >> 8
 | 系数来源 | BT.601 的 0.299 / 0.587 / 0.114 按 ×256 四舍五入：76.5→**77**、150.3→**150**、29.2→**29** |
 | 关键优点 | 77+150+29 = **256 恰好** → 纯白映到 255、纯黑映到 0，**无需裁剪**；16 bit 内最大 255×256+128 = **65,408**（不溢出） |
 | 参考值（可人工核对） | 纯红 **77**、纯绿 **149**、纯蓝 **29**、白 **255**、黑 **0** |
-| 溢出 | `sum_gray` 上限 307,200×255 = 78,336,000 < 2³² ✅ |
+| 溢出 | `sum_gray` 上限 110,592×255 = 28,200,960 < 2³² ✅ |
 
 > ⚠️ **本式与"按浮点系数四舍五入"的实现会差 1 LSB**：例如纯红，0.299×255 = 76.245 → 76，而本式给 **77**。
 > 这是**口径选择，不是 bug**。**A 线必须在 NumPy 里实现本式**（3 行代码）；
 > 若坚持用 `cv2.cvtColor`，须先用 4.4 节的对拍脚本确认差异 —— 否则 motion_quality 的黄金参考会系统性偏移。
 
-### 3.5 `fir_filter` v1 —— ⏳ 形状已冻结，系数/阶数待 C5 定稿
+**🔒 冻结口径二：缩放（3/5 相位抽取）**
+
+```
+保留 (x % 5 < 3) 且 (y % 5 < 3) 的像素      // 每 5 列取 3 列、每 5 行取 3 行
+640 / 5 * 3 = 384 列      480 / 5 * 3 = 288 行
+```
+
+| 性质 | 说明 |
+|---|---|
+| 目的 | 把 `motion_quality` 的工作尺寸压到像素数 ≤ 2¹⁷，使其片内缓存只用 **64** 个 BRAM18（见 3.3 节） |
+| 方法 | **点采样**（保留原始灰度值），**不是**块均值 → A 线用 `np.ix_` 可逐位镜像 |
+| 前置条件 | 输入宽高必须是 **5 的整数倍**（640、480 满足） |
+| 参考值（可人工核对） | 单帧输出 110,592 个灰度；`x∈{0,1,2,5,6,7,…}`、`y∈{0,1,2,5,6,7,…}` |
+| 实现顺序 | **先按行挑、再在保留的行里按列挑**（与 Python `full[:, ys][:, :, xs]` 一致） |
+
+> ⚠️ **已知取舍**：点采样会保留混叠，运动检测可能因此更"敏感"（把噪声判成运动）。
+> 若实测发现运动量偏噪，可改为块均值（黄金参考需同步改），或退回 320×240 的 2×2 均值。
+> 这条属**待观察**，需要 A 线接上真实视频后才能判断。
+
+### 3.5 `fir_filter` v1 —— ✅ 已定稿（C5 实测回填）
+
+> 实现：`fpga/src/fir_filter.cpp`；系数：`fpga/src/fir_coeffs_q15.h`（**自动生成，唯一来源**）
+> 证据：`fpga/report/c5_fir_filter_v1.md`、`fpga/report/logs/2026-09-11_fir_filter_v1_{csim_csynth,cosim}.log`
+
+**滤波器规格（冻结）**
 
 | 接口要素 | 冻结值 |
 |---|---|
-| 输入 / 输出 | AXI-Stream，`TDATA=16`（有符号 `int16`，输入 `Q1.15` 归一化样本） |
-| 系数 | `int16` `Q15`；阶数 `N ≤ 64`（编译期常量，**待 C5 定稿具体值**） |
-| 运算 | `int32` 累加器 → 算术右移 15 → **饱和**到 `int16` |
-| 舍入约定 | **先累加、后一次移位**（不做逐步舍入），A 线 NumPy 参考须完全照此实现 |
-| 带通范围 | 心率 `0.7 ~ 3.5 Hz`（30 fps 采样）；呼吸 `0.1 ~ 0.5 Hz`（待定用哪个实例） |
+| 输入 / 输出 | AXI-Stream，`TDATA=16`（有符号 `int16`，Q1.15 归一化样本） |
+| 采样率 | **30 Hz**（与图像 30 fps 同频） |
+| 阶数 | **N = 63**（I 型线性相位，奇数阶 → 群延迟 **31** 样本 = 1033.3 ms） |
+| 系数 | `int16 Q15`，**偶对称** `h[k] == h[N-1-k]`，由 `fpga/sim/design_fir_coeffs.py` 生成 |
+| 设计法 | Hamming 窗理想带通；**通带口径 = −6 dB 点 0.70 / 3.50 Hz**（实测 0.704 / 3.496 Hz） |
+| 归一化 | 通带峰值增益 = 1.0（Q15 = 32768）；`Σh = 897`（DC −31.25 dB）、`Σ|h| = 55073` |
+| 实测频率响应 | −3 dB 点 0.895 / 3.305 Hz；1.0~3.0 Hz 起伏 1.90 dB；0.35 Hz −16.2 dB；8 Hz −80.2 dB |
+| 运算 | `int32` 精确累加 → **一次算术右移 15** → **饱和**到 `int16` |
+| 舍入约定 | **先累加、后一次移位**（不做逐步舍入、不做四舍五入）；C 的 `>>` 与 Python 的 `>>` 对负数**都是向下取整**，**禁止**写成 `/32768`（整数除法是向零取整，负数差 1） |
+| 溢出安全性 | `|acc| ≤ 32768·Σ|h| = 1,804,632,064 < 2³¹−1`（生成器与主机端模型均断言） |
+| 比对容差 | **0（逐样本严格相等）** —— 原定 ±1 LSB，C5 实测**不需要**（见 4.3） |
+| 资源 / 时序（实测） | LUT 4077 / FF 6172 / **BRAM 0** / DSP 25；**Final II = 1**；Estimated Fmax **146.97 MHz** |
 
-> ⚠️ 舍入/饱和约定必须在两侧**逐字一致**，否则尾样本必然对不上。此条待 C5 用真实比对结果确认后升级为"已验证"。
+**段（segment）语义 —— 时间序列 IP 的"帧"**
+
+| 项 | 规定 |
+|---|---|
+| 一次调用 | 处理 `n_samples` 个样本，输入输出**一一对应、同序、等长** |
+| 启动瞬态 | **保留**（不丢弃前 N−1 个样本）—— 让"输入第 i 个 ↔ 输出第 i 个"最直观，且可逐样本严格比对 |
+| 延迟线状态 | `static`，**段间保持**（连续流语义）；`reset=1` 的段之间互不影响，`reset=0` 的段承接上一段状态 |
+| `reset` | **必做**：延迟线是 static，HLS 实现为**上电初始化**、**复位不清零**（skill 坑 #17）。PS 与测试台都必须用 `reset=1` 建立确定性起点，**不得依赖"上电是 0"** |
+| 饱和 | 移位结果 > 32767 → 32767；< −32768 → −32768；饱和样本数计入 `saturation_count`（PS 可当"输入过载"的质量判据） |
+| AXI-Stream 侧信道 | `TUSER=1` = **一次调用的第一个样本**；`TLAST=1` = **一次调用的最后一个样本**；`TKEEP/TSTRB = 0b11`；四个侧信道位原样透传到输出 |
+
+> ⚠️ 本 IP 的 `TUSER/TLAST` 语义与第 7 节的**图像 IP**（帧首/行末）**不同**，别照抄。
+
+**寄存器映射（已与 `csynth.rpt` 的 `* S_AXILITE Registers` 表逐行核对）**
+
+| 偏移 | 名称 | 方向 | 说明 |
+|---|---|---|---|
+| 0x00 / 0x04 / 0x08 / 0x0c | `CTRL` / `GIER` / `IP_IER` / `IP_ISR` | RW | HLS 自动（本 IP 未用中断） |
+| 0x10 | `n_samples` | W | 本段样本数（1..65535） |
+| 0x18 | `reset` | W | 1 = 读取样本前清空延迟线与饱和计数 |
+| 0x20 | `out_count` | R | 本段输出样本数（== `n_samples`） |
+| 0x24 | `out_count_ctrl` | R | `ap_vld`（坑 #16：每个输出后面多一个 valid 寄存器） |
+| 0x28 | `saturation_count` | R | 本段饱和样本数 |
+| 0x2c | `saturation_count_ctrl` | R | `ap_vld` |
+| 0x30 | `seg_id` | R | **自 IP 上电以来的调用序号**（每次调用 +1，从 1 开始；power-on 初始化，见风险表第 8 条） |
+| 0x34 | `seg_id_ctrl` | R | `ap_vld` |
+
+**🔒 已知限制（契约级）：63 阶在 30 fps 下做不了呼吸带**
+
+Hamming 过渡带宽 `Δf ≈ 3.3/(2πN)·fs` = **0.250 Hz**（N=63、fs=30），而呼吸带 0.1~0.5 Hz 总宽只有 0.4 Hz。
+实测按 0.1/0.5 Hz 设计时 −3 dB 边沿在 ±0.3 Hz 内**根本找不到**（通带被过渡带吃掉）；
+压到 0.15 Hz 过渡带需 **N ≳ 105**、0.10 Hz 需 **N ≳ 158**，均超 `N ≤ 64`。
+
+> **结论**：呼吸带必须由 **PS 侧先降采样**（如降到 2 Hz 采样，同阶数过渡带降至 0.017 Hz）
+> 再用同名 IP 的第二组系数，或对呼吸单独增加阶数。**不要**指望 30 fps 下的 63 阶同时覆盖两个带。
 
 ### 3.6 三条线的对接点
 
 ```
-A 线 (Python)                                C 线 (FPGA/HLS)
-───────────────────────────────────────────  ──────────────────────────────────────────
-同一帧 RGB888 (R,G,B)   →  frames.bin     →  tb_roi_statistic  → roi_statistic
-同一 ROI 坐标 (半开区间)                     →  roi_x0/y0/x1/y1 寄存器
-NumPy 整数累加 → golden_roi.csv            →  sum_r/g/b, count 寄存器   → 逐点比对
+A 线 (Python)                                    C 线 (FPGA/HLS)
+───────────────────────────────────────────────  ────────────────────────────────────────────
+同一帧 RGB888 (R,G,B) 640x480  →  frames.bin   →  tb_roi_statistic → roi_statistic
+同一 ROI 坐标 (半开区间)                          →  roi_x0/y0/x1/y1 寄存器
+NumPy 整数累加 → golden_roi.csv                 →  sum_r/g/b, count  → 逐点比对
 
-同一帧 RGB888           →  rgb_frames.bin  →  rgb2gray  → gray.bin（Python 算的黄金灰度）
-Y=(77R+150G+29B+128)>>8 →  gray.bin        →  motion_quality → golden_motion.csv
+同一帧 RGB888 640x480  →  rgb_frames.bin       →  rgb2gray
+  口径一 灰度 Y=(77R+150G+29B+128)>>8
+  口径二 缩放 保留 x%5<3 且 y%5<3
+Y 与缩放后的灰度 →  gray.bin 384x288（黄金）    →  out_width/out_height, sum_gray
+                                                →  motion_quality（工作尺寸 384x288）
+                                                   diff_total / motion_pixels / motion_ratio_q16
+                                                →  golden_motion.csv → 逐帧比对
+
+时间序列（如 ROI 均值序列）→ series.bin（int16 LE） →  fir_filter
+  口径：acc = Σ h[k]*x[n-k] (int32 精确)
+        y   = sat16(acc >> 15)   （一次算术右移，对负数向下取整；禁止 /32768）
+  段语义：n_samples + reset（reset=1 清延迟线）；输出与输入一一对应、含瞬态
+  Python 精确整数参考 → golden_fir_out.csv → **逐样本严格相等（容差 0）**
 ```
 
 ---
@@ -340,39 +427,81 @@ full_frame,0,0,0,640,480,<...>
 | `roi_statistic` | **0（严格相等）** | 纯整数累加，无舍入空间 |
 | `rgb2gray` | **0（严格相等）** | 纯整数定点，逐像素逐字节相等 |
 | `motion_quality` | **0（严格相等）** | 纯整数差值 + 整数比例 |
-| `fir_filter` | **±1 LSB（待 C5 实测确认）** | 定点舍入/饱和边界可能有 1 LSB 分歧 |
+| `fir_filter` | **0（严格相等）** | ✅ 2026-09-11 C5 实测：全整数运算 + **单一舍入点**（`>>15`）+ 可证不溢出 → 两侧逐样本相等（3940/3940，cosim 侧另在小向量上复现）。原定 ±1 LSB **不再需要** |
 
-### 4.4 灰度口径对拍（A 线**必须**先跑这个）
+### 4.4 灰度 + 缩放口径对拍（A 线**必须**先跑这个）
 
-`rgb2gray` 的灰度式是**自定义冻结口径**，与"按浮点系数四舍五入"相差 1 LSB
-（例：纯红，浮点式 0.299×255 = 76.245 → **76**，本设计给 **77**）。
-所以 A 线**不能**想当然地用 `cv2.cvtColor` 当黄金参考，必须先对拍：
+`rgb2gray` 的灰度式与缩放规则都是**自定义冻结口径**：
+
+- 灰度与"按浮点系数四舍五入"相差 1 LSB（例：纯红，浮点式 0.299×255 = 76.245 → **76**，本设计给 **77**）；
+- 缩放是 **3/5 相位点采样**，不是 OpenCV 的默认缩放（`cv2.resize` 做的是插值，结果必然不同）。
+
+所以 A 线**不能**想当然地用 `cv2.cvtColor` + `cv2.resize` 当黄金参考，必须先对拍：
 
 ```python
-# A 线在 NumPy 里实现冻结式（唯一权威口径）
+# A 线在 NumPy 里实现冻结口径（唯一权威）
 import numpy as np
+W, H = 640, 480
 img = np.fromfile(r"fpga/sim/data_motion/rgb_frames.bin", dtype=np.uint8) \
-        .reshape(-1, 480, 640, 3)[0].astype(np.int32)      # 取第 0 帧
-mine = ((77 * img[..., 0] + 150 * img[..., 1] + 29 * img[..., 2] + 128) >> 8).astype(np.uint8)
+        .reshape(-1, H, W, 3)[0].astype(np.int32)          # 取第 0 帧（RGB 顺序！）
+
+# 口径一：灰度  Y = (77R + 150G + 29B + 128) >> 8
+full = ((77 * img[..., 0] + 150 * img[..., 1] + 29 * img[..., 2] + 128) >> 8)
+
+# 口径二：3/5 相位抽取，先挑行再挑列（与硬件一致）
+ys = [y for y in range(H) if y % 5 < 3]      # 288 个
+xs = [x for x in range(W) if x % 5 < 3]      # 384 个
+mine = full[np.ix_(ys, xs)].astype(np.uint8)
 
 # 与 C 线产出的黄金灰度逐像素比对（这条必须全 0）
-gold = np.fromfile(r"fpga/sim/data_motion/gray.bin", dtype=np.uint8).reshape(-1, 480, 640)[0]
+gold = np.fromfile(r"fpga/sim/data_motion/gray.bin", dtype=np.uint8) \
+         .reshape(-1, len(ys), len(xs))[0]
+assert mine.shape == gold.shape, f"尺寸不一致 {mine.shape} vs {gold.shape}"
 assert np.array_equal(mine, gold), "冻结算式与 C 线黄金参考不一致"
+print("✅ 灰度 + 缩放口径一致；输出尺寸", mine.shape)
 
-# 可选：看看 OpenCV 差多少（若装了 cv2）
+# 可选：看 OpenCV 差多少（若装了 cv2）—— 预期会有差异，仅供了解，不要据此改硬件
 try:
     import cv2
-    theirs = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_RGB2GRAY)
-    d = np.abs(theirs.astype(np.int32) - mine.astype(np.int32))
-    print("cv2 与本式的最大差:", d.max(), " 不同像素占比:", (d > 0).mean())
+    mp_gray = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_RGB2GRAY)
+    mp_resized = cv2.resize(mp_gray, (len(xs), len(ys)), interpolation=cv2.INTER_NEAREST)
+    d1 = np.abs(mp_gray[np.ix_(ys, xs)].astype(np.int32) - mine.astype(np.int32))
+    d2 = np.abs(mp_resized.astype(np.int32) - mine.astype(np.int32))
+    print("cv2 灰度(同点) vs 本式 最大差:", d1.max(), " 不同占比:", (d1 > 0).mean())
+    print("cv2 resize     vs 本式 最大差:", d2.max(), " 不同占比:", (d2 > 0).mean())
 except ImportError:
     print("cv2 未安装，跳过 OpenCV 对照")
 ```
 
 **判据**：
-- 上面那条 `assert` **必须通过** —— 这是"两边算的是同一个东西"的硬证据；
-- 若 OpenCV 对照显示有差异（很可能 ±1 LSB），**以本式为准**，A 线在黄金参考里改用本式，
-  不要为了迁就 OpenCV 去改硬件口径。
+- 上面两条 `assert` **必须通过** —— 这是"两边算的是同一个东西"的硬证据；
+- 若 OpenCV 对照显示有差异（灰度很可能差 ±1 LSB；`cv2.resize` 因为做插值会差得更多），
+  **一律以本节冻结口径为准**，A 线在黄金参考里改用本式，不要为了迁就 OpenCV 去改硬件口径；
+- 对拍通过后，A 线即可用 `mine` 这套口径作用于**真实视频**，与硬件逐帧比对。
+
+### 4.5 `fir_filter` 测试向量与黄金参考（冻结）
+
+存放目录：`fpga/sim/data_fir/`（生成器 `fpga/sim/gen_fir_vectors.py`）
+
+| 文件 | 入库 | 规定 |
+|---|---|---|
+| `series.bin` | ❌（`.gitignore`，由 seed 重建） | 输入样本流：`int16` **小端**，按段顺序拼接；段划分见 `golden_fir.csv` |
+| `golden_fir.csv` | ✅ | 每段一行：`case,seg_id,n_samples,reset,sat_count,out_count`（`#` 开头为注释） |
+| `golden_fir_out.csv` | ✅ | **逐样本**期望输出：`seg_id,index,y`（3940 行）；用文本而非二进制，便于人工评审与 diff |
+| `meta.txt` | ✅ | `fs / taps / coeff_shift / band_hz / band_convention / segments / total_samples / series_bytes / scale / seed` |
+
+**冻结的段集合（15 段）**：`impulse`（冲激 → 系数/群延迟/对称性）、`dc_pos` / `dc_neg`（DC 抑制 + 饱和边界）、
+`nyquist_alt`、`sine_{0p2,0p8,1p5,3p2,8}hz`（漂移带 / 通带下沿 / 通带中心 / 通带上沿 / 高阻带）、
+`square_1hz_full`（**饱和路径**，sat_count > 0）、`sine_small_amp`（**不饱和**，sat_count == 0）、
+`random_full`（通用覆盖）、`split_part1/2/3`（**段间状态保持**：同一串数据切 3 段、reset = 1,0,0，
+其结果必须与 `random_full` 一次调用**逐样本相同**）。
+
+> ⚠️ **系数只有一处来源**：`gen_fir_vectors.py` **解析 `fpga/src/fir_coeffs_q15.h`** 拿系数，
+> 不另抄一份。改系数 = 改 `design_fir_coeffs.py` 重新生成头文件 → **必须重跑 `gen_fir_vectors.py`**，
+> 否则测试台会以 `meta.taps/shift 与工程不一致` 硬失败（刻意如此，防"改了一边"）。
+
+> ⚠️ `meta.txt` 里的 `taps` / `coeff_shift` 与工程不一致时，测试台**硬失败**而不是跳过 ——
+> 与 4.4 节"口径必须对拍"同一条纪律。
 
 ---
 
@@ -385,10 +514,11 @@ except ImportError:
 3. [ ] **B 线**：第 1 节 JSON schema 与第 2 节 6 值枚举是否已全部支持？
 4. [ ] **A 线**：按 **4.4 节的对拍脚本**验证灰度口径一致（`assert` 必须通过）。
 5. [ ] **A 线**：`motion_thresh` 默认 16 是否合适？（按你们 OpenCV 帧差口径复核；改则须重生成黄金参考）
-6. [ ] **C 线**：`motion_quality` 的 **BRAM 91%** 方案决策（降分辨率 / 双流 / 接受）—— 见 3.3 节与 C4 报告第 5 节。
-7. [ ] **C 线**：`fir_filter` 的阶数/系数，待 C5 实测后补入本文件。
-8. [x] ~~C 线：`s_axilite` 的 `offset=` 是否按字节生效~~ → ✅ **2026-09-10 实综合已核对**，11 个数据寄存器偏移与本文件 3.2 节逐一吻合；并补记了 5 个 `*_ctrl` 寄存器。
-9. [ ] 三方确认后本文件版本号 → **v1.0 冻结**。
+6. [x] ~~**C 线**：`motion_quality` 的 **BRAM 91%** 方案决策~~ → ✅ **2026-09-10 已决策并实现**：`rgb2gray` 增加 3/5 缩放，`motion_quality` 工作尺寸改为 **384×288**，BRAM 从 256（91%）降到 **64（23%）**（实测）。
+7. [ ] **A 线**：3/5 **点采样**缩放的混叠是否会让你那边的运动量偏噪？（若偏噪，可改块均值或退回 320×240 的 2×2 均值 —— 但那会改黄金参考）
+8. [x] ~~**C 线**：`fir_filter` 的阶数/系数，待 C5 实测后补入本文件。~~ → ✅ **2026-09-11 C5 已定稿**：**N = 63**（I 型线性相位，群延迟 31）、Hamming 窗带通、通带口径 **−6 dB = 0.70 / 3.50 Hz** @30 fps、归一化峰值增益 1.0；系数冻结在 `fpga/src/fir_coeffs_q15.h`（生成器 `design_fir_coeffs.py`），实测 csim 8/8 + 16/16、**容差 0**、cosim PASS、II=1、Fmax 146.97 MHz、LUT 4077/FF 6172/BRAM 0/DSP 25。**新增一项契约级限制**：63 阶在 30 fps 下**做不了** 0.1~0.5 Hz 呼吸带（见 3.5 节末）。
+9. [x] ~~C 线：`s_axilite` 的 `offset=` 是否按字节生效~~ → ✅ **2026-09-10 实综合已核对**，11 个数据寄存器偏移与本文件 3.2 节逐一吻合；并补记了 5 个 `*_ctrl` 寄存器。
+10. [ ] 三方确认后本文件版本号 → **v1.0 冻结**。
 
 ---
 
@@ -399,3 +529,5 @@ except ImportError:
 | 2026-09-10 | v0.9 | C 线 | 初建草案：全局口径（PYNQ-Z2 / 640×480 RGB888）+ `roi_statistic` v1 接口与寄存器映射冻结 + 测试向量格式 + 比对口径；`motion_quality` / `fir_filter` 仅冻结形状 |
 | 2026-09-10 | v0.91 | C 线 | **实综合回填**：寄存器表补入 `CTRL/GIER/IP_IER/IP_ISR` 与 5 个 `*_ctrl`（ap_vld）寄存器；3.2 节补实测结论（II=1、Fmax 138.99 MHz、LUT 1267/FF 723/BRAM 0/DSP 1）；§5 第 5 项核销 |
 | 2026-09-10 | v0.92 | C 线 | **C4 落地**：3.3 节 `motion_quality` 定稿（寄存器表、三条语义、实测 II=1/Fmax 140.05 MHz/**BRAM 256 = 91% 风险**）；**新增 3.4 节 `rgb2gray`**（含冻结灰度式 `Y=(77R+150G+29B+128)>>8` 与实测数据），`fir_filter` 顺延为 3.5、对接点为 3.6；**新增 4.4 节灰度口径对拍脚本**；4.3 容差表补 `rgb2gray`；§5 待确认项扩到 9 条 |
+| 2026-09-10 | v0.93 | C 线 | **BRAM 问题闭环**：用三组对照实验坐实"片内数组按 **2 的幂地址空间**分配"（320×240→64、512×512→128、640×480→256）；据此决策并实现 —— 3.4 节升 **`rgb2gray` v2**（新增冻结口径二：3/5 相位点采样 `x%5<3 && y%5<3`，640×480→384×288，实测 8/8+10/10、Fmax 137.46 MHz、BRAM 0/DSP 5），3.3 节升 **`motion_quality` v2**（工作尺寸 384×288，**BRAM 64 = 23%**，Fmax 140.05 MHz）；4.4 节对拍脚本补入缩放口径；§5 第 6 项核销、新增第 7 项（混叠待观察） |
+| 2026-09-11 | v0.94 | C 线 | **C5 落地**：3.5 节 `fir_filter` **定稿**（N=63 / 群延迟 31 / Hamming 窗 / 通带口径 **−6 dB = 0.70~3.50 Hz** / 归一化增益 1.0 / `Σh=897` / `Σ|h|=55073` / 实测 −3dB 0.895~3.305 Hz / 寄存器表含 3 个 `*_ctrl` / 段语义与 `reset` 必做 / TUSER=段首、TLAST=段末 **与图像 IP 不同**）；**新增契约级限制**：63 阶在 30 fps 下做不了呼吸带；**新增 4.5 节** fir 向量与黄金参考格式（含"系数只有一处来源"的硬约束）；**4.3 容差表 `fir_filter` 从 ±1 LSB 收紧为 0**；3.6 节对接点补时间序列链路；§5 第 8 项核销。证据 `fpga/report/c5_fir_filter_v1.md` |
