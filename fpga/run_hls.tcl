@@ -13,6 +13,7 @@
 #  前置（生成测试向量与 Python 黄金参考；数据变化时才需重跑）：
 #      python fpga/sim/gen_frames.py           -> sim/data/        (roi_statistic)
 #      python fpga/sim/gen_motion_vectors.py   -> sim/data_motion/ (rgb2gray, motion_quality)
+#      python fpga/sim/gen_fir_vectors.py      -> sim/data_fir/    (fir_filter)
 #
 #  契约：docs/interface.md —— 器件/时钟/寄存器映射/比对口径均已冻结。
 # =============================================================================
@@ -23,7 +24,7 @@ if {[info exists ::env(HLS_IP)] && $::env(HLS_IP) ne ""} {
     set ip_name $::env(HLS_IP)
 }
 
-set known_ips [list roi_statistic rgb2gray motion_quality]
+set known_ips [list roi_statistic rgb2gray motion_quality fir_filter]
 if {[lsearch -exact $known_ips $ip_name] < 0} {
     puts "ERROR: unknown HLS_IP '$ip_name'. Known: $known_ips"
     exit 1
@@ -33,6 +34,8 @@ if {[lsearch -exact $known_ips $ip_name] < 0} {
 set default_data "sim/data"
 if {$ip_name eq "rgb2gray" || $ip_name eq "motion_quality"} {
     set default_data "sim/data_motion"
+} elseif {$ip_name eq "fir_filter"} {
+    set default_data "sim/data_fir"
 }
 
 set src_file "src/$ip_name.cpp"
@@ -71,7 +74,7 @@ lappend cand_list [file normalize "[pwd]/$default_data"]
 lappend cand_list [file normalize "[pwd]/fpga/$default_data"]
 
 foreach c $cand_list {
-    if {[file exists "$c/golden_roi.csv"] || [file exists "$c/golden_motion.csv"]} {
+    if {[file exists "$c/golden_roi.csv"] || [file exists "$c/golden_motion.csv"] || [file exists "$c/golden_fir.csv"]} {
         set data_dir $c
         break
     }
@@ -89,9 +92,16 @@ puts "INFO: data dir  = $data_dir"
 # -----------------------------------------------------------------------------
 #  csynth 的验收只需 1。
 #  ⚠️ csim **不建模 hls::stream 的 FIFO 深度**，流深度不足导致的死锁只有 cosim 才暴露。
-#     M3 上板前建议至少跑一次 hls_exec = 2（用 64x48 小向量，见 fpga/README.md）。
+#     M3 上板前必须至少跑一次 hls_exec = 2（用**小尺寸向量**，见 fpga/README.md「跑 cosim」）。
+#
+#  可用环境变量覆盖，免去改文件：
+#     set "HLS_EXEC=2"
 # =============================================================================
 set hls_exec 1
+if {[info exists ::env(HLS_EXEC)] && $::env(HLS_EXEC) ne ""} {
+    set hls_exec $::env(HLS_EXEC)
+}
+puts "INFO: hls_exec  = $hls_exec  (1=csim+csynth, 2=+cosim, 3=+export)"
 
 # C 仿真（两层验证：内嵌边界用例 + 跨语言黄金参考比对）
 # 若怀疑测试台没重新编译，改成:  csim_design -clean -argv "$data_dir"
@@ -101,10 +111,14 @@ if {$hls_exec == 1} {
     csynth_design
 } elseif {$hls_exec == 2} {
     csynth_design
-    cosim_design
+    # -rtl verilog: 明确用 Verilog RTL；-tool auto 会去找 Vivado 的 xsim
+    # ⚠️ -argv 必须也给，否则 cosim 里的测试台拿不到数据目录，
+    #    Layer 2（跨语言黄金参考）会被静默跳过，只剩 Layer 1 的玩具用例 ——
+    #    那就等于"用 6 个小用例冒充 RTL 正确性"，是不可接受的弱验证。
+    cosim_design -rtl verilog -tool auto -argv "$data_dir"
 } elseif {$hls_exec == 3} {
     csynth_design
-    cosim_design
+    cosim_design -rtl verilog -tool auto -argv "$data_dir"
     export_design
 } else {
     csynth_design
