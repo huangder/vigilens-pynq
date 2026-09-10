@@ -1,0 +1,932 @@
+  **** HLS Build v2026.1 6493734
+Sourcing Tcl script 'D:/Desktop/AMD/fpga/run_hls.tcl'
+INFO: HLS_IP    = fir_filter
+INFO: source    = src/fir_filter.cpp
+INFO: testbench = sim/tb_fir_filter.cpp
+INFO: [HLS 200-1510] Running: open_component -reset component_fir_filter -flow_target vivado 
+INFO: [HLS 200-10] Creating and opening component 'D:/Desktop/AMD/fpga/component_fir_filter'.
+INFO: [HLS 200-10] Cleaning up the component database.
+INFO: [HLS 200-1505] Using flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+WARNING: [HLS 200-2149] The 'flow_target' option is deprecated and will be removed in a future release. For 'vivado' value you may simply remove the option for equivalent behavior.
+INFO: [HLS 200-2176] Writing Vitis IDE component file D:/Desktop/AMD/fpga/component_fir_filter/vitis-comp.json
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_fir_filter/hls_config.cfg
+WARNING: [HLS 200-484] The 'open_component -flow_target' command is deprecated and will be removed in a future release.
+INFO: [HLS 200-1510] Running: add_files src/fir_filter.cpp 
+INFO: [HLS 200-10] Adding design file 'src/fir_filter.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb sim/tb_fir_filter.cpp 
+INFO: [HLS 200-10] Adding test bench file 'sim/tb_fir_filter.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top fir_filter 
+INFO: [HLS 200-1510] Running: set_part xc7z020clg400-1 
+INFO: [HLS 200-1611] Setting target device to 'xc7z020-clg400-1'
+INFO: [HLS 200-1510] Running: create_clock -period 10 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: data dir  = D:/Desktop/AMD/fpga/sim/data_fir_small
+INFO: hls_exec  = 2  (1=csim+csynth, 2=+cosim, 3=+export)
+INFO: [HLS 200-1510] Running: csim_design -argv D:/Desktop/AMD/fpga/sim/data_fir_small 
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_fir_filter/hls_config.cfg
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [HLS 200-2191] C-Simulation will use clang-16 as the compiler
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../sim/tb_fir_filter.cpp in debug mode
+   Compiling ../../../../src/fir_filter.cpp in debug mode
+   Generating csim.exe
+In file included from ../../../../sim/tb_fir_filter.cpp:36:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../src/fir_filter.cpp:48:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+==== tb_fir_filter: contract docs/interface.md (tolerance = 0) ====
+NOTE: 延迟线是 static（上电初始化、复位不清零）-> 每段序列的第一次调用必须 reset=1。
+---- [Layer 1] embedded boundary cases (N=63, shift=15) ----
+  Layer 1: 8 passed, 0 failed
+---- [Layer 2] cross-language golden reference ----
+  meta     : fs=30 Hz, N=63, shift=15, 15 segments, 985 samples
+  [跨段一致性] 分段(reset=1,0,0) == 一次调用 ✅ (128 样本)
+  Layer 2: 16 passed, 0 failed  (样本不一致 0, 流头错误 0)
+
+==== RESULT: PASS ====
+INFO [HLS SIM]: The maximum depth reached by any hls::stream() instance in the design is 300
+INFO: [SIM 211-1] CSim done with 0 errors.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-2161] Finished Command csim_design Elapsed time: 00:00:05; Allocated memory: 1.836 MB.
+INFO: [HLS 200-1510] Running: csynth_design 
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_fir_filter/hls_config.cfg
+INFO: [HLS 200-111] Finished File checks and directory preparation: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 3.222 seconds; current allocated memory: 155.352 MB.
+INFO: [HLS 200-2191] C-Synthesis will use clang-16 as the compiler
+INFO: [HLS 200-10] Analyzing design file 'src/fir_filter.cpp' ... 
+INFO: [HLS 200-111] Finished Source Code Analysis and Preprocessing: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 4.675 seconds; current allocated memory: 158.211 MB.
+INFO: [HLS 200-1995] There were 907 instructions in the design after the 'Compile/Link' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 214-291] Loop 'VITIS_LOOP_110_3' is marked as complete unroll implied by the pipeline pragma (src/fir_filter.cpp:110:27)
+INFO: [HLS 214-291] Loop 'VITIS_LOOP_119_4' is marked as complete unroll implied by the pipeline pragma (src/fir_filter.cpp:119:27)
+INFO: [HLS 214-186] Unrolling loop 'VITIS_LOOP_110_3' (src/fir_filter.cpp:110:27) in function 'fir_filter' completely with a factor of 62 (src/fir_filter.cpp:66:0)
+INFO: [HLS 214-186] Unrolling loop 'VITIS_LOOP_119_4' (src/fir_filter.cpp:119:27) in function 'fir_filter' completely with a factor of 31 (src/fir_filter.cpp:66:0)
+INFO: [HLS 214-186] Unrolling loop 'VITIS_LOOP_93_1' (src/fir_filter.cpp:93:26) in function 'fir_filter' completely with a factor of 63 (src/fir_filter.cpp:66:0)
+INFO: [HLS 200-1995] There were 642 instructions in the design after the 'Unroll/Inline' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 525 instructions in the design after the 'Unroll/Inline (step 2)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 214-178] Inlining function 'hls::axis<ap_uint<16>, 1ul, 1ul, 1ul, (unsigned char)56, false>::axis()' into 'fir_filter(hls::stream<hls::axis<ap_uint<16>, 1ul, 1ul, 1ul, (unsigned char)56, false>, 0>&, hls::stream<hls::axis<ap_uint<16>, 1ul, 1ul, 1ul, (unsigned char)56, false>, 0>&, ap_uint<16>, ap_uint<1>, ap_uint<16>&, ap_uint<16>&, ap_uint<32>&)' (src/fir_filter.cpp:66:0)
+INFO: [HLS 200-1995] There were 584 instructions in the design after the 'Unroll/Inline (step 3)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 548 instructions in the design after the 'Unroll/Inline (step 4)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 214-248] Applying array_partition to '_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0EEES6_S3_S2_ILi1EERS3_S8_RS2_ILi32EEE10delay_line': Complete partitioning on dimension 1. (src/fir_filter.cpp:82:0)
+INFO: [HLS 200-1995] There were 547 instructions in the design after the 'Array/Struct' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 547 instructions in the design after the 'Array/Struct (step 2)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 547 instructions in the design after the 'Array/Struct (step 3)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 547 instructions in the design after the 'Array/Struct (step 4)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 735 instructions in the design after the 'Array/Struct (step 5)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 730 instructions in the design after the 'Performance' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 640 instructions in the design after the 'Performance (step 2)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 579 instructions in the design after the 'Performance (step 3)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 579 instructions in the design after the 'Performance (step 4)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 547 instructions in the design after the 'HW Transforms' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 500 instructions in the design after the 'HW Transforms (step 2)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-111] Finished Compiling Optimization and Transform: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 8.472 seconds; current allocated memory: 160.621 MB.
+INFO: [HLS 200-111] Finished Checking Pragmas: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.003 seconds; current allocated memory: 160.621 MB.
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [HLS 200-111] Finished Standard Transforms: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.043 seconds; current allocated memory: 165.703 MB.
+INFO: [HLS 200-10] Checking synthesizability ...
+INFO: [HLS 200-111] Finished Checking Synthesizability: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.028 seconds; current allocated memory: 167.812 MB.
+INFO: [XFORM 203-401] Performing if-conversion on hyperblock from (src/fir_filter.cpp:102:1) to (src/fir_filter.cpp:101:23) in function 'fir_filter'... converting 3 basic blocks.
+INFO: [XFORM 203-11] Balancing expressions in function 'fir_filter' (src/fir_filter.cpp:59:1)...29 expression(s) balanced.
+INFO: [HLS 200-111] Finished Loop, function and other optimizations: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.118 seconds; current allocated memory: 192.520 MB.
+INFO: [HLS 200-111] Finished Architecture Synthesis: CPU user time: 1 seconds. CPU system time: 0 seconds. Elapsed time: 0.136 seconds; current allocated memory: 197.527 MB.
+INFO: [HLS 200-2255] Checking Wire Delay Status: Wire Delay Mode is ON
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'fir_filter' ...
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'fir_filter_Pipeline_VITIS_LOOP_101_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_52) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_51) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_49) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_48) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_45) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_44) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_43) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_42) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_38) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_37) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_35) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_34) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_31) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_30) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_29) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=add_ln124_28) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=mul_ln124_24) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=mul_ln124_16) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=mul_ln124_13) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=mul_ln124_10) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=mul_ln124_7) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=mul_ln124_5) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=mul_ln124_3) to 3 in order to utilize available DSP registers.
+INFO: [HLS 200-486] Changing DSP latency (root=mul_ln124_1) to 3 in order to utilize available DSP registers.
+INFO: [SCHED 204-61] Pipelining loop 'VITIS_LOOP_101_2'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 9, loop 'VITIS_LOOP_101_2'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 1.78 seconds; current allocated memory: 205.242 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.138 seconds; current allocated memory: 206.281 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'fir_filter' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.166 seconds; current allocated memory: 208.156 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.067 seconds; current allocated memory: 208.902 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'fir_filter_Pipeline_VITIS_LOOP_101_2' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [RTGEN 206-100] Generating core module 'am_addmul_16s_16s_10s_27_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'am_addmul_16s_16s_11ns_29_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'am_addmul_16s_16s_11s_27_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'am_addmul_16s_16s_11s_28_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'am_addmul_16s_16s_13s_29_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'am_addmul_16s_16s_13s_30_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'am_addmul_16s_16s_8ns_25_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'am_addmul_18s_16s_7ns_25_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_11s_27s_28_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_11s_28s_28_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_11s_29s_29_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_12ns_30s_30_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_12s_29s_29_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_13ns_30s_31_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_13s_30s_30_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_5ns_21s_23_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_5ns_25s_25_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_6ns_24s_24_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_6ns_25s_25_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_7ns_23s_25_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_7s_24s_24_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_8s_27s_27_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_9s_22s_25_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'ama_addmuladd_16s_16s_9s_27s_27_4_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'mul_16s_14ns_30_1_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'fir_filter_Pipeline_VITIS_LOOP_101_2'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 1.508 seconds; current allocated memory: 213.867 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'fir_filter' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+WARNING: [RTGEN 206-101] Design contains AXI ports. Reset is fixed to synchronous and active low.
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_in_V_data_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_in_V_keep_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_in_V_strb_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_in_V_user_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_in_V_last_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_in_V_id_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_in_V_dest_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_out_V_data_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_out_V_keep_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_out_V_strb_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_out_V_user_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_out_V_last_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_out_V_id_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/fir_out_V_dest_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/n_samples' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/reset' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/out_count' to 's_axilite & ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/saturation_count' to 's_axilite & ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'fir_filter/seg_id' to 's_axilite & ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on function 'fir_filter' to 's_axilite & ap_ctrl_hs'.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_9' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_8' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_7' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_6' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_5' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_4' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_3' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_2' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line_1' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'fir_filter_stream_stream_ap_uint_ap_uint_ap_uint_ap_uint_ap_uint_delay_line' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_51' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_50' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_49' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_48' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_47' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_46' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_45' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_44' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_43' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_42' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_41' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_40' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_39' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_38' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_37' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_36' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_35' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_34' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_33' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_32' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_31' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_30' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_29' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_28' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_27' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_26' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_25' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_24' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_23' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_22' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_21' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_20' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_19' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_18' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_17' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_16' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_15' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_14' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_13' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_12' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_11' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_10' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_9' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_8' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_7' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_6' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_5' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_4' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_3' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_2' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E_1' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'p_ZZ10fir_filterRN3hls6streamINS_4axisI7ap_uintILi16EELm1ELm1ELm1ELh56ELb0EEELi0E' is power-on initialization.
+WARNING: [RTGEN 206-101] Register 'sid' is power-on initialization.
+INFO: [RTGEN 206-100] Bundling port 'n_samples', 'reset', 'out_count', 'saturation_count', 'seg_id' and 'return' to AXI-Lite port ctrl.
+INFO: [RTGEN 206-100] Finished creating RTL model for 'fir_filter'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 1 seconds. CPU system time: 1 seconds. Elapsed time: 2.055 seconds; current allocated memory: 227.316 MB.
+INFO: [HLS 200-111] Finished Generating all RTL models: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.851 seconds; current allocated memory: 237.281 MB.
+INFO: [HLS 200-2225] Wrote inferred directives to file D:/Desktop/AMD/fpga/component_fir_filter/hls/syn/inferred_directives.ini
+INFO: [HLS 200-111] Finished Updating report files: CPU user time: 1 seconds. CPU system time: 0 seconds. Elapsed time: 1.015 seconds; current allocated memory: 245.523 MB.
+INFO: [VHDL 208-304] Generating VHDL RTL for fir_filter.
+INFO: [VLOG 209-307] Generating Verilog RTL for fir_filter.
+INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [HLS 200-789] **** Estimated Fmax: 146.97 MHz
+INFO: [HLS 200-2161] Finished Command csynth_design Elapsed time: 00:00:24; Allocated memory: 90.535 MB.
+INFO: [HLS 200-1510] Running: cosim_design -rtl verilog -tool auto -argv D:/Desktop/AMD/fpga/sim/data_fir_small 
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_fir_filter/hls_config.cfg
+INFO: [COSIM 212-47] Using XSIM for RTL simulation.
+INFO: [COSIM 212-14] Instrumenting C test bench ...
+   Build using "D:/Xilinx/2026.1/Vitis/win64/tools/clang-16/bin/clang++"
+   Compiling apatb_fir_filter.cpp
+   Compiling apatb_fir_filter_util.cpp
+   Compiling fir_filter.cpp_pre.cpp
+   Compiling tb_fir_filter.cpp_pre.cpp
+   Compiling apatb_fir_filter_ir.ll
+   Generating cosim.tv.exe
+INFO: [COSIM 212-302] Starting C TB testing ... 
+==== tb_fir_filter: contract docs/interface.md (tolerance = 0) ====
+NOTE: 延迟线是 static（上电初始化、复位不清零）-> 每段序列的第一次调用必须 reset=1。
+---- [Layer 1] embedded boundary cases (N=63, shift=15) ----
+  Layer 1: 8 passed, 0 failed
+---- [Layer 2] cross-language golden reference ----
+  meta     : fs=30 Hz, N=63, shift=15, 15 segments, 985 samples
+  [跨段一致性] 分段(reset=1,0,0) == 一次调用 ✅ (128 样本)
+  Layer 2: 16 passed, 0 failed  (样本不一致 0, 流头错误 0)
+
+==== RESULT: PASS ====
+INFO [HLS SIM]: The maximum depth reached by any hls::stream() instance in the design is 300
+INFO: [COSIM 212-333] Generating C post check test bench ...
+INFO: [COSIM 212-12] Generating RTL test bench ...
+find not read role field
+find not read role field
+find not read role field
+INFO: [COSIM 212-1] *** C/RTL co-simulation file generation completed. ***
+INFO: [COSIM 212-323] Starting verilog simulation. 
+INFO: [COSIM 212-15] Starting XSIM ...
+
+D:\Desktop\AMD\fpga\component_fir_filter\hls\sim\verilog>set PATH= 
+
+D:\Desktop\AMD\fpga\component_fir_filter\hls\sim\verilog>call D:/Xilinx/2026.1/Vivado/bin/xelab xil_defaultlib.apatb_fir_filter_top xil_defaultlib.glbl -Oenable_linking_all_libraries -prj fir_filter.prj -L smartconnect_v1_0 -L axi_protocol_checker_v1_1_12 -L axi_protocol_checker_v1_1_13 -L axis_protocol_checker_v1_1_11 -L axis_protocol_checker_v1_1_12 -L xil_defaultlib -L unisims_ver -L xpm  -L floating_point_v7_1_22 -L floating_point_v7_0_27 --lib "ieee_proposed=./ieee_proposed" -L uvm -relax -i ./svr -i ./axivip -i ./svtb -i ./file_agent -i ./fir_filter_subsystem  -s fir_filter  
+Vivado Simulator v2026.1
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: D:/Xilinx/2026.1/Vivado/bin/unwrapped/win64.o/xelab.exe xil_defaultlib.apatb_fir_filter_top xil_defaultlib.glbl -Oenable_linking_all_libraries -prj fir_filter.prj -L smartconnect_v1_0 -L axi_protocol_checker_v1_1_12 -L axi_protocol_checker_v1_1_13 -L axis_protocol_checker_v1_1_11 -L axis_protocol_checker_v1_1_12 -L xil_defaultlib -L unisims_ver -L xpm -L floating_point_v7_1_22 -L floating_point_v7_0_27 --lib ieee_proposed=./ieee_proposed -L uvm -relax -i ./svr -i ./axivip -i ./svtb -i ./file_agent -i ./fir_filter_subsystem -s fir_filter 
+Multi-threading is on. Using 22 slave threads.
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/AESL_deadlock_idx0_monitor.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module AESL_deadlock_idx0_monitor
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/AESL_deadlock_idx1_monitor.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module AESL_deadlock_idx1_monitor
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/AESL_deadlock_kernel_monitor_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module AESL_deadlock_kernel_monitor_top
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter.autotb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module apatb_fir_filter_top
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_11s_27s_28_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_11s_27s_28_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_11s_27s_28_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_11s_28s_28_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_11s_28s_28_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_11s_28s_28_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_11s_29s_29_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_11s_29s_29_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_11s_29s_29_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_12ns_30s_30_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_12ns_30s_30_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_12ns_30s_30_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_12s_29s_29_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_12s_29s_29_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_12s_29s_29_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_13ns_30s_31_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_13ns_30s_31_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_13ns_30s_31_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_13s_30s_30_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_13s_30s_30_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_13s_30s_30_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_5ns_21s_23_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_5ns_21s_23_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_5ns_21s_23_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_5ns_25s_25_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_5ns_25s_25_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_5ns_25s_25_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_6ns_24s_24_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_6ns_24s_24_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_6ns_24s_24_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_6ns_25s_25_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_6ns_25s_25_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_6ns_25s_25_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_7ns_23s_25_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_7ns_23s_25_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_7ns_23s_25_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_7s_24s_24_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_7s_24s_24_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_7s_24s_24_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_8s_27s_27_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_8s_27s_27_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_8s_27s_27_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_9s_22s_25_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_9s_22s_25_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_9s_22s_25_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ama_addmuladd_16s_16s_9s_27s_27_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_9s_27s_27_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_ama_addmuladd_16s_16s_9s_27s_27_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_am_addmul_16s_16s_10s_27_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_10s_27_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_10s_27_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_am_addmul_16s_16s_11ns_29_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_11ns_29_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_11ns_29_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_am_addmul_16s_16s_11s_27_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_11s_27_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_11s_27_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_am_addmul_16s_16s_11s_28_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_11s_28_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_11s_28_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_am_addmul_16s_16s_13s_29_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_13s_29_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_13s_29_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_am_addmul_16s_16s_13s_30_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_13s_30_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_13s_30_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_am_addmul_16s_16s_8ns_25_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_8ns_25_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_16s_16s_8ns_25_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_am_addmul_18s_16s_7ns_25_4_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_18s_16s_7ns_25_4_1_DSP48_0
+INFO: [VRFC 10-311] analyzing module fir_filter_am_addmul_18s_16s_7ns_25_4_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_ctrl_s_axi.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_ctrl_s_axi
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_fir_filter_Pipeline_VITIS_LOOP_101_2.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_fir_filter_Pipeline_VITIS_LOOP_101_2
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_mul_16s_14ns_30_1_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_mul_16s_14ns_30_1_1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_regslice_both.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fir_filter_regslice_both
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/dataflow_monitor.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module dataflow_monitor
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/file_agent/file_agent_pkg.sv" into library xil_defaultlib
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/svr/svr_pkg.sv" into library xil_defaultlib
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/svr/svr_if.sv" into library xil_defaultlib
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/axivip/axi_pkg.sv" into library xil_defaultlib
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/axivip/axi_if.sv" into library xil_defaultlib
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/fir_filter_subsystem/fir_filter_subsystem_pkg.sv" into library xil_defaultlib
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/svtb/misc_interface.sv" into library xil_defaultlib
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Desktop/AMD/fpga/component_fir_filter/hls/sim/verilog/svtb/sv_module_top.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module sv_module_top
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package xil_defaultlib.$unit_sv_module_top_sv
+Compiling package uvm.uvm_pkg
+Compiling package std.std
+Compiling package xil_defaultlib.svr_pkg
+Compiling package xil_defaultlib.file_agent_pkg
+Compiling package xil_defaultlib.axi_pkg
+Compiling package xil_defaultlib.fir_filter_subsystem_pkg
+Compiling package xil_defaultlib.$unit_dataflow_monitor_sv
+Compiling module xil_defaultlib.fir_filter_mul_16s_14ns_30_1_1(N...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_11n...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_11n...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_13s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_13s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_13s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_13s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_11s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_11s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_11s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_11s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_10s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_10s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_8ns...
+Compiling module xil_defaultlib.fir_filter_am_addmul_16s_16s_8ns...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_am_addmul_18s_16s_7ns...
+Compiling module xil_defaultlib.fir_filter_am_addmul_18s_16s_7ns...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_ama_addmuladd_16s_16s...
+Compiling module xil_defaultlib.fir_filter_fir_filter_Pipeline_V...
+Compiling module xil_defaultlib.fir_filter_ctrl_s_axi
+Compiling module xil_defaultlib.fir_filter_regslice_both(DataWid...
+Compiling module xil_defaultlib.fir_filter_regslice_both(DataWid...
+Compiling module xil_defaultlib.fir_filter_regslice_both(DataWid...
+Compiling module xil_defaultlib.fir_filter
+Compiling module xil_defaultlib.misc_interface_default
+Compiling module xil_defaultlib.svr_if(DATA_WIDTH=24)
+Compiling module xil_defaultlib.axi_if(ADDR_WIDTH=6,STRB_WIDTH=4...
+Compiling module xil_defaultlib.sv_module_top
+Compiling module xil_defaultlib.AESL_deadlock_idx1_monitor
+Compiling module xil_defaultlib.AESL_deadlock_idx0_monitor
+Compiling module xil_defaultlib.AESL_deadlock_kernel_monitor_top...
+Compiling module xil_defaultlib.nodf_module_intf_default
+Compiling module xil_defaultlib.pp_loop_intf(FSM_WIDTH=10)
+Compiling module xil_defaultlib.dataflow_monitor_1
+Compiling module xil_defaultlib.apatb_fir_filter_top
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot fir_filter
+
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Sep 11 00:06:13 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/fir_filter/xsim_script.tcl
+# xsim {fir_filter} -testplusarg UVM_VERBOSITY=UVM_NONE -testplusarg UVM_TESTNAME=fir_filter_test_lib -testplusarg UVM_TIMEOUT=20000000000000 -autoloadwcfg -tclbatch {fir_filter.tcl}
+Time resolution is 1 ps
+source fir_filter.tcl
+## run all
+UVM_INFO D:Xili���6.1Vivado/data/system_verilog/uvm_1.2/xlnx_uvm_package.sv(18601) @ 0: reporter [UVM/RELNOTES] 
+----------------------------------------------------------------
+UVM-1.2
+(C) 2007-2014 Mentor Graphics Corporation
+(C) 2007-2014 Cadence Design Systems, Inc.
+(C) 2006-2014 Synopsys, Inc.
+(C) 2011-2013 Cypress Semiconductor Corp.
+(C) 2013-2014 NVIDIA Corporation
+----------------------------------------------------------------
+
+  ***********       IMPORTANT RELEASE NOTES         ************
+
+  You are using a version of the UVM library that has been compiled
+  with `UVM_NO_DEPRECATED undefined.
+
+  You are using a version of the UVM library that has been compiled
+  with `UVM_OBJECT_DO_NOT_NEED_CONSTRUCTOR undefined.
+
+      (Specify +UVM_NO_RELNOTES to turn off this notice)
+
+UVM_INFO D:Xili���6.1Vivado/data/system_verilog/uvm_1.2/xlnx_uvm_package.sv(18648) @ 0: reporter [NO_DPI_TSTNAME] UVM_NO_DPI defined--getting UVM_TESTNAME directly, without DPI
+UVM_INFO D:Xili���6.1Vivado/data/system_verilog/uvm_1.2/xlnx_uvm_package.sv(18752) @ 0: reporter [UVMTOP] UVM testbench topology:
+------------------------------------------------------------------------------------------------------------
+Name                                               Type                                Size  Value          
+------------------------------------------------------------------------------------------------------------
+uvm_test_top                                       fir_filter_test_lib                 -     @370           
+  top_env                                          fir_filter_env                      -     @381           
+    axi_lite_ctrl                                  uvm_env                             -     @428           
+      item_rtr_port                                uvm_analysis_port                   -     @447           
+      item_wtr_port                                uvm_analysis_port                   -     @437           
+      master                                       uvm_agent                           -     @840           
+        ardrv                                      uvm_driver #(REQ,RSP)               -     @1515          
+          item_read_imp                            uvm_analysis_port                   -     @1544          
+          rsp_port                                 uvm_analysis_port                   -     @1534          
+          seq_item_port                            uvm_seq_item_pull_port              -     @1524          
+          m_num_sent                               integral                            32    'h0            
+        arsqr                                      axi_sequencer                       -     @1554          
+          rsp_export                               uvm_analysis_export                 -     @1563          
+          seq_item_export                          uvm_seq_item_pull_imp               -     @1681          
+          arbitration_queue                        array                               0     -              
+          lock_queue                               array                               0     -              
+          num_last_reqs                            integral                            32    'd1            
+          num_last_rsps                            integral                            32    'd1            
+        awdrv                                      uvm_driver #(REQ,RSP)               -     @987           
+          item_read_imp                            uvm_analysis_port                   -     @1016          
+          rsp_port                                 uvm_analysis_port                   -     @1006          
+          seq_item_port                            uvm_seq_item_pull_port              -     @996           
+          m_num_sent                               integral                            32    'h0            
+        awsqr                                      axi_sequencer                       -     @1026          
+          rsp_export                               uvm_analysis_export                 -     @1035          
+          seq_item_export                          uvm_seq_item_pull_imp               -     @1153          
+          arbitration_queue                        array                               0     -              
+          lock_queue                               array                               0     -              
+          num_last_reqs                            integral                            32    'd1            
+          num_last_rsps                            integral                            32    'd1            
+        bdrv                                       uvm_driver #(REQ,RSP)               -     @1339          
+          item_read_imp                            uvm_analysis_port                   -     @1368          
+          rsp_port                                 uvm_analysis_port                   -     @1358          
+          seq_item_port                            uvm_seq_item_pull_port              -     @1348          
+          m_num_sent                               integral                            32    'h0            
+        bsqr                                       axi_sequencer                       -     @1378          
+          rsp_export                               uvm_analysis_export                 -     @1387          
+          seq_item_export                          uvm_seq_item_pull_imp               -     @1505          
+          arbitration_queue                        array                               0     -              
+          lock_queue                               array                               0     -              
+          num_last_reqs                            integral                            32    'd1            
+          num_last_rsps                            integral                            32    'd1            
+        rdrv                                       uvm_driver #(REQ,RSP)               -     @1691          
+          item_read_imp                            uvm_analysis_port                   -     @1720          
+          rsp_port                                 uvm_analysis_port                   -     @1710          
+          seq_item_port                            uvm_seq_item_pull_port              -     @1700          
+          m_num_sent                               integral                            32    'h0            
+        rsqr                                       axi_sequencer                       -     @1730          
+          rsp_export                               uvm_analysis_export                 -     @1739          
+          seq_item_export                          uvm_seq_item_pull_imp               -     @1857          
+          arbitration_queue                        array                               0     -              
+          lock_queue                               array                               0     -              
+          num_last_reqs                            integral                            32    'd1            
+          num_last_rsps                            integral                            32    'd1            
+        wdrv                                       uvm_driver #(REQ,RSP)               -     @1163          
+          item_read_imp                            uvm_analysis_port                   -     @1192          
+          rsp_port                                 uvm_analysis_port                   -     @1182          
+          seq_item_port                            uvm_seq_item_pull_port              -     @1172          
+          m_num_sent                               integral                            32    'h0            
+        wsqr                                       axi_sequencer                       -     @1202          
+          rsp_export                               uvm_analysis_export                 -     @1211          
+          seq_item_export                          uvm_seq_item_pull_imp               -     @1329          
+          arbitration_queue                        array                               0     -              
+          lock_queue                               array                               0     -              
+          num_last_reqs                            integral                            32    'd1            
+          num_last_rsps                            integral                            32    'd1            
+      monitor                                      uvm_monitor                         -     @662           
+        item_ar2r_port                             uvm_analysis_port                   -     @731           
+        item_ar_port                               uvm_analysis_port                   -     @701           
+        item_aw2b_port                             uvm_analysis_port                   -     @721           
+        item_aw_port                               uvm_analysis_port                   -     @671           
+        item_b_port                                uvm_analysis_port                   -     @691           
+        item_r_port                                uvm_analysis_port                   -     @711           
+        item_w_port                                uvm_analysis_port                   -     @681           
+        checks_enable                              integral                            1     'h1            
+        coverage_enable                            integral                            1     'h1            
+      state                                        axi_state                           -     @741           
+        ar2r_imp                                   uvm_analysis_imp_ar2r               -     @810           
+        ar_imp                                     uvm_analysis_imp_ar                 -     @780           
+        aw2b_imp                                   uvm_analysis_imp_aw2b               -     @800           
+        aw_imp                                     uvm_analysis_imp_aw                 -     @750           
+        b_imp                                      uvm_analysis_imp_b                  -     @770           
+        item_rtr_port                              uvm_analysis_port                   -     @830           
+        item_wtr_port                              uvm_analysis_port                   -     @820           
+        r_imp                                      uvm_analysis_imp_r                  -     @790           
+        w_imp                                      uvm_analysis_imp_w                  -     @760           
+        avg_rate                                   integral                            32    'h0            
+        exp_rate                                   integral                            32    'h0            
+        win_size                                   integral                            32    'h0            
+        bqnum_for_slaseq                           integral                            32    'h0            
+        rq_from_model_num                          integral                            32    'h0            
+      vsqr                                         axi_virtual_sequencer               -     @849           
+        rsp_export                                 uvm_analysis_export                 -     @858           
+        seq_item_export                            uvm_seq_item_pull_imp               -     @976           
+        arbitration_queue                          array                               0     -              
+        lock_queue                                 array                               0     -              
+        num_last_reqs                              integral                            32    'd1            
+        num_last_rsps                              integral                            32    'd1            
+      cfg                                          axi_cfg                             -     @400           
+        has_checker                                integral                            1     'h1            
+        has_coverage                               integral                            1     'h1            
+        id_num                                     integral                            32    'h1            
+        reset_level                                reset_level_enum                    32    RESET_LEVEL_LOW
+        drv_type                                   drv_type_enum                       32    MASTER         
+        write_latency_mode                         latency_mode_enum                   32    CHANNEL_FIRST  
+        read_latency_mode                          latency_mode_enum                   32    CHANNEL_FIRST  
+        clatency                                   axi_latency                         -     @424           
+          wr_latency                               integral                            32    'h0            
+          rd_latency                               integral                            32    'h0            
+    env_master_svr_fir_in                          uvm_env                             -     @401           
+      m_agt                                        uvm_agent                           -     @1935          
+        drv                                        uvm_driver #(REQ,RSP)               -     @2083          
+          rsp_port                                 uvm_analysis_port                   -     @2102          
+          seq_item_port                            uvm_seq_item_pull_port              -     @2092          
+        mon                                        uvm_monitor                         -     @2112          
+          item_collect_port                        uvm_analysis_port                   -     @2123          
+        sqr                                        uvm_sequencer                       -     @1946          
+          rsp_export                               uvm_analysis_export                 -     @1955          
+          seq_item_export                          uvm_seq_item_pull_imp               -     @2073          
+          arbitration_queue                        array                               0     -              
+          lock_queue                               array                               0     -              
+          num_last_reqs                            integral                            32    'd1            
+          num_last_rsps                            integral                            32    'd1            
+    env_slave_svr_fir_out                          uvm_env                             -     @414           
+      s_agt                                        uvm_agent                           -     @2141          
+        drv                                        uvm_driver #(REQ,RSP)               -     @2289          
+          rsp_port                                 uvm_analysis_port                   -     @2308          
+          seq_item_port                            uvm_seq_item_pull_port              -     @2298          
+        mon                                        uvm_monitor                         -     @2318          
+          item_collect_port                        uvm_analysis_port                   -     @2329          
+        sqr                                        uvm_sequencer                       -     @2152          
+          rsp_export                               uvm_analysis_export                 -     @2161          
+          seq_item_export                          uvm_seq_item_pull_imp               -     @2279          
+          arbitration_queue                        array                               0     -              
+          lock_queue                               array                               0     -              
+          num_last_reqs                            integral                            32    'd1            
+          num_last_rsps                            integral                            32    'd1            
+    fir_filter_virtual_sqr                         fir_filter_virtual_sequencer        -     @519           
+      rsp_export                                   uvm_analysis_export                 -     @528           
+      seq_item_export                              uvm_seq_item_pull_imp               -     @646           
+      arbitration_queue                            array                               0     -              
+      lock_queue                                   array                               0     -              
+      num_last_reqs                                integral                            32    'd1            
+      num_last_rsps                                integral                            32    'd1            
+    refm                                           fir_filter_reference_model          -     @457           
+      trans_num_idx                                integral                            32    'h0            
+    subsys_mon                                     fir_filter_subsystem_monitor        -     @470           
+      ctrl_rtr_imp                                 uvm_analysis_imp_axi_rtr_ctrl       -     @509           
+      ctrl_wtr_imp                                 uvm_analysis_imp_axi_wtr_ctrl       -     @499           
+      scbd                                         fir_filter_scoreboard               -     @2356          
+        refm                                       fir_filter_reference_model          -     @457           
+          trans_num_idx                            integral                            32    'h0            
+        file_rd_TVOUT_transaction_size             <unknown>                           -     @2366          
+          TV_FILE                                  string                              0     ""             
+          fp                                       integral                            32    'hxxxxxxxx     
+          TV_FILE_num                              integral                            32    'h0            
+          HEX_read                                 integral                            32    'h0            
+          DEC_read                                 integral                            32    'h0            
+          is_binary                                integral                            32    'h0            
+          TV_FILE_COMPARE                          string                              0     ""             
+          fp_compare                               integral                            32    'hxxxxxxxx     
+        TVOUT_transaction_size_queue               da(integral)                        0     -              
+        file_wr_port_fir_out_fir_out_TDATA         <unknown>                           -     @2367          
+          TV_FILE                                  string                              0     ""             
+          fp                                       integral                            32    'hxxxxxxxx     
+          file_open                                integral                            32    'h0            
+          write_file_done                          integral                            32    'h0            
+          write_section_done                       integral                            32    'h0            
+          TRANSACTION_NUM                          integral                            32    'h0            
+          transaction_num_idx                      integral                            32    'h0            
+          TRANSACTION_DEPTH                        integral                            32    'h0            
+          TRANSACTION_DEPTH_queue                  da(integral)                        0     -              
+          TRANSACTION_DEPTH_queue_for_depth_check  da(integral)                        0     -              
+          transaction_depth_idx                    integral                            32    'h0            
+          ap_done_num_idx                          integral                            32    'h0            
+          is_binary                                integral                            32    'h0            
+        write_file_done_fir_out_fir_out_TDATA      integral                            32    'h0            
+        write_section_done_fir_out_fir_out_TDATA   integral                            32    'h0            
+        file_wr_port_fir_out_fir_out_TKEEP         <unknown>                           -     @2368          
+          TV_FILE                                  string                              0     ""             
+          fp                                       integral                            32    'hxxxxxxxx     
+          file_open                                integral                            32    'h0            
+          write_file_done                          integral                            32    'h0            
+          write_section_done                       integral                            32    'h0            
+          TRANSACTION_NUM                          integral                            32    'h0            
+          transaction_num_idx                      integral                            32    'h0            
+          TRANSACTION_DEPTH                        integral                            32    'h0            
+          TRANSACTION_DEPTH_queue                  da(integral)                        0     -              
+          TRANSACTION_DEPTH_queue_for_depth_check  da(integral)                        0     -              
+          transaction_depth_idx                    integral                            32    'h0            
+          ap_done_num_idx                          integral                            32    'h0            
+          is_binary                                integral                            32    'h0            
+        write_file_done_fir_out_fir_out_TKEEP      integral                            32    'h0            
+        write_section_done_fir_out_fir_out_TKEEP   integral                            32    'h0            
+        file_wr_port_fir_out_fir_out_TSTRB         <unknown>                           -     @2369          
+          TV_FILE                                  string                              0     ""             
+          fp                                       integral                            32    'hxxxxxxxx     
+          file_open                                integral                            32    'h0            
+          write_file_done                          integral                            32    'h0            
+          write_section_done                       integral                            32    'h0            
+          TRANSACTION_NUM                          integral                            32    'h0            
+          transaction_num_idx                      integral                            32    'h0            
+          TRANSACTION_DEPTH                        integral                            32    'h0            
+          TRANSACTION_DEPTH_queue                  da(integral)                        0     -              
+          TRANSACTION_DEPTH_queue_for_depth_check  da(integral)                        0     -              
+          transaction_depth_idx                    integral                            32    'h0            
+          ap_done_num_idx                          integral                            32    'h0            
+          is_binary                                integral                            32    'h0            
+        write_file_done_fir_out_fir_out_TSTRB      integral                            32    'h0            
+        write_section_done_fir_out_fir_out_TSTRB   integral                            32    'h0            
+        file_wr_port_fir_out_fir_out_TUSER         <unknown>                           -     @2370          
+          TV_FILE                                  string                              0     ""             
+          fp                                       integral                            32    'hxxxxxxxx     
+          file_open                                integral                            32    'h0            
+          write_file_done                          integral                            32    'h0            
+          write_section_done                       integral                            32    'h0            
+          TRANSACTION_NUM                          integral                            32    'h0            
+          transaction_num_idx                      integral                            32    'h0            
+          TRANSACTION_DEPTH                        integral                            32    'h0            
+          TRANSACTION_DEPTH_queue                  da(integral)                        0     -              
+          TRANSACTION_DEPTH_queue_for_depth_check  da(integral)                        0     -              
+          transaction_depth_idx                    integral                            32    'h0            
+          ap_done_num_idx                          integral                            32    'h0            
+          is_binary                                integral                            32    'h0            
+        write_file_done_fir_out_fir_out_TUSER      integral                            32    'h0            
+        write_section_done_fir_out_fir_out_TUSER   integral                            32    'h0            
+        file_wr_port_fir_out_fir_out_TLAST         <unknown>                           -     @2371          
+          TV_FILE                                  string                              0     ""             
+          fp                                       integral                            32    'hxxxxxxxx     
+          file_open                                integral                            32    'h0            
+          write_file_done                          integral                            32    'h0            
+          write_section_done                       integral                            32    'h0            
+          TRANSACTION_NUM                          integral                            32    'h0            
+          transaction_num_idx                      integral                            32    'h0            
+          TRANSACTION_DEPTH                        integral                            32    'h0            
+          TRANSACTION_DEPTH_queue                  da(integral)                        0     -              
+          TRANSACTION_DEPTH_queue_for_depth_check  da(integral)                        0     -              
+          transaction_depth_idx                    integral                            32    'h0            
+          ap_done_num_idx                          integral                            32    'h0            
+          is_binary                                integral                            32    'h0            
+        write_file_done_fir_out_fir_out_TLAST      integral                            32    'h0            
+        write_section_done_fir_out_fir_out_TLAST   integral                            32    'h0            
+        file_wr_port_fir_out_fir_out_TID           <unknown>                           -     @2372          
+          TV_FILE                                  string                              0     ""             
+          fp                                       integral                            32    'hxxxxxxxx     
+          file_open                                integral                            32    'h0            
+          write_file_done                          integral                            32    'h0            
+          write_section_done                       integral                            32    'h0            
+          TRANSACTION_NUM                          integral                            32    'h0            
+          transaction_num_idx                      integral                            32    'h0            
+          TRANSACTION_DEPTH                        integral                            32    'h0            
+          TRANSACTION_DEPTH_queue                  da(integral)                        0     -              
+          TRANSACTION_DEPTH_queue_for_depth_check  da(integral)                        0     -              
+          transaction_depth_idx                    integral                            32    'h0            
+          ap_done_num_idx                          integral                            32    'h0            
+          is_binary                                integral                            32    'h0            
+        write_file_done_fir_out_fir_out_TID        integral                            32    'h0            
+        write_section_done_fir_out_fir_out_TID     integral                            32    'h0            
+        file_wr_port_fir_out_fir_out_TDEST         <unknown>                           -     @2373          
+          TV_FILE                                  string                              0     ""             
+          fp                                       integral                            32    'hxxxxxxxx     
+          file_open                                integral                            32    'h0            
+          write_file_done                          integral                            32    'h0            
+          write_section_done                       integral                            32    'h0            
+          TRANSACTION_NUM                          integral                            32    'h0            
+          transaction_num_idx                      integral                            32    'h0            
+          TRANSACTION_DEPTH                        integral                            32    'h0            
+          TRANSACTION_DEPTH_queue                  da(integral)                        0     -              
+          TRANSACTION_DEPTH_queue_for_depth_check  da(integral)                        0     -              
+          transaction_depth_idx                    integral                            32    'h0            
+          ap_done_num_idx                          integral                            32    'h0            
+          is_binary                                integral                            32    'h0            
+        write_file_done_fir_out_fir_out_TDEST      integral                            32    'h0            
+        write_section_done_fir_out_fir_out_TDEST   integral                            32    'h0            
+      svr_master_fir_in_imp                        uvm_analysis_imp_svr_master_fir_in  -     @479           
+      svr_slave_fir_out_imp                        uvm_analysis_imp_svr_slave_fir_out  -     @489           
+    env_master_svr_fir_in                          uvm_env                             -     @401           
+    env_slave_svr_fir_out                          uvm_env                             -     @414           
+    refm                                           fir_filter_reference_model          -     @457           
+    fir_filter_virtual_sqr                         fir_filter_virtual_sequencer        -     @519           
+    fir_filter_cfg                                 fir_filter_config                   -     @395           
+      port_fir_in_cfg                              svr_config                          -     @396           
+        svr_type                                   svr_inst_type                       32    SVR_MASTER     
+        prt_type                                   svr_protocol_type                   32    AXIS           
+        is_active                                  svr_active_passive_enum             1     SVR_ACTIVE     
+        reset_level                                svr_reset_level_enum                1     RESET_LEVEL_LOW
+        spec_cfg                                   svr_spec_cfg_enum                   32    NORMAL         
+        clatency                                   svr_latency                         -     @397           
+          transfer_latency                         integral                            32    'h0            
+      port_fir_out_cfg                             svr_config                          -     @398           
+        svr_type                                   svr_inst_type                       32    SVR_SLAVE      
+        prt_type                                   svr_protocol_type                   32    AXIS           
+        is_active                                  svr_active_passive_enum             1     SVR_ACTIVE     
+        reset_level                                svr_reset_level_enum                1     RESET_LEVEL_LOW
+        spec_cfg                                   svr_spec_cfg_enum                   32    NORMAL         
+        clatency                                   svr_latency                         -     @399           
+          transfer_latency                         integral                            32    'h0            
+      ctrl_cfg                                     axi_cfg                             -     @400           
+        has_checker                                integral                            1     'h1            
+        has_coverage                               integral                            1     'h1            
+        id_num                                     integral                            32    'h1            
+        reset_level                                reset_level_enum                    32    RESET_LEVEL_LOW
+        drv_type                                   drv_type_enum                       32    MASTER         
+        write_latency_mode                         latency_mode_enum                   32    CHANNEL_FIRST  
+        read_latency_mode                          latency_mode_enum                   32    CHANNEL_FIRST  
+        clatency                                   axi_latency                         -     @424           
+          wr_latency                               integral                            32    'h0            
+          rd_latency                               integral                            32    'h0            
+      check_ena                                    integral                            32    'h0            
+      cover_ena                                    integral                            32    'h0            
+------------------------------------------------------------------------------------------------------------
+
+UVM_INFO D:Xili���6.1Vivado/data/system_verilog/uvm_1.2/xlnx_uvm_package.sv(20867) @ 0: reporter [UVM/COMP/NAMECHECK] This implementation of the component name checks requires DPI to be enabled
+////////////////////////////////////////////////////////////////////////////////////
+// Inter-Transaction Progress: Completed Transaction / Total Transaction
+// Intra-Transaction Progress: Measured Latency / Latency Estimation * 100%
+//
+// RTL Simulation : "Inter-Transaction Progress" ["Intra-Transaction Progress"] @ "Simulation Time"
+////////////////////////////////////////////////////////////////////////////////////
+// RTL Simulation : 0 / 28 [0.00%] @ "125000"
+// RTL Simulation : 1 / 28 [100.00%] @ "1415000"
+// RTL Simulation : 2 / 28 [100.00%] @ "2445000"
+// RTL Simulation : 3 / 28 [100.00%] @ "4835000"
+// RTL Simulation : 4 / 28 [100.00%] @ "7195000"
+// RTL Simulation : 5 / 28 [100.00%] @ "9555000"
+// RTL Simulation : 6 / 28 [100.00%] @ "9955000"
+// RTL Simulation : 7 / 28 [100.00%] @ "11625000"
+// RTL Simulation : 8 / 28 [100.00%] @ "13265000"
+// RTL Simulation : 9 / 28 [100.00%] @ "14905000"
+// RTL Simulation : 10 / 28 [100.00%] @ "16575000"
+// RTL Simulation : 11 / 28 [100.00%] @ "18245000"
+// RTL Simulation : 12 / 28 [100.00%] @ "21195000"
+// RTL Simulation : 13 / 28 [100.00%] @ "24585000"
+// RTL Simulation : 14 / 28 [100.00%] @ "25215000"
+// RTL Simulation : 15 / 28 [100.00%] @ "26205000"
+// RTL Simulation : 16 / 28 [100.00%] @ "27165000"
+// RTL Simulation : 17 / 28 [100.00%] @ "28125000"
+// RTL Simulation : 18 / 28 [100.00%] @ "29265000"
+// RTL Simulation : 19 / 28 [100.00%] @ "30375000"
+// RTL Simulation : 20 / 28 [100.00%] @ "31485000"
+// RTL Simulation : 21 / 28 [100.00%] @ "32595000"
+// RTL Simulation : 22 / 28 [100.00%] @ "33705000"
+// RTL Simulation : 23 / 28 [100.00%] @ "34815000"
+// RTL Simulation : 24 / 28 [100.00%] @ "35925000"
+// RTL Simulation : 25 / 28 [100.00%] @ "37595000"
+// RTL Simulation : 26 / 28 [100.00%] @ "38485000"
+// RTL Simulation : 27 / 28 [100.00%] @ "39375000"
+// RTL Simulation : 28 / 28 [100.00%] @ "40045000"
+////////////////////////////////////////////////////////////////////////////////////
+$finish called at time : 40215 ns : File "D:\Xilinx\2026.1\Vivado/data/system_verilog/uvm_1.2/xlnx_uvm_package.sv" Line 18699
+## quit
+INFO: [Common 17-206] Exiting xsim at Fri Sep 11 00:06:16 2026...
+INFO: [COSIM 212-316] Starting C post checking ...
+==== tb_fir_filter: contract docs/interface.md (tolerance = 0) ====
+NOTE: 延迟线是 static（上电初始化、复位不清零）-> 每段序列的第一次调用必须 reset=1。
+---- [Layer 1] embedded boundary cases (N=63, shift=15) ----
+  Layer 1: 8 passed, 0 failed
+---- [Layer 2] cross-language golden reference ----
+  meta     : fs=30 Hz, N=63, shift=15, 15 segments, 985 samples
+  [跨段一致性] 分段(reset=1,0,0) == 一次调用 ✅ (128 样本)
+  Layer 2: 16 passed, 0 failed  (样本不一致 0, 流头错误 0)
+
+==== RESULT: PASS ====
+INFO [HLS SIM]: The maximum depth reached by any hls::stream() instance in the design is 300
+INFO: [COSIM 212-1000] *** C/RTL co-simulation finished: PASS ***
+INFO: [HLS 200-2161] Finished Command cosim_design Elapsed time: 00:00:49; Allocated memory: 12.707 MB.
+INFO: [HLS 200-112] Total CPU user time: 5 seconds. Total CPU system time: 3 seconds. Total elapsed time: 81.495 seconds; peak allocated memory: 258.238 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 1m 22s
+INFO: [vitis-run 60-1662] Stopping dispatch session having empty uuid.
