@@ -1,0 +1,30 @@
+{
+  "landmark_source": "stub",
+  "frame_source": "synthetic 640x480",
+  "pattern": "blink",
+  "frames_processed": 900,
+  "logical_fps": 30.0,
+  "logical_duration_s": 30.0,
+  "wall_elapsed_s": 0.72,
+  "throughput_fps": 1255.6,
+  "status_counts": {
+    "fatigue_risk": 235,
+    "unreliable": 166,
+    "normal": 499
+  },
+  "final": {
+    "blink_count": 9,
+    "blink_rate_per_min": 18.02,
+    "perclos": 0.1078,
+    "yawn_count": 1,
+    "long_close_count": 1,
+    "quality_overall": 0.8662,
+    "status": "fatigue_risk"
+  },
+  "outputs": {
+    "json": "D:\\Desktop\\AMD\\metrics\\logs\\last.json",
+    "jsonl": "D:\\Desktop\\AMD\\metrics\\logs\\stream.jsonl",
+    "csv": "D:\\Desktop\\AMD\\metrics\\csv\\metrics.csv"
+  },
+  "note": "landmark_source=stub 时，EAR/MAR 为占位几何量；vital.* 全为 null 是因为 rPPG 未实现且质量门控要求 ≥ 0.75"
+}

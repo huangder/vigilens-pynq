@@ -1,0 +1,11 @@
+in_width=640
+in_height=480
+out_width=384
+out_height=288
+frames=10
+rgb_bytes=921600
+gray_bytes=110592
+motion_thresh=16
+seed=20260910
+gray_formula=(77R+150G+29B+128)>>8
+decim=3/5 keep_x%5<3 keep_y%5<3

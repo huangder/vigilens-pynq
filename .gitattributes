@@ -1,0 +1,56 @@
+# =============================================================================
+#  .gitattributes —— 知倦 / VigiLens 换行符与二进制处理
+# =============================================================================
+# 为什么需要它：三个人三台 Windows 机器，编辑器默认换行符不一致
+# （VS Code 用 LF、记事本/部分 IDE 用 CRLF）。没有这份文件时，
+# 一次无关紧要的保存就会让某个文件**整篇 diff**，把真正的改动淹没掉，
+# 而且会让 git blame / 代码评审失去意义。
+#
+# 规则：仓库里统一存 LF；只有 Windows 批处理必须用 CRLF（否则 cmd 解析异常）。
+# =============================================================================
+
+* text=auto
+
+# ---- 源码 / 文档 / 配置：一律 LF ----
+*.py     text eol=lf
+*.js     text eol=lf
+*.html   text eol=lf
+*.css    text eol=lf
+*.json   text eol=lf
+*.jsonl  text eol=lf
+*.md     text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.toml   text eol=lf
+*.ini    text eol=lf
+*.cfg    text eol=lf
+*.tcl    text eol=lf
+*.cpp    text eol=lf
+*.c       text eol=lf
+*.h      text eol=lf
+*.hpp    text eol=lf
+*.csv    text eol=lf
+*.txt    text eol=lf
+
+# ---- Windows 批处理：必须 CRLF ----
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+
+# ---- 二进制：不要做任何换行符转换，也不要尝试 diff ----
+*.docx   binary
+*.pptx   binary
+*.xlsx   binary
+*.pdf    binary
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.mp4    binary
+*.avi    binary
+*.mov    binary
+*.bin    binary
+*.bit    binary
+*.xsa    binary
+*.hwh    binary
+
+# ---- 让 GitHub 语言统计认得这些文件 ----
+*.tcl    linguist-language=Tcl

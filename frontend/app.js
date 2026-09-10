@@ -1,0 +1,475 @@
+/* =============================================================================
+ * app.js —— B 线仪表盘逻辑（零依赖，原生 JS + canvas 手绘）
+ * =============================================================================
+ * 数据源三选一，切换只改一个变量（《02》M2 要的"换数据源开关"）：
+ *   ws      : WebSocket（backend/websocket.py 或 backend/api.py 的 /ws）
+ *   offline : 本页内置离线 mock（用 mock.js）—— **没有后端也能演示六态**
+ *   stopped : 停止
+ *
+ * 契约纪律：**每一帧都过 VigiLensMock.validateFrame()**，不合法就计入"契约：✗"
+ * 并写进日志，而不是把坏数据渲染出来。这样 M2 接 A 线真数据时，
+ * 界面上会立刻看出"字段对不上"，而不是等到答辩才发现某个卡片一直是空的。
+ * ========================================================================== */
+(function () {
+  "use strict";
+
+  var M = window.VigiLensMock;
+  var WS_TIMEOUT_MS = 3000;          // 与 config.yaml 的 ws_disconnect_timeout_s 对应
+  var MAX_POINTS = 120;              // 趋势曲线保留点数（1 Hz → 120 秒）
+  var MOCK_PERIOD_MS = 1000;         // 与契约 1 帧/秒一致
+
+  /* 六态配色：与 panel 顶部状态灯、日志 tag 共用一套 */
+  var STATUS_COLOR = {
+    normal: "#35d07f",
+    fatigue_risk: "#ffb020",
+    adjust_posture: "#4da3ff",
+    unreliable: "#8b7cff",
+    disconnected: "#ff5d5d",
+    done: "#5d6b85"
+  };
+
+  /* 指标卡定义（顺序即界面顺序） */
+  var CARD_DEFS = [
+    { key: "ear", label: "EAR 眼睛纵横比", unit: "", digits: 3, path: ["behavior", "ear_left"], get: function (f) { return f.behavior.ear_left; } },
+    { key: "perclos", label: "PERCLOS 闭眼比例", unit: "", digits: 3, get: function (f) { return f.behavior.perclos; }, warn: function (f) { return f.behavior.perclos > 0.25; } },
+    { key: "blinkRate", label: "眨眼率", unit: "/min", digits: 1, get: function (f) { return f.behavior.blink_rate_per_min; } },
+    { key: "blinkCount", label: "眨眼次数", unit: "", digits: 0, get: function (f) { return f.behavior.blink_count; } },
+    { key: "yawn", label: "打哈欠", unit: "次", digits: 0, get: function (f) { return f.behavior.yawn_count; } },
+    { key: "mar", label: "MAR 嘴部纵横比", unit: "", digits: 3, get: function (f) { return f.behavior.mar; } },
+    { key: "visible", label: "人脸可见率", unit: "", digits: 3, get: function (f) { return f.face.visible; }, warn: function (f) { return f.face.visible < 0.7; } },
+    { key: "yaw", label: "头部 yaw/pitch", unit: "°", digits: 1, get: function (f) { return f.face.pose.yaw; }, extra: function (f) { return " / " + f.face.pose.pitch.toFixed(1); } },
+    { key: "quality", label: "信号质量 overall", unit: "", digits: 2, get: function (f) { return f.quality.overall; }, warn: function (f) { return f.quality.overall < 0.6; } },
+    { key: "light", label: "光照分", unit: "", digits: 2, get: function (f) { return f.quality.light_score; } },
+    { key: "motion", label: "运动分（越低越好）", unit: "", digits: 2, get: function (f) { return f.quality.motion_score; }, warn: function (f) { return f.quality.motion_score > 0.35; } },
+    { key: "hr", label: "心率（门控）", unit: "bpm", digits: 1, get: function (f) { return f.vital.hr_bpm; } },
+    { key: "rr", label: "呼吸率（门控）", unit: "/min", digits: 1, get: function (f) { return f.vital.rr_per_min; } }
+  ];
+
+  var el = {};                       // DOM 引用
+  var state = {
+    mode: "stopped",                 // ws | offline | stopped
+    ws: null,
+    timer: null,
+    lastRxAt: 0,
+    frameId: 0,
+    points: [],
+    lastStatus: null,
+    valid: 0,
+    invalid: 0,
+    forcedStatus: "",
+    lastFrame: null
+  };
+
+  /* ---------------------------------------------------------------- 工具 */
+  function $(id) { return document.getElementById(id); }
+
+  function fmt(v, digits) {
+    if (v === null || v === undefined || (typeof v === "number" && !isFinite(v))) return null;
+    return typeof v === "number" ? v.toFixed(digits) : String(v);
+  }
+
+  function nowStr(ts) {
+    var d = ts ? new Date(ts * 1000) : new Date();
+    return d.toTimeString().slice(0, 8);
+  }
+
+  function fitCanvas(cv) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth || cv.width;
+    var h = parseInt(cv.getAttribute("data-css-h") || "0", 10) || (cv.id === "video" ? Math.round(w * 480 / 640) : 200);
+    cv.setAttribute("data-css-h", String(h));
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
+      cv.width = Math.round(w * dpr);
+      cv.height = Math.round(h * dpr);
+    }
+    var ctx = cv.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  /* ---------------------------------------------------------------- 日志 */
+  function log(tag, text, color) {
+    var row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = '<time>' + nowStr() + '</time><span class="tag" style="color:' +
+      (color || "#8d9bb5") + '">' + tag + '</span><span>' + text + "</span>";
+    el.log.insertBefore(row, el.log.firstChild);
+    while (el.log.childNodes.length > 200) el.log.removeChild(el.log.lastChild);
+  }
+
+  /* ------------------------------------------------------- 视频占位 + 检测框 */
+  function drawVideo(frame) {
+    var c = fitCanvas(el.video);
+    var ctx = c.ctx, w = c.w, h = c.h;
+    ctx.clearRect(0, 0, w, h);
+
+    // 占位底：暗格子 + 十字准星，明确表达"这里本来该是画面"
+    ctx.fillStyle = "#070a10";
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = "#131c2b";
+    ctx.lineWidth = 1;
+    for (var x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+    for (var y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+    ctx.strokeStyle = "#1b2740";
+    ctx.beginPath(); ctx.moveTo(w / 2, h / 2 - 12); ctx.lineTo(w / 2, h / 2 + 12);
+    ctx.moveTo(w / 2 - 12, h / 2); ctx.lineTo(w / 2 + 12, h / 2); ctx.stroke();
+
+    if (!frame || frame.status === "disconnected" || frame.face.bbox[2] === 0) {
+      ctx.fillStyle = "#5d6b85";
+      ctx.font = "13px 'Segoe UI', 'Microsoft YaHei', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("无视频源", w / 2, h / 2 + 36);
+      el.videoBadge.textContent = "无视频源（未接入摄像头/回放）";
+      el.videoBadge.className = "badge warn";
+      return;
+    }
+
+    // face.bbox 是 640×480 坐标系 → 按画布尺寸等比缩放
+    var sx = w / 640, sy = h / 480;
+    var b = frame.face.bbox;
+    var bx = b[0] * sx, by = b[1] * sy, bw = b[2] * sx, bh = b[3] * sy;
+    var color = STATUS_COLOR[frame.status] || "#4da3ff";
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bx, by, bw, bh);
+    // 四角强调，便于截图时一眼看到检测框
+    ctx.lineWidth = 3;
+    var L = Math.min(18, bw / 3, bh / 3);
+    [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]].forEach(function (p) {
+      ctx.beginPath();
+      ctx.moveTo(p[0] + p[2] * L, p[1]); ctx.lineTo(p[0], p[1]); ctx.lineTo(p[0], p[1] + p[3] * L);
+      ctx.stroke();
+    });
+    ctx.fillStyle = color;
+    ctx.font = "12px ui-monospace, Consolas, monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("face " + frame.face.visible.toFixed(2) + "  yaw " + frame.face.pose.yaw.toFixed(1) + "°",
+                 bx, Math.max(12, by - 6));
+    el.videoBadge.textContent = "占位画面 + face.bbox 叠加";
+    el.videoBadge.className = "badge";
+  }
+
+  /* ---------------------------------------------------------------- 状态区 */
+  function renderState(frame) {
+    var st = frame ? frame.status : "disconnected";
+    var color = STATUS_COLOR[st] || "#5d6b85";
+    el.stateLamp.style.background = color;
+    el.stateLamp.style.color = color;
+    el.stateName.textContent = M.STATUS_ZH[st] || st;
+    el.stateName.style.color = color;
+    el.stateEn.textContent = st;
+
+    el.advice.textContent = frame ? frame.advice : "等待数据…";
+    el.reason.textContent = frame ? frame.reason : "—";
+
+    el.triggers.innerHTML = "";
+    var list = (frame && frame._triggers) || [];
+    if (!list.length) {
+      var li = document.createElement("li");
+      li.textContent = frame ? "（后端未传 triggers：可解释链条由 A 线 decision.py 的 _triggers 提供）" : "—";
+      el.triggers.appendChild(li);
+    } else {
+      list.forEach(function (t) {
+        var li = document.createElement("li");
+        li.className = t.verdict || "";
+        var val = t.value === null || t.value === undefined ? "—" : (typeof t.value === "number" ? t.value.toFixed(3) : t.value);
+        var thr = t.threshold === null || t.threshold === undefined ? "—" : t.threshold;
+        li.textContent = "[" + (t.verdict || "-") + "] " + t.rule + " · " + t.metric + " = " + val + "（阈值 " + thr + "）";
+        el.triggers.appendChild(li);
+      });
+    }
+  }
+
+  /* ---------------------------------------------------------------- 指标卡 */
+  function buildCards() {
+    el.cards.innerHTML = "";
+    CARD_DEFS.forEach(function (d) {
+      var div = document.createElement("div");
+      div.className = "card";
+      div.id = "card_" + d.key;
+      div.innerHTML = '<div class="k">' + d.label + '</div><div class="v"><span class="num">—</span><span class="u">' +
+        (d.unit || "") + "</span></div>";
+      el.cards.appendChild(div);
+    });
+  }
+
+  function renderCards(frame) {
+    CARD_DEFS.forEach(function (d) {
+      var card = $("card_" + d.key);
+      if (!card) return;
+      var num = card.querySelector(".num");
+      var v = frame ? d.get(frame) : null;
+      var s = fmt(v, d.digits);
+      if (s === null) {
+        card.classList.add("null");
+        num.textContent = "暂无";
+      } else {
+        card.classList.remove("null");
+        num.textContent = s + (d.extra && frame ? d.extra(frame) : "");
+      }
+      var isWarn = frame && d.warn ? d.warn(frame) : false;
+      card.style.borderColor = isWarn ? "#4d3c14" : "#24304a";
+      num.style.color = isWarn ? "#ffb020" : "";
+    });
+  }
+
+  /* ---------------------------------------------------------------- 曲线 */
+  function renderChart() {
+    var c = fitCanvas(el.chart);
+    var ctx = c.ctx, w = c.w, h = c.h;
+    var padL = 34, padR = 8, padT = 10, padB = 18;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#0f1621";
+    ctx.fillRect(0, 0, w, h);
+
+    // 网格 + y 轴刻度（0 / 50 / 100，按各自量纲归一化到 0~1 后绘制）
+    ctx.strokeStyle = "#1d2740";
+    ctx.fillStyle = "#5d6b85";
+    ctx.font = "11px ui-monospace, Consolas, monospace";
+    ctx.lineWidth = 1;
+    for (var i = 0; i <= 4; i++) {
+      var y = padT + (h - padT - padB) * (i / 4);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+      ctx.textAlign = "right";
+      ctx.fillText(String(100 - i * 25) + "%", padL - 6, y + 3);
+    }
+
+    var pts = state.points;
+    if (pts.length < 2) {
+      ctx.fillStyle = "#5d6b85";
+      ctx.textAlign = "center";
+      ctx.font = "12px 'Segoe UI', 'Microsoft YaHei', sans-serif";
+      ctx.fillText("等待数据…", w / 2, h / 2);
+      return;
+    }
+
+    function series(getter, scale, max) {
+      ctx.beginPath();
+      var started = false;
+      for (var i = 0; i < pts.length; i++) {
+        var v = getter(pts[i]);
+        if (v === null || v === undefined || !isFinite(v)) { started = false; continue; }
+        var x = padL + (w - padL - padR) * (pts.length === 1 ? 0 : i / (MAX_POINTS - 1));
+        var nv = Math.max(0, Math.min(1, max ? v / scale : v));
+        var y = padT + (h - padT - padB) * (1 - nv);
+        if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+      }
+      ctx.stroke();
+    }
+
+    var defs = [
+      { color: "#4da3ff", get: function (p) { return p.behavior.blink_rate_per_min; }, scale: 40 },
+      { color: "#ffb020", get: function (p) { return p.behavior.perclos; }, scale: 1 },
+      { color: "#35d07f", get: function (p) { return p.vital.hr_bpm; }, scale: 140 },
+      { color: "#8b7cff", get: function (p) { return p.quality.overall; }, scale: 1 }
+    ];
+    defs.forEach(function (d) {
+      ctx.strokeStyle = d.color;
+      ctx.lineWidth = 1.8;
+      ctx.lineJoin = "round";
+      series(d.get, d.scale, true);
+    });
+
+    // 时间轴两端标注
+    ctx.fillStyle = "#5d6b85";
+    ctx.font = "11px ui-monospace, Consolas, monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(nowStr(pts[0].ts) || "", padL, h - 5);
+    ctx.textAlign = "right";
+    ctx.fillText(nowStr(pts[pts.length - 1].ts) || "", w - padR, h - 5);
+  }
+
+  /* ------------------------------------------------------- 收帧 / 校验 / 渲染 */
+  function onFrame(frame, source) {
+    if (frame && frame._synthetic_disconnect) frame = synthesizeDisconnected();
+
+    var errs = M.validateFrame(frame);
+    if (errs.length) {
+      state.invalid++;
+      el.validName.textContent = "✗ " + state.invalid;
+      el.validPill.style.color = "#ff5d5d";
+      el.validPill.style.borderColor = "#4d2020";
+      log("契约✗", "frame_id=" + frame.frame_id + " 不合契约：" + errs[0] + "（共 " + errs.length + " 项）", "#ff5d5d");
+      return;
+    }
+    state.valid++;
+    el.validName.textContent = "✓ " + state.valid;
+    el.validPill.style.color = "#35d07f";
+    el.validPill.style.borderColor = "#1d4d35";
+
+    state.lastFrame = frame;
+    state.frameId = frame.frame_id;
+
+    if (frame.status !== state.lastStatus) {
+      var from = state.lastStatus === null ? "（首帧）" : (M.STATUS_ZH[state.lastStatus] || state.lastStatus);
+      log("状态迁移", from + " → <b style='color:" + (STATUS_COLOR[frame.status] || "#8d9bb5") + "'>" +
+          (M.STATUS_ZH[frame.status] || frame.status) + "</b> · " + frame.reason,
+          STATUS_COLOR[frame.status] || "#8d9bb5");
+      state.lastStatus = frame.status;
+    }
+
+    state.points.push(frame);
+    while (state.points.length > MAX_POINTS) state.points.shift();
+
+    el.srcName.textContent = source;
+    el.srcPill.className = "pill " + (source === "WebSocket" ? "live" : "mock");
+    el.modeName.textContent = "软件模式";
+    el.videoBadge.textContent = frame.status === "disconnected" ? "无视频源" : "占位画面 + face.bbox 叠加";
+
+    renderState(frame);
+    renderCards(frame);
+    drawVideo(frame);
+    renderChart();
+  }
+
+  function synthesizeDisconnected() {
+    return M.mockFrame(-1, { status: "disconnected" });
+  }
+
+  /* ---------------------------------------------------------------- WS 客户端 */
+  function setConn(kind, text) {
+    el.connPill.className = "pill " + kind;
+    el.connName.textContent = text;
+  }
+
+  function stopAll(silent) {
+    if (state.ws) {
+      try { state.ws.onclose = null; state.ws.close(); } catch (e) { /* ignore */ }
+      state.ws = null;
+    }
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    state.mode = "stopped";
+    if (!silent) log("系统", "已停止数据源", "#5d6b85");
+  }
+
+  function connectWs() {
+    stopAll(true);
+    var url = el.wsUrl.value.trim();
+    if (!url) { log("错误", "请填写 WebSocket 地址", "#ff5d5d"); return; }
+
+    state.mode = "ws";
+    setConn("", "连接中…");
+    log("系统", "连接 " + url, "#4da3ff");
+
+    var ws;
+    try {
+      ws = new WebSocket(url);
+    } catch (e) {
+      log("错误", "地址不合法：" + e.message + "（形如 ws://127.0.0.1:8765）", "#ff5d5d");
+      setConn("down", "地址错误");
+      return;
+    }
+    state.ws = ws;
+
+    state.lastRxAt = Date.now();
+    ws.onopen = function () {
+      setConn("live", "已连接");
+      log("系统", "WebSocket 已连接", "#35d07f");
+    };
+    ws.onmessage = function (ev) {
+      state.lastRxAt = Date.now();
+      var frame;
+      try { frame = JSON.parse(ev.data); }
+      catch (e) { log("错误", "收到非 JSON 消息，已丢弃：" + String(ev.data).slice(0, 60), "#ff5d5d"); return; }
+      // api.py 的 /api/status 包了一层 frame；/ws 直接推裸帧，这里两种都吃
+      onFrame(frame.frame && frame.frame.status ? frame.frame : frame, "WebSocket");
+    };
+    ws.onerror = function () {
+      log("错误", "WebSocket 出错（服务是否已启动？地址与端口是否正确？）", "#ff5d5d");
+    };
+    ws.onclose = function () {
+      if (state.mode !== "ws") return;
+      setConn("down", "连接中断");
+      log("系统", "WebSocket 已断开", "#ff5d5d");
+      onFrame(synthesizeDisconnected(), "连接中断");
+    };
+
+    // 超时兜底：超过 WS_TIMEOUT_MS 没收到帧 → 界面上明确显示"信号不可靠/连接中断"
+    state.timer = setInterval(function () {
+      if (state.mode !== "ws") return;
+      if (Date.now() - state.lastRxAt > WS_TIMEOUT_MS) {
+        setConn("down", "无数据");
+        if (!state.lastFrame || state.lastFrame.status !== "disconnected") {
+          log("系统", "超过 " + (WS_TIMEOUT_MS / 1000) + "s 未收到帧 → 显示连接中断", "#ffb020");
+          onFrame(synthesizeDisconnected(), "连接中断");
+        }
+      }
+    }, 500);
+  }
+
+  /* ------------------------------------------------------- 离线 mock（无后端） */
+  function startOffline() {
+    stopAll(true);
+    state.mode = "offline";
+    state.lastRxAt = Date.now();
+    setConn("mock", "离线模式");
+    log("系统", "离线 Mock 演示：不依赖后端、不依赖摄像头（契约与后端 mock 同一套语义）", "#ffb020");
+
+    function tick() {
+      var statuses = M.DEMO_SEQUENCE;
+      var st = state.forcedStatus || statuses[state.frameId % statuses.length];
+      onFrame(M.mockFrame(state.frameId, { status: st }), "离线 Mock");
+      state.frameId++;
+    }
+    tick();
+    state.timer = setInterval(tick, MOCK_PERIOD_MS);
+  }
+
+  /* ---------------------------------------------------------------- 契约自检 */
+  function runSelftest() {
+    var res = M.selfTest(20260910);
+    if (res.ok) {
+      log("契约自检", "通过：检查 " + res.checked + " 项（六态各一帧 + 5 个坏帧必须被抓）", "#35d07f");
+      alert("契约自检通过 ✓\n\n检查 " + res.checked + " 项：\n· 六种状态的 mock 帧全部合法\n· 5 个故意构造的坏帧全部被校验器抓住\n\n（跨语言检查请跑：node frontend/mock.js --limit 6 | python metrics/scripts/check_frontend_contract.py -）");
+    } else {
+      log("契约自检", "失败：" + res.failures.join("；"), "#ff5d5d");
+      alert("契约自检失败 ✗\n\n" + res.failures.join("\n"));
+    }
+  }
+
+  /* ---------------------------------------------------------------- 初始化 */
+  function init() {
+    el = {
+      video: $("video"), videoBadge: $("videoBadge"), chart: $("chart"),
+      stateLamp: $("stateLamp"), stateName: $("stateName"), stateEn: $("stateEn"),
+      advice: $("advice"), reason: $("reason"), triggers: $("triggers"),
+      cards: $("cards"), log: $("log"),
+      wsUrl: $("wsUrl"), connPill: $("connPill"), connName: $("connName"),
+      srcPill: $("srcPill"), srcName: $("srcName"), modeName: $("modeName"),
+      validPill: $("validPill"), validName: $("validName"), forceStatus: $("forceStatus")
+    };
+
+    buildCards();
+    M.STATUS_VALUES.forEach(function (s) {
+      var o = document.createElement("option");
+      o.value = s;
+      o.textContent = M.STATUS_ZH[s] + "（" + s + "）";
+      el.forceStatus.appendChild(o);
+    });
+
+    $("btnConnect").onclick = connectWs;
+    $("btnOffline").onclick = startOffline;
+    $("btnStop").onclick = function () { stopAll(false); setConn("down", "未连接"); };
+    $("btnSelftest").onclick = runSelftest;
+    $("btnClear").onclick = function () { el.log.innerHTML = ""; };
+    el.forceStatus.onchange = function () {
+      state.forcedStatus = el.forceStatus.value;
+      log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8b7cff");
+    };
+
+    window.addEventListener("resize", function () { drawVideo(state.lastFrame); renderChart(); });
+
+    renderState(null);
+    renderCards(null);
+    drawVideo(null);
+    renderChart();
+    log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");
+
+    // 未接后端时自动进入离线演示，保证"双击文件就能看到东西"
+    startOffline();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();

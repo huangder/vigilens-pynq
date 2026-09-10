@@ -1,0 +1,42 @@
+# =============================================================================
+#  requirements.txt —— 知倦 / VigiLens  ·  A 线（算法/后端）+ B 线（服务）依赖
+# =============================================================================
+# 用法：
+#   python -m venv .venv
+#   .venv\Scripts\activate
+#   pip install -r requirements.txt
+#
+# ⚠️ 版本策略（《04》第 6 节 DoD 要求"锁版本"）：
+#    下面用兼容范围便于首次安装成功；**首次装成功后立刻冻结真实版本**：
+#        pip freeze > requirements.lock.txt
+#    并把 requirements.lock.txt 一并提交。报告/答辩里引用的是 lock 文件。
+#
+# ⚠️ Python 3.14 轮子风险（务必先读）：
+#    本机系统 Python 为 3.14.7。部分二进制包（尤其 mediapipe）对 3.14 的
+#    官方 wheel 可能尚未发布，届时 pip 会尝试源码编译并失败。
+#    若 `pip install` 在 mediapipe / opencv-python 上失败，**不要**去折腾编译，
+#    直接改用 3.11 或 3.12 建 venv：
+#        py -3.12 -m venv .venv
+#    这属于环境问题，不影响任何代码。C 线的 gen_frames.py 只用标准库，不受影响。
+# =============================================================================
+
+# ---- A 线：视觉与算法 -------------------------------------------------------
+numpy>=1.26,<3                       # BSD-3-Clause；指标计算与黄金参考
+opencv-python>=4.8,<5                # Apache-2.0；视频读取 / 帧差 / 色彩转换
+mediapipe>=0.10                      # Apache-2.0；人脸与关键点检测（478 点）
+                                     #   ⚠️ 3.14 wheel 可能缺失，见上方说明
+PyYAML>=6.0                          # MIT；读取 config.yaml（缺失时 backend/config.py 有降级解析）
+
+# ---- B 线：服务与推送 -------------------------------------------------------
+fastapi>=0.110                       # MIT；REST: /api/status /api/metrics /api/events
+uvicorn[standard]>=0.27              # BSD-3-Clause；ASGI 服务器
+websockets>=12.0                     # BSD-3-Clause；WebSocket 1 Hz 推送
+
+# ---- 三方共享：测试脚手架 ---------------------------------------------------
+pytest>=8.0                          # MIT；契约一致性测试 backend/tests
+pytest-asyncio>=0.23                 # Apache-2.0；异步接口测试
+
+# ---- C 线说明 ---------------------------------------------------------------
+# C 线（Vitis HLS）**不需要**任何 pip 依赖：
+#   fpga/sim/gen_frames.py 只用 Python 标准库（有 numpy 时自动开启跨语言对拍）。
+#   HLS 仿真与综合走 vitis-run，见 fpga/README.md。

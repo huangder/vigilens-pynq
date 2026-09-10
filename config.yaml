@@ -1,0 +1,67 @@
+# =============================================================================
+#  config.yaml —— 知倦 / VigiLens 阈值与参数（唯一来源）
+# =============================================================================
+# 纪律（《04》第 6 节 DoD / docs/interface.md 第 2 节）：
+#   所有阈值必须集中在本文件，**不得散落在代码里**。
+#   代码读取入口：backend/config.py → load_config()
+#   新增阈值 = 改本文件 + 在下面注明依据与出处，不要在 .py 里写魔法数字。
+# =============================================================================
+
+# ---- 时间窗口 ---------------------------------------------------------------
+window_seconds: 30                  # PERCLOS / 眨眼率 / 质量评分的滑动窗口长度（s）
+fps_nominal: 30                     # 标称帧率，仅用于时间序列换算；IP 本身不感知帧率
+                                    #   契约依据：docs/interface.md 第 0 节（640x480 RGB888@30fps）
+
+# ---- A 线：眼部指标 ---------------------------------------------------------
+ear_close_threshold: 0.21           # EAR 闭眼判定阈值
+                                    #   ⚠️ 占位值，必须用 MediaPipe 实测重标定（《04》7.1 原注）
+min_close_frames: 3                 # 连续 N 帧低于阈值才记为"闭眼"，抗单帧抖动
+long_close_ms: 500                  # 单次闭眼 ≥ 此毫秒数记"长闭眼"而非"眨眼"
+                                    #   （正常眨眼 100~400 ms；长闭眼是疲劳的强信号）
+perclos_warning: 0.25               # 窗口内闭眼比例告警线（PERCLOS）
+
+# ---- A 线：嘴部指标 ---------------------------------------------------------
+mar_threshold: 0.6                  # MAR 张口判定阈值
+yawn_min_duration_ms: 800           # 张口持续时长去抖，用于区分"打哈欠"与"说话/正常张口"
+
+# ---- A 线：人脸与姿态 -------------------------------------------------------
+face_visible_min: 0.7               # 人脸可见率下限，低于此值 → adjust_posture
+pose_yaw_max_deg: 30.0              # 头部偏航越界（占位值，待 A 线实测标定）
+pose_pitch_max_deg: 25.0            # 头部俯仰越界（占位值，待 A 线实测标定）
+
+# ---- A 线：信号质量门控 -----------------------------------------------------
+quality_min_score: 0.60             # 质量总分下限，低于此值 → unreliable（不输出数值）
+light_score_min: 0.5                # 光照分量下限（占位值，待 A 线实测标定）
+motion_score_max: 0.35              # 运动分量上限（占位值，待 A 线实测标定）
+light_target: 0.5                   # 理想平均亮度（0~1）；偏离越远光照分越低
+motion_thresh_gray: 25              # 帧差判定"运动像素"的灰度阈值
+                                    #   ⚠️ 必须与 HLS `motion_quality` 的 motion_thresh 寄存器一致
+motion_score_gain: 4.0              # 运动比例 → 运动分的放大系数（占位标定）
+quality_weights:                    # overall = 加权平均（三项权重和不必为 1，代码会归一化）
+  light: 0.5
+  motion: 0.3
+  face: 0.2
+
+# ---- A 线：疲劳判据 ---------------------------------------------------------
+fatigue_yawn_count: 2               # 窗口内打哈欠次数 ≥ 此值 → fatigue_risk
+fatigue_long_close_count: 1         # 窗口内长闭眼次数 ≥ 此值 → fatigue_risk
+fatigue_blink_rate_low: 10.0        # 眨眼率低于此值（且 >0）→ fatigue_risk
+
+# ---- A 线 ↔ C 线：rPPG 带通（与 docs/interface.md 3.4 一致）-----------------
+hr_band_hz: [0.7, 3.5]              # 心率带通
+rr_band_hz: [0.1, 0.5]             # 呼吸带通
+vital_require_quality: 0.75         # 只有在质量高于此值时**才允许**输出心率/呼吸趋势
+                                    #   否则 vital.* 输出 null（前端必须优雅渲染"暂无"）
+
+# ---- B 线：推送与连接 -------------------------------------------------------
+ws_push_hz: 1.0                     # WebSocket 推送节奏（契约：1 帧/秒）
+ws_disconnect_timeout_s: 3.0        # 超过此时长无数据 → 前端显示 disconnected
+
+# ---- C 线：FPGA 口径（改这里等于改契约，必须同步 docs/interface.md）--------
+fpga:
+  device: xc7z020clg400-1           # PYNQ-Z2
+  clock_ns: 10                      # 100 MHz
+  img_width: 640
+  img_height: 480
+  pixel_format: RGB888              # ⚠️ 通道顺序 R-G-B；OpenCV 默认 BGR，比对前须转换
+  roi_is_half_open: true            # ROI 为半开区间 [x0,x1)，等价 img[y0:y1, x0:x1]

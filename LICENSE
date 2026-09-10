@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Huang Yinfeng
+Copyright (c) 2026 VigiLens Team (知倦项目组)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## 附加声明（Addendum，非 MIT 条款的一部分）
+
+本作品是实验室条件下的**工程原型与健康趋势监测设备**，输出内容为
+疲劳风险提示与状态趋势，**不用于医疗诊断**，不提供血氧、血压等
+RGB 摄像头原理上不可靠的指标。任何使用本软件所得数据的决定，
+由使用者自行承担。

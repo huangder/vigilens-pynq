@@ -1,0 +1,81 @@
+# =============================================================================
+#  .gitignore —— 知倦 / VigiLens
+#  原则：只提交"源码 + 契约 + 黄金参考 + 报告"，不提交生成物与构建产物。
+# =============================================================================
+
+# ---- 生成的测试向量（可由 seed 确定性重建：python fpga/sim/gen_frames.py）----
+# 注意：fpga/sim/data/golden_roi.csv 是黄金参考，必须入库（不要忽略）。
+fpga/sim/data/frames.bin
+
+# ---- cosim 专用小尺寸向量（一键重建，见 fpga/README.md「跑 cosim」）----
+fpga/sim/data_small/
+
+# ---- C 线：rgb2gray / motion_quality 的生成向量 -----------------------------
+# 一键重建：python fpga/sim/gen_motion_vectors.py
+# 注意：fpga/sim/data_motion/{meta.txt, golden_motion.csv} 是黄金参考，必须入库（不要忽略）。
+fpga/sim/data_motion/rgb_frames.bin
+fpga/sim/data_motion/gray.bin
+
+# ---- Vitis HLS 构建产物 ----------------------------------------------------
+fpga/component_*/
+fpga/logs/
+*.aps
+*.protoinst
+
+# ---- 官方例程参考克隆（用 README 里的命令重新拉取，不作为本仓内容）----------
+fpga/examples/Vitis-HLS-Introductory-Examples/
+
+# ---- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+# pytest 在受限沙箱/受限 ACL 下会遗留"建得出来但列不出、删不掉"的目录
+# （WinError 5）。它们没有任何内容价值，忽略掉以免 git 去遍历。
+pytest-cache-files-*/
+
+# ---- A 线：4 段标准测试视频（体积大，默认不入库）----------------------------
+# 想连视频一起入库，把下面 4 行注释掉即可（前提：单个文件 < 50 MB）。
+# > 100 MB 的文件 GitHub 会直接拒绝推送；那种情况请用 Releases 附件或 Git LFS，
+# 不要改这里的规则硬塞。放好视频后跑：python backend/run_pipeline.py --source data/raw/xxx.mp4
+data/raw/*.mp4
+data/raw/*.avi
+data/raw/*.mov
+data/raw/*.mkv
+
+# ---- A 线：大体积黄金帧序列（可由脚本确定性重建）----------------------------
+data/raw/*.bin
+
+# ---- 运行时产物（代码生成，不入库；目录靠 .gitkeep 保留）--------------------
+metrics/csv/*.csv
+metrics/logs/*.json
+metrics/logs/*.jsonl
+metrics/logs/*.log
+metrics/evidence/*.tmp
+
+# 自检/临时脚本产物（下划线开头 = 本机临时，不是证据，不入库）
+metrics/logs/_*
+metrics/evidence/_pytest_tmp/
+metrics/evidence/_*
+# ⚠️ 注意：metrics/evidence/ 下**正式证据**（如 a_line_m1_run.json、js_frames.jsonl、
+#    页面截图 B8）是要入库的，不要在上面加更宽的通配把它一起忽略掉。
+
+# ---- 编辑器 / 自动生成 ------------------------------------------------------
+*.log.bak
+
+# ---- 大模型协作记录里的临时导出（正式记录 report/llm_log/*.md 要入库）-------
+report/**/~$*
+~$*.docx
+~$*.pptx
+~$*.xlsx
+
+# ---- 本机工具 --------------------------------------------------------------
+.tools/downloads/
+# 提交信息之类的临时文件（下划线开头 = 本机临时，不入库）
+.tools/_*
+
+# ---- 编辑器 / 系统 ---------------------------------------------------------
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
