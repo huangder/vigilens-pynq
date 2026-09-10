@@ -14,13 +14,25 @@
 
 ## 到 M3 时要交付的东西（先列清楚，避免临时抓瞎）
 
+> 📋 **动手前先读 `fpga/report/m3_system_budget_v1.md`（P0-3）**：那里有四个 IP 的实测占用、
+> 四种接入方案的取舍（**推荐"像素链 DMA + 时间序列走 AXI4-Stream FIFO"**）、
+> **9 条上板验收门限**，以及时序/资源吃紧时的降级路径。
+> 本目录的清单是"交付物视角"，那份文档是"预算与判据视角"，两份配套看。
+
 - [ ] **C8** Block Design：`roi_statistic` / `motion_quality` / `fir_filter` 接入 AXI DMA，
       寄存器读写自检通过（偏移量以 `docs/interface.md` 3.2 为准，
       **注意每个输出还多一个 `*_ctrl`(ap_vld) 寄存器**，漏了会误判"值没更新"）
+- [ ] **C8** **复位语义自检**（P0-2）：显式 PL 复位后 `frame_id` / `seg_id` **从 1 开始**
+      （四个 IP 已加 `#pragma HLS RESET`，见 `fpga/report/counters_reset_v1.md`）——
+      PS 侧因此可以放心用"id 从 1 开始"做同步，但**前提是先复位一次**
 - [ ] **C8** Overlay 加载器（PYNQ `Overlay()` + `register_map` 读写示例）
 - [ ] **C9** DMA 回环测试：短数组进出，验证**缓存一致性**（无随机错误）
+- [ ] **C9** **真实 DMA 节奏下的长跑**：连续 ≥300 帧不 stall ——
+      cosim 只证明了"事务级不死锁"，**这一条只能在板上验**（门限 6）
 - [ ] **C10** 软硬件一致性：同一输入下 PL 结果 vs A 线软件结果的比对报告
-      （`roi_statistic` 容差 **0**，`motion_quality` 容差 **0**，`fir_filter` ±1 LSB 待确认）
+      （`roi_statistic` 容差 **0**，`motion_quality` 容差 **0**，`fir_filter` **容差 0**）
+- [ ] **C10** 软硬件对比表：按 `fpga/report/m4_baseline_v1.md` 第 5 节的模板填，
+      软件侧基线用 `metrics/scripts/bench_filter_ps.py`（**同一脚本拷到板上跑**）
 - [ ] C 线在 M3 前必须先跑一次 `hls_exec = 2` 的 **RTL 协同仿真**：
       csim 查不出 `hls::stream` 深度不足导致的死锁，只有 cosim 才暴露
       （见 `fpga/README.md` 风险表第 1 条与本目录上方说明）

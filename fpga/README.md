@@ -13,6 +13,10 @@
 | `sim/gen_frames.py` | 测试向量 + Python 黄金参考生成器（**只用标准库**，有 numpy 时自动对拍） | 同 seed 必得同产物 |
 | `sim/design_fir_coeffs.py` | **fir_filter 系数设计器**（纯标准库：响应评估 / −3dB 搜索 / d 扫描 / 呼吸带可行性） | 同一条命令必得同一张系数表 |
 | `sim/host_model_fir.cpp` | **主机端算术模型**（秒级自检，本机 g++ 可运行；**不是** HLS 证据） | 与黄金参考逐样本相等 + 折叠逐位相同 |
+| `sim/q15_ref.py` | **Q1.15 量化参考实现**（契约 4.6 节，P0-1）：ROI 均值 → Q1.15，含 5 条性质自检与 CSV 批量转换 | `--selftest` 必须 PASS |
+| `report/m3_system_budget_v1.md` | **M3 系统级预算**（P0-3）：四 IP 实测占用、四种接入方案、9 条上板验收门限、降级路径 | 上板前**待实测**项不得当既成事实引用 |
+| `report/m4_baseline_v1.md` | **M4 软硬件对比基线**（P0-4）：PS 侧实测基线 + PL 延迟口径 + 待填对比表 | 与 `metrics/scripts/bench_filter_ps.py` 配套 |
+| `report/counters_reset_v1.md` | **计数器复位改造**（P0-2）：四个 IP 加 `HLS RESET`，含 RTL 复位证据与 +2 LUT 代价 | 关闭风险表第 8 条 |
 | `sim/data/golden_roi.csv` | **黄金参考（入库）** | 后续改动不得破坏 |
 | `sim/data/frames.bin` | 生成的测试向量（**.gitignore，不入库**） | 由 seed 重建 |
 | `report/` | 综合报告（LUT/FF/BRAM/DSP/时钟/WNS）+ `environment.md` | 无 ERROR、时序收敛 |
@@ -81,11 +85,11 @@ LUT **1267** / FF **723** / BRAM **0** / DSP **1**（LUT 占 2%）、无 ERROR�
 
 | IP | 工作尺寸 | csim | II | Fmax | LUT | FF | BRAM18 | DSP |
 |---|---|---|---|---|---|---|---|---|
-| `roi_statistic` | 640×480 RGB | 28/28 + 45/45 | 1 | 138.99 MHz | 1267 | 723 | 0 | 1 |
-| `rgb2gray` **v2** | 640×480 → 384×288 | 8/8 + 10/10 | 1 | 137.46 MHz | 1410 | 918 | 0 | 5 |
+| `roi_statistic` | 640×480 RGB | 28/28 + 45/45 | 1 | 138.99 MHz | 1269 | 723 | 0 | 1 |
+| `rgb2gray` **v2** | 640×480 → 384×288 | 8/8 + 10/10 | 1 | 137.46 MHz | 1412 | 918 | 0 | 5 |
 | `motion_quality` **v2** | 384×288 灰度 | 6/6 + 9/9 | 1 | 140.05 MHz | 1501 | 1158 | **64** | 1 |
 | `fir_filter` **v1** | 时间序列（63 阶 Q15） | **8/8 + 16/16** | 1 | **146.97 MHz** | **4077** | **6172** | **0** | **25** |
-| **合计** | | | | | **8255**（15.5%） | **8971**（8.4%） | **64（23%）** | **32**（14.5%） |
+| **合计** | | | | | **8259**（15.5%） | **8971**（8.4%） | **64（23%）** | **32**（14.5%） |
 
 > ⚠️ `fir_filter` 的 DSP 是四个里最高的（25），这是**全并行 + II=1** 的代价；
 > 时间序列只需 30 Hz，若 M3 发现 DSP 紧张，可把 MAC 折叠（`PIPELINE II=4`）换 DSP。
@@ -240,7 +244,7 @@ host_model_fir.exe fpga/sim/data_fir     # 逐样本对黄金参考 + 折叠 vs 
 | 5 | `#pragma HLS PIPELINE II=1` 可达 | ✅ **已验证**：`Target II = 1, Final II = 1, Depth = 2`，`All loop constraints were satisfied` |
 | 6 | vitis-run 可直接调用 | ❌ **不成立**：Vitis 未写入用户 PATH，须先 `call D:\Xilinx\2026.1\Vitis\settings64.bat`（见 `report/environment.md` 1.1 节） |
 | 7 | 受限沙箱能跑 csim | ❌ **不成立**：csim 需要 cygwin signal pipe（命名管道），受限沙箱禁止 → `Win32 error 5`。需完整权限终端或提权 |
-| 8 | `static ap_uint<32> fid` 的复位行为 | ⚠️ **待定**：综合警告 `Register 'fid' is power-on initialization` —— 是**上电**初始化而非复位归零。M3 上板时按需决定是否改为复位归零 |
+| 8 | `static ap_uint<32> fid` 的复位行为 | ✅ **已闭环（2026-09-11，P0-2）**：确认默认行为是"**上电初始化**而非复位归零"，会让 PS 在复位后按"frame_id 从 1 开始"同步时失配。**四个 IP 已各加一行 `#pragma HLS RESET variable=<计数器>`**，计数器随 `ap_rst_n` 清零；四个 IP csim 回归全过、代价 **+2 LUT**、Fmax 不变。证据 `report/counters_reset_v1.md`。⚠️ **判据陷阱**：加复位后 `Register 'fid' is power-on initialization` 警告**不会消失**（上电值仍在）—— 要判断是否真加了复位，**必须看生成的 RTL 里计数器是否处于 `ap_rst_n_inv` 分支**（坑 #31） |
 | 9 | `#pragma HLS BIND_STORAGE` 写在数组声明**之前**能被识别 | ❌ **不成立**：csynth 报 `[HLS 207-4637] use of undeclared identifier 'prev_buf'`。**pragma 必须写在变量声明之后**。⚠️ **csim 不检查这条 pragma，所以 csim 全绿 ≠ 综合能过** —— 这是本次最值得记住的教训 |
 | 10 | 640×480 的片内"上一帧"缓存能装进 xc7z020 | ❌ **不成立**（但已解决）：实测 **256/280 = 91% BRAM**。**根因已用对照实验坐实**：片内数组按 **2 的幂地址空间**分配（`depth=307200` → 2¹⁹=524288 → 256 个），不是按真实深度（那样只需 150）。三组对照（320×240→**64**、512×512→**128**、640×480→**256**）全部吻合。✅ **已按该规律解决**：`rgb2gray` 加 3/5 缩放，把工作尺寸压到 384×288，BRAM 降到 **64（23%）** |
 | 12 | 3/5 点采样缩放的混叠会不会让运动量偏噪 | ⚠️ **待观察**：点采样保留原始灰度值、不降噪，运动检测可能偏"敏感"。接真实视频后才能判断；若偏噪可改块均值或退回 320×240 的 2×2 均值（黄金参考需同步改） |
@@ -263,6 +267,10 @@ host_model_fir.exe fpga/sim/data_fir     # 逐样本对黄金参考 + 折叠 vs 
 - [x] **BRAM 问题闭环**：根因坐实 + 方案 A′（384×288）已实现验证，留出 216 个 BRAM18
 - [x] **cosim**：**四个 IP** 全部 RTL 协同仿真 PASS（Layer1 28/8/6/8 + Layer2 **45/10/9/16**），**无一死锁**
 - [x] **C5 `fir_filter` 补跑 cosim**（小向量 985 样本，RTL 侧两层同样全过）
+- [x] **P0-1** 契约补「ROI 均值 → Q1.15 量化口径」（契约 4.6 节）+ 参考实现 `sim/q15_ref.py`（自检 PASS）
+- [x] **P0-2** 四个 IP 计数器改为随块复位清零（`#pragma HLS RESET`，+2 LUT）—— 风险表第 8 条关闭
+- [x] **P0-3** `report/m3_system_budget_v1.md`：系统级资源/时序预算 + 四种接入方案 + 9 条 M3 验收门限
+- [x] **P0-4** `report/m4_baseline_v1.md` + `metrics/scripts/bench_filter_ps.py`：PS 侧基线（实测）与 PL 延迟口径
 - [ ] C8~C10 上板/Overlay/DMA（M3 后，属 `board/`）
 
 ## M0 欠账（《04》第 6 节 DoD 硬指标）
