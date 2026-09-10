@@ -8,9 +8,11 @@
 
 | 目录 / 文件 | 内容 | 验收 |
 |---|---|---|
-| `src/` | HLS 源码（`roi_statistic` / `motion_quality` / `fir_filter`） | C 仿真与 Python 参考逐点一致 |
+| `src/` | HLS 源码（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter`）+ `fir_coeffs_q15.h`（自动生成的冻结系数） | C 仿真与 Python 参考逐点一致（容差 0） |
 | `sim/tb_*.cpp` | C 测试台（内嵌边界用例 + 跨语言黄金比对） | 两层全 PASS |
 | `sim/gen_frames.py` | 测试向量 + Python 黄金参考生成器（**只用标准库**，有 numpy 时自动对拍） | 同 seed 必得同产物 |
+| `sim/design_fir_coeffs.py` | **fir_filter 系数设计器**（纯标准库：响应评估 / −3dB 搜索 / d 扫描 / 呼吸带可行性） | 同一条命令必得同一张系数表 |
+| `sim/host_model_fir.cpp` | **主机端算术模型**（秒级自检，本机 g++ 可运行；**不是** HLS 证据） | 与黄金参考逐样本相等 + 折叠逐位相同 |
 | `sim/data/golden_roi.csv` | **黄金参考（入库）** | 后续改动不得破坏 |
 | `sim/data/frames.bin` | 生成的测试向量（**.gitignore，不入库**） | 由 seed 重建 |
 | `report/` | 综合报告（LUT/FF/BRAM/DSP/时钟/WNS）+ `environment.md` | 无 ERROR、时序收敛 |
@@ -66,26 +68,36 @@ LUT **1267** / FF **723** / BRAM **0** / DSP **1**（LUT 占 2%）、无 ERROR�
 | 任务 | 状态 | 说明 |
 |---|---|---|
 | **C1** 锁工具链 + 官方最小例程 | ✅ 完成 | 见 `report/environment.md` |
-| **C2** 冻结 IP 接口 | ✅ v0.92（**待 A/B 会签**） | `docs/interface.md`；三个 IP 的寄存器映射均已与实综合**逐行核对** |
+| **C2** 冻结 IP 接口 | ✅ **v0.94**（**待 A/B 会签**） | `docs/interface.md`；四个 IP 的寄存器映射均已与实综合**逐行核对** |
 | **C3** `roi_statistic` | ✅ **完成** | csim 28/28 + 45/45、0 errors；II=1；Fmax 138.99 MHz；LUT 1267/FF 723/BRAM 0/DSP 1 |
-| **C4** `rgb2gray` + `motion_quality` | ✅ **完成（功能层）** | `rgb2gray` 9/9 + 10/10，Fmax 151.98 MHz，BRAM 0；`motion_quality` 6/6 + 9/9，Fmax 140.05 MHz，**BRAM 256（91%）⚠️** |
-| **C6** testbench + Python 黄金参考 | ✅ **完成（3 个 IP）** | 两层验证：内嵌边界用例 + 跨语言黄金参考 |
-| **C7** 综合报告归档 | ✅ **完成（2 份）** | `report/c3_c7_roi_statistic_v1.md`、`report/c4_rgb2gray_motion_quality_v1.md` |
-| **C5** `fir_filter` | ⏳ **下一步** | 形状已在契约冻结（3.5 节），系数/阶数待定 |
-| **C8~C10** 上板 / Overlay / DMA | ⏳ M3 后 | 属 `board/`；**上板前必须先解决 motion_quality 的 BRAM 占用** |
+| **C3.5** RTL 协同仿真（cosim） | ✅ **完成（4 个 IP）** | 全部 PASS、Layer 2 黄金参考也跑到了、**无死锁**；见 `report/cosim_all_ips_v1.md`（三个图像 IP）与 `report/c5_fir_filter_v1.md` 第 7 节（`fir_filter`） |
+| **C4** `rgb2gray` + `motion_quality` | ✅ **完成** | `rgb2gray` v2 8/8+10/10，Fmax 137.46 MHz，BRAM 0；`motion_quality` v2 6/6+9/9，Fmax 140.05 MHz，**BRAM 64（23%）** |
+| **C5** `fir_filter` | ✅ **完成** | N=63 Q15 带通 @30fps；csim **8/8 + 16/16**、**容差 0**、cosim **PASS**、II=1、Fmax **146.97 MHz**、LUT 4077/FF 6172/**BRAM 0**/DSP 25；报告 `report/c5_fir_filter_v1.md` |
+| **C6** testbench + Python 黄金参考 | ✅ **完成（4 个 IP）** | 两层验证：内嵌边界用例 + 跨语言黄金参考 |
+| **C7** 综合报告归档 | ✅ **完成（4 份）** | `report/c3_c7_roi_statistic_v1.md`、`report/c4_rgb2gray_motion_quality_v1.md`、`report/cosim_all_ips_v1.md`、`report/c5_fir_filter_v1.md` |
+| **C8~C10** 上板 / Overlay / DMA | ⏳ M3 后 | 属 `board/`；BRAM 已留出 216 个 |
 
-### 三个 IP 汇总（全部真实运行数据）
+### 四个 IP 汇总（全部真实运行数据）
 
-| IP | csim | II | Fmax | LUT | FF | BRAM18 | DSP |
-|---|---|---|---|---|---|---|---|
-| `roi_statistic` | 28/28 + 45/45 | 1 | 138.99 MHz | 1267 | 723 | 0 | 1 |
-| `rgb2gray` | 9/9 + 10/10 | 1 | 151.98 MHz | 927 | 763 | 0 | 3 |
-| `motion_quality` | 6/6 + 9/9 | 1 | 140.05 MHz | 1503 | 1162 | **256** | 1 |
-| **合计** | | | | **3697**（7%） | **2648**（2.5%） | **256（91%）** | **5**（2%） |
+| IP | 工作尺寸 | csim | II | Fmax | LUT | FF | BRAM18 | DSP |
+|---|---|---|---|---|---|---|---|---|
+| `roi_statistic` | 640×480 RGB | 28/28 + 45/45 | 1 | 138.99 MHz | 1267 | 723 | 0 | 1 |
+| `rgb2gray` **v2** | 640×480 → 384×288 | 8/8 + 10/10 | 1 | 137.46 MHz | 1410 | 918 | 0 | 5 |
+| `motion_quality` **v2** | 384×288 灰度 | 6/6 + 9/9 | 1 | 140.05 MHz | 1501 | 1158 | **64** | 1 |
+| `fir_filter` **v1** | 时间序列（63 阶 Q15） | **8/8 + 16/16** | 1 | **146.97 MHz** | **4077** | **6172** | **0** | **25** |
+| **合计** | | | | | **8255**（15.5%） | **8971**（8.4%） | **64（23%）** | **32**（14.5%） |
 
-> 🚨 **瓶颈是 BRAM，不是逻辑资源**：`motion_quality` 的"上一帧"缓存占掉 91% 的 BRAM18，
-> M3 还要放 AXI DMA 与互连，只剩 24 个极可能不够。**方案待决策**（降分辨率 / 双流 / 接受），
-> 详见 `report/c4_rgb2gray_motion_quality_v1.md` 第 5 节。
+> ⚠️ `fir_filter` 的 DSP 是四个里最高的（25），这是**全并行 + II=1** 的代价；
+> 时间序列只需 30 Hz，若 M3 发现 DSP 紧张，可把 MAC 折叠（`PIPELINE II=4`）换 DSP。
+> 它 **不占 BRAM**（延迟线 63×16bit 被完全分区成寄存器）。
+
+> ✅ **BRAM 问题已闭环**：`motion_quality` 初版在 640×480 上工作，占 **256 个 BRAM18 = 91%**（上板必炸）；
+> 根因是**片内数组按 2 的幂地址空间分配**（三组对照实验坐实：320×240→64、512×512→128、640×480→256）。
+> 据此让 `rgb2gray` 增加 **3/5 缩放**（640×480→384×288），`motion_quality` 工作尺寸随之降到 384×288，
+> BRAM 降到 **64（23%）**，**给 M3 留出 216 个 BRAM18**。详见 `report/c4_rgb2gray_motion_quality_v1.md` 第 5 节。
+>
+> 💡 **可复用的设计规律**：BRAM 成本是**台阶式**的（跨过 2 的幂就翻倍）；
+> 像素数 ≤ 131072（2¹⁷）的尺寸都只要 64 个 —— 所以选了 384×288 而不是 320×240：**同价、更清晰**。
 
 > M1 的"计数+累加"玩具版 IP 已被 C2/C3 的真接口版**替换**（C1 的环境验证结论仍然有效）。
 
@@ -104,12 +116,16 @@ vitis-run --mode hls --tcl run_hls.tcl
 
 set "HLS_IP=motion_quality"
 vitis-run --mode hls --tcl run_hls.tcl
+
+set "HLS_IP=fir_filter"
+vitis-run --mode hls --tcl run_hls.tcl
 ```
 
 | IP | 数据目录 | 生成器 |
 |---|---|---|
 | `roi_statistic` | `sim/data/` | `gen_frames.py` |
 | `rgb2gray` / `motion_quality` | `sim/data_motion/` | `gen_motion_vectors.py` |
+| `fir_filter` | `sim/data_fir/` | `gen_fir_vectors.py`（系数来自 `src/fir_coeffs_q15.h`） |
 
 ## 已冻结的接口要点（详见 `docs/interface.md`）
 
@@ -128,27 +144,68 @@ vitis-run --mode hls --tcl run_hls.tcl
 - 便携 git：`D:\Git\cmd\git.exe`（已加入用户 PATH，新终端生效）。
 - 详细流程与避坑：见 `skill/fpga_hls_c_line.md`。
 
-## 跑 cosim（RTL 协同仿真，M3 前必做）
+## 跑 cosim（RTL 协同仿真 —— ✅ 四个 IP 已完成，全部 PASS）
 
-`csim` 查不出 `hls::stream` 的流深度死锁（见下节风险表第 1 条），**只能靠 cosim**。
+**结果**：`roi_statistic` / `rgb2gray` / `motion_quality` 三个图像 IP 见 `report/cosim_all_ips_v1.md`；
+`fir_filter` 见 `report/c5_fir_filter_v1.md` 第 7 节。四个都是 Layer 1 与 **Layer 2 黄金参考**都跑了、
+**无一死锁**。
+
+`csim` 把 `hls::stream` 实现成无界 `std::deque`，查不出流深度死锁，**只能靠 cosim**。
 但**别用 640×480 的向量跑 cosim**：45 用例 × 307200 像素 ≈ **1380 万拍 RTL 仿真**，会跑到天荒地老。
-
-本次生成的脚本是**尺寸无关**的（测试台从 CSV 的 `# meta` 读宽高），所以换一份小向量即可，代码不用改：
+测试台是**尺寸无关**的（从 `meta` 读宽高），换一份小向量即可，代码不用改：
 
 ```bat
-:: 1) 生成小尺寸向量（64x48，5 帧 45 用例 = 约 13.8 万拍，RTL 仿真可接受）
-python D:\Desktop\AMD\fpga\sim\gen_frames.py --width 64 --height 48 --out-dir D:\Desktop\AMD\fpga\sim\data_small
-
-:: 2) 让 TCL 用这份小向量，并把 hls_exec 改成 2（csynth + cosim）
-set ROI_DATA_DIR=D:\Desktop\AMD\fpga\sim\data_small
-::   然后编辑 run_hls.tcl:  set hls_exec 2
 call D:\Xilinx\2026.1\Vitis\settings64.bat
 cd /d D:\Desktop\AMD\fpga
+
+:: 1) 生成 cosim 专用小向量（几万拍量级，RTL 仿真可接受）
+python sim\gen_frames.py         --width 64 --height 48 --out-dir sim\data_small
+python sim\gen_motion_vectors.py --width 80 --height 60 --out-dir sim\data_motion_small
+
+:: 2) HLS_EXEC=2 让脚本额外执行 cosim_design
+set "HLS_EXEC=2"
+
+set "HLS_IP=roi_statistic"
+set "ROI_DATA_DIR=%CD%\sim\data_small"
+vitis-run --mode hls --tcl run_hls.tcl
+
+set "HLS_IP=rgb2gray"
+set "ROI_DATA_DIR=%CD%\sim\data_motion_small"
+vitis-run --mode hls --tcl run_hls.tcl
+
+set "HLS_IP=motion_quality"
+vitis-run --mode hls --tcl run_hls.tcl
+
+:: fir_filter —— 它没有"图像尺寸"，小向量只缩样本数（--scale），段结构不变
+python sim\gen_fir_vectors.py --out-dir sim\data_fir_small --scale 0.25
+set "HLS_IP=fir_filter"
+set "ROI_DATA_DIR=%CD%\sim\data_fir_small"
 vitis-run --mode hls --tcl run_hls.tcl
 ```
 
-> `run_hls.tcl` 会**优先**采用环境变量 `ROI_DATA_DIR`（已实现）。
-> `data_small/` 已加入 `.gitignore`（一条命令即可重建，不必入库）。
+> ⚠️ **判据：日志里必须同时出现 Layer 1 与 Layer 2 的通过行**，且最后是
+> `C/RTL co-simulation finished: PASS`。**只见 Layer 1 就是没生效** ——
+> `cosim_design` 的 `-argv` **不会**从 `csim_design` 继承，漏传会让 Layer 2 被静默跳过，
+> 于是拿几个玩具用例冒充整个 RTL 验证（本项目踩过，见 `report/cosim_all_ips_v1.md` 第 2 节）。
+>
+> `run_hls.tcl` 已修复并优先采用环境变量 `ROI_DATA_DIR`；`data_small/`、`data_motion_small/`
+> 已加入 `.gitignore`（一条命令即可重建，不必入库）。
+
+## `fir_filter` 的系数从哪来（C5 专用）
+
+```bat
+:: 设计/复现系数（纯标准库；会重写 src/fir_coeffs_q15.h）
+python fpga\sim\design_fir_coeffs.py                 :: 默认 N=63、0.7~3.5 Hz @30fps
+python fpga\sim\design_fir_coeffs.py --scan --d 0.0  :: 打印 d 扫描表（-6dB vs -3dB 口径的取舍）
+python fpga\sim\design_fir_coeffs.py --band 0.1 0.5  :: 附呼吸带可行性评估（结论：63 阶做不到）
+```
+
+- **系数只有一处来源**：`src/fir_coeffs_q15.h`（自动生成，请勿手改）。
+  `gen_fir_vectors.py` 与 `tb_fir_filter.cpp` **都解析/包含这同一个头文件**，不存在"两边各一份系数"。
+- 改系数 = 重跑 `design_fir_coeffs.py` → **必须**重跑 `gen_fir_vectors.py`（否则测试台以
+  `meta.taps/shift 与工程不一致` 硬失败，这是刻意设计）。
+- 设计口径（−6 dB = 0.70/3.50 Hz）与"为什么不用 −3 dB 口径"的实测权衡表见
+  `report/c5_fir_filter_v1.md` 第 3 节。
 
 ## 本地快速自检（不跑 vitis-run，秒级）
 
@@ -157,8 +214,15 @@ vitis-run --mode hls --tcl run_hls.tcl
 ```powershell
 $inc = 'D:\Xilinx\2026.1\Vitis\include'
 g++ -std=c++17 -fsyntax-only -I $inc fpga/src/roi_statistic.cpp
-g++ -std=c++17 -fsyntax-only -I $inc fpga/sim/tb_roi_statistic.cpp
+g++ -std=c++17 -fsyntax-only -I $inc -I fpga/src fpga/sim/tb_roi_statistic.cpp
+
+# fir_filter 还能更进一步：主机端算术模型可以**真的运行**（不含 hls::stream，故不受 win32 线程模型限制）
+g++ -O2 -std=c++17 -I fpga/src fpga/sim/host_model_fir.cpp -o host_model_fir.exe
+host_model_fir.exe fpga/sim/data_fir     # 逐样本对黄金参考 + 折叠 vs 朴素累加 + 溢出界
 ```
+
+> `host_model_fir.cpp` 把 IP 的内层算式原样转写，1 秒内就能告诉你"算术对不对"。
+> ⚠️ 它是**主机端模型，不是仿真/综合证据**；权威证据只能是 `vitis-run` 的输出。
 
 > ⚠️ **只做 `-fsyntax-only`，不要试图用本机 g++ 运行**：
 > 本机 MinGW 是 `win32` 线程模型，而 `hls::stream` 的 C 仿真模型依赖 `std::thread`/`std::mutex`，
@@ -169,7 +233,7 @@ g++ -std=c++17 -fsyntax-only -I $inc fpga/sim/tb_roi_statistic.cpp
 
 | # | 假设 / 风险 | 结论 |
 |---|---|---|
-| 1 | C 仿真不建模 `hls::stream` 的 FIFO 深度，因此测试台可"先灌满整帧、再调用、后排空" | ✅ **已验证**：实测日志 `The maximum depth reached by any hls::stream() instance in the design is 307200`（整帧堆在流里也没报错）。⚠️ 但**深度不足导致的死锁只有 cosim 才暴露**，M3 前务必跑一次 `hls_exec = 2` |
+| 1 | C 仿真不建模 `hls::stream` 的 FIFO 深度，因此测试台可"先灌满整帧、再调用、后排空" | ✅ **已验证**：实测日志 `The maximum depth reached by any hls::stream() instance in the design is 307200`（整帧堆在流里也没报错）。**cosim 侧三个图像 IP 全部 PASS、无一死锁**（HLS 自带的 `AESL_deadlock_*_monitor` 未报警，即使一次灌 4800 像素而输出 FIFO 深度只有 6）→ 详见 `report/cosim_all_ips_v1.md`；`fir_filter` 同样"先灌整段（最长 300 样本）再调用"，**PASS 且不死锁** → `report/c5_fir_filter_v1.md` 第 7 节。⚠️ 上板仍需确认流深度（DMA 握手节奏不同） |
 | 2 | 本机 MinGW 可运行 csim 模型 | ❌ **不成立**：`0xC0000139`（DLL 入口点缺失）。本机 g++ 仅用于 `-fsyntax-only` 自检，执行一律交给 `vitis-run` |
 | 3 | `csim_design -argv` 能把数据目录传给测试台 | ✅ **已验证**：日志 `INFO: ROI data dir = D:/Desktop/AMD/fpga/sim/data` |
 | 4 | `s_axilite` 的 `offset=` 按字节生效 | ✅ **已验证**：11 个数据寄存器偏移与契约逐一吻合。**但发现每个输出还多一个 `*_ctrl`(ap_vld) 寄存器**（`sum_r_ctrl=0x44` … `frame_id_ctrl=0x64`），已回填契约 |
@@ -178,26 +242,32 @@ g++ -std=c++17 -fsyntax-only -I $inc fpga/sim/tb_roi_statistic.cpp
 | 7 | 受限沙箱能跑 csim | ❌ **不成立**：csim 需要 cygwin signal pipe（命名管道），受限沙箱禁止 → `Win32 error 5`。需完整权限终端或提权 |
 | 8 | `static ap_uint<32> fid` 的复位行为 | ⚠️ **待定**：综合警告 `Register 'fid' is power-on initialization` —— 是**上电**初始化而非复位归零。M3 上板时按需决定是否改为复位归零 |
 | 9 | `#pragma HLS BIND_STORAGE` 写在数组声明**之前**能被识别 | ❌ **不成立**：csynth 报 `[HLS 207-4637] use of undeclared identifier 'prev_buf'`。**pragma 必须写在变量声明之后**。⚠️ **csim 不检查这条 pragma，所以 csim 全绿 ≠ 综合能过** —— 这是本次最值得记住的教训 |
-| 10 | 640×480 的片内"上一帧"缓存能装进 xc7z020 | ❌ **不成立**：实测 **256/280 = 91% BRAM**。**根因已用对照实验坐实**：片内数组按 **2 的幂地址空间**分配（`depth=307200` → 2¹⁹=524288 → 256 个），不是按真实深度（那样只需 150）。三组对照（320×240→**64**、512×512→**128**、640×480→**256**）全部吻合。⚠️ **成本是台阶式的**：像素数 ≤ 131072 的尺寸都只要 64 个（320×240 与 384×288 同价）。方案待决策 |
+| 10 | 640×480 的片内"上一帧"缓存能装进 xc7z020 | ❌ **不成立**（但已解决）：实测 **256/280 = 91% BRAM**。**根因已用对照实验坐实**：片内数组按 **2 的幂地址空间**分配（`depth=307200` → 2¹⁹=524288 → 256 个），不是按真实深度（那样只需 150）。三组对照（320×240→**64**、512×512→**128**、640×480→**256**）全部吻合。✅ **已按该规律解决**：`rgb2gray` 加 3/5 缩放，把工作尺寸压到 384×288，BRAM 降到 **64（23%）** |
+| 12 | 3/5 点采样缩放的混叠会不会让运动量偏噪 | ⚠️ **待观察**：点采样保留原始灰度值、不降噪，运动检测可能偏"敏感"。接真实视频后才能判断；若偏噪可改块均值或退回 320×240 的 2×2 均值（黄金参考需同步改） |
 | 11 | 灰度公式与 OpenCV `cv2.cvtColor` 一致 | ⚠️ **大概率不一致**：本设计冻结式 `(77R+150G+29B+128)>>8` 给纯红 **77**，而浮点系数 0.299×255=76.245 → **76**，差 1 LSB。**已把自定义式冻结为唯一口径**，A 线须按 `docs/interface.md` 4.4 节对拍 |
+| 13 | `fir_filter` 的"容差 ±1 LSB"是否真的需要 | ✅ **不需要，容差 = 0**（2026-09-11 实测）：全整数运算 + **唯一**舍入点（`>>15`）+ 可证不溢出，Python 与 C 逐样本相等（3940/3940）；契约 4.3 已把该项从 ±1 LSB **收紧为 0** |
+| 14 | 对称折叠（63 → 32 个乘法器）会不会改变结果 | ✅ **不会**：预加是精确整数运算、无中间舍入。主机端模型实测"折叠 vs 朴素 long long 累加**逐位相同**"（`host_model_fir.cpp`），csim 侧同样 0 不一致 |
+| 15 | `static` 延迟线的初值可否依赖 | ❌ **不可以**：C++ 层面 static 是零初始化，但 HLS 把它实现为**上电初始化**（综合日志里每个 bit 一条 `Register '...delay_line...' is power-on initialization`），**复位不清零**。故本 IP 提供 `reset` 寄存器；**PS 与测试台都必须"先 reset 再喂数据"**（坑 #17 的又一次落地） |
+| 16 | 63 阶能否顺带做呼吸带（0.1~0.5 Hz） | ❌ **不能**（2026-09-11 实测 + 公式）：Hamming 过渡带 `3.3/(2πN)·fs` = 0.250 Hz，已与整个呼吸带（0.4 Hz）同量级；按 0.1/0.5 Hz 设计时 −3 dB 边沿在 ±0.3 Hz 内找不到。压到 0.15 Hz 需 **N ≳ 105**。→ 呼吸带须 **PS 侧先降采样**（见契约 3.5 节末） |
+| 17 | `#pragma HLS ARRAY_PARTITION variable=FIR_COEFF_Q15 ...` 有意义吗 | ❌ **没有**：`static const` 系数表会被**常量折叠**，首版综合把它标为 `Not implemented`。已删除该 pragma（资源与 Fmax 复跑后无变化），避免综合报告里留一条误导记录 |
 
 ## 任务清单（与《02》C1~C10 对应）
 
 - [x] C1 锁定 Vitis HLS 2026.1 + 跑通官方最小 HLS 例程（仿真+综合）
-- [x] C2 冻结 IP 接口 → `docs/interface.md`（**v0.92，待 A/B 会签转 v1.0**）
+- [x] C2 冻结 IP 接口 → `docs/interface.md`（**v0.94，待 A/B 会签转 v1.0**）
 - [x] C3 `roi_statistic` C 仿真通过（28/28 + 45/45，0 errors）
-- [x] C4 `rgb2gray` + `motion_quality` C 仿真通过（9/9+10/10、6/6+9/9，0 errors）——⚠️ **BRAM 91% 待解决**
-- [ ] C5 `fir_filter` C 仿真通过 ← **下一步**
-- [x] C6 每个 IP 的 testbench + Python 黄金参考就绪（3 个 IP 已就绪；C5 待补）
-- [x] C7 综合报告（资源 + 时序）归档（2 份：`report/c3_c7_*.md`、`report/c4_*.md`）
-- [ ] **BRAM 方案决策**（降分辨率 / 双流 / 接受）—— 上板前必做，见 C4 报告第 5 节
-- [ ] **cosim**：对每个 IP 跑一次 `hls_exec = 2`（csim 查不出流深度死锁，M3 前必过）
+- [x] C4 `rgb2gray` + `motion_quality` C 仿真通过（8/8+10/10、6/6+9/9，0 errors）——BRAM 已从 91% 降到 **23%**
+- [x] C5 `fir_filter` C 仿真通过（**8/8 + 16/16，0 errors**）—— N=63 Q15 带通，容差 **0**
+- [x] C6 每个 IP 的 testbench + Python 黄金参考就绪（**4 个 IP 已就绪**）
+- [x] C7 综合报告（资源 + 时序）归档（**4 份**：`report/c3_c7_*.md`、`report/c4_*.md`、`report/c5_fir_filter_v1.md`）
+- [x] **BRAM 问题闭环**：根因坐实 + 方案 A′（384×288）已实现验证，留出 216 个 BRAM18
+- [x] **cosim**：**四个 IP** 全部 RTL 协同仿真 PASS（Layer1 28/8/6/8 + Layer2 **45/10/9/16**），**无一死锁**
+- [x] **C5 `fir_filter` 补跑 cosim**（小向量 985 样本，RTL 侧两层同样全过）
 - [ ] C8~C10 上板/Overlay/DMA（M3 后，属 `board/`）
 
-## M0 欠账（《04》第 6 节 DoD 硬指标，尚缺）
+## M0 欠账（《04》第 6 节 DoD 硬指标）
 
-- [ ] `git init` + 首次 commit（仓库根与仓库名待定，建议 `vigilens`）
-- [ ] 仓库根 `README.md` / `LICENSE`
-- [ ] `config.yaml`（阈值集中存放）
+> ✅ **已于 2026-09-10 全部闭环**（`git init` + 首次 commit、仓库根 `README.md` / `LICENSE`、`config.yaml` 均已就位）。
+> 本条原先列在本文件末尾，属**已过期的欠账清单**，2026-09-11 更正 —— 引用前请以 `git log` / 仓库根为准。
 
 *本文件由 C 线维护；改动先过一遍 `skill/fpga_hls_c_line.md` 的纪律清单。*
