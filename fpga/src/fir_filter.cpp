@@ -87,6 +87,11 @@ void fir_filter(hls::stream<axis_fir_t> &fir_in,
     // "Not implemented"（本 IP 首版实测如此），在综合报告里留一条误导性的忽略记录。
 
     static ap_uint<32> sid = 0;
+// P0-2：让段计数随**块复位 ap_rst_n**（PS 复位 / overlay 重新加载）归零，
+//   而不是仅靠"上电初始化"。默认行为下 static 变量不被复位清零，
+//   PS 若按"seg_id 从 1 开始"做同步，复位后会失配。
+//   ⚠️ pragma 必须写在变量声明之后（同坑 #18）。
+#pragma HLS RESET variable=sid
 
     // ---- 可选复位：清空延迟线（首次调用前必须做，理由见文件头）--------------
     if (reset) {

@@ -1,0 +1,189 @@
+  **** HLS Build v2026.1 6493734
+Sourcing Tcl script 'D:/Desktop/AMD/fpga/run_hls.tcl'
+INFO: HLS_IP    = motion_quality
+INFO: source    = src/motion_quality.cpp
+INFO: testbench = sim/tb_motion_quality.cpp
+INFO: [HLS 200-1510] Running: open_component -reset component_motion_quality -flow_target vivado 
+INFO: [HLS 200-10] Creating and opening component 'D:/Desktop/AMD/fpga/component_motion_quality'.
+INFO: [HLS 200-10] Cleaning up the component database.
+INFO: [HLS 200-1505] Using flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+WARNING: [HLS 200-2149] The 'flow_target' option is deprecated and will be removed in a future release. For 'vivado' value you may simply remove the option for equivalent behavior.
+INFO: [HLS 200-2176] Writing Vitis IDE component file D:/Desktop/AMD/fpga/component_motion_quality/vitis-comp.json
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_motion_quality/hls_config.cfg
+WARNING: [HLS 200-484] The 'open_component -flow_target' command is deprecated and will be removed in a future release.
+INFO: [HLS 200-1510] Running: add_files src/motion_quality.cpp 
+INFO: [HLS 200-10] Adding design file 'src/motion_quality.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb sim/tb_motion_quality.cpp 
+INFO: [HLS 200-10] Adding test bench file 'sim/tb_motion_quality.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top motion_quality 
+INFO: [HLS 200-1510] Running: set_part xc7z020clg400-1 
+INFO: [HLS 200-1611] Setting target device to 'xc7z020-clg400-1'
+INFO: [HLS 200-1510] Running: create_clock -period 10 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: data dir  = D:/Desktop/AMD/fpga/sim/data_motion
+INFO: hls_exec  = 1  (1=csim+csynth, 2=+cosim, 3=+export)
+INFO: [HLS 200-1510] Running: csim_design -argv D:/Desktop/AMD/fpga/sim/data_motion 
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_motion_quality/hls_config.cfg
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [HLS 200-2191] C-Simulation will use clang-16 as the compiler
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../sim/tb_motion_quality.cpp in debug mode
+   Compiling ../../../../src/motion_quality.cpp in debug mode
+   Generating csim.exe
+In file included from ../../../../sim/tb_motion_quality.cpp:30:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../src/motion_quality.cpp:31:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+==== tb_motion_quality: contract docs/interface.md (tolerance = 0) ====
+NOTE: frame 0 output is invalid by design (prev-frame buffer undefined at power-on).
+---- [Layer 1] embedded sequence, thresh=16 (boundary pinned) ----
+  Layer 1: 6 passed, 0 failed
+---- [Layer 2] cross-language golden reference ----
+  meta     : work 384x288 (RGB in 640x480), 10 frames, gray_bytes=110592, motion_thresh=16, 9 golden rows
+  Layer 2: 9 passed, 0 failed  (stream header errors: 0)
+
+==== RESULT: PASS ====
+INFO [HLS SIM]: The maximum depth reached by any hls::stream() instance in the design is 110592
+INFO: [SIM 211-1] CSim done with 0 errors.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-2161] Finished Command csim_design Elapsed time: 00:00:06; Allocated memory: 1.723 MB.
+INFO: [HLS 200-1510] Running: csynth_design 
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_motion_quality/hls_config.cfg
+INFO: [HLS 200-111] Finished File checks and directory preparation: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 3.217 seconds; current allocated memory: 156.699 MB.
+INFO: [HLS 200-2191] C-Synthesis will use clang-16 as the compiler
+INFO: [HLS 200-10] Analyzing design file 'src/motion_quality.cpp' ... 
+INFO: [HLS 200-111] Finished Source Code Analysis and Preprocessing: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 4.384 seconds; current allocated memory: 159.562 MB.
+INFO: [HLS 200-1995] There were 1,061 instructions in the design after the 'Compile/Link' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 197 instructions in the design after the 'Unroll/Inline' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 166 instructions in the design after the 'Unroll/Inline (step 2)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 214-178] Inlining function 'hls::axis<ap_uint<8>, 1ul, 1ul, 1ul, (unsigned char)56, false>::axis()' into 'motion_quality(hls::stream<hls::axis<ap_uint<8>, 1ul, 1ul, 1ul, (unsigned char)56, false>, 0>&, hls::stream<hls::axis<ap_uint<8>, 1ul, 1ul, 1ul, (unsigned char)56, false>, 0>&, ap_uint<16>, ap_uint<16>, ap_uint<8>, ap_uint<32>&, ap_uint<32>&, ap_uint<32>&, ap_uint<32>&, ap_uint<32>&)' (src/motion_quality.cpp:56:0)
+INFO: [HLS 200-1995] There were 165 instructions in the design after the 'Unroll/Inline (step 3)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 165 instructions in the design after the 'Unroll/Inline (step 4)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 164 instructions in the design after the 'Array/Struct' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 164 instructions in the design after the 'Array/Struct (step 2)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 164 instructions in the design after the 'Array/Struct (step 3)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 164 instructions in the design after the 'Array/Struct (step 4)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 313 instructions in the design after the 'Array/Struct (step 5)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 306 instructions in the design after the 'Performance' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 276 instructions in the design after the 'Performance (step 2)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 214 instructions in the design after the 'Performance (step 3)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 214 instructions in the design after the 'Performance (step 4)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 173 instructions in the design after the 'HW Transforms' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-1995] There were 120 instructions in the design after the 'HW Transforms (step 2)' phase of compilation. See the Design Size Report for more details (D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/report/csynth_design_size.rpt:2)
+INFO: [HLS 200-111] Finished Compiling Optimization and Transform: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 8.281 seconds; current allocated memory: 161.793 MB.
+INFO: [HLS 200-111] Finished Checking Pragmas: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.003 seconds; current allocated memory: 161.793 MB.
+INFO: [HLS 200-10] Starting code transformations ...
+INFO: [HLS 200-111] Finished Standard Transforms: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.023 seconds; current allocated memory: 166.340 MB.
+INFO: [HLS 200-10] Checking synthesizability ...
+INFO: [HLS 200-111] Finished Checking Synthesizability: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.017 seconds; current allocated memory: 168.246 MB.
+INFO: [HLS 200-111] Finished Loop, function and other optimizations: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.045 seconds; current allocated memory: 189.941 MB.
+INFO: [HLS 200-111] Finished Architecture Synthesis: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.047 seconds; current allocated memory: 193.824 MB.
+INFO: [HLS 200-2255] Checking Wire Delay Status: Wire Delay Mode is ON
+INFO: [HLS 200-10] Starting hardware synthesis ...
+INFO: [HLS 200-10] Synthesizing 'motion_quality' ...
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'motion_quality_Pipeline_VITIS_LOOP_90_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-61] Pipelining loop 'VITIS_LOOP_90_1'.
+INFO: [HLS 200-1470] Pipelining result : Target II = 1, Final II = 1, Depth = 3, loop 'VITIS_LOOP_90_1'
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.101 seconds; current allocated memory: 197.711 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.025 seconds; current allocated memory: 198.801 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-42] -- Implementing module 'motion_quality' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [SCHED 204-11] Starting scheduling ...
+INFO: [SCHED 204-11] Finished scheduling.
+INFO: [HLS 200-111] Finished Scheduling: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.035 seconds; current allocated memory: 198.922 MB.
+INFO: [BIND 205-100] Starting micro-architecture generation ...
+INFO: [BIND 205-101] Performing variable lifetime analysis.
+INFO: [BIND 205-101] Exploring resource sharing.
+INFO: [BIND 205-101] Binding ...
+INFO: [BIND 205-100] Finished micro-architecture generation.
+INFO: [HLS 200-111] Finished Binding: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.023 seconds; current allocated memory: 198.977 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'motion_quality_Pipeline_VITIS_LOOP_90_1' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-1030] Apply Unified Pipeline Control on module 'motion_quality_Pipeline_VITIS_LOOP_90_1' pipeline 'VITIS_LOOP_90_1' pipeline type 'loop pipeline'
+INFO: [RTGEN 206-100] Finished creating RTL model for 'motion_quality_Pipeline_VITIS_LOOP_90_1'.
+INFO: [RTMG 210-278] Implementing memory 'motion_quality_motion_quality_Pipeline_VITIS_LOOP_90_1_prev_buf_RAM_2P_BRAM_1R1W' using block RAMs.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 1.677 seconds; current allocated memory: 201.535 MB.
+INFO: [HLS 200-10] ----------------------------------------------------------------
+INFO: [HLS 200-10] -- Generating RTL for module 'motion_quality' 
+INFO: [HLS 200-10] ----------------------------------------------------------------
+WARNING: [RTGEN 206-101] Design contains AXI ports. Reset is fixed to synchronous and active low.
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_in_V_data_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_in_V_keep_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_in_V_strb_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_in_V_user_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_in_V_last_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_in_V_id_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_in_V_dest_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_out_V_data_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_out_V_keep_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_out_V_strb_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_out_V_user_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_out_V_last_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_out_V_id_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/gray_out_V_dest_V' to 'axis' (register, both mode).
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/width' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/height' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/motion_thresh' to 's_axilite & ap_none'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/diff_total' to 's_axilite & ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/motion_pixels' to 's_axilite & ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/motion_ratio_q16' to 's_axilite & ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/count' to 's_axilite & ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on port 'motion_quality/frame_id' to 's_axilite & ap_vld'.
+INFO: [RTGEN 206-500] Setting interface mode on function 'motion_quality' to 's_axilite & ap_ctrl_hs'.
+WARNING: [RTGEN 206-101] Register 'fid' is power-on initialization.
+INFO: [RTGEN 206-100] Bundling port 'width', 'height', 'motion_thresh', 'diff_total', 'motion_pixels', 'motion_ratio_q16', 'count', 'frame_id' and 'return' to AXI-Lite port ctrl.
+INFO: [RTGEN 206-100] Generating core module 'mul_16ns_16ns_32_1_1': 1 instance(s).
+INFO: [RTGEN 206-100] Generating core module 'udiv_48ns_32ns_32_52_seq_1': 1 instance(s).
+INFO: [RTGEN 206-100] Finished creating RTL model for 'motion_quality'.
+INFO: [HLS 200-111] Finished Creating RTL model: CPU user time: 1 seconds. CPU system time: 0 seconds. Elapsed time: 0.152 seconds; current allocated memory: 204.012 MB.
+INFO: [HLS 200-111] Finished Generating all RTL models: CPU user time: 0 seconds. CPU system time: 0 seconds. Elapsed time: 0.392 seconds; current allocated memory: 208.477 MB.
+INFO: [HLS 200-2225] Wrote inferred directives to file D:/Desktop/AMD/fpga/component_motion_quality/hls/syn/inferred_directives.ini
+INFO: [HLS 200-111] Finished Updating report files: CPU user time: 0 seconds. CPU system time: 1 seconds. Elapsed time: 1.021 seconds; current allocated memory: 212.785 MB.
+INFO: [VHDL 208-304] Generating VHDL RTL for motion_quality.
+INFO: [VLOG 209-307] Generating Verilog RTL for motion_quality.
+INFO: [HLS 200-790] **** Loop Constraint Status: All loop constraints were satisfied.
+INFO: [HLS 200-789] **** Estimated Fmax: 140.05 MHz
+INFO: [HLS 200-2161] Finished Command csynth_design Elapsed time: 00:00:20; Allocated memory: 56.531 MB.
+INFO: [HLS 200-112] Total CPU user time: 2 seconds. Total CPU system time: 3 seconds. Total elapsed time: 29.188 seconds; peak allocated memory: 212.867 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 30s
+INFO: [vitis-run 60-1662] Stopping dispatch session having empty uuid.

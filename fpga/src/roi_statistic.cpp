@@ -61,6 +61,11 @@ void roi_statistic(hls::stream<axis_pix_t> &video_in,
 
     // 跨帧保持：帧计数（RTL 里体现为寄存器）
     static ap_uint<32> fid = 0;
+// P0-2：让帧计数随**块复位 ap_rst_n**（PS 复位 / overlay 重新加载）归零，
+//   而不是仅靠"上电初始化"。默认行为下 static 变量不被复位清零，
+//   PS 若按"frame_id 从 1 开始"做首帧同步，复位后会失配。
+//   ⚠️ pragma 必须写在变量声明之后（同坑 #18）。
+#pragma HLS RESET variable=fid
 
     // 每帧清零的累加器
     ap_uint<32> r_acc = 0;

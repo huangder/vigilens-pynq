@@ -76,6 +76,11 @@ void motion_quality(hls::stream<axis_gray_t> &gray_in,
 #pragma HLS BIND_STORAGE variable=prev_buf type=RAM_2P impl=BRAM
 
     static ap_uint<32> fid = 0;
+// P0-2：让帧计数随**块复位 ap_rst_n**（PS 复位 / overlay 重新加载）归零，
+//   而不是仅靠"上电初始化"。默认行为下 static 变量不被复位清零，
+//   PS 若按"frame_id 从 1 开始"做首帧同步，复位后会失配。
+//   ⚠️ pragma 必须写在变量声明之后（同坑 #18）。
+#pragma HLS RESET variable=fid
 
     ap_uint<32> diff_acc = 0;
     ap_uint<32> mp_acc   = 0;
