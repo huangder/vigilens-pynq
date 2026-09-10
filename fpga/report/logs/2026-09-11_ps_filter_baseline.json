@@ -1,0 +1,57 @@
+{
+  "platform": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+    "python": "3.14.7",
+    "numpy": "2.5.2",
+    "scipy": null
+  },
+  "taps": 63,
+  "shift": 15,
+  "fs": 30.0,
+  "chunk_samples": 30,
+  "cases": [
+    {
+      "n_samples": 300,
+      "seconds": 10.0,
+      "numpy_batch_us_total": 20.799998310394585,
+      "numpy_batch_us_per_sample": 0.06933332770131528,
+      "numpy_stream_us_total": 576.6666666507566,
+      "numpy_stream_us_per_sample": 1.9222222221691887,
+      "numpy_stream_us_per_chunk": 57.66666666507566,
+      "numpy_stream_realtime_load_pct": 0.005766666666507566,
+      "python_ref_us_total": 499.89999752142467,
+      "python_ref_us_per_sample": 1.6663333250714156,
+      "python_ref_matches_numpy_batch": true,
+      "numpy_stream_matches_numpy_batch": true
+    },
+    {
+      "n_samples": 1800,
+      "seconds": 60.0,
+      "numpy_batch_us_total": 60.100002883700654,
+      "numpy_batch_us_per_sample": 0.03338889049094481,
+      "numpy_stream_us_total": 2863.766666753994,
+      "numpy_stream_us_per_sample": 1.5909814815299965,
+      "numpy_stream_us_per_chunk": 47.7294444458999,
+      "numpy_stream_realtime_load_pct": 0.00477294444458999
+    },
+    {
+      "n_samples": 9000,
+      "seconds": 300.0,
+      "numpy_batch_us_total": 272.89999707136303,
+      "numpy_batch_us_per_sample": 0.030322221896818116,
+      "numpy_stream_us_total": 15052.400000665026,
+      "numpy_stream_us_per_sample": 1.6724888889627807,
+      "numpy_stream_us_per_chunk": 50.17466666888342,
+      "numpy_stream_realtime_load_pct": 0.005017466666888342
+    }
+  ],
+  "pl_reference": {
+    "ii": 1,
+    "clock_mhz": 100.0,
+    "ns_per_sample": 10.0,
+    "us_per_chunk": 0.3,
+    "source": "fpga/report/c5_fir_filter_v1.md"
+  }
+}
