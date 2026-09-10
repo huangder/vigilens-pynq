@@ -58,6 +58,10 @@ python backend/run_pipeline.py --source data/raw/xxx.mp4 --json metrics/logs/las
 call D:\Xilinx\2026.1\Vitis\settings64.bat
 python fpga/sim/gen_frames.py
 cd fpga && vitis-run --mode hls --tcl run_hls.tcl
+#   默认跑 roi_statistic；换 IP：set "HLS_IP=fir_filter"（四个 IP：roi_statistic / rgb2gray /
+#   motion_quality / fir_filter，各自的数据目录见 fpga/README.md）
+#   fir_filter 还能秒级自检（不需要 Vitis）：
+#   g++ -O2 -std=c++17 -I fpga/src fpga/sim/host_model_fir.cpp -o host_model_fir.exe && host_model_fir.exe fpga/sim/data_fir
 ```
 
 ### 验证"确实跑通了"（而不是"看起来能跑"）
@@ -94,7 +98,7 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
 
 | 里程碑 | 内容 | 状态 |
 |---|---|---|
-| **M0** 冻结 | 主场景 / 项目名 / 指标范围 / 接口契约 / 目录结构 / 仓库与协议 | ✅ **完成**（`docs/00`、`docs/interface.md` v0.92 待会签、仓库 `vigilens-pynq`、MIT） |
+| **M0** 冻结 | 主场景 / 项目名 / 指标范围 / 接口契约 / 目录结构 / 仓库与协议 | ✅ **完成**（`docs/00`、`docs/interface.md` v0.94 待会签、仓库 `vigilens-pynq`、MIT） |
 | **M1** 基础框架 | A：回放→JSON；B：Mock→网页；C：最小 IP 仿真+综合 | 🔄 **进行中** |
 | **M2** 软件合体 | A 的 JSON 接入 B 的网页，形成完整软件 Demo | ⏳ 待 A/B 骨架跑通 |
 | **M3** 硬件接入 | Overlay 上板 + DMA 跑通（**首次需要板卡**） | ⏳ |
@@ -102,13 +106,16 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
 
 各线明细：
 
-- **C 线（FPGA）跑在计划前面**：三个 IP 已完成 C 仿真 + C 综合并归档报告 ——
+- **C 线（FPGA）跑在计划前面**：**四个 IP** 已完成 C 仿真 + C 综合 **+ RTL 协同仿真（cosim）** 并归档报告 ——
   `roi_statistic`（28/28 + 45/45，II=1，Fmax 138.99 MHz，LUT 1267 / FF 723 / BRAM 0 / DSP 1）、
-  `rgb2gray`（9/9 + 10/10，Fmax 151.98 MHz，BRAM 0）、
-  `motion_quality`（6/6 + 9/9，Fmax 140.05 MHz，**BRAM 256 = 91% ⚠️ 待优化**）。
-  证据见 `fpga/report/c3_c7_roi_statistic_v1.md`、`fpga/report/c4_rgb2gray_motion_quality_v1.md`。
-  下一步 `fir_filter`（C5）；M3 上板前必须先解决 `motion_quality` 的 BRAM 占用。
-  接口契约已被 C 线推进到 **v0.92**，**待 A/B 两线会签后冻结为 v1.0**（`docs/interface.md` 第 5 节）。
+  `rgb2gray` v2（8/8 + 10/10，Fmax 137.46 MHz，BRAM 0）、
+  `motion_quality` v2（6/6 + 9/9，Fmax 140.05 MHz，**BRAM 64 = 23%**，91% 风险已闭环）、
+  `fir_filter` v1（63 阶 Q15 带通 @30fps，8/8 + 16/16，**比对容差 0**，II=1，Fmax 146.97 MHz，BRAM 0 / DSP 25）。
+  四者合计 LUT 8255（15.5%）/ FF 8971（8.4%）/ BRAM 64（23%）/ DSP 32（14.5%）。
+  证据见 `fpga/report/` 下的 `c3_c7_roi_statistic_v1.md`、`c4_rgb2gray_motion_quality_v1.md`、
+  `cosim_all_ips_v1.md`、`c5_fir_filter_v1.md`。
+  C 线 M3 前**已无未实现的离线任务**；`board/`（上板 / Overlay / DMA）待板卡到手后开始。
+  接口契约已被 C 线推进到 **v0.94**，**待 A/B 两线会签后冻结为 v1.0**（`docs/interface.md` 第 5 节）。
 - **A 线**：骨架就位（`backend/*.py`），`run_pipeline.py` 端到端链路为 **stub 状态**（EAR 为真指标，PERCLOS/MAR/头姿/质量/规则为占位），待按《02》A1~A10 逐项替换。
 - **B 线**：`frontend/` 六态仪表盘 + `backend/mock.py` / `websocket.py` 就位，接真实数据只需切一个数据源开关。
 - **board / M3 之后**：`board/` 仅占位，未开始。
