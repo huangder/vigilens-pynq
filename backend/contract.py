@@ -25,8 +25,10 @@ except ImportError:  # 直接以脚本方式运行
 # 放在这里可以保证**任何入口**都不会因为控制台编码问题崩掉（见 console.py 的说明）。
 enable_utf8_console()
 
-# 与 docs/interface.md 同步；契约冻结为 v1.0 时这里一起改
-CONTRACT_VERSION = "v0.91"
+# 与 docs/interface.md 同步。契约已于 2026-09-11 冻结为 v1.0（由 C 线发起，见该文件第 5.3 节）。
+# 说明：第 1/2 节（本文件实现的 JSON schema 与 status 枚举）自基线 79c57a9 以来**一字未变**，
+# 故本次同步只改版本号字符串，校验逻辑未动。
+CONTRACT_VERSION = "v1.0"
 
 # ---- status 枚举（docs/interface.md 第 2 节，仅此 6 值，不得扩展）-----------
 STATUS_VALUES: tuple[str, ...] = (
