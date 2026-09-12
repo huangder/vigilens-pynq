@@ -72,7 +72,7 @@ LUT **1267** / FF **723** / BRAM **0** / DSP **1**（LUT 占 2%）、无 ERROR�
 | 任务 | 状态 | 说明 |
 |---|---|---|
 | **C1** 锁工具链 + 官方最小例程 | ✅ 完成 | 见 `report/environment.md` |
-| **C2** 冻结 IP 接口 | ✅ **v0.94**（**待 A/B 会签**） | `docs/interface.md`；四个 IP 的寄存器映射均已与实综合**逐行核对** |
+| **C2** 冻结 IP 接口 | ✅ **v1.0 已冻结**（2026-09-11；A/B 待补签 §5.2 的 6 项） | `docs/interface.md`；四个 IP 的寄存器映射均已与实综合**逐行核对** |
 | **C3** `roi_statistic` | ✅ **完成** | csim 28/28 + 45/45、0 errors；II=1；Fmax 138.99 MHz；LUT 1267/FF 723/BRAM 0/DSP 1 |
 | **C3.5** RTL 协同仿真（cosim） | ✅ **完成（4 个 IP）** | 全部 PASS、Layer 2 黄金参考也跑到了、**无死锁**；见 `report/cosim_all_ips_v1.md`（三个图像 IP）与 `report/c5_fir_filter_v1.md` 第 7 节（`fir_filter`） |
 | **C4** `rgb2gray` + `motion_quality` | ✅ **完成** | `rgb2gray` v2 8/8+10/10，Fmax 137.46 MHz，BRAM 0；`motion_quality` v2 6/6+9/9，Fmax 140.05 MHz，**BRAM 64（23%）** |
@@ -258,7 +258,7 @@ host_model_fir.exe fpga/sim/data_fir     # 逐样本对黄金参考 + 折叠 vs 
 ## 任务清单（与《02》C1~C10 对应）
 
 - [x] C1 锁定 Vitis HLS 2026.1 + 跑通官方最小 HLS 例程（仿真+综合）
-- [x] C2 冻结 IP 接口 → `docs/interface.md`（**v0.94，待 A/B 会签转 v1.0**）
+- [x] C2 冻结 IP 接口 → `docs/interface.md`（🔒 **v1.0 已冻结**，2026-09-11；A/B 待补签 §5.2）
 - [x] C3 `roi_statistic` C 仿真通过（28/28 + 45/45，0 errors）
 - [x] C4 `rgb2gray` + `motion_quality` C 仿真通过（8/8+10/10、6/6+9/9，0 errors）——BRAM 已从 91% 降到 **23%**
 - [x] C5 `fir_filter` C 仿真通过（**8/8 + 16/16，0 errors**）—— N=63 Q15 带通，容差 **0**
