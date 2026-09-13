@@ -270,7 +270,7 @@ def scan_d(n_taps, fs, f1, f2, d_list):
 def write_header(path, h_q15, fs, f1, f2, d):
     lines = []
     lines.append("// =============================================================================")
-    lines.append("//  fir_coeffs_q15.h —— fir_filter 的冻结系数表（**自动生成，请勿手改**）")
+    lines.append("//  %s —— fir_filter 的冻结系数表（**自动生成，请勿手改**）" % os.path.basename(path))
     lines.append("// -----------------------------------------------------------------------------")
     lines.append("//  生成器：fpga/sim/design_fir_coeffs.py   （纯标准库，可用同一条命令复现）")
     lines.append("//  契约：docs/interface.md 第 3.5 节")

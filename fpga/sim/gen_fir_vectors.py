@@ -52,7 +52,6 @@ DEF_OUT = os.path.join(HERE, "data_fir")
 DEF_SEED = 20260910
 
 INT16_MIN, INT16_MAX = -32768, 32767
-DEF_FS = 30.0
 
 
 # ---- 解析冻结系数表 ---------------------------------------------------------
@@ -139,7 +138,7 @@ def rand_i16(n, seed):
     return [sv(int.from_bytes(b[2 * i:2 * i + 2], "little", signed=True)) for i in range(n)]
 
 
-def build_cases(scale):
+def build_cases(scale, fs):
     """返回 [(case, samples, reset), ...]，按"段顺序"排列。
 
     scale：小向量模式下的样本数缩放（cosim 用），保持段结构不变。
@@ -163,19 +162,19 @@ def build_cases(scale):
 
     # 4) 单频正弦：通带内（1.5 Hz）、下边缘（0.8 Hz）、上边缘（3.2 Hz）、
     #    呼吸/漂移带（0.2 Hz）、高阻带（8 Hz）
-    cases.append(("sine_1p5hz", sine(nlen(300), DEF_FS, 1.5, 20000), 1))
-    cases.append(("sine_0p8hz", sine(nlen(300), DEF_FS, 0.8, 20000), 1))
-    cases.append(("sine_3p2hz", sine(nlen(300), DEF_FS, 3.2, 20000), 1))
-    cases.append(("sine_0p2hz", sine(nlen(300), DEF_FS, 0.2, 20000), 1))
-    cases.append(("sine_8hz", sine(nlen(300), DEF_FS, 8.0, 20000), 1))
+    cases.append(("sine_1p5hz", sine(nlen(300), fs, 1.5, 20000), 1))
+    cases.append(("sine_0p8hz", sine(nlen(300), fs, 0.8, 20000), 1))
+    cases.append(("sine_3p2hz", sine(nlen(300), fs, 3.2, 20000), 1))
+    cases.append(("sine_0p2hz", sine(nlen(300), fs, 0.2, 20000), 1))
+    cases.append(("sine_8hz", sine(nlen(300), fs, 8.0, 20000), 1))
 
     # 5) 满幅 1 Hz 方波：通带内的强信号 -> 必然触发饱和（检验饱和与计数）
-    sq = [INT16_MAX if (i * 1 * 2 // int(DEF_FS)) % 2 == 0 else INT16_MIN
+    sq = [INT16_MAX if (i * 1 * 2 // int(fs)) % 2 == 0 else INT16_MIN
           for i in range(nlen(300))]
     cases.append(("square_1hz_full", sq, 1))
 
     # 6) 小幅度正弦（A=100）：不应饱和（sat_count 必须为 0）
-    cases.append(("sine_small_amp", sine(nlen(300), DEF_FS, 1.5, 100), 1))
+    cases.append(("sine_small_amp", sine(nlen(300), fs, 1.5, 100), 1))
 
     # 7) 随机满幅：通用覆盖
     rnd = rand_i16(nlen(512), DEF_SEED)
@@ -260,7 +259,7 @@ def main():
           % (sum(h), sum(abs(v) for v in h), 32768 * sum(abs(v) for v in h),
              32768 * sum(abs(v) for v in h) < 2 ** 31))
 
-    cases = build_cases(args.scale)
+    cases = build_cases(args.scale, fs)
     os.makedirs(args.out_dir, exist_ok=True)
 
     hist = [0] * (taps - 1)
