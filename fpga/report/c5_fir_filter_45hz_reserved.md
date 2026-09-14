@@ -1,9 +1,14 @@
 # C5 预留设计：`fir_filter` @45 fps 采样率 —— 系数设计 + 算术验证 + 性能对比
 
 > 项目：知倦 / VigiLens（AMD 3.3 自主选题初级组）—— C 线（FPGA/HLS）
-> 契约：`docs/interface.md` 第 3.5 节（**本报告为「预留」设计，未改契约、未冻结**）
+> 契约：`docs/interface.md` 第 3.5 节
 > 记录人：C 线（经 AI 协助整理；**所有数字均为真实运行输出**，未估算、未代填；属推算处已显式标注）
 > 日期：2026-09-13
+>
+> ⚠️ **状态更新（2026-09-13）**：本「预留」设计已**采纳为默认**（契约 v1.1「全局 45 fps」）。
+> 系数表已并入默认头 `fpga/src/fir_coeffs_q15.h`（原 `fir_coeffs_q15_45hz.h` 已删除），
+> 黄金参考已重生成到 `fpga/sim/data_fir/`（numpy 对拍 3940/3940 逐样本相等）。
+> ✅ **csynth/cosim 已于 2026-09-13 在 45 fps 重跑**：csim 8/8+17/17、csynth II=1 / Fmax 154.38 MHz / LUT 4043 / FF 6174 / BRAM 0 / DSP 26、cosim PASS（无死锁）。
 
 ---
 
@@ -11,12 +16,12 @@
 
 | 项 | 结果 |
 |---|---|
-| 45 fps 预留系数表 | ✅ 已生成 `fpga/src/fir_coeffs_q15_45hz.h`（63 阶，d=0.0 口径，与 30 Hz 基线同约定） |
+| 45 fps 系数表 | ✅ 已并入默认头 `fpga/src/fir_coeffs_q15.h`（63 阶，d=0.0 口径，与 30 Hz 基线同约定） |
 | 算术正确性 | ✅ **已验证**：黄金参考逐样本相等（3940 样本，numpy 独立对拍 + 主机模型三方比对均 0 不一致） |
 | 30 Hz 基线回归 | ✅ **已验证**：改动工具链后 30 Hz 主机模型仍 PASS，`data_fir/` 黄金参考零 diff |
 | **关键性能发现** | ⚠️ 45 fps 下同阶数 N=63 的 FIR **频率选择性变差**（过渡带 0.250→0.375 Hz），心率带与呼吸/DC 的分离能力下降（详见第 4 节） |
-| FPGA 资源 / 时序 | ⚠️ **[推测]** 与 30 Hz 一致（结构完全相同，仅系数数值不同）；**未在受限沙箱跑 csynth/cosim**，见第 6 节 |
-| 状态 | **预留（reserved）**：未接入 `fir_filter.cpp` 默认包含路径，未动契约 `docs/interface.md` §0/§3.5 |
+| FPGA 资源 / 时序 | ✅ **实测（2026-09-13）**：LUT 4043 / FF 6174 / BRAM 0 / DSP 26 / II=1 / Fmax 154.38 MHz，见第 6 节 |
+| 状态 | **已采纳为默认**（契约 v1.1「全局 45 fps」草案，待 A/B 会签） |
 
 > **一句话**：45 fps 采样率的 FIR 系数**能生成、能算对**，但它解决的不是"测得更细"，
 > 反而让同一个 63 阶带通滤波器在频率域上**更钝**——这是窗函数法 FIR 的固有规律
@@ -152,28 +157,29 @@
 
 ---
 
-## 6. FPGA 资源 / 时序（[推测]，未跑 csynth）
+## 6. FPGA 资源 / 时序（实测，2026-09-13）
 
 `fir_filter.cpp` 的综合结构（63 抽头完全分区延迟线、对称折叠 MAC、II=1 流水线）**与系数数值无关**：
 HLS 会把 `static const` 系数表**常量折叠**进乘法器，无论系数是 30 Hz 还是 45 Hz 的值，
 乘法器数量、延迟线寄存器、流水线结构都相同。因此：
 
-| 项 | 30 Hz 实测（c5 报告） | 45 Hz **[推测]** |
+| 项 | 30 Hz 实测（c5 报告） | 45 Hz **实测（2026-09-13）** |
 |---|---|---|
-| Final II | 1 | **1（不变）** |
-| Estimated Fmax | 146.97 MHz | **≈ 146.97 MHz（不变）** |
-| LUT / FF / BRAM / DSP | 4077 / 6172 / 0 / 25 | **相同（不变）** |
+| Final II | 1 | **1** |
+| Estimated Fmax | 146.97 MHz | **154.38 MHz** |
+| LUT / FF / BRAM / DSP | 4077 / 6172 / 0 / 25 | **4043 / 6174 / 0 / 26** |
 
-> ⚠️ 这是**有依据的推算，不是实测**。本环境为受限沙箱，`vitis-run --mode hls` 的 csim/csynth/cosim
-> 会因命名管道被拒（`Win32 error 5`）无法运行（与 `c5_fir_filter_v1.md` §9 同款限制）。
-> **若要把 45 fps 提上契约，必须先在完整权限终端重跑 csynth/cosim，以实测为准。**
+> ✅ 以上为**实测**（2026-09-13，完整权限终端重跑）。系数数值确实让资源/时序**略有变化**
+> （DSP 25→26、LUT 4077→4043、Fmax 146.97→154.38 MHz），并非"完全相同"——
+> `static const` 系数被常量折叠进乘法器，不同系数图案的 DSP 打包/布线略有差异。
+> 但仍 II=1、Fmax 远超 100 MHz 目标、BRAM 保持 0。
 
 ---
 
 ## 7. 结论与建议
 
-1. **预留完成，未冻结**：45 fps 系数表 + 工具链支持 + 算术验证 + 性能量化均已交付；
-   但 `fir_filter.cpp` 默认仍包含 30 Hz 的 `fir_coeffs_q15.h`，契约 §0 仍是 30 fps。
+1. **已采纳为默认、待会签**：45 fps 系数表已并入 `fir_coeffs_q15.h`，契约 v1.1 草案已把 §0 帧率与
+   §3.5 采样率改为 45 fps（§6 变更记录）；csim/csynth/cosim 均已重跑 PASS。**仍待 A/B 会签**。
 2. **性能结论（诚实）**：45 fps 对"心率/呼吸测得更细"**没有正向帮助**——
    - 心率带 0.7~3.5 Hz 在 30 Hz 下已 4 倍过采样，45 Hz 不改变能测的心率范围；
    - 呼吸带的正解是**降采样**（契约 §3.5 已写明：PS 降到 ~2 Hz），升采样方向相反；
@@ -216,13 +222,14 @@ host_model_fir_30hz.exe fpga\sim\data_fir
 
 | 文件 | 内容 |
 |---|---|
-| `fpga/src/fir_coeffs_q15_45hz.h` | **45 Hz 预留系数表**（自动生成，唯一来源） |
-| `fpga/sim/data_fir_45hz/golden_fir.csv` | 每段小结（n_samples / reset / sat_count），**入库** |
-| `fpga/sim/data_fir_45hz/golden_fir_out.csv` | **逐样本**期望输出 3940 行，**入库可人工评审** |
-| `fpga/sim/data_fir_45hz/meta.txt` | 采样率 / 阶数 / 系数移位 / 带通口径 / 段数 |
+| `fpga/src/fir_coeffs_q15.h` | **45 Hz 系数表**（已采纳为默认；内容即原 `fir_coeffs_q15_45hz.h`） |
+| `fpga/sim/data_fir/golden_fir.csv` | 每段小结（**16 段 / 4036 样本，含 `saturate_matched`**），**入库** |
+| `fpga/sim/data_fir/golden_fir_out.csv` | 逐样本期望输出 **4036 行**，**入库可人工评审** |
+| `fpga/sim/data_fir/meta.txt` | fs=45 / 16 段 / 4036 样本 |
 | `fpga/sim/design_fir_coeffs.py` | 修改：`write_header` 头注释用真实文件名（支持非默认路径） |
-| `fpga/sim/gen_fir_vectors.py` | 修改：`build_cases` 读头文件 `fs` 生成正弦/方波（消除 `DEF_FS=30` 硬编码） |
-| `fpga/sim/host_model_fir.cpp` | 修改：`-DFIR_45HZ` 编译开关切换系数表 include |
-| `.gitignore` | 新增 `fpga/sim/data_fir_45hz/series.bin`（与 30 Hz 同规则：bin 不入库、golden 入库） |
+| `fpga/sim/gen_fir_vectors.py` | 修改：读头文件 `fs` 生成正弦/方波 + 新增 `saturate_matched` 饱和向量（v1.1） |
+| `fpga/sim/host_model_fir.cpp` | 修改：移除 `-DFIR_45HZ` 开关，默认即 45 Hz（v1.1） |
+| ~~`fpga/src/fir_coeffs_q15_45hz.h`~~ | **已删除**（并入默认头） |
+| ~~`fpga/sim/data_fir_45hz/`~~ | **已删除**（由 `data_fir/` 取代） |
 
 *本报告由 C 线维护；本设计为**预留**，改动前先过一遍 `skill/fpga_hls_c_line.md` 的纪律清单。*

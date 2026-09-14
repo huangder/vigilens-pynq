@@ -175,28 +175,38 @@ static int test_embedded(void)
     }
 
     // --- 用例 3：全幅直流（+ / -）-> DC 被抑制 + 数值正确 ---
-    for (int sgn = 0; sgn < 2; sgn++) {
-        const int n = 200;
-        short v = sgn ? (short)-32768 : (short)32767;
-        std::vector<short> x(n, v), y;
-        Stats st; long hdr = 0;
-        FirRef ref; ref.reset();
-        std::vector<short> ey; unsigned esat = 0;
-        ref.run(x.data(), n, ey, esat);
-        run_ip(x.data(), n, 1, st, y, hdr);
+    // DC 抑制的稳态判据阈值 = |Σh| + 余量，由系数表当场算出（不再硬编码某个
+    // 采样率时代的数字），换系数表后判据自动跟随：
+    //   45 fps 口径 Σh=5710 → DC −15.18 dB；30 fps 口径 Σh=897 → DC −31.25 dB。
+    // 余量 +64 覆盖"满幅输入 32767/32768 的归一化差异 + 一次算术右移的舍入"。
+    {
+        long long s = 0;
+        for (int k = 0; k < FIR_NUM_TAPS; k++) s += FIR_COEFF_Q15[k];
+        int dc_bound = (int)((s < 0 ? -s : s) + 64);
 
-        // 结构性判据：稳态输出幅值应远小于输入（带通抑制 DC）
-        int peak = 0;
-        for (int i = FIR_NUM_TAPS; i < n; i++) {
-            int a = y[i] < 0 ? -y[i] : y[i];
-            if (a > peak) peak = a;
-        }
-        bool ok = (y == ey) && (peak <= 1000) && (hdr == 0);
-        if (ok) pass++;
-        else {
-            fail++;
-            printf("  FAIL dc_%s: vals=%d 稳态峰值=%d(<=1000?) hdr=%ld\n",
-                   sgn ? "neg" : "pos", (int)(y == ey), peak, hdr);
+        for (int sgn = 0; sgn < 2; sgn++) {
+            const int n = 200;
+            short v = sgn ? (short)-32768 : (short)32767;
+            std::vector<short> x(n, v), y;
+            Stats st; long hdr = 0;
+            FirRef ref; ref.reset();
+            std::vector<short> ey; unsigned esat = 0;
+            ref.run(x.data(), n, ey, esat);
+            run_ip(x.data(), n, 1, st, y, hdr);
+
+            // 结构性判据：稳态输出幅值应等于 |Σh|（带通抑制 DC，数值由系数表决定）
+            int peak = 0;
+            for (int i = FIR_NUM_TAPS; i < n; i++) {
+                int a = y[i] < 0 ? -y[i] : y[i];
+                if (a > peak) peak = a;
+            }
+            bool ok = (y == ey) && (peak <= dc_bound) && (hdr == 0);
+            if (ok) pass++;
+            else {
+                fail++;
+                printf("  FAIL dc_%s: vals=%d 稳态峰值=%d(<=%d?) hdr=%ld\n",
+                       sgn ? "neg" : "pos", (int)(y == ey), peak, dc_bound, hdr);
+            }
         }
     }
 

@@ -23,7 +23,6 @@ fpga/sim/data_motion/gray.bin
 # 注意：fpga/sim/data_fir/{meta.txt, golden_fir.csv, golden_fir_out.csv}
 #       是黄金参考，**必须入库**（golden_fir_out.csv 是逐样本期望输出，可人工评审）。
 fpga/sim/data_fir/series.bin
-fpga/sim/data_fir_45hz/series.bin
 
 # ---- Vitis HLS 构建产物 ----------------------------------------------------
 fpga/component_*/

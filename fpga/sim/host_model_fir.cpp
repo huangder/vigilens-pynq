@@ -27,11 +27,7 @@
 #include <string>
 #include <vector>
 
-#ifdef FIR_45HZ
-#include "../src/fir_coeffs_q15_45hz.h"
-#else
 #include "../src/fir_coeffs_q15.h"
-#endif
 
 static const int N_TAPS = FIR_NUM_TAPS;
 static const int N_HALF = (FIR_NUM_TAPS - 1) / 2;   // 成对抽头数

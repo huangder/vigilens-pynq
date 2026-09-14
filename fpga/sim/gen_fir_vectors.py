@@ -138,7 +138,7 @@ def rand_i16(n, seed):
     return [sv(int.from_bytes(b[2 * i:2 * i + 2], "little", signed=True)) for i in range(n)]
 
 
-def build_cases(scale, fs):
+def build_cases(scale, fs, h):
     """返回 [(case, samples, reset), ...]，按"段顺序"排列。
 
     scale：小向量模式下的样本数缩放（cosim 用），保持段结构不变。
@@ -148,7 +148,8 @@ def build_cases(scale, fs):
 
     cases = []
     # 1) 单位脉冲：输出即滤波器冲激响应（可检验系数顺序、群延迟 31、偶对称）
-    imp = [0] * nlen(96)
+    #    长度至少 taps，否则 scale<1（cosim 小向量）时冲激响应被截断、结构自检会越界
+    imp = [0] * max(len(h), nlen(96))
     imp[0] = INT16_MAX
     cases.append(("impulse", imp, 1))
 
@@ -168,10 +169,17 @@ def build_cases(scale, fs):
     cases.append(("sine_0p2hz", sine(nlen(300), fs, 0.2, 20000), 1))
     cases.append(("sine_8hz", sine(nlen(300), fs, 8.0, 20000), 1))
 
-    # 5) 满幅 1 Hz 方波：通带内的强信号 -> 必然触发饱和（检验饱和与计数）
+    # 5) 满幅 1 Hz 方波：通带内强信号（@30fps 会饱和；@45fps 系数更小不再饱和，饱和由 5b 覆盖）
     sq = [INT16_MAX if (i * 1 * 2 // int(fs)) % 2 == 0 else INT16_MIN
           for i in range(nlen(300))]
     cases.append(("square_1hz_full", sq, 1))
+
+    # 5b) 匹配系数符号的满幅输入：让累加器朝 Σ|h|·MAX 对齐，保证必有样本饱和（覆盖饱和分支）
+    n = len(h)
+    seg_len = max(n, nlen(96))
+    pat = [(INT16_MAX if h[n - 1 - j] >= 0 else INT16_MIN) for j in range(n)]
+    sat = pat + [0] * max(0, seg_len - n)
+    cases.append(("saturate_matched", sat, 1))
 
     # 6) 小幅度正弦（A=100）：不应饱和（sat_count 必须为 0）
     cases.append(("sine_small_amp", sine(nlen(300), fs, 1.5, 100), 1))
@@ -259,7 +267,7 @@ def main():
           % (sum(h), sum(abs(v) for v in h), 32768 * sum(abs(v) for v in h),
              32768 * sum(abs(v) for v in h) < 2 ** 31))
 
-    cases = build_cases(args.scale, fs)
+    cases = build_cases(args.scale, fs, h)
     os.makedirs(args.out_dir, exist_ok=True)
 
     hist = [0] * (taps - 1)

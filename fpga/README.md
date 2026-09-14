@@ -76,7 +76,7 @@ LUT **1267** / FF **723** / BRAM **0** / DSP **1**（LUT 占 2%）、无 ERROR�
 | **C3** `roi_statistic` | ✅ **完成** | csim 28/28 + 45/45、0 errors；II=1；Fmax 138.99 MHz；LUT 1267/FF 723/BRAM 0/DSP 1 |
 | **C3.5** RTL 协同仿真（cosim） | ✅ **完成（4 个 IP）** | 全部 PASS、Layer 2 黄金参考也跑到了、**无死锁**；见 `report/cosim_all_ips_v1.md`（三个图像 IP）与 `report/c5_fir_filter_v1.md` 第 7 节（`fir_filter`） |
 | **C4** `rgb2gray` + `motion_quality` | ✅ **完成** | `rgb2gray` v2 8/8+10/10，Fmax 137.46 MHz，BRAM 0；`motion_quality` v2 6/6+9/9，Fmax 140.05 MHz，**BRAM 64（23%）** |
-| **C5** `fir_filter` | ✅ **完成** | N=63 Q15 带通 @30fps；csim **8/8 + 16/16**、**容差 0**、cosim **PASS**、II=1、Fmax **146.97 MHz**、LUT 4077/FF 6172/**BRAM 0**/DSP 25；报告 `report/c5_fir_filter_v1.md` |
+| **C5** `fir_filter` | ✅ **完成** | N=63 Q15 带通 @45fps；csim **8/8 + 17/17**、**容差 0**、cosim **PASS**、II=1、Fmax **154.38 MHz**、LUT 4043/FF 6174/**BRAM 0**/DSP 26（2026-09-13 @45fps 实测）；报告 `report/c5_fir_filter_v1.md`、`report/c5_fir_filter_45hz_reserved.md` |
 | **C6** testbench + Python 黄金参考 | ✅ **完成（4 个 IP）** | 两层验证：内嵌边界用例 + 跨语言黄金参考 |
 | **C7** 综合报告归档 | ✅ **完成（4 份）** | `report/c3_c7_roi_statistic_v1.md`、`report/c4_rgb2gray_motion_quality_v1.md`、`report/cosim_all_ips_v1.md`、`report/c5_fir_filter_v1.md` |
 | **C8~C10** 上板 / Overlay / DMA | ⏳ M3 后 | 属 `board/`；BRAM 已留出 216 个 |
@@ -85,14 +85,14 @@ LUT **1267** / FF **723** / BRAM **0** / DSP **1**（LUT 占 2%）、无 ERROR�
 
 | IP | 工作尺寸 | csim | II | Fmax | LUT | FF | BRAM18 | DSP |
 |---|---|---|---|---|---|---|---|---|
-| `roi_statistic` | 640×480 RGB | 28/28 + 45/45 | 1 | 138.99 MHz | 1269 | 723 | 0 | 1 |
-| `rgb2gray` **v2** | 640×480 → 384×288 | 8/8 + 10/10 | 1 | 137.46 MHz | 1412 | 918 | 0 | 5 |
+| `roi_statistic` | 640×480 RGB | 28/28 + 45/45 | 1 | 138.99 MHz | 1267 | 723 | 0 | 1 |
+| `rgb2gray` **v2** | 640×480 → 384×288 | 8/8 + 10/10 | 1 | 137.46 MHz | 1410 | 918 | 0 | 5 |
 | `motion_quality` **v2** | 384×288 灰度 | 6/6 + 9/9 | 1 | 140.05 MHz | 1501 | 1158 | **64** | 1 |
-| `fir_filter` **v1** | 时间序列（63 阶 Q15） | **8/8 + 16/16** | 1 | **146.97 MHz** | **4077** | **6172** | **0** | **25** |
-| **合计** | | | | | **8259**（15.5%） | **8971**（8.4%） | **64（23%）** | **32**（14.5%） |
+| `fir_filter` **v1** | 时间序列（63 阶 Q15） | **8/8 + 17/17** | 1 | **154.38 MHz** | **4043** | **6174** | **0** | **26** |
+| **合计** | | | | | **8221**（15.4%） | **8973**（8.4%） | **64（23%）** | **33**（15.0%） |
 
-> ⚠️ `fir_filter` 的 DSP 是四个里最高的（25），这是**全并行 + II=1** 的代价；
-> 时间序列只需 30 Hz，若 M3 发现 DSP 紧张，可把 MAC 折叠（`PIPELINE II=4`）换 DSP。
+> ⚠️ `fir_filter` 的 DSP 是四个里最高的（26），这是**全并行 + II=1** 的代价；
+> 时间序列只需 45 Hz，若 M3 发现 DSP 紧张，可把 MAC 折叠（`PIPELINE II=4`）换 DSP。
 > 它 **不占 BRAM**（延迟线 63×16bit 被完全分区成寄存器）。
 
 > ✅ **BRAM 问题已闭环**：`motion_quality` 初版在 640×480 上工作，占 **256 个 BRAM18 = 91%**（上板必炸）；
@@ -133,7 +133,7 @@ vitis-run --mode hls --tcl run_hls.tcl
 
 ## 已冻结的接口要点（详见 `docs/interface.md`）
 
-- 器件 **PYNQ-Z2 `xc7z020clg400-1`**，时钟 **10 ns（100 MHz）**；图像 **640×480 RGB888@30fps**。
+- 器件 **PYNQ-Z2 `xc7z020clg400-1`**，时钟 **10 ns（100 MHz）**；图像 **640×480 RGB888@45fps**。
 - 三个必须记住的坑：
   1. 通道顺序 **R-G-B**（OpenCV 默认 BGR，A 线比对前要转）；
   2. ROI 是**半开区间** `[x0,x1)`，等价于 `img[y0:y1, x0:x1]`；
@@ -199,7 +199,7 @@ vitis-run --mode hls --tcl run_hls.tcl
 
 ```bat
 :: 设计/复现系数（纯标准库；会重写 src/fir_coeffs_q15.h）
-python fpga\sim\design_fir_coeffs.py                 :: 默认 N=63、0.7~3.5 Hz @30fps
+python fpga\sim\design_fir_coeffs.py                 :: 默认 N=63、0.7~3.5 Hz @45fps
 python fpga\sim\design_fir_coeffs.py --scan --d 0.0  :: 打印 d 扫描表（-6dB vs -3dB 口径的取舍）
 python fpga\sim\design_fir_coeffs.py --band 0.1 0.5  :: 附呼吸带可行性评估（结论：63 阶做不到）
 ```
@@ -261,7 +261,7 @@ host_model_fir.exe fpga/sim/data_fir     # 逐样本对黄金参考 + 折叠 vs 
 - [x] C2 冻结 IP 接口 → `docs/interface.md`（🔒 **v1.0 已冻结**，2026-09-11；A/B 待补签 §5.2）
 - [x] C3 `roi_statistic` C 仿真通过（28/28 + 45/45，0 errors）
 - [x] C4 `rgb2gray` + `motion_quality` C 仿真通过（8/8+10/10、6/6+9/9，0 errors）——BRAM 已从 91% 降到 **23%**
-- [x] C5 `fir_filter` C 仿真通过（**8/8 + 16/16，0 errors**）—— N=63 Q15 带通，容差 **0**
+- [x] C5 `fir_filter` C 仿真通过（**8/8 + 17/17，0 errors**）—— N=63 Q15 带通，容差 **0**（@45fps，2026-09-13）
 - [x] C6 每个 IP 的 testbench + Python 黄金参考就绪（**4 个 IP 已就绪**）
 - [x] C7 综合报告（资源 + 时序）归档（**4 份**：`report/c3_c7_*.md`、`report/c4_*.md`、`report/c5_fir_filter_v1.md`）
 - [x] **BRAM 问题闭环**：根因坐实 + 方案 A′（384×288）已实现验证，留出 216 个 BRAM18
