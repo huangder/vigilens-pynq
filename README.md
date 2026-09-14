@@ -110,8 +110,8 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
   `roi_statistic`（28/28 + 45/45，II=1，Fmax 138.99 MHz，LUT 1267 / FF 723 / BRAM 0 / DSP 1）、
   `rgb2gray` v2（8/8 + 10/10，Fmax 137.46 MHz，BRAM 0）、
   `motion_quality` v2（6/6 + 9/9，Fmax 140.05 MHz，**BRAM 64 = 23%**，91% 风险已闭环）、
-  `fir_filter` v1（63 阶 Q15 带通 @30fps，8/8 + 16/16，**比对容差 0**，II=1，Fmax 146.97 MHz，BRAM 0 / DSP 25）。
-  四者合计 LUT 8255（15.5%）/ FF 8971（8.4%）/ BRAM 64（23%）/ DSP 32（14.5%）。
+  `fir_filter` v1（63 阶 Q15 带通 @45fps，8/8 + 17/17，**比对容差 0**，II=1，Fmax 154.38 MHz，BRAM 0 / DSP 26）。
+  四者合计 LUT 8221（15.4%）/ FF 8973（8.4%）/ BRAM 64（23%）/ DSP 33（15.0%）。
   证据见 `fpga/report/` 下的 `c3_c7_roi_statistic_v1.md`、`c4_rgb2gray_motion_quality_v1.md`、
   `cosim_all_ips_v1.md`、`c5_fir_filter_v1.md`。
   C 线 M3 前**已无未实现的离线任务**；`board/`（上板 / Overlay / DMA）待板卡到手后开始。

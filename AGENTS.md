@@ -218,7 +218,7 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 | 目标板卡 / 器件 | **PYNQ-Z2 / `xc7z020clg400-1`**（Zynq-7000） |
 | 工具链 | **Vitis HLS 2026.1**，入口 `vitis-run --mode hls --tcl <脚本>` |
 | 目标时钟 | **10 ns（100 MHz）** |
-| 图像尺寸 / 格式 / 帧率 | **640 × 480**，**RGB888**（`byte0=R, byte1=G, byte2=B`），**30 fps**（仅影响时间序列） |
+| 图像尺寸 / 格式 / 帧率 | **640 × 480**，**RGB888**（`byte0=R, byte1=G, byte2=B`），**45 fps**（仅影响时间序列） |
 | 局部窗口 | `window_seconds: 30`（PERCLOS / 眨眼率 / 质量滑窗） |
 | WebSocket 推送 | `ws_push_hz: 1.0`（1 帧/秒） |
 
