@@ -1,11 +1,11 @@
 {
-  "started_at": "2026-09-16 00:52:24",
-  "port": 40192,
+  "started_at": "2026-09-16 01:04:21",
+  "port": 28934,
   "steps": [
     {
       "name": "服务就绪",
       "ok": true,
-      "detail": "http://127.0.0.1:40192 已监听"
+      "detail": "http://127.0.0.1:28934 已监听"
     },
     {
       "name": "数据源=ingest（不是 B 线 mock）",
@@ -169,7 +169,7 @@
       "landmark_source": "stub"
     }
   ],
-  "elapsed_s": 11.6,
+  "elapsed_s": 10.7,
   "passed": 17,
   "failed": 0,
   "ok": true

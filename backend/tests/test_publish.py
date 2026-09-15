@@ -254,13 +254,39 @@ def test_done_frame_goes_to_stream_but_not_csv(workdir: Path) -> None:
     assert snap["status"] != "done", "last.json 是「最新一次测量」快照，不被收尾帧覆盖"
 
 
-def test_post_failure_returns_exit_code_3(workdir: Path) -> None:
-    """B 线没起 / 端口写错时，管线必须当场报错退出，而不是安静地跑完。"""
+def test_post_failure_keeps_measurement_and_exits_3(workdir: Path) -> None:
+    """B 线没起 / 端口写错：测量必须**完整落盘**，结局必须**响亮**（退出码 3）。
+
+    这两条缺一不可（实测踩到的反例）：
+      - 只在失败时立刻 return 3：测量产物被截断成 1 行 CSV，看起来像"跑过了"，
+        又像"没跑过"，是最坏的一种状态（数据真实性风险）；
+      - 只继续跑完不出声：网页一直不动，没人知道 B 线根本没收到数据。
+    """
+    import csv
+
     url = f"http://127.0.0.1:{_free_port()}/api/ingest"
-    rc = run_pipeline_main(["--source", "synthetic", "--seconds", "1", "--stub", "--quiet",
-                            "--json", str(workdir / "l.json"),
+    stream, csvp = workdir / "s.jsonl", workdir / "m.csv"
+    rc = run_pipeline_main(["--source", "synthetic", "--seconds", "2", "--stub", "--quiet",
+                            "--json", str(workdir / "l.json"), "--jsonl", str(stream),
+                            "--csv", str(csvp), "--summary", str(workdir / "sum.json"),
                             "--post", url, "--post-retries", "0"])
     assert rc == 3
+
+    expected = round(2 * float(load_config()["fps_nominal"]))
+    with csvp.open(encoding="utf-8", newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    assert len(rows) == expected, "推送失败不该让测量产物截断"
+    frames = load_jsonl(stream)
+    assert frames[-1]["status"] == "done", "收尾帧照常进流"
+
+    sm = json.loads((workdir / "sum.json").read_text(encoding="utf-8"))
+    assert sm["post"]["ok"] is False
+    assert sm["post"]["stopped_after_failure"] is True
+    assert sm["post"]["posted"] == 0
+    assert sm["post"]["http_attempts"] == 1, "第一次彻底失败后就停推，不许逐帧重试刷日志"
+    assert sm["post"]["errors"], "失败原文要留在摘要里，便于排查"
+    snap = json.loads((workdir / "l.json").read_text(encoding="utf-8"))
+    assert snap["status"] != "done", "last.json 仍是最新一次测量"
 
 
 def test_no_done_flag_suppresses_closing_frame(workdir: Path) -> None:
@@ -294,3 +320,24 @@ def test_frame_id_offset_continues_the_timeline(workdir: Path) -> None:
         assert out[tag][-1]["frame_id"] > out[tag][-2]["frame_id"], "段内也要单调递增"
     assert out["b"][0]["frame_id"] > out["a"][-1]["frame_id"], "跨段不许回退"
     assert out["b"][0]["ts"] > out["a"][-1]["ts"]
+
+
+def test_posting_is_byte_reproducible(ingest: _Server, workdir: Path) -> None:
+    """同样的命令跑两次，**推给 B 线的帧集合逐字节相同**。
+
+    为什么单独测这条：节流是"按逻辑时间"的，一旦有人把它改成按墙上时钟
+    （看着更"实时"），同一段回放两次就会推出不同的帧集合 —— 现场演示对不上、
+    事后也复现不了。回归用这一条钉住。
+    """
+    args = ["--source", "synthetic", "--pattern", "turn", "--seconds", "6", "--stub",
+            "--quiet", "--json", str(workdir / "l.json"), "--post", ingest.url]
+    runs = []
+    for tag in ("a", "b"):
+        rc = run_pipeline_main([*args, "--summary", str(workdir / f"sum_{tag}.json")])
+        assert rc == 0
+        runs.append(list(ingest.frames))
+    first, second = runs[0], ingest.frames[len(runs[0]):]
+    assert first == second, "两次运行推送的帧必须逐字节相同（不许有墙钟/随机来源）"
+    assert first and first[-1]["status"] == "done"
+    assert [f["ts"] for f in first[:-1]] == [float(i) for i in range(len(first) - 1)], \
+        "1 Hz 逻辑时间节流：ts 应恰好落在整秒上"

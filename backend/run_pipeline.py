@@ -20,7 +20,13 @@
    A 线测量与 B 线服务是两个进程，`hub.HUB` 跨不过去；正式通道是 B 线
    `api.py` 已经留好的 `POST /api/ingest`。加 `--post` 之后，每帧按
    `ws_push_hz`（逻辑时间 1 帧/秒）推过去，B 线网页上看到的就是本次运行的真实数字。
-   **推送失败会让本次运行以退出码 3 收场**，不静默丢帧。
+
+   推送失败的处理有**两条**约束，缺一不可：
+     a) **不许静默丢帧** —— 失败要打印、要进 summary、最终以**退出码 3** 收场；
+     b) **不许把测量一起弄丢** —— B 线服务没起是 B 线的事，A 线的测量产物
+        （JSON / CSV / 证据）必须照常跑完落盘，否则"忘了先起服务"会让整段测量白跑，
+        还可能留下一个只有 1 行的半截 CSV 被误当成一次完整测量（数据真实性风险）。
+   因此失败后**停止后续推送**（避免逐帧重试刷爆日志），但测量继续到最后。
 
 5. **收尾帧 status=done 只进 jsonl 流与推送，不进 CSV。**
    CSV 是逐帧测量表（P4 标定/黄金比对按行数统计），done 不是一次测量结果；
@@ -197,6 +203,30 @@ def main(argv: list[str] | None = None) -> int:
         poster = FramePoster(post_url, hz=post_hz, retries=args.post_retries)
         say(f"推送   : {post_url}（{post_hz} 帧/秒，按逻辑时间节流；失败即报错，不静默丢帧）")
 
+    post_failed = False      # 推送彻底失败过 → 结局非零退出（但仍跑完测量）
+    post_stopped = False     # 已停止后续推送（不做逐帧重试）
+
+    def push(frame: dict, *, force: bool = False) -> None:
+        """推一帧给 B 线。失败**不打断测量**（见文件头第 4 条）。
+
+        第一次彻底失败就出声并停推，之后每帧只是跳过；结局由退出码 3
+        与 summary 里的 `post.errors` 负责说清楚。
+        """
+        nonlocal post_failed, post_stopped
+        if poster is None or post_stopped:
+            return
+        try:
+            if force:
+                poster.post(frame)          # 收尾帧不受节流影响
+            else:
+                poster.maybe_post(frame)
+        except PostError as e:
+            post_failed = True
+            post_stopped = True
+            print(f"[FAIL] {e}", file=sys.stderr)
+            print(f"[warn] 已停止推送；测量继续跑完并照常落盘，"
+                  f"本次运行以退出码 {EXIT_POST_FAILED} 结束。", file=sys.stderr)
+
     json_out = REPO_ROOT / args.json_out
     jsonl_out = REPO_ROOT / args.jsonl if args.jsonl else None
     csv_out = REPO_ROOT / args.csv if args.csv else None
@@ -230,12 +260,7 @@ def main(argv: list[str] | None = None) -> int:
             clean = strip_internal(full)
             store.write(clean)
             write_snapshot(json_out, clean)
-            if poster is not None:
-                try:
-                    poster.maybe_post(clean)
-                except PostError as e:
-                    print(f"[FAIL] {e}", file=sys.stderr)
-                    return EXIT_POST_FAILED
+            push(clean)
             status_counter[dec["status"]] += 1
             last_frame = clean
             n += 1
@@ -262,12 +287,7 @@ def main(argv: list[str] | None = None) -> int:
                         f"关键点来源 {lm_source}"),
             )
             store.write_stream_only(done)
-            if poster is not None:
-                try:
-                    poster.post(done)          # 收尾帧强制推送（不受节流影响）
-                except PostError as e:
-                    print(f"[FAIL] {e}", file=sys.stderr)
-                    return EXIT_POST_FAILED
+            push(done, force=True)
             done_info = {"frame_id": done["frame_id"], "ts": done["ts"], "status": done["status"],
                          "written_to": "jsonl" + ("+post" if poster else "")}
 
@@ -301,7 +321,8 @@ def main(argv: list[str] | None = None) -> int:
                     "csv": str(csv_out) if csv_out else None},
         # M2（P5）：收尾帧与推送统计 —— "推了几帧 / 被节流几帧 / 有没有报错"一眼可见
         "done_frame": done_info,
-        "post": poster.stats() if poster is not None else None,
+        "post": ({**poster.stats(), "ok": not post_failed, "stopped_after_failure": post_stopped}
+                 if poster is not None else None),
         # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够）
         "rppg_window_samples": rppg.samples,
         "rppg_window_need": rppg.need,
@@ -328,7 +349,8 @@ def main(argv: list[str] | None = None) -> int:
               f"→ {done_info['written_to']}（不进 CSV / 不覆盖 last.json）")
     if poster is not None:
         print(f"推送      : 成功 {poster.posted} 帧 / 节流跳过 {poster.throttled} 帧 "
-              f"→ {poster.url}（HTTP 次数 {poster.attempts}）")
+              f"→ {poster.url}（HTTP 次数 {poster.attempts}）"
+              + ("  ← **推送失败，已停止推送**" if post_failed else ""))
 
     if args.summary:
         sp = REPO_ROOT / args.summary
@@ -337,6 +359,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"摘要      : {sp}")
     if store.errors:
         print(f"[warn] 有 {len(store.errors)} 帧被契约校验拦下（未写入）")
+    if post_failed:
+        print(f"[FAIL] 推送未完成：测量产物已完整落盘，但 B 线没收到全部帧 "
+              f"（退出码 {EXIT_POST_FAILED}）。", file=sys.stderr)
+        return EXIT_POST_FAILED
     return 0
 
 
