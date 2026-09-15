@@ -28,22 +28,56 @@
     done: "#5d6b85"
   };
 
+  /* --------------------------------------------------------------------------
+   * 阈值集中在这里 —— 数值来自仓库根 config.yaml（前端是静态页面，读不到 yaml）。
+   *
+   * ⚠️ 这是一份**副本**，不是唯一来源。A 线拿真实视频标定后改了 config.yaml，
+   *    这里不会自动跟着变，症状是"卡片该报警却不报警"，还很难查。
+   *    正解是让后端把阈值随 /api/status 一起下发，届时此表退化为离线兜底。
+   *    在此之前，改任何阈值都必须**两边一起改**。
+   * ------------------------------------------------------------------------ */
+  var THRESHOLDS = {
+    perclos_warning: 0.25,        // config.yaml: perclos_warning
+    face_visible_min: 0.70,       // config.yaml: face_visible_min
+    quality_min_score: 0.60,      // config.yaml: quality_min_score（低于此值系统判 unreliable）
+    light_score_min: 0.50,        // config.yaml: light_score_min
+    motion_score_max: 0.35,       // config.yaml: motion_score_max
+    vital_require_quality: 0.75,  // config.yaml: vital_require_quality（比上面更严：决定心率/呼吸出不出数）
+    fatigue_long_close_count: 1   // config.yaml: fatigue_long_close_count
+  };
+
   /* 指标卡定义（顺序即界面顺序） */
   var CARD_DEFS = [
     { key: "ear", label: "EAR 眼睛纵横比", unit: "", digits: 3, path: ["behavior", "ear_left"], get: function (f) { return f.behavior.ear_left; } },
-    { key: "perclos", label: "PERCLOS 闭眼比例", unit: "", digits: 3, get: function (f) { return f.behavior.perclos; }, warn: function (f) { return f.behavior.perclos > 0.25; } },
+    { key: "perclos", label: "PERCLOS 闭眼比例", unit: "", digits: 3, get: function (f) { return f.behavior.perclos; }, warn: function (f) { return f.behavior.perclos > THRESHOLDS.perclos_warning; } },
     { key: "blinkRate", label: "眨眼率", unit: "/min", digits: 1, get: function (f) { return f.behavior.blink_rate_per_min; } },
     { key: "blinkCount", label: "眨眼次数", unit: "", digits: 0, get: function (f) { return f.behavior.blink_count; } },
+    { key: "longClose", label: "长闭眼次数", unit: "次", digits: 0, get: function (f) { return f.behavior.long_close_count; }, warn: function (f) { return f.behavior.long_close_count >= THRESHOLDS.fatigue_long_close_count; } },
     { key: "yawn", label: "打哈欠", unit: "次", digits: 0, get: function (f) { return f.behavior.yawn_count; } },
     { key: "mar", label: "MAR 嘴部纵横比", unit: "", digits: 3, get: function (f) { return f.behavior.mar; } },
-    { key: "visible", label: "人脸可见率", unit: "", digits: 3, get: function (f) { return f.face.visible; }, warn: function (f) { return f.face.visible < 0.7; } },
+    { key: "visible", label: "人脸可见率", unit: "", digits: 3, get: function (f) { return f.face.visible; }, warn: function (f) { return f.face.visible < THRESHOLDS.face_visible_min; } },
     { key: "yaw", label: "头部 yaw/pitch", unit: "°", digits: 1, get: function (f) { return f.face.pose.yaw; }, extra: function (f) { return " / " + f.face.pose.pitch.toFixed(1); } },
-    { key: "quality", label: "信号质量 overall", unit: "", digits: 2, get: function (f) { return f.quality.overall; }, warn: function (f) { return f.quality.overall < 0.6; } },
+    { key: "quality", label: "信号质量 overall", unit: "", digits: 2, get: function (f) { return f.quality.overall; }, warn: function (f) { return f.quality.overall < THRESHOLDS.quality_min_score; } },
     { key: "light", label: "光照分", unit: "", digits: 2, get: function (f) { return f.quality.light_score; } },
-    { key: "motion", label: "运动分（越低越好）", unit: "", digits: 2, get: function (f) { return f.quality.motion_score; }, warn: function (f) { return f.quality.motion_score > 0.35; } },
-    { key: "hr", label: "心率（门控）", unit: "bpm", digits: 1, get: function (f) { return f.vital.hr_bpm; } },
-    { key: "rr", label: "呼吸率（门控）", unit: "/min", digits: 1, get: function (f) { return f.vital.rr_per_min; } }
+    { key: "motion", label: "运动分（越低越好）", unit: "", digits: 2, get: function (f) { return f.quality.motion_score; }, warn: function (f) { return f.quality.motion_score > THRESHOLDS.motion_score_max; } },
+    { key: "hr", label: "心率（门控）", unit: "bpm", digits: 1, gate: true, confKey: "hr_conf", get: function (f) { return f.vital.hr_bpm; } },
+    { key: "rr", label: "呼吸率（门控）", unit: "/min", digits: 1, gate: true, confKey: "rr_conf", get: function (f) { return f.vital.rr_per_min; } }
   ];
+
+  /* 门控条目：方向 min = 越大越好，max = 越小越好 */
+  var GATE_DEFS = [
+    { key: "light",   label: "光照",              dir: "min", limit: THRESHOLDS.light_score_min,    get: function (f) { return f.quality.light_score; } },
+    { key: "motion",  label: "运动（越小越好）",   dir: "max", limit: THRESHOLDS.motion_score_max,   get: function (f) { return f.quality.motion_score; } },
+    { key: "visible", label: "人脸可见率",         dir: "min", limit: THRESHOLDS.face_visible_min,   get: function (f) { return f.face.visible; } },
+    { key: "overall", label: "信号质量总分",       dir: "min", limit: THRESHOLDS.quality_min_score,  get: function (f) { return f.quality.overall; } },
+    { key: "vital",   label: "心率/呼吸额外门控",  dir: "min", limit: THRESHOLDS.vital_require_quality, extra: true,
+      get: function (f) { return f.quality.overall; } }
+  ];
+
+  /* 眨眼状态机（契约 behavior.blink_state 的 4 个取值） */
+  var BLINK_ORDER = ["OPEN", "CLOSING", "CLOSED", "OPENING"];
+  var BLINK_ZH = { OPEN: "睁眼", CLOSING: "正在闭眼", CLOSED: "闭眼", OPENING: "正在睁眼" };
+  var BLINK_COLOR = { OPEN: "#35d07f", CLOSING: "#4da3ff", CLOSED: "#ffb020", OPENING: "#4da3ff" };
 
   var el = {};                       // DOM 引用
   var state = {
@@ -181,6 +215,92 @@
     }
   }
 
+  /* ------------------------------------------------ 信号质量门控（能不能测） */
+  function gatePass(g, v) {
+    if (v === null || v === undefined || !isFinite(v)) return false;
+    return g.dir === "min" ? v >= g.limit : v <= g.limit;
+  }
+
+  function buildGate() {
+    el.gateBars.innerHTML = "";
+    GATE_DEFS.forEach(function (g) {
+      var row = document.createElement("div");
+      row.className = "gate-row" + (g.extra ? " extra" : "");
+      row.id = "gate_" + g.key;
+      row.innerHTML = '<div class="top"><span>' + g.label + '</span><span class="val">—</span></div>' +
+        '<div class="bar"><div class="fill" style="width:0%"></div><div class="mark"></div></div>';
+      el.gateBars.appendChild(row);
+    });
+  }
+
+  function renderGate(frame) {
+    var failed = [];
+    GATE_DEFS.forEach(function (g) {
+      var row = $("gate_" + g.key);
+      if (!row) return;
+      var v = frame ? g.get(frame) : null;
+      var ok = gatePass(g, v);
+      var has = !(v === null || v === undefined || !isFinite(v));
+      // 条形图统一成"越长越好"：max 型（运动，越小越好）取 1-v 翻转
+      var frac = has ? (g.dir === "min" ? v : 1 - v) : 0;
+      frac = Math.max(0, Math.min(1, frac));
+      var limitFrac = g.dir === "min" ? g.limit : 1 - g.limit;
+      row.querySelector(".fill").style.width = (frac * 100).toFixed(1) + "%";
+      row.querySelector(".mark").style.left = (limitFrac * 100).toFixed(1) + "%";
+      row.querySelector(".val").textContent = has
+        ? v.toFixed(3) + (g.dir === "min" ? " ≥ " : " ≤ ") + g.limit
+        : "—";
+      row.classList.toggle("fail", !!frame && !ok);
+      if (frame && !ok && !g.extra) failed.push(g.label);
+    });
+
+    var st = frame ? frame.status : null;
+    if (!frame) {
+      el.gateVerdictText.textContent = "等待数据…";
+      el.gateVerdictText.style.color = "";
+      el.gateVerdictSub.textContent = "—";
+    } else if (st === "disconnected") {
+      el.gateVerdictText.textContent = "无数据";
+      el.gateVerdictText.style.color = "#ff5d5d";
+      el.gateVerdictSub.textContent = "视频源或连接中断，门控不适用";
+    } else if (failed.length === 0) {
+      el.gateVerdictText.textContent = "可以测量";
+      el.gateVerdictText.style.color = "#35d07f";
+      el.gateVerdictSub.textContent = "四项门控全部通过，下方指标可信";
+    } else {
+      el.gateVerdictText.textContent = "测不准，别采信";
+      el.gateVerdictText.style.color = "#ff5d5d";
+      el.gateVerdictSub.textContent = "未通过：" + failed.join("、");
+    }
+  }
+
+  /* ------------------------------------------------------- 眨眼状态机指示 */
+  function buildBlinkStrip() {
+    BLINK_ORDER.forEach(function (s) {
+      var d = document.createElement("div");
+      d.className = "blink-step";
+      d.id = "blink_" + s;
+      d.textContent = s;
+      d.title = BLINK_ZH[s];
+      el.blinkStrip.insertBefore(d, el.blinkLabel);
+    });
+  }
+
+  function renderBlink(frame) {
+    var cur = frame ? frame.behavior.blink_state : null;
+    BLINK_ORDER.forEach(function (s) {
+      var d = $("blink_" + s);
+      if (!d) return;
+      var on = (s === cur);
+      var col = BLINK_COLOR[s] || "#8d9bb5";
+      d.classList.toggle("on", on);
+      d.style.background = on ? col : "";
+      d.style.borderColor = on ? col : "";
+    });
+    el.blinkLabel.textContent = "眨眼状态机：" +
+      (cur ? (BLINK_ZH[cur] || cur) + "（" + cur + "）" : "—");
+  }
+
   /* ---------------------------------------------------------------- 指标卡 */
   function buildCards() {
     el.cards.innerHTML = "";
@@ -189,9 +309,32 @@
       div.className = "card";
       div.id = "card_" + d.key;
       div.innerHTML = '<div class="k">' + d.label + '</div><div class="v"><span class="num">—</span><span class="u">' +
-        (d.unit || "") + "</span></div>";
+        (d.unit || "") + '</span></div><div class="note"></div>';
       el.cards.appendChild(div);
     });
+  }
+
+  /* 生理指标的三态显示。这是本项目最核心的产品承诺：
+     测不准时宁可说"没有"，也绝不沿用上一个数字、更不写 0。*/
+  function vitalDisplay(frame, value, conf) {
+    if (value !== null && value !== undefined && isFinite(value)) {
+      return { text: value.toFixed(1),
+               note: (conf === null || conf === undefined || !isFinite(conf))
+                     ? "" : "置信度 " + conf.toFixed(3) };
+    }
+    if (frame.status === "disconnected") {
+      return { text: "无数据", msg: true, note: "视频源或连接中断" };
+    }
+    var q = frame.quality.overall;
+    if (q < THRESHOLDS.quality_min_score) {
+      return { text: "已锁定", msg: true,
+               note: "信号不可靠（" + q.toFixed(2) + " < " + THRESHOLDS.quality_min_score + "）" };
+    }
+    if (q < THRESHOLDS.vital_require_quality) {
+      return { text: "暂不出数", msg: true,
+               note: "质量不足（" + q.toFixed(2) + " < " + THRESHOLDS.vital_require_quality + "）" };
+    }
+    return { text: "计算中", msg: true, note: "门控已通过，等待 rPPG 接入" };
   }
 
   function renderCards(frame) {
@@ -199,16 +342,31 @@
       var card = $("card_" + d.key);
       if (!card) return;
       var num = card.querySelector(".num");
+      var unit = card.querySelector(".u");
+      var note = card.querySelector(".note");
       var v = frame ? d.get(frame) : null;
-      var s = fmt(v, d.digits);
-      if (s === null) {
-        card.classList.add("null");
-        num.textContent = "暂无";
+      var text, isMsg = false, isWarn = false, noteText = "";
+
+      if (d.gate && frame) {
+        var g = vitalDisplay(frame, v, d.confKey ? frame.vital[d.confKey] : null);
+        text = g.text;
+        isMsg = !!g.msg;
+        noteText = g.note || "";
+      } else if (frame) {
+        var s = fmt(v, d.digits);
+        isMsg = (s === null);
+        text = isMsg ? "暂无" : s + (d.extra ? d.extra(frame) : "");
+        isWarn = d.warn ? d.warn(frame) : false;
       } else {
-        card.classList.remove("null");
-        num.textContent = s + (d.extra && frame ? d.extra(frame) : "");
+        isMsg = true;
+        text = "—";
       }
-      var isWarn = frame && d.warn ? d.warn(frame) : false;
+
+      card.classList.toggle("null", isMsg);
+      card.classList.toggle("msg", isMsg && text.length > 4);
+      num.textContent = text;
+      if (unit) unit.textContent = isMsg ? "" : (d.unit || "");
+      if (note) note.textContent = noteText;
       card.style.borderColor = isWarn ? "#4d3c14" : "#24304a";
       num.style.color = isWarn ? "#ffb020" : "";
     });
@@ -319,6 +477,8 @@
 
     renderState(frame);
     renderCards(frame);
+    renderGate(frame);
+    renderBlink(frame);
     drawVideo(frame);
     renderChart();
   }
@@ -435,12 +595,16 @@
       stateLamp: $("stateLamp"), stateName: $("stateName"), stateEn: $("stateEn"),
       advice: $("advice"), reason: $("reason"), triggers: $("triggers"),
       cards: $("cards"), log: $("log"),
+      gateBars: $("gateBars"), gateVerdictText: $("gateVerdictText"), gateVerdictSub: $("gateVerdictSub"),
+      blinkStrip: $("blinkStrip"), blinkLabel: $("blinkLabel"),
       wsUrl: $("wsUrl"), connPill: $("connPill"), connName: $("connName"),
       srcPill: $("srcPill"), srcName: $("srcName"), modeName: $("modeName"),
       validPill: $("validPill"), validName: $("validName"), forceStatus: $("forceStatus")
     };
 
     buildCards();
+    buildGate();
+    buildBlinkStrip();
     M.STATUS_VALUES.forEach(function (s) {
       var o = document.createElement("option");
       o.value = s;
@@ -462,6 +626,8 @@
 
     renderState(null);
     renderCards(null);
+    renderGate(null);
+    renderBlink(null);
     drawVideo(null);
     renderChart();
     log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");

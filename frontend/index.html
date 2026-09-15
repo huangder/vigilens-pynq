@@ -106,6 +106,47 @@
   .card .v { font-size: 19px; font-weight: 620; font-variant-numeric: tabular-nums; }
   .card .u { font-size: 11.5px; color: var(--muted); margin-left: 2px; }
   .card.null .v { color: var(--dim); font-size: 15px; }
+  .card.msg  .v { font-size: 13px; line-height: 1.35; }
+  .card .note { color: var(--dim); font-size: 11px; margin-top: 3px; }
+  .card .note:empty { display: none; }
+
+  /* ---- 信号质量门控（"能不能测"） ---- */
+  .gate-head { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .gate-verdict {
+    flex: 0 0 auto; min-width: 240px; padding: 11px 14px; border-radius: 10px;
+    background: var(--panel-2); border: 1px solid var(--line);
+  }
+  #gateVerdictText { display: block; font-size: 19px; font-weight: 650; }
+  #gateVerdictSub  { display: block; color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+  .gate-bars {
+    flex: 1 1 340px; display: grid; gap: 9px 18px;
+    grid-template-columns: repeat(2, minmax(210px, 1fr));
+  }
+  @media (max-width: 700px) { .gate-bars { grid-template-columns: 1fr; } }
+  .gate-row .top { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--muted); }
+  .gate-row .val { font-family: ui-monospace, Consolas, monospace; }
+  .gate-row .bar {
+    position: relative; height: 6px; margin-top: 4px; border-radius: 3px;
+    background: #0c121c; overflow: hidden;
+  }
+  .gate-row .fill {
+    position: absolute; top: 0; bottom: 0; left: 0;
+    border-radius: 3px; background: var(--ok); transition: width .25s;
+  }
+  .gate-row .mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--muted); opacity: .8; }
+  .gate-row.fail .fill { background: var(--danger); }
+  .gate-row.fail .val  { color: var(--danger); }
+  .gate-row.extra .top { opacity: .85; }
+
+  /* ---- 眨眼状态机 ---- */
+  .blink-strip { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+  .blink-step {
+    flex: 1 1 0; min-width: 72px; text-align: center; padding: 5px 4px; border-radius: 8px;
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--muted);
+    font-size: 12px; font-family: ui-monospace, Consolas, monospace;
+  }
+  .blink-step.on { font-weight: 700; color: #0b0f17; }
+  #blinkLabel { flex: 0 0 auto; font-size: 12.5px; color: var(--muted); }
 
   /* ---- 图表 ---- */
   canvas#chart { display: block; width: 100%; height: 200px; }
@@ -181,9 +222,27 @@
     <ul id="triggers"></ul>
   </section>
 
+  <!-- 信号质量门控 —— 产品承诺的落点："先判断能不能测，再决定测出什么" -->
+  <section class="panel span-2">
+    <h2>信号质量门控 · 能不能测</h2>
+    <div class="gate-head">
+      <div class="gate-verdict">
+        <span id="gateVerdictText">等待数据…</span>
+        <span id="gateVerdictSub">—</span>
+      </div>
+      <div class="gate-bars" id="gateBars"></div>
+    </div>
+    <div class="hint" style="margin-top:10px">
+      <b>门控不通过时，心率 / 呼吸显示"已锁定"，绝不沿用上一个数字、也不写 0</b> ——
+      这是本产品的承诺，不是故障。阈值来源：仓库根 <code>config.yaml</code>
+      （前端是静态页面读不到 yaml，此处的数值是它的副本，改阈值必须两边同步）。
+    </div>
+  </section>
+
   <!-- 指标卡 -->
   <section class="panel span-2">
     <h2>实时指标</h2>
+    <div class="blink-strip" id="blinkStrip"><span id="blinkLabel">眨眼状态机：—</span></div>
     <div class="cards" id="cards"></div>
   </section>
 
