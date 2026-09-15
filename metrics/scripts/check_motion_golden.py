@@ -11,9 +11,13 @@
 
     本脚本做三件事：
       ① 用 A 线自己的 `quality.frame_diff_motion` 按冻结口径复算 → 与黄金参考对拍（判据）；
-      ② 量出"阈值 25（当前 config）vs 16（黄金参考）"造成的差异；
-      ③ 量出"在 640×480 上算 vs 在 384×288 上算"造成的差异。
-    ②③ 是拿给三方会签用的**实测数字**（契约 §5.2 第 5 项就等这个）。
+      ② 核对 `config.yaml` 的 motion_thresh 是否已与黄金参考一致；
+      ③ **A 线自己的整条运动量路径**（`quality.to_gray` 从原始帧算灰度+抽取，再帧差）
+         与黄金参考逐项比对 —— 这是"口径已统一"的验收。
+
+    沿革：2026-09-15 本脚本量出三处口径差（阈值 25 vs 16 / 分辨率 640×480 vs 384×288 /
+    `cv2.cvtColor` vs 冻结式），作为契约 §5.2 第 5 项的会签依据；**2026-09-16 三方拍板统一到
+    C 线那套**，A 线随即改了 `quality.to_gray` 与 `config.yaml`，此后 ②③ 应稳定为"一致"。
 
 前置（向量由固定 seed 生成，可随时重建）：
     python fpga/sim/gen_motion_vectors.py
@@ -111,44 +115,45 @@ def main() -> int:
         print(f"   ✅ {len(golden)}/{len(golden)} 帧对逐项全等（容差 0）")
     print()
 
-    # ---- ② 阈值差异：当前 config 的 25 vs 黄金的 16 --------------------------
-    print(f"② 阈值差异（同样 {OH}×{OW} 输入，只改 motion_thresh）")
+    # ---- ② 阈值是否已与黄金参考一致 ------------------------------------------
+    print(f"② 阈值一致性（同样 {OH}×{OW} 输入，只改 motion_thresh）")
     bad2 = diff_against(gray_small, golden, cfg_thresh)
-    print(f"   阈值 {GOLDEN_THRESH}（黄金参考）→ 不一致 {len(bad1)}/{len(golden)} 帧")
-    print(f"   阈值 {cfg_thresh}（config.yaml 现值）→ 不一致 {len(bad2)}/{len(golden)} 帧")
-    if bad2:
-        fi, mine, want = bad2[0]
-        print(f"   例：frame {fi}  阈值{cfg_thresh} 得 motion_pixels={mine[1]}，"
-              f"黄金（阈值{GOLDEN_THRESH}）={want[1]}")
-        d = [abs(m[1] - w[1]) for _, m, w in bad2]
-        print(f"   motion_pixels 绝对偏差：最小 {min(d)}，最大 {max(d)}")
+    print(f"   黄金参考 motion_thresh = {GOLDEN_THRESH}；config.yaml 现值 = {cfg_thresh}"
+          f"  -> {'一致 ✅' if cfg_thresh == GOLDEN_THRESH else '不一致 ❌'}")
+    print(f"   按 config 现值算：不一致 {len(bad2)}/{len(golden)} 帧")
     print()
 
-    # ---- ③ 分辨率差异：640×480 全分辨率 vs 384×288 ---------------------------
-    print("③ 分辨率差异（同样阈值，改输入分辨率为 640×480）")
-    # 模拟 A 线在真实视频上的现状：对全分辨率帧取灰度（当前实现用 cv2 的 BGR2GRAY）
-    gray_full = [to_gray(f[..., ::-1].copy()) for f in rgb_full]   # RGB→BGR，避免通道序干扰
-    bad3 = diff_against(gray_full, golden, GOLDEN_THRESH)
-    s = np.array(bad3[0][1]) if bad3 else None
-    print(f"   全分辨率帧数统计：count 字段 = {len(gray_full[0].ravel())}（黄金参考是 {OH * OW}）")
-    print(f"   不一致 {len(bad3)}/{len(golden)} 帧 —— "
-          f"两者的 count 都不同，数值**根本不可比**，不是阈值微调能解决的")
-    print()
-
-    print("待三方会签的实测结论（契约 §5.2 第 5 项）：")
-    print(f"  · 黄金参考的 motion_thresh = {GOLDEN_THRESH}，config.yaml 的 motion_thresh_gray = {cfg_thresh}"
-          f" → 二者必须取其一；改 16 需重生成黄金参考，改 25 则黄金参考作废");
-    print(f"  · 工作尺寸必须统一为 rgb2gray 缩小后的 {OH}×{OW}；"
-          f"在全分辨率上算出的帧差与黄金参考不可比")
-    print(f"  · 灰度必须走冻结式 (77R+150G+29B+128)>>8，不能用 cv2.cvtColor"
-          f"（见 check_gray_formula.py 的实测差异）")
-    print()
-    ok = not bad1
-    if ok:
-        print(f"检测通过：冻结口径下 {len(golden)}/{len(golden)} 帧对逐项全等（容差 0）；"
-              f"差异表见上方 —— 契约 §5.2 第 5 项：结论已具备会签依据 ✅")
+    # ---- ③ A 线**自己的**整条运动量路径 vs 黄金参考（口径统一的验收）----------
+    print("③ A 线自己的灰度路径（quality.to_gray）vs 黄金参考")
+    # 真实链路上 capture 给的是 BGR；这里 rgb_frames.bin 是 RGB，先翻转通道再喂 to_gray，
+    # 与真实链路一致（to_gray 内部按 BGR 的 R=2 / G=1 / B=0 取值）。
+    mine_gray = [to_gray(f[..., ::-1].copy()) for f in rgb_full]
+    diff_px = sum(int((m != g).sum()) for m, g in zip(mine_gray, gray_small))
+    print(f"   灰度逐像素：不一致 {diff_px} 个像素（应 0）"
+          f"；尺寸 A 线 {mine_gray[0].shape} vs 黄金 {gray_small[0].shape}")
+    # 再把 A 线自己的灰度喂进 A 线自己的帧差，用 config 的阈值比运动量
+    bad3 = diff_against(mine_gray, golden, cfg_thresh)
+    if bad3:
+        for fi, mine, want in bad3[:3]:
+            print(f"   [FAIL] frame {fi}: 本机 {mine}  黄金 {want}")
     else:
-        print("检测未通过：冻结口径下仍有差异 ❌")
+        print(f"   运动量：{len(golden)}/{len(golden)} 帧对逐项全等（用 config 的阈值 {cfg_thresh}）")
+    print()
+
+    print("口径状态（2026-09-16 三方拍板：统一到 C 线那套）")
+    print(f"  · motion_thresh：黄金 {GOLDEN_THRESH} / config.yaml {cfg_thresh}"
+          f"  -> {'一致 ✅' if cfg_thresh == GOLDEN_THRESH else '**仍不一致 ❌**'}")
+    print(f"  · 工作尺寸：A 线 to_gray 现输出 {mine_gray[0].shape[1]}×{mine_gray[0].shape[0]}"
+          f"，黄金参考 {OW}×{OH}")
+    print("  · 灰度式：冻结式 (77R+150G+29B+128)>>8（不再用 cv2.cvtColor）")
+    print()
+
+    ok = (not bad1) and (not bad3) and diff_px == 0 and cfg_thresh == GOLDEN_THRESH
+    if ok:
+        print("检测通过：A 线**整条运动量路径**（图像 → 冻结式灰度 + 3/5 抽取 → 帧差）"
+              "与黄金参考逐项全等（容差 0）—— 契约 §5.2 第 5 项的口径已统一 ✅")
+    else:
+        print("检测未通过：A 线与黄金参考仍有差异 ❌")
     return 0 if ok else 1
 
 

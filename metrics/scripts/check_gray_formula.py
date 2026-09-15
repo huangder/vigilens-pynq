@@ -43,17 +43,18 @@ XS = [x for x in range(W) if x % 5 < 3]          # 384 个
 
 
 def frozen_gray_and_decimate(rgb_frame):
-    """冻结口径：先按 (77R+150G+29B+128)>>8 转灰度，再做 3/5 相位抽取。
+    """调用 **A 线运行时的那份实现**（`backend/quality.py::to_gray`），不在这里另抄一份。
 
-    返回 uint8、形状 (288, 384)。这是**唯一权威口径**，不要用 OpenCV 替代。
+    为什么这么写：口径只允许有**一处**实现。本脚本一开始自带了一份副本，但那样
+    "运行时改了、检查脚本没改"就没人发现 —— 现在两边永远同一个实现。
+
+    入参是 **RGB** 帧（来自 `rgb_frames.bin`）；而 `capture.py` 给 `to_gray` 的是 BGR，
+    所以这里先翻转通道再喂，与真实链路一致。
     """
-    r = rgb_frame[..., 0].astype("int32")
-    g = rgb_frame[..., 1].astype("int32")
-    b = rgb_frame[..., 2].astype("int32")
-    full = (77 * r + 150 * g + 29 * b + 128) >> 8
-    import numpy as np
+    sys.path.insert(0, str(REPO_ROOT / "backend"))
+    from quality import to_gray      # A 线运行时的灰度路径（契约 §3.4 冻结口径）
 
-    return full[np.ix_(YS, XS)].astype(np.uint8)
+    return to_gray(rgb_frame[..., ::-1].copy())
 
 
 def main() -> int:

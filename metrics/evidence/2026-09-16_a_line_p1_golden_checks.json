@@ -1,0 +1,75 @@
+{
+  "artifact": "A 线 P1：A<->C 黄金参考对拍结果",
+  "generated_by": "metrics/scripts/check_a_line_p1_all.py",
+  "generated_at": "2026-09-16 00:39:20",
+  "note": "本文件由上述命令真实执行产生，未手工编辑；数字均为本机真实运行输出。",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "numpy": "1.26.4"
+  },
+  "prerequisites": [
+    "python fpga/sim/gen_frames.py",
+    "python fpga/sim/gen_motion_vectors.py",
+    "python fpga/sim/gen_fir_vectors.py"
+  ],
+  "all_passed": true,
+  "checks": [
+    {
+      "name": "灰度+缩放口径",
+      "contract_section": "契约 4.4",
+      "script": "metrics/scripts/check_gray_formula.py",
+      "command": "python metrics/scripts/check_gray_formula.py",
+      "exit_code": 0,
+      "passed": true,
+      "summary": "检测通过：10 帧全部逐像素全等（容差 0）—— 契约 §5.2 第 4 项：A 线可表态认可 ✅",
+      "stdout": "=== A↔C 灰度 + 缩放口径对拍（契约 4.4 节）===\n输入 : fpga\\sim\\data_motion\\rgb_frames.bin  (10 帧 × 480×640×3)\n黄金 : fpga\\sim\\data_motion\\gray.bin  (10 帧 × 288×384)\n口径 : Y=(77R+150G+29B+128)>>8 ，3/5 相位抽取（先挑行再挑列）\n\n  frame 0: ✅ 逐像素全等\n  frame 1: ✅ 逐像素全等\n  frame 2: ✅ 逐像素全等\n  frame 3: ✅ 逐像素全等\n  frame 4: ✅ 逐像素全等\n  frame 5: ✅ 逐像素全等\n  frame 6: ✅ 逐像素全等\n  frame 7: ✅ 逐像素全等\n  frame 8: ✅ 逐像素全等\n  frame 9: ✅ 逐像素全等\n\nOpenCV 对照（frame 0，差异属预期，一律以冻结口径为准）：\n  cv2.cvtColor(RGB2GRAY) + 同点抽取 : 最大差   1，不同像素  13.4%\n  cv2.cvtColor + cv2.resize(NEAREST) : 最大差 241，不同像素  61.1%\n\n检测通过：10 帧全部逐像素全等（容差 0）—— 契约 §5.2 第 4 项：A 线可表态认可 ✅",
+      "stderr": ""
+    },
+    {
+      "name": "roi_statistic 黄金参考",
+      "contract_section": "契约 4.2",
+      "script": "metrics/scripts/check_roi_golden.py",
+      "command": "python metrics/scripts/check_roi_golden.py",
+      "exit_code": 0,
+      "passed": true,
+      "summary": "检测通过：45 行逐行全等（容差 0）—— 契约 §5.2 第 1/2 项：A 线可表态认可 ✅",
+      "stdout": "=== A↔C roi_statistic 黄金参考对拍（契约 4.2 节）===\n输入 : fpga\\sim\\data\\frames.bin  (5 帧 × 480×640×3，通道序 R,G,B)\n黄金 : fpga\\sim\\data\\golden_roi.csv  (45 行 = 9 用例 × 5 帧)\n口径 : 半开区间 [x0,x1)×[y0,y1)，越界裁剪，空 ROI 四项全 0，容差 0\n\n  full_frame         ✅ 5/5 帧全等\n  center_roi         ✅ 5/5 帧全等\n  top_left_1x1       ✅ 5/5 帧全等\n  bottom_right_1x1   ✅ 5/5 帧全等\n  single_pixel       ✅ 5/5 帧全等\n  empty_roi          ✅ 5/5 帧全等\n  inverted_roi       ✅ 5/5 帧全等\n  odd_offset         ✅ 5/5 帧全等\n  oversized_roi      ✅ 5/5 帧全等\n\n检测通过：45 行逐行全等（容差 0）—— 契约 §5.2 第 1/2 项：A 线可表态认可 ✅",
+      "stderr": ""
+    },
+    {
+      "name": "motion_quality 黄金参考",
+      "contract_section": "契约 3.3",
+      "script": "metrics/scripts/check_motion_golden.py",
+      "command": "python metrics/scripts/check_motion_golden.py",
+      "exit_code": 0,
+      "passed": true,
+      "summary": "检测通过：A 线**整条运动量路径**（图像 → 冻结式灰度 + 3/5 抽取 → 帧差）与黄金参考逐项全等（容差 0）—— 契约 §5.2 第 5 项的口径已统一 ✅",
+      "stdout": "=== A↔C 帧差运动量对拍（契约 3.3 节）===\n黄金 : fpga\\sim\\data_motion\\golden_motion.csv  (9 帧对，第 0 帧按契约排除)\n工作尺寸 : 黄金参考 288×384（rgb2gray 缩小后）   阈值为严格大于\n\n① 冻结口径（工作尺寸 288×384，阈值 16）\n   ✅ 9/9 帧对逐项全等（容差 0）\n\n② 阈值一致性（同样 288×384 输入，只改 motion_thresh）\n   黄金参考 motion_thresh = 16；config.yaml 现值 = 16  -> 一致 ✅\n   按 config 现值算：不一致 0/9 帧\n\n③ A 线自己的灰度路径（quality.to_gray）vs 黄金参考\n   灰度逐像素：不一致 0 个像素（应 0）；尺寸 A 线 (288, 384) vs 黄金 (288, 384)\n   运动量：9/9 帧对逐项全等（用 config 的阈值 16）\n\n口径状态（2026-09-16 三方拍板：统一到 C 线那套）\n  · motion_thresh：黄金 16 / config.yaml 16  -> 一致 ✅\n  · 工作尺寸：A 线 to_gray 现输出 384×288，黄金参考 384×288\n  · 灰度式：冻结式 (77R+150G+29B+128)>>8（不再用 cv2.cvtColor）\n\n检测通过：A 线**整条运动量路径**（图像 → 冻结式灰度 + 3/5 抽取 → 帧差）与黄金参考逐项全等（容差 0）—— 契约 §5.2 第 5 项的口径已统一 ✅",
+      "stderr": ""
+    },
+    {
+      "name": "Q1.15 量化口径",
+      "contract_section": "契约 4.6",
+      "script": "metrics/scripts/check_q15_golden.py",
+      "command": "python metrics/scripts/check_q15_golden.py",
+      "exit_code": 0,
+      "passed": true,
+      "summary": "检测通过：契约 §5.2 第 11 项 —— A 线可表态认可 ✅",
+      "stdout": "=== A↔C Q1.15 量化口径对拍（契约 4.6 节）===\n口径 : q = round_half_away((mean-128)*256)，整数权威式 q = rha_div(256*sum_c - 32768*count, count)\n\n① C 线参考脚本自检：PASS\n② 真实 ROI 数据（45 行，其中空 ROI 10 行应被丢弃）\n   C 线参考产出 35 个有效样本 （45 - 10 = 35）\n   ✅ 35/35 个样本与 C 线参考逐样本相同\n\n③ 全量扫描（与 C 线参考实现逐点比）\n   ✅ 393222 个 (count, sum) 组合全等（均值覆盖 0~255，含不整除边界）\n   ✅ count==0 被拒绝（契约要求：该帧整帧丢弃，不得填 0 或沿用上一帧）\n\n（Q1.15 实现位于 backend/vital.py::q15_from_roi_sum，P3 将在其上继续搭 rPPG 链路）\n检测通过：契约 §5.2 第 11 项 —— A 线可表态认可 ✅",
+      "stderr": ""
+    },
+    {
+      "name": "fir_filter 逐样本",
+      "contract_section": "契约 4.5",
+      "script": "metrics/scripts/check_fir_golden.py",
+      "command": "python metrics/scripts/check_fir_golden.py",
+      "exit_code": 0,
+      "passed": true,
+      "summary": "检测通过：契约 §5.2 第 12 项的时间序列部分 —— 16 段 / 4036 个样本逐样本全等，段统计一致（容差 0）✅",
+      "stdout": "=== A↔C fir_filter 逐样本黄金参考对拍（契约 4.5 节）===\n系数 : fpga\\src\\fir_coeffs_q15.h  N=63，shift=15，fs=45 Hz\n输入 : fpga\\sim\\data_fir\\series.bin  (8072 B = 4036 个 int16 样本)\n黄金 : fpga\\sim\\data_fir\\golden_fir_out.csv  (4036 个逐样本期望值)\n口径 : acc 无中间舍入 → 单次算术右移 → sat16；输出含启动瞬态；容差 0\n\n  seg  1 impulse          reset=1 n= 96  ✅ 全等\n  seg  2 dc_pos           reset=1 n=240  ✅ 全等\n  seg  3 dc_neg           reset=1 n=240  ✅ 全等\n  seg  4 nyquist_alt      reset=1 n=240  ✅ 全等\n  seg  5 sine_1p5hz       reset=1 n=300  ✅ 全等\n  seg  6 sine_0p8hz       reset=1 n=300  ✅ 全等\n  seg  7 sine_3p2hz       reset=1 n=300  ✅ 全等\n  seg  8 sine_0p2hz       reset=1 n=300  ✅ 全等\n  seg  9 sine_8hz         reset=1 n=300  ✅ 全等\n  seg 10 square_1hz_full  reset=1 n=300  ✅ 全等\n  seg 11 saturate_matched reset=1 n= 96  ✅ 全等，饱和 5\n  seg 12 sine_small_amp   reset=1 n=300  ✅ 全等\n  seg 13 random_full      reset=1 n=512  ✅ 全等\n  seg 14 split_part1      reset=1 n=200  ✅ 全等\n  seg 15 split_part2      reset=0 n=200  ✅ 全等\n  seg 16 split_part3      reset=0 n=112  ✅ 全等\n\n（实现位于 backend/vital.py::fir_process；P3 的心率带通将直接复用它）\n检测通过：契约 §5.2 第 12 项的时间序列部分 —— 16 段 / 4036 个样本逐样本全等，段统计一致（容差 0）✅",
+      "stderr": ""
+    }
+  ],
+  "archived": true
+}

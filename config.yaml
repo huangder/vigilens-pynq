@@ -34,8 +34,12 @@ quality_min_score: 0.60             # 质量总分下限，低于此值 → unre
 light_score_min: 0.5                # 光照分量下限（占位值，待 A 线实测标定）
 motion_score_max: 0.35              # 运动分量上限（占位值，待 A 线实测标定）
 light_target: 0.5                   # 理想平均亮度（0~1）；偏离越远光照分越低
-motion_thresh_gray: 25              # 帧差判定"运动像素"的灰度阈值
-                                    #   ⚠️ 必须与 HLS `motion_quality` 的 motion_thresh 寄存器一致
+motion_thresh_gray: 16              # 帧差判定"运动像素"的灰度阈值（严格大于）
+#   依据：契约 §3.3 冻结值与 HLS `motion_quality` 的 motion_thresh 寄存器一致（默认 16）。
+#   2026-09-16 三方拍板：A 线由此前的占位值 25 对齐到 **16**，并同步把灰度式与
+#   3/5 相位抽取（→384×288）统一到契约 §3.4 的冻结口径 —— 见 backend/quality.py::to_gray。
+#   实测依据与差异表见 docs/interface.md §5.4 末节；A↔C 对拍由
+#   metrics/scripts/check_motion_golden.py 验证（要求 9/9 全等、容差 0）。
 motion_score_gain: 4.0              # 运动比例 → 运动分的放大系数（占位标定）
 quality_weights:                    # overall = 加权平均（三项权重和不必为 1，代码会归一化）
   light: 0.5

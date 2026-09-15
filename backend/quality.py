@@ -35,25 +35,51 @@ def _numpy():
         return None
 
 
+def _decim_indices(height: int, width: int):
+    """按 `idx % 5 < 3` 生成保留的行/列下标（与 HLS `rgb2gray` v2 逐字一致）。"""
+    cache = _decim_indices.__dict__
+    key = (height, width)
+    if key not in cache:
+        cache[key] = ([y for y in range(height) if y % 5 < 3],
+                      [x for x in range(width) if x % 5 < 3])
+    return cache[key]
+
+
 def to_gray(image: Any) -> Any:
-    """转灰度。有 numpy+OpenCV 时走 cvtColor，否则返回 None（调用方走降级路径）。"""
+    """把一帧转成**契约冻结口径**的灰度 + 缩放结果；拿不到 numpy 时返回 None（调用方走降级路径）。
+
+    ⚠️ **这里不是"随便转个灰度"，而是契约 §3.4 的两个冻结口径**，必须与 C 线的 `rgb2gray` v2 逐点相同：
+
+      1. 灰度：`Y = (77*R + 150*G + 29*B + 128) >> 8`
+         —— 与"浮点系数四舍五入"差 1 LSB（纯红：浮点式给 76，本式给 77），**以本式为准**；
+      2. 缩放：3/5 相位点采样（保留 `x % 5 < 3` 且 `y % 5 < 3` 的像素，**先挑行再挑列**），
+         640×480 → **384×288**。不是插值，所以 `cv2.resize` 必然对不上。
+
+    ⚠️ **通道序**：契约要求 R-G-B（`byte0=R`）；而 OpenCV 读到的 `bgr` 数组里**下标 0 是 B、2 是 R**。
+       旧实现直接调 `cv2.cvtColor(BGR2GRAY)`，两处都偏离契约（灰度系数不同 + 不做抽取），
+       导致 A 线的运动量与 C 线**根本不可比**。现在按 R=2 / G=1 / B=0 取值。
+
+    调用方约定：传入的应是**OpenCV 风格的 BGR 三通道图**（`capture.py` 读视频/摄像头就是这种）；
+    已经是二维灰度图时原样返回；其它情况返回 None。
+    """
     np = _numpy()
     if np is None:
         return None
-    if isinstance(image, np.ndarray):
-        if image.ndim == 2:
-            return image
-        if image.ndim == 3 and image.shape[2] >= 3:
-            try:
-                import cv2  # type: ignore
+    if not isinstance(image, np.ndarray):
+        return None
+    if image.ndim == 2:
+        return image
+    if image.ndim != 3 or image.shape[2] < 3:
+        return None
 
-                # ⚠️ 契约要求 R-G-B；OpenCV 读到的是 BGR。灰度权重对这些差异不敏感，
-                #    但真正的黄金参考比对（roi_statistic）必须先 BGR2RGB，见 docs/interface.md 0.1
-                return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            except ImportError:
-                # BT.601 手算，避免依赖 opencv
-                return (0.114 * image[:, :, 0] + 0.587 * image[:, :, 1] + 0.299 * image[:, :, 2]).astype(np.uint8)
-    return None
+    # BGR（OpenCV 默认）→ 按 R/G/B 取值
+    b = image[:, :, 0].astype(np.int32)
+    g = image[:, :, 1].astype(np.int32)
+    r = image[:, :, 2].astype(np.int32)
+    full = (77 * r + 150 * g + 29 * b + 128) >> 8      # uint8 量程
+
+    ys, xs = _decim_indices(image.shape[0], image.shape[1])
+    return full[np.ix_(ys, xs)].astype(np.uint8)
 
 
 def frame_diff_motion(prev_gray: Any, cur_gray: Any, motion_thresh: int = 25) -> dict[str, int]:
