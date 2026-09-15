@@ -21,7 +21,7 @@
 | `mock.py` | B | B2 | 契约一致的假数据源（按 status 反推指标，状态与数字自洽） | ✅ 完成 |
 | `websocket.py` | B | B3 | WebSocket 1 帧/秒推送（mock / file / bus 三源） | ✅ 完成 |
 | `api.py` | B | B1 | REST + WS + 托管前端；`POST /api/ingest` 为 M2 集成点 | ✅ 完成 |
-| `tests/` | A/B | — | 契约一致性 49 项测试 | ✅ 全绿 |
+| `tests/` | A/B | — | 65 项测试（契约一致性 + rPPG 链路） | ✅ 全绿 |
 
 ## 怎么跑
 
@@ -55,7 +55,7 @@ python backend/api.py                       # http://127.0.0.1:8000/ 直接托�
 python backend/mock.py --frames 6           # 六态各一帧契约 JSON
 python backend/config.py                    # 确认阈值读到了什么
 python backend/decision.py                  # 四条判定规则的自检
-python -m pytest                            # 49 项测试
+python -m pytest                            # 65 项测试（契约一致性 + rPPG 链路）
 ```
 
 `--pattern` 可选 `blink`（每 3 秒眨眼，第 20 秒起一次长闭眼）/ `yawn`（每 6 秒一次 1.5 秒张口）/ `still` / `turn`（3~6 秒转头、6 秒后人脸出框）。
@@ -88,7 +88,7 @@ python -m pytest                            # 49 项测试
 
 ## 测试覆盖了什么
 
-`python -m pytest`（49 项）刻意覆盖的是**契约与可复现性**，不是"函数能跑"：
+`python -m pytest`（65 项）刻意覆盖的是**契约与可复现性**，不是"函数能跑"：
 
 - `docs/02` 4.1 里手写的那份示例 JSON 必须仍然合法（文档与代码不许打架）；
 - Mock 必须能产出**全部 6 种 status**，且状态与数字自洽（写"疲劳"时 PERCLOS 就必须高）；

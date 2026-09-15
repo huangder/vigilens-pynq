@@ -144,15 +144,18 @@ def fir_process(samples, coeffs: list[int], shift: int = 15, hist=None):
         return [], 0, (np.zeros(n - 1, dtype=np.int64) if hist is None else np.asarray(hist, dtype=np.int64))
 
     # 把历史拼在样本前面；np.convolve(ext, h)[k] 恰好等于 Σ h[j]*ext[k-j]
+    #
+    # ⚠️ 即使 hist=None 也必须**补足 n-1 个零**再拼，不能直接把 x 当 ext：
+    #    否则当 x 短于 n-1 时（例如逐样本喂，x 只有 1 个），返回的历史长度就不对，
+    #    下一帧的 `hist` 校验会报 "hist 长度应为 62"。这条是逐样本流式路径专有的坑。
     if hist is None:
-        ext = x
-        off = 0
+        hh = np.zeros(n - 1, dtype=np.int64)
     else:
         hh = np.asarray(hist, dtype=np.int64)
         if hh.size != n - 1:
             raise ValueError(f"hist 长度应为 {n - 1}，收到 {hh.size}")
-        ext = np.concatenate([hh, x])
-        off = hh.size
+    ext = np.concatenate([hh, x])
+    off = hh.size
 
     acc = np.convolve(ext, h)                       # 精确整数，无中间舍入
     seg = acc[off:off + x.size]
@@ -162,3 +165,172 @@ def fir_process(samples, coeffs: list[int], shift: int = 15, hist=None):
 
     new_hist = ext[-(n - 1):] if n > 1 else np.zeros(0, dtype=np.int64)
     return [int(v) for v in y], sat, new_hist
+
+
+# ===========================================================================
+# rPPG：ROI → G 通道 Q1.15 序列 → 带通 → 频谱峰值 → BPM（契约 3.6 的时间序列链路）
+#
+#   硬件链路（契约 3.6）：roi_statistic → Q1.15 量化 → fir_filter
+#   本模块在软件侧走**同一条链**，只是把最后一段从"输出滤波序列"延长到"估出 BPM"：
+#       ROI 绿通道累加 ──q15_from_roi_sum──▶ Q1.15 序列 ──fir_process──▶ 带通序列
+#                                     └──────────────▶ 频谱峰值 ──▶ BPM + 置信度
+#   这样 PL 与 PS 看到的是**同一串输入样本**，M4 的软硬件对比才有意义。
+# ===========================================================================
+
+
+def forehead_roi(bbox, width: int, height: int) -> tuple[int, int, int, int]:
+    """从人脸框里取**额头 ROI**（半开区间），返回 `(x0, y0, x1, y1)`。
+
+    为什么取额头：皮肤暴露、运动伪影比脸颊小、避开眼睛与嘴（眨眼/说话是强干扰源）。
+    取人脸框**上部**的中间区域 —— 上 35% 高、中间 60% 宽，再裁剪到画面内。
+    人脸框无效（宽或高 <= 0）时返回空 ROI（四项相等，累加结果为 0）。
+    """
+    x, y, w, h = (int(v) for v in bbox)
+    if w <= 0 or h <= 0:
+        return 0, 0, 0, 0
+    x0 = x + int(w * 0.20)
+    x1 = x + int(w * 0.80)
+    y0 = y
+    y1 = y + int(h * 0.35)
+    # 裁剪到画面内（与 roi_statistic 的 clamp 同义）
+    return (max(0, min(x0, width)), max(0, min(y0, height)),
+            max(0, min(x1, width)), max(0, min(y1, height)))
+
+
+def roi_channel_sum(image, roi: tuple[int, int, int, int], channel: int = 1) -> tuple[int, int]:
+    """对 ROI 内的某个通道做整数累加，返回 `(sum_c, count)`；与 `roi_statistic` 同口径。
+
+    · 半开区间 `[x0,x1) × [y0,y1)`，越界裁剪，空 ROI 返回 `(0, 0)`；
+    · `channel` 默认 1 —— 在 **BGR 与 RGB 里 1 都是绿通道**，这样即使上游忘了做通道序转换，
+      rPPG 用的也仍然是绿通道（契约 §0.1 点名的 R/B 互换陷阱在这里被结构性规避）。
+    """
+    import numpy as np
+
+    x0, y0, x1, y1 = roi
+    if x1 <= x0 or y1 <= y0:
+        return 0, 0
+    arr = image
+    if not isinstance(arr, np.ndarray):
+        return 0, 0                      # 合成帧源不是图像：当作"没有 ROI"
+    h, w = arr.shape[0], arr.shape[1]
+    cx0, cy0 = max(0, min(x0, w)), max(0, min(y0, h))
+    cx1, cy1 = max(0, min(x1, w)), max(0, min(y1, h))
+    if cx1 <= cx0 or cy1 <= cy0:
+        return 0, 0
+    sub = arr[cy0:cy1, cx0:cx1, channel] if arr.ndim == 3 else arr[cy0:cy1, cx0:cx1]
+    return int(sub.sum(dtype=np.int64)), (cx1 - cx0) * (cy1 - cy0)
+
+
+class GreenRppg:
+    """流式 rPPG 估计器：逐帧喂 ROI 的绿通道 Q1.15 样本，定期给出心率与置信度。
+
+    设计要点（都是为了让"报出来的数字"可辩护）：
+      · **滑窗填满才出数**：窗口长度取 `config.yaml` 的 `window_seconds`（契约 §1 的局部窗口），
+        没填满一律返回 null —— 没测够就是没测够，不拿半个窗去猜；
+      · **带通复用冻结 FIR**：直接调 `fir_process`（同一组 Q15 系数、同一算术），
+        所以软件与 PL 看到的是同一串滤波后序列；
+      · **峰不过半就不报数**：判定"找到真峰"的条件是**峰值 ±1 个频点内的能量占带内总能量过半**。
+        这是**结构性判据**（"这个峰是否占主导"），不是可调阈值，所以没有引入新的魔法数字；
+      · **丢弃的帧不补值**：契约 §4.6 规定 `count==0` 的帧必须丢弃，
+        所以人脸丢失/空 ROI 的那一帧不喂样本。窗口因此可能跨越多于 `window_seconds` 的真实时间，
+        `estimate()` 用窗口首尾帧号反推**有效采样率**再做 FFT —— 否则漏帧会把频率系统性抬高。
+    """
+
+    def __init__(self, *, fps: float, window_seconds: float, hr_band_hz,
+                 coeffs: list[int] | None = None, shift: int | None = None):
+        if coeffs is None or shift is None:
+            coeffs, shift, _fs = load_fir_coeffs()
+        self.coeffs = coeffs
+        self.shift = shift
+        self.fps = float(fps)
+        self.f_lo, self.f_hi = float(hr_band_hz[0]), float(hr_band_hz[1])
+        self.need = max(2, int(round(float(window_seconds) * self.fps)))
+        self.reset()
+
+    @classmethod
+    def from_config(cls, cfg, fps: float | None = None) -> "GreenRppg":
+        """按 `config.yaml` 建实例（采样率取 `fps_nominal`，与契约 §0 一致）。"""
+        return cls(fps=float(fps if fps is not None else cfg["fps_nominal"]),
+                   window_seconds=float(cfg["window_seconds"]),
+                   hr_band_hz=cfg["hr_band_hz"])
+
+    def reset(self) -> None:
+        from collections import deque
+
+        self._win = deque(maxlen=self.need)      # 带通后的样本
+        self._fid = deque(maxlen=self.need)      # 对应的 frame_id（算有效采样率用）
+        self._hist = None                        # FIR 段间状态（连续流语义）
+        self._valid = 0                          # 累计有效样本数
+
+    @property
+    def samples(self) -> int:
+        """当前窗口内的有效样本数。"""
+        return len(self._win)
+
+    @property
+    def ready(self) -> bool:
+        """窗口是否已填满（填满才可能出数）。"""
+        return len(self._win) >= self.need
+
+    def push(self, q15: int | None, frame_id: int) -> None:
+        """喂一个样本。`q15=None` 表示这一帧按契约被丢弃（不喂、不补值）。"""
+        if q15 is None:
+            return
+        ys, _sat, self._hist = fir_process([int(q15)], self.coeffs, self.shift, self._hist)
+        self._win.append(ys[0])
+        self._fid.append(int(frame_id))
+        self._valid += 1
+
+    def estimate(self) -> dict:
+        """返回契约要求的四个键（`hr_bpm` / `hr_conf` / `rr_per_min` / `rr_conf`）。
+
+        出不了可信结果时**四项全为 None** —— 这是产品承诺（"先判断能不能测"），不是缺陷。
+        `rr_*` 恒为 None：契约 §3.5 已冻结"63 阶在 45 fps 下做不了呼吸带"，
+        呼吸率必须由 PS 侧先降采样再用**另一组系数**，而那组系数尚未冻结（见 §3.5 已知限制）。
+        """
+        none4 = {"hr_bpm": None, "hr_conf": None, "rr_per_min": None, "rr_conf": None}
+        if not self.ready:
+            return dict(none4)
+
+        import numpy as np
+
+        y = np.asarray(self._win, dtype=np.float64)
+        fids = np.asarray(self._fid, dtype=np.float64)
+        n = y.size
+
+        # 有效采样率：窗口首尾帧号跨越的真实时间（漏帧时 < fps）
+        span_s = (fids[-1] - fids[0]) / self.fps
+        if span_s <= 0:
+            return dict(none4)
+        fs_eff = (n - 1) / span_s
+        if not (0 < fs_eff <= self.fps * 1.001):
+            return dict(none4)
+
+        # 去直流 + Hann 窗（抑制谱泄漏）→ 实 FFT
+        yw = (y - y.mean()) * np.hanning(n)
+        power = np.abs(np.fft.rfft(yw)) ** 2
+        freqs = np.fft.rfftfreq(n, d=1.0 / fs_eff)
+
+        band = (freqs >= self.f_lo) & (freqs <= self.f_hi)
+        if int(band.sum()) < 3:
+            return dict(none4)
+        p_band = power[band]
+        f_band = freqs[band]
+        total = float(p_band.sum())
+        if total <= 0:
+            return dict(none4)
+
+        k = int(np.argmax(p_band))
+        lo_i, hi_i = max(0, k - 1), min(p_band.size, k + 2)
+        conf = float(p_band[lo_i:hi_i].sum()) / total
+
+        # 结构性判据：峰邻域的能量必须占带内**过半**，否则视为"没有真峰"
+        if conf <= 0.5:
+            return dict(none4)
+
+        return {
+            "hr_bpm": round(float(f_band[k]) * 60.0, 1),
+            "hr_conf": round(conf, 4),
+            "rr_per_min": None,
+            "rr_conf": None,
+        }

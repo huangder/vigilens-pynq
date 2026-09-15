@@ -36,6 +36,7 @@ try:
     from .face_landmark import make_landmarker
     from .quality import QualityScorer
     from .storage import MetricsStorage, write_snapshot
+    from .vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 except ImportError:  # python backend/run_pipeline.py
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from behavior_metrics import BehaviorTracker
@@ -46,6 +47,7 @@ except ImportError:  # python backend/run_pipeline.py
     from face_landmark import make_landmarker
     from quality import QualityScorer
     from storage import MetricsStorage, write_snapshot
+    from vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 
 
 def build_frame(
@@ -56,6 +58,7 @@ def build_frame(
     behavior: dict,
     quality: dict,
     engine: DecisionEngine,
+    vital_input: dict | None = None,
 ) -> tuple[dict, dict]:
     """把各模块输出装配成一帧契约 JSON。返回 (frame, decision)。"""
     beh_public = BehaviorTracker.strip_private(behavior)
@@ -66,9 +69,10 @@ def build_frame(
         "pose": obs.pose,
     }
 
-    # 心率/呼吸：本阶段 A 线尚未实现 rPPG（《02》风险表：rPPG 严格放最后）。
-    # 这里只做"门控行为"的占位：没有真值就一律 null，绝不编数字。
-    vital = engine.gate_vitals(q_public["overall"], None)
+    # 心率：由 rPPG 估计器给出（P3）；**必须过 gate_vitals 这道门**才允许出现在契约里。
+    # 质量不够、窗口没填满、频谱里没有真峰 —— 任一不满足都会让 vital.* 变回 null。
+    # 呼吸率目前恒为 null：契约 §3.5 冻结"63 阶 @45 fps 做不了呼吸带"，需要另一组系数。
+    vital = engine.gate_vitals(q_public["overall"], vital_input)
 
     dec = engine.decide(frame_id=frame_id, behavior=beh_public, quality=q_public, face=face)
     frame = new_frame(
@@ -153,6 +157,9 @@ def main(argv: list[str] | None = None) -> int:
     tracker = BehaviorTracker(cfg)
     scorer = QualityScorer(cfg)
     engine = DecisionEngine(cfg)
+    # rPPG（P3）：输入是**绿通道 ROI 累加**经契约 §4.6 量化后的 Q1.15 序列，
+    # 带通复用冻结 FIR，滑窗填满后才可能出数（窗口长度 = config 的 window_seconds）。
+    rppg = GreenRppg.from_config(cfg, fps=fps)
 
     json_out = REPO_ROOT / args.json_out
     jsonl_out = REPO_ROOT / args.jsonl if args.jsonl else None
@@ -169,8 +176,16 @@ def main(argv: list[str] | None = None) -> int:
             obs = landmarker.detect(frame.image, frame.frame_id)
             beh = tracker.update(frame.frame_id, ts, obs)
             qua = scorer.update(frame.frame_id, ts, frame, obs)
+
+            # rPPG 的输入样本：额头 ROI 的**绿通道**累加 → Q1.15（契约 §4.6 的唯一口径）。
+            # 空 ROI / 非图像帧 → count==0 → 按契约**丢弃该帧**（不喂样本、不补值）。
+            _roi = forehead_roi(obs.bbox, width, height)
+            _sum_g, _cnt = roi_channel_sum(frame.image, _roi, channel=1)
+            rppg.push(q15_from_roi_sum(_sum_g, _cnt) if _cnt > 0 else None, frame.frame_id)
+
             full, dec = build_frame(frame_id=frame.frame_id, ts=ts, obs=obs,
-                                    behavior=beh, quality=qua, engine=engine)
+                                    behavior=beh, quality=qua, engine=engine,
+                                    vital_input=rppg.estimate())
             clean = strip_internal(full)
             store.write(clean)
             write_snapshot(json_out, clean)
@@ -209,8 +224,14 @@ def main(argv: list[str] | None = None) -> int:
         },
         "outputs": {"json": str(json_out), "jsonl": str(jsonl_out) if jsonl_out else None,
                     "csv": str(csv_out) if csv_out else None},
+        # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够）
+        "rppg_window_samples": rppg.samples,
+        "rppg_window_need": rppg.need,
         "note": ("landmark_source=stub 时，EAR/MAR 为占位几何量；"
-                 "vital.* 全为 null 是因为 rPPG 未实现且质量门控要求 ≥ %s" % cfg["vital_require_quality"]),
+                 "vital.hr_* 为 null 的可能原因：窗口未填满（需 %d 个有效样本）、"
+                 "频谱中没有占主导的峰、或质量低于门控阈值 %s。"
+                 "vital.rr_* 恒为 null：契约 §3.5 冻结 63 阶 @45 fps 做不了呼吸带。"
+                 % (rppg.need, cfg["vital_require_quality"])),
     }
 
     print("\n=== 运行摘要 ===")
