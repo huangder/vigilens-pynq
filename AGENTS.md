@@ -132,7 +132,7 @@
 
 | 目录 | 内容 |
 |---|---|
-| `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、FastAPI/WebSocket/Mock、49 项 pytest |
+| `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、FastAPI/WebSocket/Mock、65 项 pytest |
 | `frontend/` | 零依赖仪表盘（`index.html` / `app.js` / `mock.js`），**不用 CDN、不用 ES module**（`file://` 会白屏），曲线为原生 canvas |
 | `fpga/` | `src/` HLS 源码（3 个 IP）、`sim/` 测试台 + Python 黄金参考、`report/` 综合与 cosim 报告 |
 | `board/` | **M3 之前只有占位**，未开始 |
@@ -150,7 +150,7 @@
 
 ```bash
 # 在仓库根执行；Windows 下把 python 换成本项目解释器（见 6.4 环境坑）
-.venv\Scripts\python.exe -m pytest -q          # 期望：49 passed
+.venv\Scripts\python.exe -m pytest -q          # 期望：65 passed（**只增不减**）
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
 node frontend/mock.js --limit 6 > metrics/evidence/js_frames.jsonl
@@ -160,13 +160,15 @@ git status --short                             # 只应出现你本线的改动
 
 | 命令 | 期望 | 失败说明什么 |
 |---|---|---|
-| `pytest` | `49 passed` | 契约被改坏，或引入了非确定性（时间戳/随机数泄漏进指标） |
+| `pytest` | `65 passed`（只增不减） | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
 | `--selftest` | `"ok": true` | JS 的 mock 与校验器不自洽 |
 | `check_frontend_wiring` | `通过` | `app.js` 引用了不存在的 DOM id（症状：**页面不报错、区域空白**） |
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
 
-> **基线（2026-09-10 本机真实运行）**：`49 passed in 0.51s`、`ok: true`、接线检查通过。
-> 这些是**当时的基线**，不是永久承诺；若你跑出不同结果，先报告事实，不要改期望值去凑绿。
+> **基线沿革**：2026-09-10 起始基线 `49 passed in 0.51s`；2026-09-15 A 线补上 rPPG 链路的
+> 16 项测试（`backend/tests/test_vital.py`）后为 **`65 passed`**。以上都是**当时的本机真实运行**，
+> 不是永久承诺；若你跑出不同结果，先报告事实，不要改期望值去凑绿。
+> 判断标准是"**只增不减**"：新增功能要带测试，但**不许为了让基线好看而删测试或放宽断言**。
 
 ### 6.2 A 线端到端（无需摄像头、无需板卡，甚至无需 OpenCV）
 
