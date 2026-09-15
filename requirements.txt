@@ -23,7 +23,15 @@
 # ---- A 线：视觉与算法 -------------------------------------------------------
 numpy>=1.26,<3                       # BSD-3-Clause；指标计算与黄金参考
 opencv-python>=4.8,<5                # Apache-2.0；视频读取 / 帧差 / 色彩转换
-mediapipe>=0.10                      # Apache-2.0；人脸与关键点检测（478 点）
+mediapipe>=0.10,<0.10.30             # Apache-2.0；人脸与关键点检测（478 点）
+                                     #   ⚠️ **上界不能去掉**：mediapipe 从 0.10.30 起（含全部 1.x）
+                                     #      把旧的 Solutions API（`mp.solutions.face_mesh`）整个删除，
+                                     #      而 backend/face_landmark.py 用的正是它。
+                                     #      装到新版**不会报错**，只会让 make_landmarker() 静默回退到
+                                     #      StubLandmarker —— EAR/MAR 变成没有算法意义的占位几何量，
+                                     #      摘要里 `landmark_source` 变成 "stub"（引用数字前必须看这个字段）。
+                                     #   本机实测可用版本：0.10.21（cp312 最后一个同时有该 API 与 wheel 的版本）。
+                                     #   装依赖时建议带约束：pip install -r requirements.txt -c .tools/constraints-mediapipe.txt
                                      #   ⚠️ 3.14 wheel 可能缺失，见上方说明
 PyYAML>=6.0                          # MIT；读取 config.yaml（缺失时 backend/config.py 有降级解析）
 
