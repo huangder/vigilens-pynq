@@ -56,6 +56,12 @@ python backend/mock.py --frames 6           # 六态各一帧契约 JSON
 python backend/config.py                    # 确认阈值读到了什么
 python backend/decision.py                  # 四条判定规则的自检
 python -m pytest                            # 65 项测试（契约一致性 + rPPG 链路）
+
+# 4) 【P4】真实视频到位后要做的标定（现在就能跑第一个）
+python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？分辨率帧率合规吗？
+#   完整流程见 backend/P4_CALIBRATION_GUIDE.md
+#     make_golden.py        锁 A10 黄金结果（含视频/config/git 三样指纹）
+#     sweep_thresholds.py   用标注当真值扫阈值，给出建议值
 ```
 
 `--pattern` 可选 `blink`（每 3 秒眨眼，第 20 秒起一次长闭眼）/ `yawn`（每 6 秒一次 1.5 秒张口）/ `still` / `turn`（3~6 秒转头、6 秒后人脸出框）。

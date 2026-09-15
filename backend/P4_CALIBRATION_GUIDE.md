@@ -1,0 +1,102 @@
+# P4 标定手册（视频到位后照这个做）
+
+> **定位**：P4 是 A 线唯一被**真实视频**阻塞的阶段。本手册把"视频到了之后怎么走"固定下来，
+> 并配套三个**已经写好、且现在就能验证**的工具（见 §1）。
+> **前置**：`python metrics/scripts/check_p4_readiness.py` 报"就绪"之前，不要开始标定。
+> **维护**：A 线；与 `backend/A_LINE_DEV_STEPS.md` 的 §4 P4 是同一件事，那里是排期，这里是操作细节。
+
+---
+
+## 0. 一句话
+
+> **先证明数据合规，再锁黄金结果，最后才动阈值 —— 顺序反了，标出来的值不可复现。**
+
+---
+
+## 1. 工具与执行顺序
+
+| 步骤 | 命令 | 现在能跑吗 | 说明 |
+|---|---|---|---|
+| ① 就绪检查 | `python metrics/scripts/check_p4_readiness.py` | ✅ **现在就能跑** | 列出缺哪段视频/标注，并校验 640×480 / 45 fps / 时长 |
+| ② 录制 + 标注 | 见 `data/README.md` | ❌ 等素材 | 4 段、每段只做一件事、20~30 s |
+| ③ 锁黄金结果 | `python metrics/scripts/make_golden.py --verify` | ❌ 等素材（可用 `--source` 单文件自测） | 产出 `data/golden/<name>_metrics.csv` + `_lock.json` |
+| ④ 扫阈值 | `python metrics/scripts/sweep_thresholds.py --csv … --ann … --param …` | ❌ 等素材（`--self-test` 现在可验工具本身） | 事件级 P/R/F1，给出建议值 |
+| ⑤ 写回 + 重锁 | 改 `config.yaml` → 重跑 ③ → 提交 | ❌ 等素材 | 阈值是**唯一来源**，只能改这一处 |
+
+三个工具的设计都遵循同一条纪律：**同样的输入必须得到同样的输出**。
+`_lock.json` 不含时间戳、`--verify` 会跑两次比对字节 —— 否则"提交前自检"本身就会把工作区搞脏。
+
+---
+
+## 2. 六个标定项
+
+| # | 项 | 输入 | 现占位值 | 工具与命令 | 判据 |
+|---|---|---|---|---|---|
+| 1 | `ear_close_threshold` / `min_close_frames` | `blink.mp4` | 0.21 / 3 | `sweep_thresholds.py --param ear_close_threshold` | 事件级 F1 最高，且**漏检（FN）为 0** 优先 |
+| 2 | `mar_threshold` / `yawn_min_duration_ms` | `yawn.mp4` | 0.6 / 800 | `--param mar_threshold` | 说话**不得**被计成哈欠（FP=0 优先） |
+| 3 | `pose_yaw_max_deg` / `pose_pitch_max_deg` | `turn.mp4` | 30.0 / 25.0 | `--param pose_yaw_max_deg` | 转头区间应被判越界；正脸时不得误报 |
+| 4 | `face_visible_min` | `turn.mp4` | 0.7 | `--param face_visible_min` | 出框/遮挡区间判不可见；正常段不得误报 |
+| 5 | `quality_weights` / `light_score_min` / `motion_score_max` / `light_target` | 自录的"正常 / 晃动 / 变暗"三种场景 | 0.5/0.3/0.2 等 | **无现成工具**（见 §3） | 三种场景下 `quality.overall` 的**排序**必须正确，且正常场景 > `quality_min_score` |
+| 6 | A10 黄金结果 | 4 段视频 | — | `make_golden.py --verify` | 逐字节可复现；`_lock.json` 三样指纹齐全 |
+
+> ⚠️ 每改一个阈值，都要**重跑 `make_golden.py` 重锁一次** —— 否则黄金结果与配置对不上，
+> `_lock.json` 里的 `config.sha256` 会立刻暴露这件事。
+
+---
+
+## 3. 哪些能自动标、哪些不能
+
+**能自动**（1~4 项）：判定规则是"某个观测量越过阈值"，而标注给了真值区间，
+所以可以扫出一条 P/R/F1 曲线，让数据来选值。
+
+**不能自动**（第 5 项）：`quality_weights` 是**主观加权**，没有唯一真值。
+它只能这么做：
+
+1. 录三段短视频（正常 / 大幅晃动 / 变暗），每段 20~30 s；
+2. 跑 `make_golden.py --source <段>` 拿到三段 CSV；
+3. 要求 `quality.overall` 满足 **正常 > 晃动、正常 > 变暗**，且正常段稳定高于 `quality_min_score`；
+4. 手工调权重直到满足 —— 并把这一条依据（三段 CSV 的均值对比）写进 `config.yaml` 的注释。
+
+> 别为了让某一项好看而调权重：`quality` 是**门控输入**，调它等于调"什么情况下允许报数字"。
+
+---
+
+## 4. 两个必须先拍板的前置问题
+
+### 4.1 `motion_thresh` 与运动量的三个口径（契约 §5.2 第 5 项）
+
+P1.3 已经量出三处不一致（**尚未拍板，A 线没有单方面改动**）：
+
+| 口径 | 黄金参考 / C 线 | A 线现状 | 实测差异 |
+|---|---|---|---|
+| `motion_thresh` | **16** | **25**（`config.yaml`） | 9 个帧对中 1 对不一致，`motion_pixels` 偏 **698** |
+| 计算分辨率 | **384×288** | 640×480 | `count` 307200 vs 110592，**不可比** |
+| 灰度公式 | 冻结式 | `cv2.cvtColor` | 最大差 1 LSB，13.4% 像素不同 |
+
+**这三条必须先统一**，否则 §2 里标出来的任何阈值都只对 A 线当前这条"错口径"的链路有效。
+选定后 A 线要改 `backend/quality.py`：**先走冻结式灰度 + 3/5 抽取，再算帧差**。
+
+### 4.2 第 7 项：3/5 点采样是否让运动量偏噪
+
+契约 §5.2 第 7 项明确要求"**接真实视频后给结论**"。做法：
+
+1. 用 `turn.mp4`（运动最剧烈的一段）跑一次 `make_golden.py`；
+2. 从产出的 CSV 取 `motion_score` 序列，与同一段在 640×480 全分辨率下算出的序列对比；
+3. 判据：若抽取版的**逐帧方差显著更大**（例如 > 2 倍），说明混叠确实让运动量偏噪，
+   按契约的选项提出变更（改块均值 / 退回 320×240）——**这属于契约变更，要走 §7 流程**。
+
+---
+
+## 5. 收尾清单
+
+- [ ] `check_p4_readiness.py` 报就绪（4 段视频 + 标注）
+- [ ] 1~4 项阈值有实测依据，写进 `config.yaml` 并注明出处
+- [ ] 第 5 项权重的依据（三段 CSV 的对比）写进 `config.yaml` 注释
+- [ ] `make_golden.py --verify` 通过，`data/golden/` 已入库（含 `_lock.json`）
+- [ ] 契约 §5.2 第 5 / 7 / 12 项按结论会签（改 `docs/interface.md` 要走公告流程）
+- [ ] `python metrics/scripts/check_a_line_all.py` 15/15 通过
+- [ ] `report/llm_log/` 的正式记录由**人**手写补充（AI 不得代写）
+
+---
+
+*本手册由 A 线维护；与 `data/README.md`（录制规范）、`docs/interface.md` §5.2（会签状态）配套。*
