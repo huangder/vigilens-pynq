@@ -150,7 +150,7 @@
 
 ```bash
 # 在仓库根执行；Windows 下把 python 换成本项目解释器（见 6.4 环境坑）
-.venv\Scripts\python.exe -m pytest -q          # 期望：77 passed（**只增不减**）
+.venv\Scripts\python.exe -m pytest -q          # 期望：78 passed（**只增不减**）
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
 # ⚠️ 写到 **metrics/logs/**（不入库）。别写成 metrics/evidence/js_frames.jsonl ——
@@ -167,15 +167,15 @@ git status --short                             # 只应出现你本线的改动
 
 | 命令 | 期望 | 失败说明什么 |
 |---|---|---|
-| `pytest` | `77 passed`（只增不减） | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
+| `pytest` | `78 passed`（只增不减） | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
 | `--selftest` | `"ok": true` | JS 的 mock 与校验器不自洽 |
 | `check_frontend_wiring` | `通过` | `app.js` 引用了不存在的 DOM id（症状：**页面不报错、区域空白**） |
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
 
 > **基线沿革**：2026-09-10 起始基线 `49 passed in 0.51s`；2026-09-15 A 线补上 rPPG 链路的
 > 16 项测试（`backend/tests/test_vital.py`）后为 **`65 passed`**；2026-09-16 A 线补上 M2 交接面的
-> 12 项测试（`backend/tests/test_publish.py`）后为 **`77 passed`**。以上都是**当时的本机真实运行**，
-> 不是永久承诺；若你跑出不同结果，先报告事实，不要改期望值去凑绿。
+> 13 项测试（`backend/tests/test_publish.py`，含复验后补的"推送可复现"）后为 **`78 passed`**。
+> 以上都是**当时的本机真实运行**，不是永久承诺；若你跑出不同结果，先报告事实，不要改期望值去凑绿。
 > 判断标准是"**只增不减**"：新增功能要带测试，但**不许为了让基线好看而删测试或放宽断言**。
 
 ### 6.2 A 线端到端（无需摄像头、无需板卡，甚至无需 OpenCV）
@@ -200,9 +200,11 @@ python metrics/scripts/check_a_line_p5_m2.py   # 一条命令验证整条链路�
 ```
 
 > `--post auto` = `http://127.0.0.1:8000/api/ingest`（B 线早已留好的集成点）。
-> 推送失败 → **退出码 3**（不静默丢帧）；连跑多段要加 `--frame-id-offset`，否则 `frame_id` 回退、
-> 违反契约 §1 的单调递增。网页默认地址栏是 `ws://127.0.0.1:8765`（`websocket.py` 的端口），
-> 用 `api.py` 时要改成 `ws://127.0.0.1:8000/ws`。
+> 推送失败的两条底线：**① 退出码 3、错误原文进 summary**（不静默丢帧）；**② 测量照常跑完、
+> JSON/CSV 完整落盘**（不因为 B 线没起就让整段测量白跑）。连跑多段要加 `--frame-id-offset`，
+> 否则 `frame_id` 回退、违反契约 §1 的单调递增；**同一时刻只允许一个推送源**。
+> 网页默认地址栏是 `ws://127.0.0.1:8765`（`websocket.py` 的端口），用 `api.py` 时要改成
+> `ws://127.0.0.1:8000/ws`。
 
 ### 6.3 C 线（HLS，需完整权限终端）
 

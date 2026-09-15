@@ -60,6 +60,8 @@ python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 -
     --json metrics/logs/last.json --jsonl metrics/logs/stream.jsonl --post auto
 #   终端 2：跑测量并把每帧按 ws_push_hz（契约 1 帧/秒，按逻辑时间）推给 B 线
 #   --post auto = http://127.0.0.1:8000/api/ingest；推送失败 → 退出码 3（不静默丢帧）
+#   失败的两条底线：① 绝不静默丢帧（退出码 3 + summary 里留错误原文）；
+#                  ② 绝不把测量一起弄丢（测量照常跑完、JSON/CSV 完整落盘后再失败）
 #   连跑多段时要加 --frame-id-offset（如 100000），否则 frame_id 回退、违反契约 §1
 #   六态演示：4 段 pattern（blink/yawn/still/turn）覆盖 A 线 4 态 + done，disconnected 由 B 线兜底
 
@@ -67,7 +69,7 @@ python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 -
 python backend/mock.py --frames 6           # 六态各一帧契约 JSON
 python backend/config.py                    # 确认阈值读到了什么
 python backend/decision.py                  # 四条判定规则的自检
-python -m pytest                            # 77 项测试（契约一致性 + rPPG 链路 + M2 交接面）
+python -m pytest                            # 78 项测试（契约一致性 + rPPG 链路 + M2 交接面）
 
 # 4) 【P4】真实视频到位后要做的标定（现在就能跑第一个）
 python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？分辨率帧率合规吗？
@@ -106,7 +108,7 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 
 ## 测试覆盖了什么
 
-`python -m pytest`（**77 项** = 契约/可复现性 49 项 + rPPG 链路 16 项 + M2 交接面 12 项）刻意覆盖的是
+`python -m pytest`（**78 项** = 契约/可复现性 49 项 + rPPG 链路 16 项 + M2 交接面 13 项）刻意覆盖的是
 **契约、可复现性与算法正确性**，不是"函数能跑"：
 
 **契约与可复现性**（`tests/test_contract.py` 29 项 + `tests/test_pipeline.py` 20 项 = 49 项）
@@ -136,14 +138,15 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 > （段长都 ≥ 63），因此漏掉了"逐样本喂时延迟线历史长度算错"这条路径 ——
 > 而 `run_pipeline` 恰恰是逐样本喂的。**只测顺利路径 ≈ 没测**，这条就是补上的那一格。
 
-**M2 交接面**（`tests/test_publish.py`，12 项，**接真的 HTTP**，不打桩 urllib）
+**M2 交接面**（`tests/test_publish.py`，13 项，**接真的 HTTP**，不打桩 urllib）
 
 - **节流按逻辑时间**：45 fps 回放 3 秒（136 帧）在 1 Hz 下只发 4 帧（ts=0/1/2/3）——
   回放比实时快几十倍，按墙上时钟节流会几乎一帧都不发；
 - **发出去的就是契约帧本身**：包法固定 `{"frame": ...}`，内部字段 `_triggers` 必须被剥离；
 - **坏帧在本地就被拦下**，不浪费一次 HTTP（对面 422 只是最后一道门）；
-- **422 不重试**（契约不匹配，重试一百次也没用），**连不上重试后抛错**（不静默丢帧），
-  管线以**退出码 3** 收场；
+- **422 不重试**（契约不匹配，重试一百次也没用），**连不上重试后报错**：停推、**测量继续跑完**、
+  产物完整落盘，最后以**退出码 3** 收场（既有响声，又不让整段测量白跑）；
+- **推送可复现**：同样的命令跑两次，推给 B 线的帧集合**逐字节相同**（防有人把节流改成按墙钟）；
 - **收尾帧 `done` 只进 jsonl 流与推送，不进 CSV、不覆盖 `last.json`**；
 - **`--frame-id-offset` 让多段回放的 frame_id/ts 跨段单调递增**（这条是实测踩到的坑）。
 

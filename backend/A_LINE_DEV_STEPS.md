@@ -540,11 +540,11 @@ python backend/quality.py                                                       
 | 项 | 落在哪 | 说明 |
 |---|---|---|
 | A→B 跨进程推送 | **新增** `backend/publish.py` | `FramePoster`：按**逻辑时间** `ws_push_hz` 节流（回放比实时快几十倍，按墙上时钟会几乎不发）；发前本地过契约校验；连接失败重试后**抛错**，绝不静默丢帧 |
-| 管线开关 | `backend/run_pipeline.py` `--post [URL\|auto]` | `--post-hz` / `--post-retries`；推送失败 → **退出码 3**（不是 0，也不是崩栈） |
+| 管线开关 | `backend/run_pipeline.py` `--post [URL\|auto]` | `--post-hz` / `--post-retries`；推送失败的两条底线：① **退出码 3**（不静默丢帧）② **测量照常跑完、产物完整落盘**（不把测量一起弄丢）。见下方"复验记录"第 1 条 |
 | 收尾帧 | `backend/run_pipeline.py` | 跑完发一帧 `status=done`（契约 §2 第 6 态）。**只进 jsonl 流 + 推送，不进 CSV、不覆盖 last.json**（CSV 是逐帧测量表，P4 按行数统计；last.json 是"最新一次测量"） |
 | 多段连跑 | `--frame-id-offset N` | 实测踩到的坑：4 段回放各自从 `frame_id=0` 开始，B 线历史里出现**回号/回退**，违反契约 §1 的单调递增。加了偏移量后，段间 frame_id 与 ts 都连续 |
 | 流/表分流 | `backend/storage.py::write_stream_only` | 收尾帧专用写入口（只写 jsonl） |
-| 单测 | `backend/tests/test_publish.py`（12 项） | 节流、包法、内部字段剥离、坏帧本地拦截、422 不重试、连不上重试后报错、端到端推送逐字段比对、done 只进流、退出码 3、偏移量 |
+| 单测 | `backend/tests/test_publish.py`（13 项） | 节流、包法、内部字段剥离、坏帧本地拦截、422 不重试、连不上重试后报错、端到端推送逐字段比对、done 只进流、退出码 3、偏移量、**推送可复现** |
 | 端到端检查 | **新增** `metrics/scripts/check_a_line_p5_m2.py` | 真起两个进程（子进程 uvicorn + 子进程管线），从 B 线回读数字与 A 线流逐字段比对；已接进 `check_a_line_all.py` 的 **[E]** 段 |
 
 **实测结果**（本机真实运行，2026-09-16）：
@@ -552,7 +552,7 @@ python backend/quality.py                                                       
 ```text
 python metrics/scripts/check_a_line_p5_m2.py   → 17 项全绿（11.2s）
 python metrics/scripts/check_a_line_all.py     → A 线自检全部通过：17 项（28.4s）
-python -m pytest -q                            → 77 passed（65 → 77，只增不减）
+python -m pytest -q                            → 78 passed（65 → 78，只增不减）
 ```
 
 端到端六态覆盖（B 线侧实测拿到）：`['adjust_posture', 'disconnected', 'done', 'fatigue_risk', 'normal', 'unreliable']`；
@@ -581,6 +581,48 @@ python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 -
    用 `api.py` 托管页面时要手填 `ws://127.0.0.1:8000/ws`。**已作为交接项告知 B 线**，
    A 线不改 `frontend/`。
 3. `vital.*` 在合成路径下仍全为 `null`（无真实人脸 → rPPG 窗口没有有效样本），这是正确行为。
+
+#### P5 复验记录（2026-09-16：独立复验 8/8 + 真实浏览器验证）
+
+**一、独立复验**（另写脚本，**不复用** `check_a_line_p5_m2.py` 的断言，自己起服务、自己收帧比对）——8/8 通过：
+
+| 复验项 | 结论 |
+|---|---|
+| 推送可复现 | 同一命令跑两次，推出去的 31 帧**逐字节相同** |
+| 推送不改变测量 | 带 / 不带 `--post`，`last.json` 与 CSV **逐字节相同**（CSV 1350 行） |
+| 节流口径 | 逻辑时间 1 Hz：136 帧 → 4 帧，ts 间隔恰为 `[1.0]` |
+| 墙上时钟模式 | `--wall-clock` 时段按真实秒节流（不是每帧都发） |
+| 负路径 | B 线没起 → 退出码 3 + 明确的失败原文 |
+| 跨进程回读 | `/api/metrics` 31 条 × 6 字段与 A 线流**零不一致**，最新一帧整体相同，`source=ingest` |
+| `disconnected` 来源 | `/api/status` 兜底返回；**history 里从未出现**（不是 A 线推的，也不是 B 线伪造进历史） |
+| 空历史 | 没人推数据时 `/api/metrics.count == 0` |
+
+**二、真实浏览器**（`api.py --no-mock` + `run_pipeline --post`，在浏览器里连 `ws://127.0.0.1:8000/ws`）：
+网页显示 `EAR 0.280 / PERCLOS 0.000 / MAR 0.075 / 人脸可见率 0.950 / yaw 2.0、pitch 1.8 /
+信号质量 0.90 / 光照 0.88 / 运动 0.11`，与 A 线流里 `frame_id=71` 那一帧**逐字段一致**
+（前端按各自位数四舍五入）；页面自带的 JS 契约校验计数到 **✓ 853 帧**；数据源标识为 **WebSocket**；
+状态区显示的是 A 线 `decision.py` 生成的 reason（**带 A 线算出的数值**，不是 B 线 mock 的话术）。
+停止推送 3 秒后，页面显示"连接中断 / 无数据"。
+
+**三、复验查出的三件事**：
+
+1. **【已修】推送失败会把测量产物截断。** 原来的实现是"第一帧推不出去就 `return 3`"，
+   实测结果是 CSV 只写了 **1 行**、`--summary` 根本没生成 —— 一个既像"跑过"又像"没跑过"的半截产物
+   （数据真实性风险），而且"忘了先起 B 线"会让整段测量白跑。现改为：**停推 + 测量照常跑完 + 完整落盘 + 退出码 3**，
+   并由 `tests/test_publish.py::test_post_failure_keeps_measurement_and_exits_3` 钉住。
+2. **【交接 B 线】服务端 `/ws` 在数据中断后不发 `disconnected`。** `api.py` 的 ws 循环里
+   `HUB.latest` 一旦非空，队列空就 `continue`，不再走兜底分支；`hub.iter_subscription()` 里
+   其实已经实现了超时兜底，只是 `api.py` 没用它。**网页没问题**（`app.js` 有 3 秒客户端看门狗，第 560 行），
+   但对任何非本页面的消费者（第三方客户端、以后的前端重构、`websocket.py --mode bus`）来说，
+   数据中断是"静默的"。属 B 线文件，A 线不代改，已列入 §9。
+3. **【待定，A 线】回放模式下网页是"快进"的，不是逐秒跳动。** 推送按**逻辑时间** 1 帧/秒，
+   而回放比实时快几十倍：30 秒的合成回放 1.6 秒墙上跑完，31 帧在 1.6 秒内推到网页
+   （600 秒回放约 19 帧/墙秒）。想看"数字一秒一跳"的现场效果，需要一个按视频帧率节流的选项
+   （M3 接真实摄像头后自然实时）。**契约没要求这个**，故记在这里待定，不在 P5 范围内擅自加。
+
+**四、操作约定（复验时踩到）**：**同一时刻只允许一个 A 线推送源**。
+我同时起了两个 `run_pipeline --post`，B 线历史里 `frame_id`/`ts` 立刻交错、违反契约 §1。
+连跑多段请**顺序执行**并给后段加 `--frame-id-offset`。
 
 ---
 
@@ -650,6 +692,8 @@ git status --short                                       # 只应出现你本线
 | 5 | ~~契约 v1.1 的 45 fps 是否认可~~ ✅ **2026-09-16 已会签完成**（§5.2 第 12 项：链路侧 + 时间序列侧已核，rPPG 端到端待真实视频） | — | 已解决 |
 | 6 | 未推送提交怎么处理（归档 `f19aa00` + 本次测试修复） | 三人 | push 时机 |
 | 7 | **C 线改共享文件 `config.yaml` 时没有同批跑 A 线的测试**，导致基线无声变红（§2.2） | 三人约定流程 | 未来的每一次契约变更 |
+| 8 | **B 线 `api.py` 的 `/ws` 在数据中断后不发兜底 `disconnected`**（`HUB.latest` 非空后队列空就 `continue`）；网页不受影响（前端自带 3 秒看门狗），但第三方消费者会静默等不到。`hub.iter_subscription()` 已有超时兜底实现 | **交接 B 线** | 契约 §2 第 5 态在服务端侧的完整性 |
+| 9 | 回放模式下推送按**逻辑时间** 1 Hz，墙上是突发的（30 秒回放 1.6 秒推完 31 帧）→ 现场演示看着像"快进"。是否需要"按视频帧率节流"的选项（如 `--realtime`）由 A 线定，契约未要求 | A 线自定 | 演示效果（不影响正确性） |
 
 ---
 
@@ -661,7 +705,9 @@ git status --short                                       # 只应出现你本线
 > ✅ **P2 已完成**（2026-09-15）：合成路径崩溃修复 + 一条命令自检入口（15/15 通过）。
 > ✅ **P3 已完成**（2026-09-15）：rPPG 链路（合成信号驱动，16 项单测），`pytest` 49 → **65**。
 > ✅ **P5 已完成**（2026-09-16）：M2 链路打通 —— `run_pipeline --post` → `POST /api/ingest` → `/ws` → 网页，
-> 17 项端到端检查全绿（`metrics/scripts/check_a_line_p5_m2.py`），`pytest` 65 → **77**。
+> 17 项端到端检查全绿（`metrics/scripts/check_a_line_p5_m2.py`），`pytest` 65 → **78**。
+> 复验：独立复验 8/8 + **真实浏览器**验证（网页数字与 A 线帧逐字段一致）—— 见 §4 P5"复验记录"，
+> 并据复验修掉了"推送失败会截断测量产物"这一处真问题。
 > 证据：`metrics/evidence/2026-09-16_a_line_p5_m2_bridge.json`；实施细节见 §4 P5。
 > ⚠️ 这一轮用 `--stub` 合成路径验证**链路**：`landmark_source=stub`，EAR/MAR 仍是占位几何量，
 > 网页上的数字要等 P4 标定 + 真实视频接进同一条 `--post` 通道之后才具备算法含义。
