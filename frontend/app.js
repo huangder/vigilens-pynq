@@ -61,7 +61,12 @@
     { key: "light", label: "光照分", unit: "", digits: 2, get: function (f) { return f.quality.light_score; } },
     { key: "motion", label: "运动分（越低越好）", unit: "", digits: 2, get: function (f) { return f.quality.motion_score; }, warn: function (f) { return f.quality.motion_score > THRESHOLDS.motion_score_max; } },
     { key: "hr", label: "心率（门控）", unit: "bpm", digits: 1, gate: true, confKey: "hr_conf", get: function (f) { return f.vital.hr_bpm; } },
-    { key: "rr", label: "呼吸率（门控）", unit: "/min", digits: 1, gate: true, confKey: "rr_conf", get: function (f) { return f.vital.rr_per_min; } }
+    // staticNote：只在**没有数值**时显示，用来解释"这张卡为什么出不来数"。
+    // 呼吸率是契约级限制（§3.5：63 阶 @45 fps 的过渡带吃掉了 0.1~0.5 Hz 呼吸带），
+    // 不加说明的话，答辩现场它看起来就像坏了。
+    { key: "rr", label: "呼吸率（门控）", unit: "/min", digits: 1, gate: true, confKey: "rr_conf",
+      staticNote: "契约 §3.5：63 阶 @45 fps 做不了呼吸带，待 PS 侧降采样",
+      get: function (f) { return f.vital.rr_per_min; } }
   ];
 
   /* 门控条目：方向 min = 越大越好，max = 越小越好 */
@@ -328,13 +333,15 @@
     var q = frame.quality.overall;
     if (q < THRESHOLDS.quality_min_score) {
       return { text: "已锁定", msg: true,
-               note: "信号不可靠（" + q.toFixed(2) + " < " + THRESHOLDS.quality_min_score + "）" };
+               note: "信号不可靠（" + q.toFixed(2) + " < " + THRESHOLDS.quality_min_score +
+                     "），按承诺不报数字" };
     }
     if (q < THRESHOLDS.vital_require_quality) {
       return { text: "暂不出数", msg: true,
-               note: "质量不足（" + q.toFixed(2) + " < " + THRESHOLDS.vital_require_quality + "）" };
+               note: "质量 " + q.toFixed(2) + " < 门控线 " + THRESHOLDS.vital_require_quality +
+                     "，暂不给数" };
     }
-    return { text: "计算中", msg: true, note: "门控已通过，等待 rPPG 接入" };
+    return { text: "计算中", msg: true, note: "门控已通过，尚无有效样本" };
   }
 
   function renderCards(frame) {
@@ -366,7 +373,12 @@
       card.classList.toggle("msg", isMsg && text.length > 4);
       num.textContent = text;
       if (unit) unit.textContent = isMsg ? "" : (d.unit || "");
-      if (note) note.textContent = noteText;
+      // 静态说明只在"没有数值"时拼进去：否则会出现"卡上有数字、备注却说这个指标出不来"
+      // 这种自相矛盾（Mock 数据下呼吸率是有值的）。
+      var parts = [];
+      if (isMsg && d.staticNote) parts.push(d.staticNote);
+      if (noteText) parts.push(noteText);
+      if (note) note.textContent = parts.join(" · ");
       card.style.borderColor = isWarn ? "#4d3c14" : "#24304a";
       num.style.color = isWarn ? "#ffb020" : "";
     });
