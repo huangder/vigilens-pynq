@@ -2,7 +2,8 @@
 
 > **定位**：A 线（算法 / 后端）的执行主线。回答一个问题——**在 4 段标准视频还没录的情况下，A 线接下来按什么顺序做什么。**
 > **维护**：A 线。本文件在 `backend/` 下，属 A 线自有目录，改动用 `A:` 前缀提交。
-> **版本**：2026-09-13 起草；**2026-09-15 更新（P0 已完成）**。对应契约 `docs/interface.md` **v1.0 冻结 → 🚧 v1.1 草案（全局 45 fps）**。
+> **版本**：2026-09-13 起草；**2026-09-16 更新**。对应契约 `docs/interface.md` **🔒 v1.1（2026-09-16 三方会签完成）**；
+> `CONTRACT_VERSION` 已同步为 `v1.1`。
 
 ---
 
@@ -11,7 +12,7 @@
 | 文档 | 管什么 | 与本文件的关系 |
 |---|---|---|
 | `AGENTS.md` | 全局铁律、权威顺序、环境坑 | **最高优先级**。本文件与它冲突时以它为准 |
-| `docs/interface.md` v1.0→v1.1草案 | 字段 / 枚举 / 寄存器 / 黄金参考口径 | 本文件的一切"口径"字样都指它。它是唯一技术准绳 |
+| `docs/interface.md` **🔒 v1.1** | 字段 / 枚举 / 寄存器 / 黄金参考口径 | 本文件的一切"口径"字样都指它。它是唯一技术准绳 |
 | `docs/05_AI使用约束.md` | AI 红线、记录模板 | 本文件的每个任务都要配套一条人类手写的 `report/llm_log/` 记录 |
 | `docs/04_基础框架搭建指南.md` | M0/M1 骨架与 DoD | 本文件是它 A 线部分的**展开与续接** |
 | `backend/README.md` | 模块职责表 + "下一步（A 线）" | 本文件是那份"下一步"清单的**排期版**；两边要同步维护 |
@@ -45,7 +46,7 @@
 | 1 | ✅ **P0 已完成**：本地已 rebase 到远端 `0788733`（原落后 14 个提交）；契约现为 **v1.0 冻结 → v1.1 草案**，`CONTRACT_VERSION = "v1.0"`（草案期不动版本号） | `git status --branch`；`Select-String -Path docs/interface.md -Pattern '状态：'` |
 | 2 | 归档提交已 rebase 为 **`f19aa00`**，本地领先 `origin/main` **1 个提交（未推）** | `git log --oneline origin/main..HEAD` |
 | 3 | 仓库自检 **49 passed**（同步后一度是 48 passed + 1 failed，见 §2.2，已修复） | `.venv\Scripts\python.exe -m pytest -q` |
-| 12 | **v1.1 草案把全局帧率 30→45**：`config.yaml` 的 `fps_nominal` = **45**，`AGENTS.md`、`interface.md §0`、FIR 系数与黄金参考均已按 45 重生成 | `Select-String -Path config.yaml -Pattern fps_nominal` |
+| 12 | **v1.1 把全局帧率 30→45**（已于 09-16 会签完成）：`config.yaml` 的 `fps_nominal` = **45**，`AGENTS.md`、`interface.md §0`、FIR 系数与黄金参考均已按 45 重生成 | `Select-String -Path config.yaml -Pattern fps_nominal` |
 | 4 | **mediapipe 0.10.21 可用**，`mp.solutions` 存在，FaceMesh 能初始化（实测 2.07s） | `python -c "import mediapipe as mp; print(hasattr(mp,'solutions'))"` |
 | 5 | **真实视频路径通**：90 帧跑完，`landmark_source: mediapipe` | `python backend/run_pipeline.py --source metrics/logs/_smoke.mp4` |
 | 6 | **`--source synthetic` 不带 `--stub` 会崩**（`cv2.cvtColor` 收到 `SyntheticImage`）；同一根因让 **3 个模块自检失败**：`face_landmark.py`、`behavior_metrics.py`、`quality.py`（其余 6 个自检退出码均为 0） | 见 §4 P2.1 |
@@ -591,7 +592,7 @@ git status --short                                       # 只应出现你本线
 | 2 | 运动量在 384×288 还是 640×480 上算（§2.1 的 B） | A ↔ C 会签 | P1.3 |
 | 3 | ~~`golden_roi.csv` 用例数~~ ✅ **已由 C 线关闭**（§2.1 的 D） | — | 已解决 |
 | 4 | 呼吸带降采样到 2 Hz 后 **int32 累加器溢出**（`Σ|h| = 70247 → 上界 2.30e9 > 2^31`），且 63 阶 @2 Hz 群延迟 15.5 秒 | **回填 C 线** | P3 的呼吸率路径 |
-| 5 | **契约 v1.1 的 45 fps 是否认可**（§5.2 第 12 项）——A 线要确认链路能跑 45 fps，且 rPPG q 序列按 45 Hz 与新黄金参考对拍 | A 线自己判断，然后会签 | P1/P3 的全部数字 |
+| 5 | ~~契约 v1.1 的 45 fps 是否认可~~ ✅ **2026-09-16 已会签完成**（§5.2 第 12 项：链路侧 + 时间序列侧已核，rPPG 端到端待真实视频） | — | 已解决 |
 | 6 | 未推送提交怎么处理（归档 `f19aa00` + 本次测试修复） | 三人 | push 时机 |
 | 7 | **C 线改共享文件 `config.yaml` 时没有同批跑 A 线的测试**，导致基线无声变红（§2.2） | 三人约定流程 | 未来的每一次契约变更 |
 

@@ -276,22 +276,25 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 
 ### 7.6 契约版本与仓库状态（**引用前必须自行复核**）
 
-- `docs/interface.md` 头部声明 **v0.93，待三方会签冻结 v1.0**（`docs/07` 里写的 v0.92 已滞后）。
-- `backend/contract.py` 的 `CONTRACT_VERSION` 当前为 **`v0.91`** —— **与契约文档不同步**（见第 8 节）。
+- `docs/interface.md` 头部声明 **🔒 v1.1（2026-09-16 三方会签完成）**。
+  沿革：v1.0 于 2026-09-11 冻结；v1.1（"全局 45 fps"）由 C 线 2026-09-13 发起、2026-09-16 会签完成。
+- `backend/contract.py` 的 `CONTRACT_VERSION` 当前为 **`v1.1`** —— **与契约文档同步**
+  （会签完成时按第 4 节第 5 步「会签升级版本号」升级）。
 - 本地/远端状态（本节容易过期，**每次用 `git status` / `git log` 复核**）：
-  本地 `main` 领先 `origin/main` 1 个提交（`docs: 新增《07 …》` 未推送）；工作区有未提交改动。
+  截至 2026-09-16，`main` 与 `origin/main` 同步、工作区干净。
 
 ---
 
 ## 8. 已知不一致与可信度标注（**不要把它当"已修好"**）
 
-以下为本文件建立时**真实观察到**的不一致，**尚未修复**。AI 遇到相关话题时**如实说明**，不要据此编造结论：
+以下为本文件建立时**真实观察到**的不一致；**每条后面都标了它现在的状态**（可能已修好）。
+AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要把"已修复"的当成"还坏着"：
 
 | # | 不一致 | 证据 | 处理建议 |
 |---|---|---|---|
-| 1 | `contract.py` 的 `CONTRACT_VERSION = "v0.91"` 落后于 `docs/interface.md` v0.93 | `backend/contract.py` vs `docs/interface.md` | 属契约同步事项，需 A/B 会签；**改它 = 改契约**，走第 4 节流程 |
-| 2 | `fpga/README.md` 部分小节滞后（如末节"M0 欠账"仍列已完成的 `git init` / `README` / `config.yaml`；任务清单写 v0.92、C7"2 份"而实际 3 份） | `fpga/README.md` 末尾 | 正文结论可信；**引用末尾清单前先核对 `fpga/report/` 实际文件** |
-| 3 | `docs/07` §0 及 `fpga/README.md` 中的版本号 v0.92 已被 v0.93 覆盖 | `docs/07` §7、`docs/interface.md` | 以 `docs/interface.md` 头部为准 |
+| 1 | `contract.py` 的 `CONTRACT_VERSION` 落后于 `docs/interface.md` | `backend/contract.py` vs `docs/interface.md` | ✅ **2026-09-16 已解决**：v1.1 会签完成时按第 4 节第 5 步升级，两侧现同为 **v1.1** |
+| 2 | `fpga/README.md` 部分小节滞后（如末节"M0 欠账"仍列已完成的 `git init` / `README` / `config.yaml`） | `fpga/README.md` 末尾 | ⏳ **2026-09-16 未当场复核**（C 线文件）；正文结论可信，**引用末尾清单前先核对 `fpga/report/` 实际文件** |
+| 3 | `docs/07` / `fpga/README.md` 中的版本号曾滞后于 `docs/interface.md` | `docs/07` §7、`fpga/README.md` | ✅ **2026-09-16 已同步**（两处均改为 v1.1 会签完成）；**始终以 `docs/interface.md` 头部为准** |
 
 > **代码是否真的"实现"某功能，只以三样为准**：源码可读到的实现 + 测试是否覆盖 + 真实运行输出。
 > 文档里的"✅ 完成"是**人类维护者的声明**，可能滞后一天到几周 —— 关键判断请自己跑第 6 节的命令。
@@ -302,7 +305,7 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 
 | 里程碑 | 状态 |
 |---|---|
-| **M0** 冻结（主场景/项目名/指标/契约/目录/仓库） | ✅ 完成（契约 v0.93 **待会签**） |
+| **M0** 冻结（主场景/项目名/指标/契约/目录/仓库） | ✅ 完成（契约 **🔒 v1.1 已会签**，2026-09-16） |
 | **M1** 基础框架 | 🔄 **进行中**（A/B 骨架就位；C 线跑到计划前面） |
 | **M2** 软件合体（A 的 JSON 接 B 的网页） | ⏳ 待 A/B 骨架替换完成 |
 | **M3** 硬件上板（Overlay + DMA，**首次需要板卡**） | ⏳ 未开始 |

@@ -98,7 +98,7 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
 
 | 里程碑 | 内容 | 状态 |
 |---|---|---|
-| **M0** 冻结 | 主场景 / 项目名 / 指标范围 / 接口契约 / 目录结构 / 仓库与协议 | ✅ **完成**（`docs/00`、`docs/interface.md` 🔒 **v1.0 已冻结**、仓库 `vigilens-pynq`、MIT） |
+| **M0** 冻结 | 主场景 / 项目名 / 指标范围 / 接口契约 / 目录结构 / 仓库与协议 | ✅ **完成**（`docs/00`、`docs/interface.md` 🔒 **v1.1 已会签完成**、仓库 `vigilens-pynq`、MIT） |
 | **M1** 基础框架 | A：回放→JSON；B：Mock→网页；C：最小 IP 仿真+综合 | 🔄 **进行中** |
 | **M2** 软件合体 | A 的 JSON 接入 B 的网页，形成完整软件 Demo | ⏳ 待 A/B 骨架跑通 |
 | **M3** 硬件接入 | Overlay 上板 + DMA 跑通（**首次需要板卡**） | ⏳ |
@@ -119,9 +119,10 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
   四个 IP 的**计数器改为随块复位清零**（`counter_reset`，风险表第 8 条关闭）、
   **M3 系统级预算**（`fpga/report/m3_system_budget_v1.md`，含 9 条上板验收门限）、
   **M4 软硬件对比基线**（`fpga/report/m4_baseline_v1.md` + `metrics/scripts/bench_filter_ps.py`）。
-  接口契约已由 C 线推进到 **v1.0 并冻结**（2026-09-11）；第 5.2 节列出 A/B 待补签的 6 项
-  （**尚未收到书面表态**，本文件不代签），认可即补签、有异议按第 7 节提变更走 v1.1
-  （`docs/interface.md` 第 5 节）。
+  接口契约已由 C 线推进到 **v1.1 并会签完成**（v1.0 于 2026-09-11 冻结，v1.1 的"全局 45 fps"
+  于 **2026-09-16 三方会签完成**）；第 5.2 节里 A/B 的待表态项已补签——
+  第 1/2/4/11 项认可（A 线）、第 3 项认可（B 线），第 7、12 项按契约明文**待真实视频**后回填。
+  （`docs/interface.md` 第 5 节）
 - **A 线**：骨架就位（`backend/*.py`），`run_pipeline.py` 端到端链路为 **stub 状态**（EAR 为真指标，PERCLOS/MAR/头姿/质量/规则为占位），待按《02》A1~A10 逐项替换。
 - **B 线**：`frontend/` 六态仪表盘 + `backend/mock.py` / `websocket.py` 就位，接真实数据只需切一个数据源开关。
 - **board / M3 之后**：`board/` 仅占位，未开始。
