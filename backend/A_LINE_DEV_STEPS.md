@@ -463,7 +463,7 @@ python backend/quality.py                                                       
 | 工具 | 作用 | 现在能验证吗 | 实测 |
 |---|---|---|---|
 | `metrics/scripts/check_p4_readiness.py` | 4 段视频 + 标注的就绪检查（分辨率 / 帧率 / 时长 / SHA256） | ✅ | 空目录 → 正确列出缺 8 项；构造合规假数据 → **就绪 4/4**；换成 320×240@15fps → **正确拦下**并标 ⚠️ |
-| `metrics/scripts/make_golden.py` | A10 黄金结果生成 + **锁版本**（视频 / config / git HEAD 三样指纹） | ✅（用冒烟视频） | 单文件 + `--verify` → 135 行、两次运行逐字节一致；`_lock.json` **不含时间戳**（重跑不脏工作区） |
+| `metrics/scripts/make_golden.py` | A10 黄金结果生成 + **锁版本**（视频 / config / git HEAD 三样指纹 + `backend/` 代码脏状态） | ✅（用冒烟视频） | 单文件 + `--verify` → 135 行、两次运行逐字节一致；`_lock.json` **不含时间戳**（重跑不脏工作区）；第一段失败也会继续跑完其余段 |
 | `metrics/scripts/sweep_thresholds.py` | 用标注当真值扫阈值（事件级 + 帧级 P/R/F1） | ✅（`--self-test`） | 已知答案下选出 0.16（落在 0.15~0.30 平台区）、F1=1.0、TP=3；反例阈值 0.10 → 漏检 3 次 |
 
 > 三个工具的设计都坚持"**同样的输入得到同样的输出**"：锁定文件不含时间戳、`--verify` 跑两次比对字节。

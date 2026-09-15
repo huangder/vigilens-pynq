@@ -19,12 +19,16 @@
 |---|---|---|---|
 | ① 就绪检查 | `python metrics/scripts/check_p4_readiness.py` | ✅ **现在就能跑** | 列出缺哪段视频/标注，并校验 640×480 / 45 fps / 时长 |
 | ② 录制 + 标注 | 见 `data/README.md` | ❌ 等素材 | 4 段、每段只做一件事、20~30 s |
-| ③ 锁黄金结果 | `python metrics/scripts/make_golden.py --verify` | ❌ 等素材（可用 `--source` 单文件自测） | 产出 `data/golden/<name>_metrics.csv` + `_lock.json` |
+| ③ 锁黄金结果 | `python metrics/scripts/make_golden.py --verify` | ❌ 等素材（可用 `--source` 单文件自测） | 产出 `data/golden/<name>_metrics.csv` + `_lock.json`（视频/config/git HEAD 三样指纹 + `backend/` 代码脏状态） |
 | ④ 扫阈值 | `python metrics/scripts/sweep_thresholds.py --csv … --ann … --param …` | ❌ 等素材（`--self-test` 现在可验工具本身） | 事件级 P/R/F1，给出建议值 |
 | ⑤ 写回 + 重锁 | 改 `config.yaml` → 重跑 ③ → 提交 | ❌ 等素材 | 阈值是**唯一来源**，只能改这一处 |
 
 三个工具的设计都遵循同一条纪律：**同样的输入必须得到同样的输出**。
 `_lock.json` 不含时间戳、`--verify` 会跑两次比对字节 —— 否则"提交前自检"本身就会把工作区搞脏。
+
+> 💡 `_lock.json` 同时记 `code.backend_dirty_paths`：**只记 git HEAD 是不够的** ——
+> 工作区脏的时候，那个 HEAD 代表不了真正跑出这份黄金结果的代码，别人照它重跑可能得到不同结果。
+> 看到这个字段非空，就说明"这份黄金结果对应的不是某个干净的提交"。
 
 ---
 

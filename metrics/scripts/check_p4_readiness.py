@@ -48,7 +48,11 @@ def find_ffprobe() -> str | None:
 
 
 def probe(path: Path, ffprobe: str) -> dict | None:
-    """读视频的宽/高/帧率/时长；读不出来返回 None。"""
+    """读视频的宽/高/帧率/时长；读不出来返回 None。
+
+    ⚠️ 时长要**两段都查**：mp4 的时长在 stream 段，而 webm/mkv 常常只在 format 段
+    （stream 段直接给 `N/A`）。只查 stream 会把合法视频误判成"时长 0 秒"。
+    """
     cmd = [ffprobe, "-v", "error", "-select_streams", "v:0",
            "-show_entries", "stream=width,height,r_frame_rate,duration",
            "-of", "default=noprint_wrappers=1", str(path)]
@@ -70,7 +74,19 @@ def probe(path: Path, ffprobe: str) -> dict | None:
             try:
                 info["duration"] = float(v)
             except ValueError:
-                pass
+                pass            # "N/A"：交给下面的 format 兜底
+
+    if "duration" not in info:
+        r2 = subprocess.run([ffprobe, "-v", "error", "-show_entries", "format=duration",
+                             "-of", "default=noprint_wrappers=1", str(path)],
+                            capture_output=True, text=True, encoding="utf-8", errors="replace")
+        for line in (r2.stdout or "").splitlines():
+            k, _, v = line.partition("=")
+            if k.strip() == "duration":
+                try:
+                    info["duration"] = float(v.strip())
+                except ValueError:
+                    pass
     return info
 
 

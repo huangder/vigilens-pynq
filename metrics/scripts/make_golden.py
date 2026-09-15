@@ -47,15 +47,33 @@ def sha256_file(path: Path) -> str:
 
 def git_head() -> str | None:
     """当前 commit（拿不到就返回 None —— 不影响黄金结果本身）。"""
+    out = _git(["rev-parse", "HEAD"])
+    return out.strip() if out else None
+
+
+def _git(args: list[str]) -> str | None:
+    """跑一条 git 子命令；git 不可用时返回 None。"""
     for git in (REPO_ROOT / ".tools" / "git" / "cmd" / "git.exe", "git"):
         try:
-            r = subprocess.run([str(git), "rev-parse", "HEAD"], cwd=str(REPO_ROOT),
+            r = subprocess.run([str(git), *args], cwd=str(REPO_ROOT),
                                capture_output=True, text=True, timeout=20)
             if r.returncode == 0:
-                return r.stdout.strip()
+                return r.stdout
         except (OSError, subprocess.SubprocessError):
             continue
     return None
+
+
+def backend_dirty_paths() -> list[str] | None:
+    """`backend/` 下是否有未提交改动。
+
+    为什么锁定文件需要它：只记 git HEAD 的话，**工作区脏的时候这个 HEAD 代表不了跑出黄金结果的代码**，
+    别人照 HEAD 重跑可能得到不同结果。返回 None 表示查不到（git 不可用）。
+    """
+    out = _git(["status", "--porcelain", "--", "backend"])
+    if out is None:
+        return None
+    return sorted(ln[3:].strip() for ln in out.splitlines() if ln.strip())
 
 
 def run_pipeline(video: Path, csv_out: Path, work: Path) -> tuple[int, dict | None, str]:
@@ -103,7 +121,8 @@ def make_one(video: Path, name: str, out_dir: Path, verify: bool) -> bool:
         "video": {"path": str(video.relative_to(REPO_ROOT)).replace("\\", "/"),
                   "sha256": sha256_file(video), "bytes": video.stat().st_size},
         "config": {"path": "config.yaml", "sha256": sha256_file(cfg_path)},
-        "code": {"git_head": git_head()},
+        # 只记 HEAD 是不够的：工作区脏的时候，HEAD 代表不了真正跑出这份黄金结果的代码。
+        "code": {"git_head": git_head(), "backend_dirty_paths": backend_dirty_paths()},
         "run": {"logical_fps": (summary or {}).get("logical_fps"),
                 "frames_processed": (summary or {}).get("frames_processed"),
                 "landmark_source": (summary or {}).get("landmark_source")},
@@ -156,14 +175,20 @@ def main() -> int:
         print("       或先用 --source <视频> 试跑一段（例如 metrics/logs/_smoke.mp4）。")
         return 1
 
-    ok = all(make_one(v, nm, out_dir, args.verify) for v, nm in targets)
+    # ⚠️ 不要写 all(make_one(...) for ...)：all() 对生成器**短路**，
+    #    第一段失败后面的视频就再也不会被处理，而输出里看不出这点。
+    #    这里先全部跑完再汇总。
+    results = [(nm, make_one(v, nm, out_dir, args.verify)) for v, nm in targets]
+    failed = [nm for nm, good in results if not good]
+    ok = not failed
     print()
     if ok:
         print(f"[完成] {len(targets)} 段黄金结果已写入 {out_dir.relative_to(REPO_ROOT)}"
               "（含 _lock.json：输入视频 / config.yaml / git HEAD 三样指纹）")
         print("       记得把 data/golden/ 一并提交 —— 它是要锁版本的正式产物。")
         return 0
-    print("[FAIL] 有视频未能生成黄金结果，先看上面的报错。")
+    print(f"[FAIL] {len(failed)}/{len(targets)} 段未能生成黄金结果：{', '.join(failed)}")
+    print("       其余段已正常产出（不是全部作废）—— 先修好失败段再整体重跑。")
     return 1
 
 
