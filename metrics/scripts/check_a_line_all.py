@@ -160,7 +160,9 @@ def main() -> int:
     code, out = run([py, str(SCRIPTS / "check_a_line_p1_all.py")])
     results.append(("D", "P1 黄金参考对拍", code == 0, last_line(out)))
     for ln in out.splitlines():
-        if ln.strip().startswith(("[PASS]", "[FAIL]")):
+        # 连"前置：测试向量缺失，已按固定 seed 重新生成"一起回显 ——
+        # 否则会自动往 fpga/sim/data*/ 写出十几 MB 生成物却一句都不说。
+        if ln.strip().startswith(("[PASS]", "[FAIL]", "前置", "[OK]", "[SKIP]")):
             print("    " + ln.strip())
     print(f"    {'[PASS]' if code == 0 else '[FAIL]'} {last_line(out)}")
 
