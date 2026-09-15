@@ -29,13 +29,15 @@
 # 0) 先载入本机工具链（只影响当前会话，不改系统环境变量）
 . .\env.ps1
 
-# 0.5) 【推荐】一条命令跑完 A 线全部自检（约 20 秒，退出码即结论）
+# 0.5) 【推荐】一条命令跑完 A 线全部自检（约 30 秒，17 项，退出码即结论）
 python metrics/scripts/check_a_line_all.py
-#   它串起四段：仓库四项自检 / backend 9 个模块自检 /
-#   端到端合成回放 + 重复运行逐字节一致 / P1 黄金参考对拍（5 项）
+#   它串起五段：仓库四项自检 / backend 10 个模块自检 /
+#   端到端合成回放 + 重复运行逐字节一致 / P1 黄金参考对拍（5 项）/
+#   P5 的 M2 端到端（真起两个进程：A 线 --post → B 线 api.py --no-mock → /ws）
 #   ⚠️ 自检**不改动工作区**：结果只写 metrics/logs/（不入库）。
 #      要把某一次运行归档成正式证据，才显式加 --evidence，然后把证据文件一并提交：
 #      python metrics/scripts/check_a_line_p1_all.py --evidence
+#      python metrics/scripts/check_a_line_p5_m2.py --evidence
 
 # 0.9) 依赖（本机已就绪；要重建才需要）
 pip install -r requirements.txt
@@ -51,11 +53,21 @@ python backend/run_pipeline.py --source data/raw/blink.mp4 --json metrics/logs/l
 python backend/websocket.py                 # ws://127.0.0.1:8765，配 frontend/index.html
 python backend/api.py                       # http://127.0.0.1:8000/ 直接托管前端页面
 
+# 2.5) 【P5 / M2】把 A 线的真实数据接到网页上（两个终端，都在仓库根）
+python backend/api.py --no-mock             # 终端 1：只广播 ingest 进来的真实帧
+#   浏览器打开 http://127.0.0.1:8000/ ，地址栏填 ws://127.0.0.1:8000/ws 再点"连接 WebSocket"
+python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 --stub `
+    --json metrics/logs/last.json --jsonl metrics/logs/stream.jsonl --post auto
+#   终端 2：跑测量并把每帧按 ws_push_hz（契约 1 帧/秒，按逻辑时间）推给 B 线
+#   --post auto = http://127.0.0.1:8000/api/ingest；推送失败 → 退出码 3（不静默丢帧）
+#   连跑多段时要加 --frame-id-offset（如 100000），否则 frame_id 回退、违反契约 §1
+#   六态演示：4 段 pattern（blink/yawn/still/turn）覆盖 A 线 4 态 + done，disconnected 由 B 线兜底
+
 # 3) 只想到处看看
 python backend/mock.py --frames 6           # 六态各一帧契约 JSON
 python backend/config.py                    # 确认阈值读到了什么
 python backend/decision.py                  # 四条判定规则的自检
-python -m pytest                            # 65 项测试（契约一致性 + rPPG 链路）
+python -m pytest                            # 77 项测试（契约一致性 + rPPG 链路 + M2 交接面）
 
 # 4) 【P4】真实视频到位后要做的标定（现在就能跑第一个）
 python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？分辨率帧率合规吗？
@@ -94,7 +106,7 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 
 ## 测试覆盖了什么
 
-`python -m pytest`（**65 项** = 契约/可复现性 49 项 + rPPG 链路 16 项）刻意覆盖的是
+`python -m pytest`（**77 项** = 契约/可复现性 49 项 + rPPG 链路 16 项 + M2 交接面 12 项）刻意覆盖的是
 **契约、可复现性与算法正确性**，不是"函数能跑"：
 
 **契约与可复现性**（`tests/test_contract.py` 29 项 + `tests/test_pipeline.py` 20 项 = 49 项）
@@ -124,6 +136,17 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 > （段长都 ≥ 63），因此漏掉了"逐样本喂时延迟线历史长度算错"这条路径 ——
 > 而 `run_pipeline` 恰恰是逐样本喂的。**只测顺利路径 ≈ 没测**，这条就是补上的那一格。
 
+**M2 交接面**（`tests/test_publish.py`，12 项，**接真的 HTTP**，不打桩 urllib）
+
+- **节流按逻辑时间**：45 fps 回放 3 秒（136 帧）在 1 Hz 下只发 4 帧（ts=0/1/2/3）——
+  回放比实时快几十倍，按墙上时钟节流会几乎一帧都不发；
+- **发出去的就是契约帧本身**：包法固定 `{"frame": ...}`，内部字段 `_triggers` 必须被剥离；
+- **坏帧在本地就被拦下**，不浪费一次 HTTP（对面 422 只是最后一道门）；
+- **422 不重试**（契约不匹配，重试一百次也没用），**连不上重试后抛错**（不静默丢帧），
+  管线以**退出码 3** 收场；
+- **收尾帧 `done` 只进 jsonl 流与推送，不进 CSV、不覆盖 `last.json`**；
+- **`--frame-id-offset` 让多段回放的 frame_id/ts 跨段单调递增**（这条是实测踩到的坑）。
+
 ## 已知环境问题（不是代码问题，别浪费时间）
 
 | 现象 | 原因 | 处理 |
@@ -138,6 +161,8 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 
 ## 下一步（A 线）
 
+- [x] **P5 / M2 链路**（2026-09-16）：`--post` → `/api/ingest` → `/ws` → 网页打通，
+      17 项端到端检查全绿。**但数值仍是 stub 占位几何量** —— 网页上的数字要等下面几项做完才算算法结果。
 - [ ] A2 真接 MediaPipe，用**真实视频**重标定 `config.yaml` 的 `ear_close_threshold` / `mar_threshold`
 - [ ] A6 头部姿态与可见率实测标定（`pose_yaw_max_deg` / `face_visible_min` 目前是占位值）
 - [ ] A7 质量权重 `quality_weights` 用"大幅晃动 / 变暗 / 正常"三种场景重标定

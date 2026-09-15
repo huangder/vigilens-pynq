@@ -527,7 +527,60 @@ python backend/quality.py                                                       
 
 **动作**：走 `backend/hub.py` / `websocket.py` 已有的数据源开关（`mock` / `file` / `bus`），把数据源切到 A 线真实产出。
 
+> ⚠️ **实施时修正了上面这条路线**（2026-09-16，实测）：`hub.HUB` 是**进程内**总线，
+> 而 A 线测量（`run_pipeline.py`）与 B 线服务（`api.py`）是**两个进程** —— 跨不过去。
+> 正式通道改用 B 线早就留好的 **`POST /api/ingest`**（`api.py` 里那句注释写的就是
+> "A 线 `run_pipeline --post`"），`websocket.py --mode file` 保留为**离线回放**路径
+> （`--jsonl metrics/logs/stream.jsonl`，不需要跑管线也能演示）。
+
 **完成判据**：浏览器里看到的是 A 线跑出来的真实数字，且六种状态都能触发；B 线的 `frontend/mock.js --selftest` 与跨语言契约检查仍然通过。
+
+#### P5 实施（✅ 2026-09-16 完成）
+
+| 项 | 落在哪 | 说明 |
+|---|---|---|
+| A→B 跨进程推送 | **新增** `backend/publish.py` | `FramePoster`：按**逻辑时间** `ws_push_hz` 节流（回放比实时快几十倍，按墙上时钟会几乎不发）；发前本地过契约校验；连接失败重试后**抛错**，绝不静默丢帧 |
+| 管线开关 | `backend/run_pipeline.py` `--post [URL\|auto]` | `--post-hz` / `--post-retries`；推送失败 → **退出码 3**（不是 0，也不是崩栈） |
+| 收尾帧 | `backend/run_pipeline.py` | 跑完发一帧 `status=done`（契约 §2 第 6 态）。**只进 jsonl 流 + 推送，不进 CSV、不覆盖 last.json**（CSV 是逐帧测量表，P4 按行数统计；last.json 是"最新一次测量"） |
+| 多段连跑 | `--frame-id-offset N` | 实测踩到的坑：4 段回放各自从 `frame_id=0` 开始，B 线历史里出现**回号/回退**，违反契约 §1 的单调递增。加了偏移量后，段间 frame_id 与 ts 都连续 |
+| 流/表分流 | `backend/storage.py::write_stream_only` | 收尾帧专用写入口（只写 jsonl） |
+| 单测 | `backend/tests/test_publish.py`（12 项） | 节流、包法、内部字段剥离、坏帧本地拦截、422 不重试、连不上重试后报错、端到端推送逐字段比对、done 只进流、退出码 3、偏移量 |
+| 端到端检查 | **新增** `metrics/scripts/check_a_line_p5_m2.py` | 真起两个进程（子进程 uvicorn + 子进程管线），从 B 线回读数字与 A 线流逐字段比对；已接进 `check_a_line_all.py` 的 **[E]** 段 |
+
+**实测结果**（本机真实运行，2026-09-16）：
+
+```text
+python metrics/scripts/check_a_line_p5_m2.py   → 17 项全绿（11.2s）
+python metrics/scripts/check_a_line_all.py     → A 线自检全部通过：17 项（28.4s）
+python -m pytest -q                            → 77 passed（65 → 77，只增不减）
+```
+
+端到端六态覆盖（B 线侧实测拿到）：`['adjust_posture', 'disconnected', 'done', 'fatigue_risk', 'normal', 'unreliable']`；
+B 线 `/api/metrics` 的 124 条历史 × 6 个字段与 A 线 `stream.jsonl` **逐字段相同**；
+`/ws` 推送的帧与推过去的一模一样；坏帧被 422 挡下且不进历史；`GET /` 返回仪表盘（11823 字节）。
+
+**怎么跑一次 M2 演示**（两个终端，都在仓库根）：
+
+```powershell
+# 终端 1：B 线服务（--no-mock = 只广播 ingest 进来的真实帧）
+python backend/api.py --no-mock
+# 浏览器打开 http://127.0.0.1:8000/ ，地址栏填 ws://127.0.0.1:8000/ws 后点"连接 WebSocket"
+
+# 终端 2：A 线跑测量并把每帧推过去
+python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 --stub `
+    --json metrics/logs/last.json --jsonl metrics/logs/stream.jsonl --post auto
+# 多段连跑（六态演示）时第二段起要加 --frame-id-offset，否则 frame_id 回退
+```
+
+**P5 完成时仍未做的（诚实标注）**：
+
+1. **数字的算法含义仍待 P4**：本轮端到端用 `--stub` 合成路径打通链路，
+   摘要里 `landmark_source=stub`，EAR/MAR 是占位几何量 —— **链路是真的，数值不是算法结果**。
+   真实视频到位后按 P4 走标定，再把 `--source data/raw/xxx.mp4` 接进同一条 `--post` 通道。
+2. **前端默认地址仍是 `ws://127.0.0.1:8765`**（`websocket.py` 的端口，属 B 线文件）。
+   用 `api.py` 托管页面时要手填 `ws://127.0.0.1:8000/ws`。**已作为交接项告知 B 线**，
+   A 线不改 `frontend/`。
+3. `vital.*` 在合成路径下仍全为 `null`（无真实人脸 → rPPG 窗口没有有效样本），这是正确行为。
 
 ---
 
@@ -540,7 +593,7 @@ python backend/quality.py                                                       
 | P2 | `backend/README.md` 列出的命令逐条实跑通过 |
 | P3 | `vital.py` 有单测；无视频时 `vital.*` 仍全 `null`；`pytest` 只增不减 |
 | P4 | 每个阈值有真实依据；重复运行逐字节一致；`data/golden/` 锁版本 |
-| P5 | 网页显示 A 线真实数据 |
+| P5 | 网页显示 A 线真实数据 —— ✅ 链路已通（`--post` + `/api/ingest` + `/ws`，17 项端到端检查全绿）；数字的**算法含义**仍待 P4 视频标定 |
 
 ---
 
@@ -548,8 +601,10 @@ python backend/quality.py                                                       
 
 ```powershell
 . .\env.ps1                                              # 载入本机工具链
-.venv\Scripts\python.exe -m pytest -q                    # 期望 65 passed（只增不减）
+.venv\Scripts\python.exe -m pytest -q                    # 期望 77 passed（只增不减）
+python metrics/scripts/check_a_line_all.py               # A 线全量自检（17 项，约 30 秒，退出码即结论）
 python backend/run_pipeline.py --source metrics/logs/_smoke.mp4 --summary metrics/logs/_smoke_summary.json
+python backend/run_pipeline.py --source synthetic --seconds 30 --stub --post auto   # M2：推给 B 线
 git status --short                                       # 只应出现你本线的改动
 ```
 
@@ -588,8 +643,8 @@ git status --short                                       # 只应出现你本线
 
 | # | 事项 | 找谁 | 卡住什么 |
 |---|---|---|---|
-| 1 | `motion_thresh` 取 25 还是 16（§2.1 的 A） | A ↔ C 会签 | P1.3 |
-| 2 | 运动量在 384×288 还是 640×480 上算（§2.1 的 B） | A ↔ C 会签 | P1.3 |
+| 1 | ~~`motion_thresh` 取 25 还是 16（§2.1 的 A）~~ ✅ **2026-09-16 三方拍板：保留 16，A 线统一口径**（`config.yaml` 已改、`backend/quality.py::to_gray` 已对齐，A↔C 对拍 9/9 逐项全等） | — | 已解决 |
+| 2 | ~~运动量在 384×288 还是 640×480 上算（§2.1 的 B）~~ ✅ 同批拍板：按契约 §3.4 冻结的 3/5 相位抽取，统一在 **384×288** 上算 | — | 已解决 |
 | 3 | ~~`golden_roi.csv` 用例数~~ ✅ **已由 C 线关闭**（§2.1 的 D） | — | 已解决 |
 | 4 | 呼吸带降采样到 2 Hz 后 **int32 累加器溢出**（`Σ|h| = 70247 → 上界 2.30e9 > 2^31`），且 63 阶 @2 Hz 群延迟 15.5 秒 | **回填 C 线** | P3 的呼吸率路径 |
 | 5 | ~~契约 v1.1 的 45 fps 是否认可~~ ✅ **2026-09-16 已会签完成**（§5.2 第 12 项：链路侧 + 时间序列侧已核，rPPG 端到端待真实视频） | — | 已解决 |
@@ -605,8 +660,13 @@ git status --short                                       # 只应出现你本线
 > `metrics/evidence/2026-09-15_a_line_p1_golden_checks.json`；契约 §5.2 补签见 `docs/interface.md` §5.4。
 > ✅ **P2 已完成**（2026-09-15）：合成路径崩溃修复 + 一条命令自检入口（15/15 通过）。
 > ✅ **P3 已完成**（2026-09-15）：rPPG 链路（合成信号驱动，16 项单测），`pytest` 49 → **65**。
+> ✅ **P5 已完成**（2026-09-16）：M2 链路打通 —— `run_pipeline --post` → `POST /api/ingest` → `/ws` → 网页，
+> 17 项端到端检查全绿（`metrics/scripts/check_a_line_p5_m2.py`），`pytest` 65 → **77**。
+> 证据：`metrics/evidence/2026-09-16_a_line_p5_m2_bridge.json`；实施细节见 §4 P5。
+> ⚠️ 这一轮用 `--stub` 合成路径验证**链路**：`landmark_source=stub`，EAR/MAR 仍是占位几何量，
+> 网页上的数字要等 P4 标定 + 真实视频接进同一条 `--post` 通道之后才具备算法含义。
 >
-> **日常入口**：`. .\env.ps1` → `python metrics/scripts/check_a_line_all.py`（约 20 秒，退出码即结论）。
+> **日常入口**：`. .\env.ps1` → `python metrics/scripts/check_a_line_all.py`（约 30 秒，17 项，退出码即结论）。
 >
 > 🟡 **P4 脚手架已搭好**（2026-09-15），整体仍被真实视频卡住。
 > `data/raw/` 一有素材就照 **`backend/P4_CALIBRATION_GUIDE.md`** 走：
@@ -616,9 +676,15 @@ git status --short                                       # 只应出现你本线
 > **在那之前，A 线能离线做完的部分已经做完了。**
 > 入场券是：`python metrics/scripts/check_p4_readiness.py` 报"就绪"。
 >
-> **仍然只能由人做的两件事**：
-> 1. 契约 §5.2 的**群公告**（补签记录已写好，见 `docs/interface.md` §5.4）；
-> 2. 第 5 项 `motion_thresh`（16 还是 25）的**三方拍板** —— 实测差异表在 §5.4 末节。
+> ✅ **两件"只能由人做"的事都已了结**（2026-09-16）：契约 §5.2 群公告已发（补签记录见
+> `docs/interface.md` §5.4）；第 5 项 `motion_thresh` 三方拍板**保留 16、A 线统一口径**，
+> 并已落到 `config.yaml` 与 `backend/quality.py::to_gray`（见 §9 第 1 项）。
+>
+> **现在 A 线的脖子只有一处：`data/raw/` 里的 4 段真实视频。**（P4 标定 → 数字才有算法含义）
+> 在那之前可以做的：
+> 1. 用 `--post` 把合成链路接进 B 线网页，做**六态演示**与截图证据（`metrics/evidence/`，B 线负责界面截图）；
+> 2. 盯 C 线 `board/regmap.py` 里那句"契约 v1.0 已冻结"（应为 v1.1，属 C 线文件，A 线不代改）；
+> 3. 契约 §5.2 第 7 项（3/5 点采样是否让运动量偏噪）—— **契约明确要求接真实视频后再给结论**。
 
 ---
 
