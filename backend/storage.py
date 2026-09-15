@@ -79,6 +79,7 @@ class MetricsStorage:
         self._csv = None
         self._writer: csv.DictWriter | None = None
         self.written = 0
+        self.stream_only_written = 0    # 只进 jsonl、不进 CSV 的帧（收尾的 done）
         self.errors: list[str] = []
 
     def open(self) -> "MetricsStorage":
@@ -104,6 +105,24 @@ class MetricsStorage:
         if self._writer:
             self._writer.writerow(flatten(frame))
         self.written += 1
+        return True
+
+    def write_stream_only(self, frame: dict) -> bool:
+        """只写 jsonl 流，**不写 CSV**。用于 run_pipeline 的收尾帧（status=done）。
+
+        为什么分开：CSV 是**逐帧测量表**（P4 标定、黄金结果比对都按行统计帧数），
+        收尾帧不是一次测量结果，塞进去会让"3 秒 = 135 行"这类口径漂移；
+        而 jsonl 是**时间流**，`websocket.py --mode file` 回放它，
+        B 线必须能在流里看到 `done`（契约 §2 的第 6 种状态）。
+        """
+        if self.validate:
+            errs = validate_frame(frame)
+            if errs:
+                self.errors.append(f"frame_id={frame.get('frame_id')}: {errs}")
+                raise ValueError("拒绝写入不符合契约的帧：\n  - " + "\n  - ".join(errs))
+        if self._jsonl:
+            self._jsonl.write(dumps(frame) + "\n")
+        self.stream_only_written += 1
         return True
 
     def close(self) -> None:

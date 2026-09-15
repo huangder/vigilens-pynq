@@ -15,6 +15,16 @@
 
 3. **质量门控不过时不允许输出心率/呼吸**（decision.gate_vitals），
    所以 `vital.*` 大面积为 null 是**正确行为**，不是 bug。
+
+4. **M2（P5）的交接点是 `--post <URL>`，不是进程内总线。**
+   A 线测量与 B 线服务是两个进程，`hub.HUB` 跨不过去；正式通道是 B 线
+   `api.py` 已经留好的 `POST /api/ingest`。加 `--post` 之后，每帧按
+   `ws_push_hz`（逻辑时间 1 帧/秒）推过去，B 线网页上看到的就是本次运行的真实数字。
+   **推送失败会让本次运行以退出码 3 收场**，不静默丢帧。
+
+5. **收尾帧 status=done 只进 jsonl 流与推送，不进 CSV。**
+   CSV 是逐帧测量表（P4 标定/黄金比对按行数统计），done 不是一次测量结果；
+   jsonl 是时间流，B 线要能在流里看到第 6 种状态。
 """
 
 from __future__ import annotations
@@ -35,6 +45,7 @@ try:
     from .decision import DecisionEngine
     from .face_landmark import make_landmarker
     from .quality import QualityScorer
+    from .publish import FramePoster, PostError, full_url
     from .storage import MetricsStorage, write_snapshot
     from .vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 except ImportError:  # python backend/run_pipeline.py
@@ -46,8 +57,13 @@ except ImportError:  # python backend/run_pipeline.py
     from decision import DecisionEngine
     from face_landmark import make_landmarker
     from quality import QualityScorer
+    from publish import FramePoster, PostError, full_url
     from storage import MetricsStorage, write_snapshot
     from vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
+
+# 收尾帧（契约 §2 第 6 种状态）的固定话术，与 mock.py 的 _ADVICE["done"] 一致
+DONE_ADVICE = "测量完成"
+EXIT_POST_FAILED = 3        # 推送失败：不属于"代码崩了"，但必须显式非零退出
 
 
 def build_frame(
@@ -115,12 +131,25 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--summary", default=None, help="把本次运行摘要写成 JSON（证据归档用）")
     ap.add_argument("--print-every", type=int, default=0, help="每 N 帧打印一行（0 = 不打印）")
     ap.add_argument("--quiet", action="store_true", help="不打印进度，只打印最终摘要")
+    ap.add_argument("--post", default=None,
+                    help="M2：把每帧 POST 到 B 线 /api/ingest（如 http://127.0.0.1:8000/api/ingest）；"
+                         "写 auto 等价于 http://127.0.0.1:8000/api/ingest")
+    ap.add_argument("--post-hz", type=float, default=None,
+                    help="推送节奏，默认取 config.yaml 的 ws_push_hz（契约 1 帧/秒，按逻辑时间）")
+    ap.add_argument("--post-retries", type=int, default=2, help="连接失败的重试次数（默认 2）")
+    ap.add_argument("--no-done", action="store_true",
+                    help="不发收尾帧（status=done）。默认会发：M2 要求六态都能在网页上出现")
+    ap.add_argument("--frame-id-offset", type=int, default=0,
+                    help="帧号起点偏移（M2 连跑多段时必须用：契约要求 frame_id/ts 跨帧单调递增，"
+                         "第二段从 0 重新开始会让 B 线趋势曲线的 frame_id 回退）")
     args = ap.parse_args(argv)
 
     cfg = load_config()
     fps = float(args.fps if args.fps is not None else cfg["fps_nominal"])
     width = int(args.width if args.width is not None else cfg["fpga"]["img_width"])
     height = int(args.height if args.height is not None else cfg["fpga"]["img_height"])
+    post_hz = float(cfg["ws_push_hz"] if args.post_hz is None else args.post_hz)
+    fid_offset = int(args.frame_id_offset)
 
     limit = args.limit
     if limit is None and args.seconds is not None:
@@ -161,6 +190,13 @@ def main(argv: list[str] | None = None) -> int:
     # 带通复用冻结 FIR，滑窗填满后才可能出数（窗口长度 = config 的 window_seconds）。
     rppg = GreenRppg.from_config(cfg, fps=fps)
 
+    # M2（P5）：跨进程把真实帧推给 B 线。`auto` = 本机默认端口，省得记地址。
+    poster: FramePoster | None = None
+    if args.post:
+        post_url = full_url() if args.post == "auto" else args.post
+        poster = FramePoster(post_url, hz=post_hz, retries=args.post_retries)
+        say(f"推送   : {post_url}（{post_hz} 帧/秒，按逻辑时间节流；失败即报错，不静默丢帧）")
+
     json_out = REPO_ROOT / args.json_out
     jsonl_out = REPO_ROOT / args.jsonl if args.jsonl else None
     csv_out = REPO_ROOT / args.csv if args.csv else None
@@ -172,30 +208,68 @@ def main(argv: list[str] | None = None) -> int:
 
     with MetricsStorage(jsonl_out, csv_out) as store:
         for frame in frames_iter:
-            ts = time.time() if args.wall_clock else frame.frame_id / fps
+            # 对外的帧号 = 帧源帧号 + 偏移。M2 连跑多段时用它保证 frame_id/ts
+            # 跨段单调递增（契约 §1：前端断点重连靠这两个字段对齐）。
+            # 帧源自己的 frame_id 仍喂给 landmarker：stub 的眨眼/哈欠节拍按**本段**时间走，
+            # 加偏移不该改变这一段里"第几秒眨眼"。
+            fid = frame.frame_id + fid_offset
+            ts = time.time() if args.wall_clock else fid / fps
             obs = landmarker.detect(frame.image, frame.frame_id)
-            beh = tracker.update(frame.frame_id, ts, obs)
-            qua = scorer.update(frame.frame_id, ts, frame, obs)
+            beh = tracker.update(fid, ts, obs)
+            qua = scorer.update(fid, ts, frame, obs)
 
             # rPPG 的输入样本：额头 ROI 的**绿通道**累加 → Q1.15（契约 §4.6 的唯一口径）。
             # 空 ROI / 非图像帧 → count==0 → 按契约**丢弃该帧**（不喂样本、不补值）。
             _roi = forehead_roi(obs.bbox, width, height)
             _sum_g, _cnt = roi_channel_sum(frame.image, _roi, channel=1)
-            rppg.push(q15_from_roi_sum(_sum_g, _cnt) if _cnt > 0 else None, frame.frame_id)
+            rppg.push(q15_from_roi_sum(_sum_g, _cnt) if _cnt > 0 else None, fid)
 
-            full, dec = build_frame(frame_id=frame.frame_id, ts=ts, obs=obs,
+            full, dec = build_frame(frame_id=fid, ts=ts, obs=obs,
                                     behavior=beh, quality=qua, engine=engine,
                                     vital_input=rppg.estimate())
             clean = strip_internal(full)
             store.write(clean)
             write_snapshot(json_out, clean)
+            if poster is not None:
+                try:
+                    poster.maybe_post(clean)
+                except PostError as e:
+                    print(f"[FAIL] {e}", file=sys.stderr)
+                    return EXIT_POST_FAILED
             status_counter[dec["status"]] += 1
             last_frame = clean
             n += 1
             if args.print_every and n % args.print_every == 0:
-                say(f"  t={ts:6.1f}s f{frame.frame_id:5d} {clean['status']:15s} "
+                say(f"  t={ts:6.1f}s f{fid:5d} {clean['status']:15s} "
                     f"EAR={clean['behavior']['ear_left']:.3f} PERCLOS={clean['behavior']['perclos']:.3f} "
                     f"Q={clean['quality']['overall']:.2f} | {clean['reason'][:52]}")
+
+        # ---- 收尾帧（契约 §2 第 6 种状态 done）--------------------------
+        # 只进 jsonl 流 + 推送，**不进 CSV / 不覆盖 last.json**：CSV 是逐帧测量表
+        # （P4 标定与黄金结果比对按行数统计），last.json 是"最新一次测量快照"。
+        done_info: dict[str, Any] | None = None
+        if not args.no_done and last_frame is not None:
+            done = new_frame(
+                ts=round(last_frame["ts"] + 1.0 / fps, 3),
+                frame_id=int(last_frame["frame_id"]) + 1,
+                face=last_frame["face"],
+                behavior=last_frame["behavior"],
+                vital=engine.gate_vitals(last_frame["quality"]["overall"], last_frame["vital"]),
+                quality=last_frame["quality"],
+                status="done",
+                advice=DONE_ADVICE,
+                reason=(f"本次运行正常结束：共处理 {n} 帧（逻辑时长 {n / fps:.1f}s），"
+                        f"关键点来源 {lm_source}"),
+            )
+            store.write_stream_only(done)
+            if poster is not None:
+                try:
+                    poster.post(done)          # 收尾帧强制推送（不受节流影响）
+                except PostError as e:
+                    print(f"[FAIL] {e}", file=sys.stderr)
+                    return EXIT_POST_FAILED
+            done_info = {"frame_id": done["frame_id"], "ts": done["ts"], "status": done["status"],
+                         "written_to": "jsonl" + ("+post" if poster else "")}
 
     if last_frame is None:
         print("[FAIL] 没有处理任何帧：帧源是空的。检查 --source 路径 / --limit 是否被设成 0。", file=sys.stderr)
@@ -208,6 +282,7 @@ def main(argv: list[str] | None = None) -> int:
         "frame_source": desc,
         "pattern": args.pattern,
         "frames_processed": n,
+        "frame_id_offset": fid_offset,
         "logical_fps": fps,
         "logical_duration_s": round(n / fps, 2),
         "wall_elapsed_s": round(elapsed, 2),
@@ -224,6 +299,9 @@ def main(argv: list[str] | None = None) -> int:
         },
         "outputs": {"json": str(json_out), "jsonl": str(jsonl_out) if jsonl_out else None,
                     "csv": str(csv_out) if csv_out else None},
+        # M2（P5）：收尾帧与推送统计 —— "推了几帧 / 被节流几帧 / 有没有报错"一眼可见
+        "done_frame": done_info,
+        "post": poster.stats() if poster is not None else None,
         # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够）
         "rppg_window_samples": rppg.samples,
         "rppg_window_need": rppg.need,
@@ -245,6 +323,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"末帧状态  : {last_frame['status']} —— {last_frame['advice']}")
     print(f"产物      : {json_out}" + (f" | {jsonl_out}" if jsonl_out else "")
           + (f" | {csv_out}" if csv_out else ""))
+    if done_info:
+        print(f"收尾帧    : status=done frame_id={done_info['frame_id']} "
+              f"→ {done_info['written_to']}（不进 CSV / 不覆盖 last.json）")
+    if poster is not None:
+        print(f"推送      : 成功 {poster.posted} 帧 / 节流跳过 {poster.throttled} 帧 "
+              f"→ {poster.url}（HTTP 次数 {poster.attempts}）")
 
     if args.summary:
         sp = REPO_ROOT / args.summary

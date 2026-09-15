@@ -7,9 +7,10 @@
 
 覆盖四段：
     [A] 仓库四项自检（`AGENTS.md` §6.1）
-    [B] `backend/` 9 个模块自检
+    [B] `backend/` 10 个模块自检（含 M2 的 `publish.py`）
     [C] 端到端合成回放 + **重复运行逐字节一致**（《02》A3 的验收口径）
     [D] P1 黄金参考对拍（5 项，A↔C 口径）
+    [E] P5 / M2 端到端（真起两个进程：A 线 --post → B 线 api.py --no-mock → /ws）
 
 用法（仓库根）：
     . .\\env.ps1
@@ -37,7 +38,7 @@ SCRIPTS = REPO_ROOT / "metrics" / "scripts"
 LOGS = REPO_ROOT / "metrics" / "logs"
 
 MODULES = ["config.py", "decision.py", "mock.py", "capture.py", "face_landmark.py",
-           "behavior_metrics.py", "quality.py", "storage.py", "contract.py"]
+           "behavior_metrics.py", "quality.py", "storage.py", "contract.py", "publish.py"]
 
 
 def resolve_python() -> str:
@@ -163,6 +164,18 @@ def main() -> int:
         # 连"前置：测试向量缺失，已按固定 seed 重新生成"一起回显 ——
         # 否则会自动往 fpga/sim/data*/ 写出十几 MB 生成物却一句都不说。
         if ln.strip().startswith(("[PASS]", "[FAIL]", "前置", "[OK]", "[SKIP]")):
+            print("    " + ln.strip())
+    print(f"    {'[PASS]' if code == 0 else '[FAIL]'} {last_line(out)}")
+
+    # ---------- [E] P5 / M2 端到端 ----------------------------------------
+    # 单独一段而不是塞进 [C]：它要真起 uvicorn 子进程，失败原因和"算法回归"完全不同
+    # （多半是端口被占 / fastapi 没装 / B 线服务改动），分开报才好定位。
+    print()
+    print("[E] P5 / M2 端到端（A 线真实数据 → B 线服务 → /ws）")
+    code, out = run([py, str(SCRIPTS / "check_a_line_p5_m2.py")], timeout=600)
+    results.append(("E", "P5 / M2 端到端", code == 0, last_line(out)))
+    for ln in out.splitlines():
+        if ln.strip().startswith(("[PASS]", "[FAIL]", "[SKIP]")):
             print("    " + ln.strip())
     print(f"    {'[PASS]' if code == 0 else '[FAIL]'} {last_line(out)}")
 

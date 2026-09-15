@@ -1,0 +1,176 @@
+{
+  "started_at": "2026-09-16 00:52:24",
+  "port": 40192,
+  "steps": [
+    {
+      "name": "服务就绪",
+      "ok": true,
+      "detail": "http://127.0.0.1:40192 已监听"
+    },
+    {
+      "name": "数据源=ingest（不是 B 线 mock）",
+      "ok": true,
+      "detail": "/api/status.source = 'ingest'"
+    },
+    {
+      "name": "空闲时 status=disconnected",
+      "ok": true,
+      "detail": "published=0, frame.status='disconnected'"
+    },
+    {
+      "name": "回放 blink",
+      "ok": true,
+      "detail": "推 31 帧 / 节流跳过 1320 帧，frame_id 从 0 起，状态分布 {'fatigue_risk': 353, 'unreliable': 249, 'normal': 748}，收尾帧 done"
+    },
+    {
+      "name": "回放 yawn",
+      "ok": true,
+      "detail": "推 31 帧 / 节流跳过 1320 帧，frame_id 从 100000 起，状态分布 {'normal': 252, 'unreliable': 249, 'fatigue_risk': 849}，收尾帧 done"
+    },
+    {
+      "name": "回放 still",
+      "ok": true,
+      "detail": "推 31 帧 / 节流跳过 1320 帧，frame_id 从 200000 起，状态分布 {'normal': 1101, 'unreliable': 249}，收尾帧 done"
+    },
+    {
+      "name": "回放 turn",
+      "ok": true,
+      "detail": "推 31 帧 / 节流跳过 1320 帧，frame_id 从 300000 起，状态分布 {'normal': 76, 'unreliable': 887, 'adjust_posture': 387}，收尾帧 done"
+    },
+    {
+      "name": "历史非空",
+      "ok": true,
+      "detail": "/api/metrics 收到 124 帧"
+    },
+    {
+      "name": "frame_id / ts 单调递增（契约 §1）",
+      "ok": true,
+      "detail": "frame_id 0 → 301350，ts 0.0 → 6696.666"
+    },
+    {
+      "name": "最新一帧逐字段一致",
+      "ok": true,
+      "detail": "frame_id=301350（比对字段 9 个）"
+    },
+    {
+      "name": "历史字段一致",
+      "ok": true,
+      "detail": "逐帧比对 124 条 × 6 个字段"
+    },
+    {
+      "name": "六态齐全",
+      "ok": true,
+      "detail": "出现 ['adjust_posture', 'disconnected', 'done', 'fatigue_risk', 'normal', 'unreliable']"
+    },
+    {
+      "name": "事件日志非空",
+      "ok": true,
+      "detail": "/api/events 记录 68 次状态切换"
+    },
+    {
+      "name": "坏帧被 422 拒收",
+      "ok": true,
+      "detail": "HTTP 422，errors=[\"status 必须是 ('normal', 'fatigue_risk', 'adjust_posture', 'unreliable', 'disconnected', 'done') 之一，实际 'definitely_not_a_status'\"]"
+    },
+    {
+      "name": "坏帧未进历史",
+      "ok": true,
+      "detail": "历史条数 124 → 124"
+    },
+    {
+      "name": "WS 推送原样到达",
+      "ok": true,
+      "detail": "/ws 原样收到 frame_id=401349（9 个字段）"
+    },
+    {
+      "name": "GET / 返回仪表盘",
+      "ok": true,
+      "detail": "HTTP 200，11823 字节，引用 app.js=True"
+    }
+  ],
+  "statuses_seen": [
+    "adjust_posture",
+    "disconnected",
+    "done",
+    "fatigue_risk",
+    "normal",
+    "unreliable"
+  ],
+  "runs": [
+    {
+      "pattern": "blink",
+      "frames": 1350,
+      "posted": 31,
+      "throttled": 1320,
+      "status_counts": {
+        "fatigue_risk": 353,
+        "unreliable": 249,
+        "normal": 748
+      },
+      "done_frame": {
+        "frame_id": 1350,
+        "ts": 30.0,
+        "status": "done",
+        "written_to": "jsonl+post"
+      },
+      "landmark_source": "stub"
+    },
+    {
+      "pattern": "yawn",
+      "frames": 1350,
+      "posted": 31,
+      "throttled": 1320,
+      "status_counts": {
+        "normal": 252,
+        "unreliable": 249,
+        "fatigue_risk": 849
+      },
+      "done_frame": {
+        "frame_id": 101350,
+        "ts": 2252.222,
+        "status": "done",
+        "written_to": "jsonl+post"
+      },
+      "landmark_source": "stub"
+    },
+    {
+      "pattern": "still",
+      "frames": 1350,
+      "posted": 31,
+      "throttled": 1320,
+      "status_counts": {
+        "normal": 1101,
+        "unreliable": 249
+      },
+      "done_frame": {
+        "frame_id": 201350,
+        "ts": 4474.444,
+        "status": "done",
+        "written_to": "jsonl+post"
+      },
+      "landmark_source": "stub"
+    },
+    {
+      "pattern": "turn",
+      "frames": 1350,
+      "posted": 31,
+      "throttled": 1320,
+      "status_counts": {
+        "normal": 76,
+        "unreliable": 887,
+        "adjust_posture": 387
+      },
+      "done_frame": {
+        "frame_id": 301350,
+        "ts": 6696.666,
+        "status": "done",
+        "written_to": "jsonl+post"
+      },
+      "landmark_source": "stub"
+    }
+  ],
+  "elapsed_s": 11.6,
+  "passed": 17,
+  "failed": 0,
+  "ok": true
+}
