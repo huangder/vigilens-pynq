@@ -33,6 +33,9 @@
 python metrics/scripts/check_a_line_all.py
 #   它串起四段：仓库四项自检 / backend 9 个模块自检 /
 #   端到端合成回放 + 重复运行逐字节一致 / P1 黄金参考对拍（5 项）
+#   ⚠️ 自检**不改动工作区**：结果只写 metrics/logs/（不入库）。
+#      要把某一次运行归档成正式证据，才显式加 --evidence，然后把证据文件一并提交：
+#      python metrics/scripts/check_a_line_p1_all.py --evidence
 
 # 0.9) 依赖（本机已就绪；要重建才需要）
 pip install -r requirements.txt
