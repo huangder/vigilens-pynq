@@ -128,7 +128,7 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
-| 照 `requirements.lock.txt` 装完依赖后，`landmark_source` 变成 `stub`（EAR/MAR 失去算法意义） | 该锁文件由 **B 线在 Python 3.11.9 下**冻结，其中 `mediapipe==1.0.1` **没有 `mp.solutions`**；而 `face_landmark.py` 用的正是这个 API | **A 线别直接照它装**：用 `pip install -r requirements.txt -c .tools/constraints-mediapipe.txt`（把 mediapipe 钉在 0.10.21）。`requirements.txt` 已加上界 `<0.10.30`。装完**务必确认摘要里 `landmark_source` 不是 `stub`**。是否把锁文件统一到含 0.10.21 的环境，需三方拍板 |
+| 装完依赖后 `landmark_source` 变成 `stub`（EAR/MAR 失去算法意义） | mediapipe 从 0.10.30 起（含全部 1.x）删掉了 `mp.solutions`，而 `face_landmark.py` 用的正是它；**装到新版不报错，只静默回退** | ✅ **2026-09-16 三方拍板统一到含 `mediapipe==0.10.21` 的一套**：`requirements.lock.txt` 已重新冻结（Python 3.12）、`requirements.txt` 已加上界 `<0.10.30`。若手工装，仍建议带约束 `-c .tools/constraints-mediapipe.txt`；**装完务必确认摘要里 `landmark_source` 不是 `stub`** |
 | `python backend/config.py` 报 `ModuleNotFoundError: No module named 'config'` | `.tools\python312` 是 **embeddable** 版（带 `python312._pth`），**不会**把脚本所在目录加进 `sys.path` | `env.ps1` 已把 `.venv\Scripts` 排在 PATH 最前（`.venv` 是 virtualenv，行为正常）；若手动指定解释器，请用 `.venv\Scripts\python.exe` |
 | `PyYAML 可用: False` | 没装 PyYAML | 无需处理：`config.py` 会自动降级为内置解析器读同一份 `config.yaml` |
 | `pip install` 在 mediapipe / opencv-python 上失败 | Python 3.14 的官方 wheel 可能尚未发布 | **不要**去编译，改用 3.11/3.12 建 venv：`py -3.12 -m venv .venv` |
