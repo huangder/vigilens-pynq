@@ -19,8 +19,15 @@
     python fpga/sim/gen_fir_vectors.py
 
 用法（仓库根）：
-    python metrics/scripts/check_a_line_p1_all.py
-退出码：0 = 5 项全部通过；1 = 有任意一项未通过（证据 JSON 仍会写出，便于定位）。
+    python metrics/scripts/check_a_line_p1_all.py              # 只跑 + 写 metrics/logs/（不入库）
+    python metrics/scripts/check_a_line_p1_all.py --evidence   # 额外把结果**归档**到 metrics/evidence/
+退出码：0 = 5 项全部通过；1 = 有任意一项未通过（结果 JSON 仍会写出，便于定位）。
+
+⚠️ 为什么要 `--evidence` 开关：
+    证据文件带运行时间戳，**每次跑都会产生不同内容**。若无条件写进 `metrics/evidence/`（已入库），
+    那么"提交前自检"本身就会把工作区搞脏，`git status` 再也分不清哪些是自己的改动。
+    所以：日常自检只写 `metrics/logs/`（`.gitignore` 已覆盖），
+    需要**归档某一次运行**时才加 `--evidence`，然后把那个文件一并提交。
 """
 
 from __future__ import annotations
@@ -107,12 +114,22 @@ def main() -> int:
         "checks": results,
     }
 
-    out_path = EVIDENCE / f"{time.strftime('%Y-%m-%d')}_a_line_p1_golden_checks.json"
+    # 默认只写 metrics/logs/（不入库）；加 --evidence 才归档到 metrics/evidence/。
+    # 理由见文件头：带时间戳的结果每次跑都不同，无条件写已入库目录会把工作区搞脏。
+    archive = "--evidence" in sys.argv
+    if archive:
+        out_path = EVIDENCE / f"{time.strftime('%Y-%m-%d')}_a_line_p1_golden_checks.json"
+        payload["archived"] = True
+    else:
+        out_path = REPO_ROOT / "metrics" / "logs" / "_a_line_p1_latest.json"
+        payload["archived"] = False
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     passed_n = sum(1 for i in results if i["passed"])
     print()
-    print(f"证据已写入：{out_path.relative_to(REPO_ROOT)}")
+    print(f"结果已写入：{out_path.relative_to(REPO_ROOT)}"
+          + ("（已归档，可提交）" if archive else "（不入库；要归档请加 --evidence）"))
     print(f"总结论：{'全部通过' if all_passed else '存在未通过项'}（{passed_n}/{len(results)} 项通过）")
     return 0 if all_passed else 1
 
