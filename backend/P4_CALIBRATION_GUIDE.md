@@ -20,7 +20,7 @@
 | ① 就绪检查 | `python metrics/scripts/check_p4_readiness.py` | ✅ **现在就能跑** | 列出缺哪段视频/标注，并校验 640×480 / 45 fps / 时长 |
 | ② 录制 + 标注 | 见 `data/README.md` | ❌ 等素材 | 4 段、每段只做一件事、20~30 s |
 | ③ 锁黄金结果 | `python metrics/scripts/make_golden.py --verify` | ❌ 等素材（可用 `--source` 单文件自测） | 产出 `data/golden/<name>_metrics.csv` + `_lock.json`（视频/config/git HEAD 三样指纹 + `backend/` 代码脏状态） |
-| ④ 扫阈值 | `python metrics/scripts/sweep_thresholds.py --csv … --ann … --param …` | ❌ 等素材（`--self-test` 现在可验工具本身） | 事件级 P/R/F1，给出建议值 |
+| ④ 扫阈值 | `python metrics/scripts/sweep_thresholds.py --csv … --ann … --param …` | ❌ 等素材（`--self-test` 现在可验工具本身） | **帧级 F1 选值** + 事件级 P/R/F1 复核；若标注与数据完全对不上，**工具会拒绝给值** |
 | ⑤ 写回 + 重锁 | 改 `config.yaml` → 重跑 ③ → 提交 | ❌ 等素材 | 阈值是**唯一来源**，只能改这一处 |
 
 三个工具的设计都遵循同一条纪律：**同样的输入必须得到同样的输出**。
@@ -36,8 +36,8 @@
 
 | # | 项 | 输入 | 现占位值 | 工具与命令 | 判据 |
 |---|---|---|---|---|---|
-| 1 | `ear_close_threshold` / `min_close_frames` | `blink.mp4` | 0.21 / 3 | `sweep_thresholds.py --param ear_close_threshold` | 事件级 F1 最高，且**漏检（FN）为 0** 优先 |
-| 2 | `mar_threshold` / `yawn_min_duration_ms` | `yawn.mp4` | 0.6 / 800 | `--param mar_threshold` | 说话**不得**被计成哈欠（FP=0 优先） |
+| 1 | `ear_close_threshold` / `min_close_frames` | `blink.mp4` | 0.21 / 3 | `sweep_thresholds.py --param ear_close_threshold` | **帧级 F1 最高**；再看事件级是否漏检（FN） |
+| 2 | `mar_threshold` / `yawn_min_duration_ms` | `yawn.mp4` | 0.6 / 800 | `--param mar_threshold` | 说话**不得**被计成哈欠（事件级 FP=0 优先） |
 | 3 | `pose_yaw_max_deg` / `pose_pitch_max_deg` | `turn.mp4` | 30.0 / 25.0 | `--param pose_yaw_max_deg` | 转头区间应被判越界；正脸时不得误报 |
 | 4 | `face_visible_min` | `turn.mp4` | 0.7 | `--param face_visible_min` | 出框/遮挡区间判不可见；正常段不得误报 |
 | 5 | `quality_weights` / `light_score_min` / `motion_score_max` / `light_target` | 自录的"正常 / 晃动 / 变暗"三种场景 | 0.5/0.3/0.2 等 | **无现成工具**（见 §3） | 三种场景下 `quality.overall` 的**排序**必须正确，且正常场景 > `quality_min_score` |
@@ -45,6 +45,20 @@
 
 > ⚠️ 每改一个阈值，都要**重跑 `make_golden.py` 重锁一次** —— 否则黄金结果与配置对不上，
 > `_lock.json` 里的 `config.sha256` 会立刻暴露这件事。
+
+### 2.1 看表时注意两列
+
+- **`判为事件%`**：眨眼/打哈欠本该是**稀疏**事件。若选出的阈值把 50% 以上的帧都判成事件，
+  说明阈值选偏了或素材有问题，别直接采用。
+- **`可分性裕度`**：工具会先算"标注区间内 vs 区间外"的取值有没有可分空间。
+  **≤ 0 表示完全重叠 —— 任何阈值都分不开**，此时工具直接拒绝给建议值并列出常见原因
+  （素材里其实没有该事件 / 上游指标没跑对）。这不是工具坏了，是它在拦你。
+
+> 📌 **为什么选值用帧级 F1，而不是事件级**（2026-09-15 端到端演练实测）：
+> 给一段"人脸静止、没有眨眼"的视频配一条假的眨眼标注时，**把阈值调到让整段都判成闭眼**
+> 会得到一个覆盖全序列的预测段 —— 它既"命中"了标注、又没有多余预测段，
+> 于是事件级 P/R/F1 = **1.000**。也就是说"全判成闭眼"能拿满分。
+> 帧级 F1 不会被这样骗过，所以**选值看帧级、事件级只用于复核**。
 
 ---
 
