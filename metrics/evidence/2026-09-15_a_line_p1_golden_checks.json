@@ -1,7 +1,7 @@
 {
   "artifact": "A 线 P1：A<->C 黄金参考对拍结果",
   "generated_by": "metrics/scripts/check_a_line_p1_all.py",
-  "generated_at": "2026-09-15 20:19:31",
+  "generated_at": "2026-09-15 20:31:51",
   "note": "本文件由上述命令真实执行产生，未手工编辑；数字均为本机真实运行输出。",
   "environment": {
     "python": "3.12.10",

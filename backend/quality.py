@@ -146,7 +146,8 @@ if __name__ == "__main__":  # 自检：python backend/quality.py
     from capture import open_frame_source
     from face_landmark import make_landmarker
 
-    mk = make_landmarker()
+    # 合成帧源不是图像：自检用 StubLandmarker（真 MediaPipe 见 run_pipeline --source <视频>）
+    mk = make_landmarker(force_stub=True)
     sc = QualityScorer()
     fps = float(load_config()["fps_nominal"])     # 契约 §0 的唯一来源，别写死 30
     it, desc = open_frame_source("synthetic")

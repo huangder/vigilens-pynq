@@ -266,7 +266,47 @@ python fpga/sim/q15_ref.py --sums-csv <你的 ROI 累加 CSV> --out-csv <对比�
 
 ---
 
-### P2 —— 骨架收口（任务号：A1/A2 的遗留）
+### P2 —— 骨架收口　✅ 2026-09-15 完成
+
+**执行结果**
+
+| 子步骤 | 内容 | 结果 |
+|---|---|---|
+| P2.1 | 修合成路径崩溃 | ✅ 见下 |
+| P2.2 | 自检脚本化 | ✅ `python metrics/scripts/check_a_line_all.py` → **15/15 通过**（约 18 s） |
+
+**P2.1 修了什么**
+
+根因：合成帧源的 `SyntheticImage` 只有 `shape` 与一个亮度值、**不是图像**，
+而 `run_pipeline` 在选择关键点检测器时没有对帧源类型做守卫，于是真 MediaPipe 把它送进
+`cv2.cvtColor` 抛 `cv2.error`。受影响的有 4 条路径：`run_pipeline --source synthetic`（不带 `--stub`）
+以及 `face_landmark.py` / `behavior_metrics.py` / `quality.py` 三个模块自检。
+
+改法（沿用项目既有的"链路优先 + 明确告知"模式，与 `capture.py` 缺 OpenCV 时回退合成帧源同款）：
+
+1. `run_pipeline`：识别到合成帧源且未显式 `--stub` 时，**打印三条警告并自动改用 StubLandmarker**，
+   摘要里 `landmark_source` 如实为 `stub`（引用数字前必须看这个字段）；
+2. `MediaPipeLandmarker.detect()`：加输入类型守卫，把晦涩的 `cv2.error` 换成能指出路的 `TypeError`（其他调用者的兜底）；
+3. 三个模块自检：对合成帧源显式用 `force_stub=True`。
+
+实测：`backend/` 下 **9 个模块自检全部退出码 0**（此前 3 个崩溃）。
+
+**P2.2 顺带挖到并修掉的一个更大的坑**
+
+`backend/README.md` 的"怎么跑"里写着 `python backend/config.py` 这类命令，但**实际全线跑不通**：
+
+```
+E:\fpga> python backend\config.py
+ModuleNotFoundError: No module named 'console'
+```
+
+根因：`env.ps1` 里的 `python` 指向 `.tools\python312`，那是 **embeddable** 版（带 `python312._pth`），
+它**不把脚本所在目录加进 `sys.path`**、也不加 CWD、还忽略 `PYTHONPATH`。
+
+改法：`env.ps1` 把 `.venv\Scripts` 排到 PATH 最前 —— `.venv` 是 virtualenv，行为正常，
+且经 `_vigilens_base.pth` 桥接到基础环境的 site-packages（依赖一个没少）。
+实测：9 条文档命令 + `python -m pytest`（49 passed）**逐条实跑通过**。
+细节记在 `.tools\README.md`（本机笔记，不入库）。
 
 **目标**：把 M1 骨架里"跑不通的路径"补齐，让文档里写的每条命令都真的能跑。
 
@@ -433,17 +473,25 @@ git status --short                                       # 只应出现你本线
 ## 10. 下一步
 
 > ✅ **P0 已完成**（2026-09-15）：同步基线 + 修红灯 + 45 fps 对齐。
-> ✅ **P1 已完成**（2026-09-15）：5 项黄金参考对拍全绿，证据已入库
-> （`metrics/evidence/2026-09-15_a_line_p1_golden_checks.json`）。
+> ✅ **P1 已完成**（2026-09-15）：5 项黄金参考对拍全绿，证据
+> `metrics/evidence/2026-09-15_a_line_p1_golden_checks.json`；契约 §5.2 补签见 `docs/interface.md` §5.4。
+> ✅ **P2 已完成**（2026-09-15）：合成路径崩溃修复 + 一条命令自检入口（15/15 通过）。
 >
-> **接下来有两条可并行的路**：
+> **日常入口**：`. .\env.ps1` → `python metrics/scripts/check_a_line_all.py`（约 20 秒，退出码即结论）。
 >
-> 1. **P1.6 的会签动作（半小时，且只能由人做）**：把上表的实测数字贴进群公告，
->    逐条回复契约 §5.2 的第 1/2/4/11 项「认可」，第 5 项附差异表请三方拍板，
->    第 7 项注明"待真实视频"，第 12 项注明"链路侧已核、rPPG 端到端待 P3"。
->    补签要改 `docs/interface.md`（共享文件）—— 按 `AGENTS.md` §4/§7 的流程走。
-> 2. **P2 → P3**：修合成路径崩溃（P2.1，纯代码）→ rPPG 链路（P3，用合成正弦驱动）。
->    P3 会直接复用 P1 已经打过黄金参考的 `vital.py`（`q15_from_roi_sum` + `fir_process`）。
+> **下一步 = P3（rPPG 链路）**：
+>
+> - P3.1 `backend/vital.py` 已有 Q1.15 量化与 FIR（P1 已对过黄金参考），接着补
+>   "去直流/归一化 → 带通 → `rfft` 峰值 → BPM"；
+> - P3.2 用**已知频率的合成正弦**写单测：断言解出的 BPM，并断言噪声/运动伪影下置信度低；
+> - P3.3 接上 `decision.gate_vitals` 的质量门控（`vital_require_quality` 不达标一律 `null`）；
+> - P3.4 把 `vital` 接进 `run_pipeline`，替换现在那段"占位恒 null"。
+>
+> P3 的验收：`pytest` 只增不减；**无真实视频时 `vital.*` 仍全为 `null`** —— 那是契约承诺，不是 bug。
+>
+> **仍然只能由人做的两件事**：
+> 1. 契约 §5.2 的**群公告**（补签记录已写好，见 `docs/interface.md` §5.4）；
+> 2. 第 5 项 `motion_thresh`（16 还是 25）的**三方拍板** —— 实测差异表在 §5.4 末节。
 
 ---
 

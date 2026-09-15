@@ -133,7 +133,18 @@ def main(argv: list[str] | None = None) -> int:
     frames_iter, desc = open_frame_source(args.source, width=width, height=height, fps=fps, limit=limit)
     say(f"帧源   : {desc}")
 
-    landmarker = make_landmarker(width=width, height=height, pattern=args.pattern, fps=fps, force_stub=args.stub)
+    # 合成帧源不是图像（只有 shape 与一个亮度值），真 MediaPipe 在上面看不到任何人脸：
+    # 硬跑只会白跑一遍并抛 cv2.error。这里沿用项目既有的"链路优先 + 明确告知"做法
+    # （与 capture.py 在缺 OpenCV 时回退到合成帧源同一个模式），自动改用 StubLandmarker。
+    synthetic_src = desc.startswith("synthetic")
+    auto_stub = synthetic_src and not args.stub
+    if auto_stub:
+        say("[warn] 帧源是合成帧（SyntheticImage，不是图像）—— 已自动改用 StubLandmarker。")
+        say("       这是设计如此：--pattern 的眨眼/哈欠演示本来就只对 StubLandmarker 生效。")
+        say("       要看真实 MediaPipe 结果，请用真实视频或摄像头：--source <视频文件> 或 --source 0。")
+
+    landmarker = make_landmarker(width=width, height=height, pattern=args.pattern, fps=fps,
+                                 force_stub=args.stub or auto_stub)
     lm_source = "stub" if type(landmarker).__name__ == "StubLandmarker" else "mediapipe"
     if lm_source == "stub":
         say("[warn] 本次人脸关键点来自 StubLandmarker —— EAR/MAR 的数值是**占位几何量**，")

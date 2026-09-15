@@ -218,6 +218,18 @@ class MediaPipeLandmarker:
 
     def detect(self, frame: Any, frame_id: int | None = None) -> FaceObservation:
         import cv2  # type: ignore
+        import numpy as np  # type: ignore
+
+        # 合成帧源的 SyntheticImage **不是图像**（只有 shape 和一个亮度值），
+        # 直接喂给 cv2 会抛出难以定位的 "cvtColor: src is not a numpy array"。
+        # 这里把它换成能指出路的信息。调用方（run_pipeline）已对合成帧源先行回退，
+        # 本守卫是给其他调用者的兜底。
+        if not isinstance(frame, np.ndarray):
+            raise TypeError(
+                f"MediaPipeLandmarker 需要真实图像（numpy 数组），收到 {type(frame).__name__}。\n"
+                "  · 合成帧源不是图像：要看 --pattern 的眨眼/哈欠演示，请加 --stub；\n"
+                "  · 要看真实 MediaPipe 结果，请把 --source 指向真实视频文件或摄像头序号。"
+            )
 
         h, w = frame.shape[0], frame.shape[1]
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # ⚠️ 契约要求 R-G-B，见 docs/interface.md 0.1
@@ -336,7 +348,9 @@ if __name__ == "__main__":  # 自检：python backend/face_landmark.py
 
     enable_utf8_console()
 
-    mk = make_landmarker(pattern="blink")
+    # 合成帧源不是图像，真 MediaPipe 在上面看不到人脸 —— 自检用 StubLandmarker。
+    # （真 MediaPipe 路径由 `run_pipeline.py --source <真实视频>` 或 --source 0 覆盖。）
+    mk = make_landmarker(pattern="blink", force_stub=True)
     it, desc = open_frame_source("synthetic")
     print(f"帧源：{desc}")
     for fr in it:

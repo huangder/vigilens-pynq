@@ -26,7 +26,15 @@
 ## 怎么跑
 
 ```bash
-# 0) 依赖（注意：本机 .venv 是 --without-pip 建的，没有 pip，见下方"已知环境问题"）
+# 0) 先载入本机工具链（只影响当前会话，不改系统环境变量）
+. .\env.ps1
+
+# 0.5) 【推荐】一条命令跑完 A 线全部自检（约 20 秒，退出码即结论）
+python metrics/scripts/check_a_line_all.py
+#   它串起四段：仓库四项自检 / backend 9 个模块自检 /
+#   端到端合成回放 + 重复运行逐字节一致 / P1 黄金参考对拍（5 项）
+
+# 0.9) 依赖（本机已就绪；要重建才需要）
 pip install -r requirements.txt
 
 # 1) A 线端到端（不需要摄像头、不需要板卡、连 OpenCV 都不需要）
@@ -90,7 +98,7 @@ python -m pytest                            # 49 项测试
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
-| `.venv\Scripts\python -m pip` 报 `No module named pip` | 本机 `.venv` 是 `--without-pip` 创建的 | `python -m ensurepip --upgrade`，或用系统 Python 重建 venv；详见 `docs/` |
+| `python backend/config.py` 报 `ModuleNotFoundError: No module named 'config'` | `.tools\python312` 是 **embeddable** 版（带 `python312._pth`），**不会**把脚本所在目录加进 `sys.path` | `env.ps1` 已把 `.venv\Scripts` 排在 PATH 最前（`.venv` 是 virtualenv，行为正常）；若手动指定解释器，请用 `.venv\Scripts\python.exe` |
 | `PyYAML 可用: False` | 没装 PyYAML | 无需处理：`config.py` 会自动降级为内置解析器读同一份 `config.yaml` |
 | `pip install` 在 mediapipe / opencv-python 上失败 | Python 3.14 的官方 wheel 可能尚未发布 | **不要**去编译，改用 3.11/3.12 建 venv：`py -3.12 -m venv .venv` |
 | 脚本打印中文出现乱码 | 控制台代码页是 GBK | 已内置 `console.enable_utf8_console()`；在 Windows Terminal / VS Code 里正常 |
