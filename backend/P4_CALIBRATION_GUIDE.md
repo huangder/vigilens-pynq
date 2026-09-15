@@ -60,6 +60,45 @@
 > 于是事件级 P/R/F1 = **1.000**。也就是说"全判成闭眼"能拿满分。
 > 帧级 F1 不会被这样骗过，所以**选值看帧级、事件级只用于复核**。
 
+### 2.2 一个实测参考：MediaPipe 的 EAR 量级和 dlib 的经验值不一样
+
+**先给结论**：`config.yaml` 里 `ear_close_threshold: 0.21` 是 **dlib 圈子的经验值**，
+直接搬给 MediaPipe 会**把睁眼判成闭眼**。下面这组数就是这么量出来的。
+
+复现命令（用 matplotlib 自带的**公开人像**当素材，不含任何个人影像）：
+
+```bash
+# 1) 找到那张公开人像的路径
+python -c "import matplotlib.cbook as c; print(c.get_sample_data('grace_hopper.jpg', asfileobj=False))"
+
+# 2) 造一段 640x480@45fps、20 秒的"静止人脸"视频（内容无关，只是让 MediaPipe 有脸可检）
+ffmpeg -loop 1 -i <上一步打印的路径> -t 20 -r 45 -vf scale=640:480 -pix_fmt yuv420p metrics/logs/_earprobe/face.mp4
+
+# 3) 跑一遍管线，把逐帧指标落成 CSV
+python backend/run_pipeline.py --source metrics/logs/_earprobe/face.mp4 \
+    --csv metrics/logs/_earprobe/face_metrics.csv --quiet
+```
+
+**实测结果**（2026-09-15，本机真实运行，Python 3.12.10 + mediapipe 0.10.21）：
+
+| 量 | 值 |
+|---|---|
+| 帧数 / 人脸可见率 | 900 帧 / **全程 1.000**（脸检测得很稳） |
+| EAR 均值 | **0.1961**（范围 0.1801 ~ 0.2162） |
+| `blink_state` 取值 | 只有 `CLOSED` / `CLOSING` —— **一次 `OPEN` 都没出现** |
+| PERCLOS / 末帧状态 | **1.000** / `fatigue_risk` |
+| 当时的 `ear_close_threshold` | **0.21** |
+
+也就是说：一张**正脸、睁眼、检测稳定**的真人照片，被判成"全程闭眼"。
+
+**这组数的用途只有一个**：说明"阈值必须用真实视频重标定"这件事不是纸面提醒，而是真的会发生。
+
+> ⚠️ **它不是标定依据，也不许当依据用。** 理由三条：
+> ① 只有一张静态照片，没有眨眼、没有真人标注；
+> ② 素材是公开人像，不是我们 4 段标准视频里的任何一段；
+> ③ 标定要的是"闭眼帧与睁眼帧的分界"，而这组数据里根本没有闭眼帧。
+> 真正定值仍然只能走 §2 的第 1 项：`blink.mp4` + 标注 → `sweep_thresholds.py`。
+
 ---
 
 ## 3. 哪些能自动标、哪些不能
