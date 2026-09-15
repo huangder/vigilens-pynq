@@ -13,10 +13,12 @@
     4.6 Q1.15 量化口径       -> check_q15_golden.py
     4.5 fir_filter 逐样本    -> check_fir_golden.py
 
-前置（向量由固定 seed 生成，可随时重建）：
-    python fpga/sim/gen_frames.py
-    python fpga/sim/gen_motion_vectors.py
-    python fpga/sim/gen_fir_vectors.py
+前置：**不需要手工准备**。测试向量是生成物（`.gitignore` 已忽略、靠固定 seed 重建），
+      新检出里必然不存在 —— 本脚本会检测缺失并自动补跑对应生成器（见 ensure_vectors）。
+      想手工重建时等价于：
+        python fpga/sim/gen_frames.py
+        python fpga/sim/gen_motion_vectors.py
+        python fpga/sim/gen_fir_vectors.py
 
 用法（仓库根）：
     python metrics/scripts/check_a_line_p1_all.py              # 只跑 + 写 metrics/logs/（不入库）
@@ -57,6 +59,29 @@ CHECKS = [
     ("fir_filter 逐样本", "契约 4.5", "check_fir_golden.py"),
 ]
 
+# 测试向量是**生成物**（.gitignore 已忽略，靠固定 seed 重建）——新检出里必然不存在。
+# 所以入口自己按需生成，否则"一条命令跑完自检"在别人的干净检出上会直接失败。
+VECTOR_REQUIREMENTS = [
+    ("fpga/sim/data/frames.bin", "fpga/sim/gen_frames.py"),
+    ("fpga/sim/data_motion/rgb_frames.bin", "fpga/sim/gen_motion_vectors.py"),
+    ("fpga/sim/data_motion/gray.bin", "fpga/sim/gen_motion_vectors.py"),
+    ("fpga/sim/data_fir/series.bin", "fpga/sim/gen_fir_vectors.py"),
+]
+
+
+def ensure_vectors() -> list[tuple[str, int]]:
+    """缺哪个向量就补跑哪个生成器，返回 [(生成器, 退出码)]（都齐全时返回空）。"""
+    needed: list[str] = []
+    for rel, gen in VECTOR_REQUIREMENTS:
+        if not (REPO_ROOT / rel).exists() and gen not in needed:
+            needed.append(gen)
+    ran: list[tuple[str, int]] = []
+    for gen in needed:
+        r = subprocess.run([sys.executable, str(REPO_ROOT / gen)], capture_output=True,
+                           text=True, encoding="utf-8", errors="replace", cwd=str(REPO_ROOT))
+        ran.append((gen, r.returncode))
+    return ran
+
 
 def main() -> int:
     EVIDENCE.mkdir(parents=True, exist_ok=True)
@@ -65,6 +90,12 @@ def main() -> int:
 
     print("=== A 线 P1：A<->C 黄金参考对拍（一键复跑）===")
     print(f"时间：{started}")
+
+    bootstrapped = ensure_vectors()
+    if bootstrapped:
+        print("前置：测试向量缺失，已按固定 seed 重新生成（生成物，不入库）")
+        for gen, code in bootstrapped:
+            print(f"    {'[OK]' if code == 0 else '[FAIL]'} {gen}")
     print()
 
     for name, contract_ref, script in CHECKS:

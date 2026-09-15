@@ -101,7 +101,8 @@ def main() -> int:
         results.append(("A", "check_frontend_contract", code == 0, last_line(out)))
         print(f"    {'[PASS]' if code == 0 else '[FAIL]'} check_frontend_contract  -> {last_line(out)}")
     else:
-        skipped.append("node 不在 PATH：跳过 3 项 JS 检查（先执行 . .\\env.ps1）")
+        for nm in ("mock.js --selftest", "check_frontend_wiring", "check_frontend_contract"):
+            skipped.append(nm)
         print("    [SKIP] 前端三项 —— node 不在 PATH（先执行 . .\\env.ps1）")
 
     # ---------- [B] backend 模块自检 --------------------------------------
@@ -169,8 +170,8 @@ def main() -> int:
     print()
     print("=" * 62)
     if skipped:
-        for s in skipped:
-            print(f"  [SKIP] {s}")
+        print(f"  [SKIP] {len(skipped)} 项：{', '.join(skipped)}"
+              + ("（node 不在 PATH，先执行 . .\\env.ps1）" if len(skipped) == 3 else ""))
     if failed:
         print(f"A 线自检未通过：{len(failed)} 项失败（共 {len(results)} 项，用时 {elapsed:.1f}s）")
         for seg, name, why in failed:
