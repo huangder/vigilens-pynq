@@ -19,6 +19,10 @@ from backend.run_pipeline import main as run_pipeline_main
 
 CFG = load_config()
 
+# 契约 §0 的帧率（config.yaml 是唯一来源）。下面的用例一律**按秒数 × FPS** 推帧号，
+# 不要再写死 30/45 —— 帧率在 2026-09-13 已经改过一次（30→45，契约 v1.1）。
+FPS = float(CFG["fps_nominal"])
+
 
 # ---------------------------------------------------------------------------
 # 状态机 / 指标
@@ -53,12 +57,12 @@ def test_stub_landmarker_is_deterministic() -> None:
 def test_blink_counting_is_reproducible() -> None:
     """同视频重复运行结果一致 —— A3 的核心验收口径。"""
     def run() -> dict:
-        mk = StubLandmarker(pattern="blink", fps=30.0)
+        mk = StubLandmarker(pattern="blink", fps=FPS)
         trk = BehaviorTracker(CFG)
         last: dict = {}
-        for fid in range(900):          # 30 秒 @30fps
+        for fid in range(int(30 * FPS)):        # 30 秒（= window_seconds）
             obs = mk.detect(None, fid)
-            last = trk.update(fid, fid / 30.0, obs)
+            last = trk.update(fid, fid / FPS, obs)
         return last
 
     a, b = run(), run()
@@ -70,21 +74,21 @@ def test_blink_counting_is_reproducible() -> None:
 def test_blink_state_is_from_contract_enum() -> None:
     from backend.contract import BLINK_STATES
 
-    mk = StubLandmarker(pattern="blink", fps=30.0)
+    mk = StubLandmarker(pattern="blink", fps=FPS)
     trk = BehaviorTracker(CFG)
     seen = set()
-    for fid in range(300):
-        seen.add(trk.update(fid, fid / 30.0, mk.detect(None, fid))["blink_state"])
+    for fid in range(int(10 * FPS)):
+        seen.add(trk.update(fid, fid / FPS, mk.detect(None, fid))["blink_state"])
     assert seen <= set(BLINK_STATES), seen
 
 
 def test_yawn_requires_min_duration() -> None:
     """打哈欠靠"持续时长去抖"，短促张口不该计数（A5 验收）。"""
-    mk = StubLandmarker(pattern="yawn", fps=30.0)
+    mk = StubLandmarker(pattern="yawn", fps=FPS)
     trk = BehaviorTracker(CFG)
     last = {}
-    for fid in range(300):            # 10 秒，yawn pattern 每 6 秒一次 1.5 秒张口
-        last = trk.update(fid, fid / 30.0, mk.detect(None, fid))
+    for fid in range(int(10 * FPS)):  # 10 秒，yawn pattern 每 6 秒一次 1.5 秒张口
+        last = trk.update(fid, fid / FPS, mk.detect(None, fid))
     assert last["yawn_count"] >= 1
 
     # 短促张口：把阈值抬到 10 秒，任何张口都不该被记为哈欠
@@ -92,28 +96,29 @@ def test_yawn_requires_min_duration() -> None:
     strict["yawn_min_duration_ms"] = 10_000
     trk2 = BehaviorTracker(strict)
     last2 = {}
-    for fid in range(300):
-        last2 = trk2.update(fid, fid / 30.0, mk.detect(None, fid))
+    for fid in range(int(10 * FPS)):
+        last2 = trk2.update(fid, fid / FPS, mk.detect(None, fid))
     assert last2["yawn_count"] == 0
 
 
 def test_face_lost_yields_zero_ear() -> None:
     """人脸完全出框时，检测器返回"没人脸"，EAR 归零 —— 不能被当成"睁眼正常"。"""
-    mk = StubLandmarker(pattern="turn", fps=30.0)
-    obs = mk.detect(None, 180)          # t = 6.0s，pattern=turn 到此完全出框
+    mk = StubLandmarker(pattern="turn", fps=FPS)
+    fid = int(6.0 * FPS)                # t = 6.0s，pattern=turn 到此完全出框
+    obs = mk.detect(None, fid)
     assert obs.visible == 0.0
     assert obs.eyes == {} and obs.mouth == {}
 
     trk = BehaviorTracker(CFG)
-    beh = trk.update(180, 6.0, obs)
+    beh = trk.update(fid, 6.0, obs)
     assert beh["ear_left"] == 0.0
     assert beh["mar"] == 0.0
 
 
 def test_turn_pattern_triggers_adjust_posture_condition() -> None:
     """转头阶段必须满足 adjust_posture 的触发条件（可见率不足或姿态越界）。"""
-    mk = StubLandmarker(pattern="turn", fps=30.0)
-    obs = mk.detect(None, 120)          # t = 4.0s，partial 可见阶段
+    mk = StubLandmarker(pattern="turn", fps=FPS)
+    obs = mk.detect(None, int(4.0 * FPS))    # t = 4.0s，partial 可见阶段
     assert obs.eyes != {}, "此阶段仍有脸，只是可见率低/姿态越界"
     assert (obs.visible < CFG["face_visible_min"]
             or abs(obs.pose["yaw"]) > CFG["pose_yaw_max_deg"])
@@ -209,11 +214,16 @@ def test_run_pipeline_writes_contract_valid_csv(workdir: Path) -> None:
         reader = csv.DictReader(fh)
         rows = list(reader)
         assert reader.fieldnames == CSV_COLUMNS
-    assert len(rows) == 90                      # 3 秒 × 30 fps
+
+    # ⚠️ 帧数必须从 config.yaml 的 fps_nominal 推导，**不要硬编码 30/45**：
+    #    契约 §0 的帧率已经改过一次（30→45，v1.1），硬编码会让改帧率时基线无故变红，
+    #    那样真正的回归反而被淹没。本用例只关心"秒数 → 帧数"这条换算是否成立。
+    expected = round(3 * float(CFG["fps_nominal"]))      # 3 秒 × 契约帧率
+    assert len(rows) == expected
     assert rows[0]["blink_state"] in ("OPEN", "CLOSING", "CLOSED", "OPENING")
 
     summary = json.loads((workdir / "s.json").read_text(encoding="utf-8"))
-    assert summary["frames_processed"] == 90
+    assert summary["frames_processed"] == expected
     assert summary["landmark_source"] == "stub"
     assert summary["logical_duration_s"] == pytest.approx(3.0)
 

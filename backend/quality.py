@@ -148,13 +148,14 @@ if __name__ == "__main__":  # 自检：python backend/quality.py
 
     mk = make_landmarker()
     sc = QualityScorer()
+    fps = float(load_config()["fps_nominal"])     # 契约 §0 的唯一来源，别写死 30
     it, desc = open_frame_source("synthetic")
     print(f"帧源：{desc}")
     for fr in it:
-        if fr.frame_id >= 300:
+        if fr.frame_id >= int(fps * 10):          # 看前 10 秒
             break
-        if fr.frame_id % 60 == 0:
-            q = sc.update(fr.frame_id, fr.frame_id / 30.0, fr, mk.detect(fr.image, fr.frame_id))
+        if fr.frame_id % int(fps * 2) == 0:       # 每 2 秒打一行
+            q = sc.update(fr.frame_id, fr.frame_id / fps, fr, mk.detect(fr.image, fr.frame_id))
             print(f"  f{fr.frame_id:4d} light={q['light_score']:.2f} motion={q['motion_score']:.2f} "
                   f"overall={q['overall']:.2f}  (mode={q['_mode']})")
     print(f"评分模式：{sc.mode}（pixels = 真像素统计；placeholder = 无 OpenCV 的确定性占位）")

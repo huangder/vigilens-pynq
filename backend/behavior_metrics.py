@@ -172,19 +172,22 @@ if __name__ == "__main__":  # 自检：python backend/behavior_metrics.py
 
     mk = make_landmarker(pattern="blink")
     trk = BehaviorTracker()
+    cfg = load_config()
+    fps = float(cfg["fps_nominal"])          # 契约 §0 的唯一来源，别写死 30
+    window = float(cfg["window_seconds"])
     it, desc = open_frame_source("synthetic")
     last = None
     shown = 0
     for fr in it:
-        if fr.frame_id > 900:  # 30 fps × 30 s
+        if fr.frame_id > int(window * fps):  # 跑满一个滑窗（window_seconds 秒）
             break
         obs = mk.detect(fr.image, fr.frame_id)
-        # 用 frame_id 推时间轴（合成源是瞬时产出，不代表 30 fps 实时）
-        last = trk.update(fr.frame_id, fr.frame_id / 30.0, obs)
-        if fr.frame_id % 90 == 0 and shown < 12:
-            print(f"  t={fr.frame_id/30.0:5.1f}s state={last['blink_state']:8s} "
+        # 用 frame_id 推时间轴（合成源是瞬时产出，不代表实时）
+        last = trk.update(fr.frame_id, fr.frame_id / fps, obs)
+        if fr.frame_id % int(fps * 3) == 0 and shown < 12:      # 每 3 秒打一行
+            print(f"  t={fr.frame_id/fps:5.1f}s state={last['blink_state']:8s} "
                   f"blinks={last['blink_count']:2d} rate={last['blink_rate_per_min']:5.1f}/min "
                   f"perclos={last['perclos']:.3f} yawns={last['yawn_count']} long_close={last['long_close_count']}")
             shown += 1
-    print(f"30 秒回放结束：眨眼 {last['blink_count']} 次，打哈欠 {last['yawn_count']} 次，"
+    print(f"{window:.0f} 秒回放结束（{fps:.0f} fps）：眨眼 {last['blink_count']} 次，打哈欠 {last['yawn_count']} 次，"
           f"长闭眼 {last['long_close_count']} 次，PERCLOS={last['perclos']:.3f}")

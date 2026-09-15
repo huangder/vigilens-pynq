@@ -18,6 +18,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
 
+try:
+    from .config import load_config
+except ImportError:  # 直接以脚本方式运行
+    from config import load_config
+
 VIDEO_SUFFIXES = {".mp4", ".avi", ".mov", ".mkv", ".flv", ".wmv", ".webm"}
 
 
@@ -81,7 +86,7 @@ def open_frame_source(
     *,
     width: int = 640,
     height: int = 480,
-    fps: float = 30.0,
+    fps: float | None = None,
     limit: int | None = None,
 ) -> tuple[Iterator[Frame], str]:
     """打开帧源。返回 (帧迭代器, 人类可读的来源描述)。
@@ -90,7 +95,12 @@ def open_frame_source(
       "synthetic" / "demo"  → 确定性合成帧源
       "0" / "1" ...         → 摄像头序号
       其它                   → 视频文件路径
+
+    fps：**默认取 config.yaml 的 fps_nominal**（契约 §0 的唯一来源），
+         不传就跟随契约，别在这里写死数字。
     """
+    if fps is None:
+        fps = float(load_config()["fps_nominal"])
     low = source.strip().lower()
     if low in ("synthetic", "demo"):
         return _synthetic_frames(width, height, limit, fps), f"synthetic {width}x{height}"

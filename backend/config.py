@@ -24,9 +24,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG_PATH = REPO_ROOT / "config.yaml"
 
 # 兜底默认值：只在 config.yaml 缺失或该键未写时使用，并在日志里明确警告。
+# ⚠️ 这里是 config.yaml 的**副本，不是来源**。改契约 §0 时必须两处一起改，
+#    否则"没装 PyYAML"的机器会静默按旧帧率跑（本机历史上就是这么埋过雷）。
 FALLBACK: dict[str, Any] = {
     "window_seconds": 30,
-    "fps_nominal": 30,
+    "fps_nominal": 45,          # 契约 docs/interface.md §0（2026-09-13 v1.1：30→45）
     "ear_close_threshold": 0.21,
     "min_close_frames": 3,
     "long_close_ms": 500,

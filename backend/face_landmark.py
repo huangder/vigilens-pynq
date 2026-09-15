@@ -19,6 +19,11 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 
+try:
+    from .config import load_config
+except ImportError:  # 直接以脚本方式运行
+    from config import load_config
+
 # 眼睛 6 点（p1..p6，标准 EAR 定义，p1 在眼角外侧）
 EYE_KEYS = ("p1", "p2", "p3", "p4", "p5", "p6")
 MOUTH_KEYS = ("left", "right", "top", "bottom")
@@ -66,7 +71,12 @@ def _deterministic_unit(*parts: int) -> float:
 class StubLandmarker:
     """不依赖任何第三方库的人脸几何量发生器（确定性）。"""
 
-    def __init__(self, width: int = 640, height: int = 480, pattern: str = "blink", fps: float = 30.0):
+    def __init__(self, width: int = 640, height: int = 480, pattern: str = "blink",
+                 fps: float | None = None):
+        # fps 默认取 config.yaml 的 fps_nominal（契约 §0），**不要在这里写死**：
+        # 它决定了合成时间轴 t = frame_id / fps，写死会让"改帧率"变成静默错误。
+        if fps is None:
+            fps = float(load_config()["fps_nominal"])
         self.width = width
         self.height = height
         self.pattern = pattern
@@ -265,9 +275,15 @@ class MediaPipeLandmarker:
 
 
 def make_landmarker(
-    *, width: int = 640, height: int = 480, pattern: str = "blink", fps: float = 30.0, force_stub: bool = False
+    *, width: int = 640, height: int = 480, pattern: str = "blink",
+    fps: float | None = None, force_stub: bool = False
 ) -> Any:
-    """工厂：能用 MediaPipe 就用，否则回退到 StubLandmarker，并明确打印用的是哪个。"""
+    """工厂：能用 MediaPipe 就用，否则回退到 StubLandmarker，并明确打印用的是哪个。
+
+    fps=None 时取 config.yaml 的 fps_nominal（契约 §0 的唯一来源）。
+    """
+    if fps is None:
+        fps = float(load_config()["fps_nominal"])
     if force_stub:
         print("[face_landmark] 使用 StubLandmarker（--stub 指定）。输出为占位几何量，不是算法结果。")
         return StubLandmarker(width, height, pattern, fps)

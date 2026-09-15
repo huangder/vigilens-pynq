@@ -23,14 +23,24 @@
 
 **录制规范（三人一致，否则黄金结果没有可比性）：**
 
-- 分辨率 640×480、30 fps，与契约 `docs/interface.md` 第 0 节一致（转码命令见下）；
+- 分辨率 640×480、**45 fps**，与契约 `docs/interface.md` 第 0 节一致（转码命令见下）；
+  > ⚠️ 2026-09-13 契约由 **v1.1** 把全局帧率从 30 改成 **45 fps**（C 线发起），
+  > FIR 系数与黄金参考均已按 45 Hz 重生成。**旧的"30 fps"录制规范已作废**——
+  > 按 30 fps 录的视频会被管线按 45 fps 解释，眨眼率、长闭眼、哈欠去抖全部失真。
 - 正面、均匀光照，不要逆光；每段 **20~30 秒**（`window_seconds: 30` 需要窗口填满）；
 - 每段视频**只做一件事**（不要把眨眼和打哈欠混在一段里），否则无法判断是哪一项出的错；
 - 出镜者须**同意**收录（`README.md` 与 `LICENSE` 的附加声明已写明这一条）。
 
 ```bash
-# 用 ffmpeg 统一转码（有 ffmpeg 时）
-ffmpeg -i 原视频.mp4 -vf scale=640:480 -r 30 -pix_fmt yuv420p data/raw/blink.mp4
+# 用 ffmpeg 统一转码（本机 ffmpeg 见 .tools/ffmpeg，放 PATH 后可直接用）
+ffmpeg -i 原视频.mp4 -vf scale=640:480 -r 45 -pix_fmt yuv420p data/raw/blink.mp4
+```
+
+转码后**必须回读确认真实帧率**，别只信命令没报错：
+
+```bash
+ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 data/raw/blink.mp4
+# 期望：width=640  height=480  r_frame_rate=45/1
 ```
 
 ## 为什么默认不把视频入库
@@ -56,7 +66,7 @@ data/raw/*.mp4  data/raw/*.avi  data/raw/*.mov  data/raw/*.mkv
 每段视频一个 CSV，文件名与视频同名：
 
 ```csv
-# video=blink.mp4 fps=30 duration_s=25.0 annotator=姓名 date=2026-mm-dd
+# video=blink.mp4 fps=45 duration_s=25.0 annotator=姓名 date=2026-mm-dd
 # 说明：event 只允许 blink / long_close / yawn / turn / occluded
 start_frame,end_frame,event,note
 24,31,blink,正常眨眼
