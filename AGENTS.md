@@ -153,10 +153,17 @@
 .venv\Scripts\python.exe -m pytest -q          # 期望：65 passed（**只增不减**）
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
-node frontend/mock.js --limit 6 > metrics/evidence/js_frames.jsonl
-python metrics/scripts/check_frontend_contract.py metrics/evidence/js_frames.jsonl   # 期望：通过
+# ⚠️ 写到 **metrics/logs/**（不入库）。别写成 metrics/evidence/js_frames.jsonl ——
+#    那是已入库的证据文件，重定向进去会把工作区搞脏，下一行"只应出现你本线的改动"就不成立了；
+#    而且在 Windows PowerShell 5.1 下 `>` 默认写 UTF-16，字节必然与入库的 UTF-8 版本不同。
+node frontend/mock.js --limit 6 > metrics/logs/_js_frames.jsonl
+python metrics/scripts/check_frontend_contract.py metrics/logs/_js_frames.jsonl      # 期望：通过
 git status --short                             # 只应出现你本线的改动
 ```
+
+> 📌 **跨语言检查是只读的**，不会改动任何入库文件。已入库的证据 `metrics/evidence/js_frames.jsonl`
+> 只在**前端 mock 真的改了**的时候才需要重新生成 —— 那是一次**有意的归档动作**：
+> 在 UTF-8 终端里把输出重定向进它，然后**连同改动一起提交**（别在跑自检时顺手覆盖它）。
 
 | 命令 | 期望 | 失败说明什么 |
 |---|---|---|
