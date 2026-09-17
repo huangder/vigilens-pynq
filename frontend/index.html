@@ -234,8 +234,8 @@
     </div>
     <div class="hint" style="margin-top:10px">
       <b>门控不通过时，心率 / 呼吸显示"已锁定"，绝不沿用上一个数字、也不写 0</b> ——
-      这是本产品的承诺，不是故障。阈值来源：仓库根 <code>config.yaml</code>
-      （前端是静态页面读不到 yaml，此处的数值是它的副本，改阈值必须两边同步）。
+      这是本产品的承诺，不是故障。阈值来源：仓库根 <code>config.yaml</code>，由后端随
+      <code>/api/status</code> 下发（前端只留一份**离线兜底**副本，故改阈值仍只改 yaml 一处）。
     </div>
   </section>
 

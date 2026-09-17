@@ -34,12 +34,14 @@
   };
 
   /* --------------------------------------------------------------------------
-   * 阈值集中在这里 —— 数值来自仓库根 config.yaml（前端是静态页面，读不到 yaml）。
+   * 阈值 —— **唯一来源是仓库根 config.yaml**，下面的数值只是「离线兜底」。
    *
-   * ⚠️ 这是一份**副本**，不是唯一来源。A 线拿真实视频标定后改了 config.yaml，
-   *    这里不会自动跟着变，症状是"卡片该报警却不报警"，还很难查。
-   *    正解是让后端把阈值随 /api/status 一起下发，届时此表退化为离线兜底。
-   *    在此之前，改任何阈值都必须**两边一起改**。
+   * 取值顺序（applyServerThresholds()）：
+   *   1) 页面由 api.py 托管 → /api/status 会带回 thresholds，**覆盖**下表（权威）；
+   *   2) 双击 index.html（file://）或后端不在 → 用下表，保证离线演示照常能跑。
+   *
+   * 所以：A 线标定后改 config.yaml，**前端会自动跟着变**，不会再无声漂移。
+   * 下表只在离线时生效；改阈值仍然只改 config.yaml 一处。
    * ------------------------------------------------------------------------ */
   var THRESHOLDS = {
     perclos_warning: 0.25,        // config.yaml: perclos_warning
@@ -74,13 +76,15 @@
       get: function (f) { return f.vital.rr_per_min; } }
   ];
 
-  /* 门控条目：方向 min = 越大越好，max = 越小越好 */
+  /* 门控条目：方向 min = 越大越好，max = 越小越好。
+     ⚠️ 这里存的是**阈值键名**而不是数值 —— 数值要在渲染时从 THRESHOLDS 现取，
+     否则后端下发的阈值覆盖 THRESHOLDS 之后，这里还钉着启动时那份旧值。 */
   var GATE_DEFS = [
-    { key: "light",   label: "光照",              dir: "min", limit: THRESHOLDS.light_score_min,    get: function (f) { return f.quality.light_score; } },
-    { key: "motion",  label: "运动（越小越好）",   dir: "max", limit: THRESHOLDS.motion_score_max,   get: function (f) { return f.quality.motion_score; } },
-    { key: "visible", label: "人脸可见率",         dir: "min", limit: THRESHOLDS.face_visible_min,   get: function (f) { return f.face.visible; } },
-    { key: "overall", label: "信号质量总分",       dir: "min", limit: THRESHOLDS.quality_min_score,  get: function (f) { return f.quality.overall; } },
-    { key: "vital",   label: "心率/呼吸额外门控",  dir: "min", limit: THRESHOLDS.vital_require_quality, extra: true,
+    { key: "light",   label: "光照",              dir: "min", limitKey: "light_score_min",    get: function (f) { return f.quality.light_score; } },
+    { key: "motion",  label: "运动（越小越好）",   dir: "max", limitKey: "motion_score_max",   get: function (f) { return f.quality.motion_score; } },
+    { key: "visible", label: "人脸可见率",         dir: "min", limitKey: "face_visible_min",   get: function (f) { return f.face.visible; } },
+    { key: "overall", label: "信号质量总分",       dir: "min", limitKey: "quality_min_score",  get: function (f) { return f.quality.overall; } },
+    { key: "vital",   label: "心率/呼吸额外门控",  dir: "min", limitKey: "vital_require_quality", extra: true,
       get: function (f) { return f.quality.overall; } }
   ];
 
@@ -228,7 +232,8 @@
   /* ------------------------------------------------ 信号质量门控（能不能测） */
   function gatePass(g, v) {
     if (v === null || v === undefined || !isFinite(v)) return false;
-    return g.dir === "min" ? v >= g.limit : v <= g.limit;
+    var limit = THRESHOLDS[g.limitKey];
+    return g.dir === "min" ? v >= limit : v <= limit;
   }
 
   function buildGate() {
@@ -251,14 +256,15 @@
       var v = frame ? g.get(frame) : null;
       var ok = gatePass(g, v);
       var has = !(v === null || v === undefined || !isFinite(v));
+      var limit = THRESHOLDS[g.limitKey];
       // 条形图统一成"越长越好"：max 型（运动，越小越好）取 1-v 翻转
       var frac = has ? (g.dir === "min" ? v : 1 - v) : 0;
       frac = Math.max(0, Math.min(1, frac));
-      var limitFrac = g.dir === "min" ? g.limit : 1 - g.limit;
+      var limitFrac = g.dir === "min" ? limit : 1 - limit;
       row.querySelector(".fill").style.width = (frac * 100).toFixed(1) + "%";
       row.querySelector(".mark").style.left = (limitFrac * 100).toFixed(1) + "%";
       row.querySelector(".val").textContent = has
-        ? v.toFixed(3) + (g.dir === "min" ? " ≥ " : " ≤ ") + g.limit
+        ? v.toFixed(3) + (g.dir === "min" ? " ≥ " : " ≤ ") + limit
         : "—";
       row.classList.toggle("fail", !!frame && !ok);
       if (frame && !ok && !g.extra) failed.push(g.label);
@@ -509,12 +515,13 @@
     return M.mockFrame(-1, { status: "disconnected" });
   }
 
-  /* ---------------------------------------------------- 数据源地址自动探测 */
-  function autodetectWsUrl() {
-    // 页面由 api.py 托管时（http/https 且 /api/status 可访问），WS 与页面**同源**，
-    // 自动填好地址，省掉"记得手填 ws://127.0.0.1:8000/ws"这个演示出错点。
-    // 探测失败（双击 index.html 的 file://、或随便一个静态服务器）就**保留原地址不动**，
-    // 因为那些场景下没有 /ws，默认仍应是 websocket.py 的 8765。
+  /* ------------------------------------------- 与后端同步（地址 + 阈值） */
+  function syncWithServer() {
+    // 由 api.py 托管时，一次 /api/status 解决两件事：
+    //   ① WS 与页面**同源** → 自动填好地址，省掉"记得手填 :8000/ws"这个演示出错点；
+    //   ② 门控阈值的**权威值在 config.yaml**，由后端下发 → 前端那份副本不会再无声漂移。
+    // 探测失败（双击 index.html 的 file://、普通静态服务器、后端没起）→ 全部保持内置默认，
+    // 离线演示照常能跑。
     if (location.protocol !== "http:" && location.protocol !== "https:") return;
     fetch("/api/status", { cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -522,11 +529,37 @@
         if (!j || j.ok !== true) return;
         var want = (location.protocol === "https:" ? "wss://" : "ws://") +
                    location.host + "/ws";
-        if (el.wsUrl.value.trim() === want) return;
-        el.wsUrl.value = want;
-        log("系统", "检测到本页由 api.py 托管，地址已自动填为 " + want, "#4da3ff");
+        if (el.wsUrl.value.trim() !== want) {
+          el.wsUrl.value = want;
+          log("系统", "检测到本页由 api.py 托管，地址已自动填为 " + want, "#4da3ff");
+        }
+        applyServerThresholds(j.thresholds);
       })
       .catch(function () { /* 不是 api.py 托管的：保持默认，不发日志避免误导 */ });
+  }
+
+  function applyServerThresholds(fromServer) {
+    if (!fromServer || typeof fromServer !== "object") return;
+    var changed = [];
+    Object.keys(THRESHOLDS).forEach(function (k) {
+      var v = fromServer[k];
+      if (typeof v === "number" && isFinite(v) && v !== THRESHOLDS[k]) {
+        THRESHOLDS[k] = v;
+        changed.push(k + "=" + v);
+      }
+    });
+    // 客户端看门狗必须比服务端**慢**（服务端才是断流的权威来源）——跟着服务端超时一起算，
+    // 不然 config.yaml 调了 ws_disconnect_timeout_s，两边又会同刻抢着宣布断流。
+    var t = fromServer.ws_disconnect_timeout_s;
+    if (typeof t === "number" && isFinite(t) && t > 0) {
+      WS_TIMEOUT_MS = Math.round((t + 1) * 1000);
+    }
+    if (changed.length) {
+      // 只有真的与内置副本不同才说话，避免每次打开页面都刷一行噪音
+      log("系统", "阈值已按 config.yaml 更新：" + changed.join("、"), "#8b7cff");
+      renderGate(state.lastFrame);
+      renderCards(state.lastFrame);
+    }
   }
 
   /* ---------------------------------------------------------------- WS 客户端 */
@@ -674,7 +707,7 @@
     renderChart();
     log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");
 
-    autodetectWsUrl();
+    syncWithServer();
 
     // 未接后端时自动进入离线演示，保证"双击文件就能看到东西"
     startOffline();

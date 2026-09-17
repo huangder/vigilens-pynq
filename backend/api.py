@@ -122,6 +122,23 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
     if mock:
         threading.Thread(target=_mock_pump, args=(hz,), daemon=True).start()
 
+    def thresholds() -> dict[str, Any]:
+        """门控阈值：**唯一来源是仓库根 `config.yaml`**，随 `/api/status` 下发给前端。
+
+        为什么要有这个：前端是静态页面，读不到 yaml，只能在 `app.js` 里存一份副本。
+        A 线标定后一改 `config.yaml`，那份副本就会**无声漂移**（症状：该报警却不报警，
+        而且极难查）。把值下发出去后，前端优先用它，只有拿不到时才退回内置副本
+        （双击 `index.html` 的 file:// 离线演示走这条路）。
+
+        键名与 `config.yaml` 逐字一致，前端按同名键取值 —— 不做重命名，避免两套叫法。
+        """
+        keys = (
+            "perclos_warning", "face_visible_min", "quality_min_score", "light_score_min",
+            "motion_score_max", "vital_require_quality", "fatigue_long_close_count",
+            "ws_disconnect_timeout_s",
+        )
+        return {k: cfg[k] for k in keys if k in cfg}
+
     @app.get("/api/status")
     def api_status() -> dict:
         latest = HUB.latest
@@ -133,6 +150,7 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
             "published": HUB.published,
             "subscribers": HUB.subscriber_count,
             "frame": latest,
+            "thresholds": thresholds(),
             "server_time": round(time.time(), 3),
         }
 
