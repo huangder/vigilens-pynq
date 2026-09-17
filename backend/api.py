@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import queue
 import sys
 import threading
 import time
@@ -82,6 +83,29 @@ def _mock_pump(hz: float) -> None:
         fid += 1
         if period:
             time.sleep(period)
+
+
+def disconnect_frame(last: dict[str, Any] | None) -> dict[str, Any]:
+    """断流兜底帧：**完整契约帧**，且序号不倒退。
+
+    两个刻意的选择：
+    · 用 `mock_frame(-1, status="disconnected")`（而不是 `hub.DISCONNECT_HINT` 那种提示字典）——
+      契约 §1 的 schema 是给**所有**消费者的，发半截 dict 只有本页面能解析，
+      第三方客户端会收到一帧"缺字段"的非法数据。本函数发出去的帧能过 `validate_frame`。
+    · **沿用上一帧的 `frame_id` / `ts`**，只把 `status` 改成 `disconnected` ——
+      契约 §1 要求 `ts`/`frame_id` 单调递增（供断点重连对齐）。沿用序号表达的是
+      "自第 N 帧起没有新测量"，既不伪造一次不存在的测量，也不让序号倒退。
+      副作用：断流期间的兜底帧序号相同，消费者据 `frame_id` 未变即可判断"没有新数据"。
+    """
+    frame = mock_frame(-1, status="disconnected", ts=None)
+    if isinstance(last, dict):
+        fid = last.get("frame_id")
+        ts = last.get("ts")
+        if isinstance(fid, int):
+            frame["frame_id"] = fid
+        if isinstance(ts, (int, float)):
+            frame["ts"] = ts
+    return frame
 
 
 def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = True) -> Any:
@@ -161,15 +185,17 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
         try:
             while True:
                 try:
-                    frame = q.get_nowait()
-                except Exception:  # noqa: BLE001 —— queue.Empty
-                    await asyncio.sleep(min(timeout, 0.2))
-                    if HUB.latest is None:
-                        frame = mock_frame(-1, status="disconnected", ts=None)
-                    else:
-                        continue
+                    # 在**线程里**带超时阻塞取帧（不能直接 q.get()：那会卡住事件循环）。
+                    # 超时 = 数据中断，交给下面的兜底分支。
+                    # ⚠️ 原实现用 get_nowait() + `continue`，一旦 HUB.latest 非空就
+                    #    再也走不到兜底分支 —— 数据中断对第三方消费者是"静默"的
+                    #    （A 线 2026-09-16 交接项，见 backend/A_LINE_DEV_STEPS.md §9 第 8 条）。
+                    frame = await asyncio.to_thread(q.get, True, timeout)
+                except queue.Empty:
+                    frame = disconnect_frame(HUB.latest)
                 await websocket.send_text(json.dumps(frame, ensure_ascii=False))
-        except WebSocketDisconnect:
+        except (WebSocketDisconnect, RuntimeError):
+            # RuntimeError：客户端已断开后继续 send 时 starlette 会抛它，不是服务端故障
             pass
         finally:
             HUB.unsubscribe(q)

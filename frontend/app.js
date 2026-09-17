@@ -14,7 +14,12 @@
   "use strict";
 
   var M = window.VigiLensMock;
-  var WS_TIMEOUT_MS = 3000;          // 与 config.yaml 的 ws_disconnect_timeout_s 对应
+  // 客户端看门狗：**故意比服务端的 ws_disconnect_timeout_s（3.0 s）慢 1 秒**。
+  // 断流的权威来源是服务端 —— api.py 的 /ws 在超时后会下发一帧契约合法的 `disconnected`
+  // （见 backend/api.py 的 disconnect_frame 与 backend/A_LINE_DEV_STEPS.md §9 第 8 条）。
+  // 客户端看门狗只在"服务端整个挂掉、连断开帧都发不出来"时兜底，所以必须比服务端晚触发；
+  // 同刻触发会让两边抢着宣布断流，日志里多一条误导性的"超过 Ns 未收到帧"。
+  var WS_TIMEOUT_MS = 4000;
   var MAX_POINTS = 120;              // 趋势曲线保留点数（1 Hz → 120 秒）
   var MOCK_PERIOD_MS = 1000;         // 与契约 1 帧/秒一致
 
@@ -479,8 +484,13 @@
       state.lastStatus = frame.status;
     }
 
-    state.points.push(frame);
-    while (state.points.length > MAX_POINTS) state.points.shift();
+    // 断流帧不进趋势曲线：把它当"这一段没有数据"（曲线留空），而不是"测出来是 0"。
+    // 兜底帧是 mock 造的 disconnected，它的 perclos / 眨眼率 / 质量都是 0，
+    // 画上去会变成一根掉到 0 的假尖峰 —— 那等于替系统编了一个它没测到的结论。
+    if (frame.status !== "disconnected") {
+      state.points.push(frame);
+      while (state.points.length > MAX_POINTS) state.points.shift();
+    }
 
     el.srcName.textContent = source;
     el.srcPill.className = "pill " + (source === "WebSocket" ? "live" : "mock");
@@ -497,6 +507,26 @@
 
   function synthesizeDisconnected() {
     return M.mockFrame(-1, { status: "disconnected" });
+  }
+
+  /* ---------------------------------------------------- 数据源地址自动探测 */
+  function autodetectWsUrl() {
+    // 页面由 api.py 托管时（http/https 且 /api/status 可访问），WS 与页面**同源**，
+    // 自动填好地址，省掉"记得手填 ws://127.0.0.1:8000/ws"这个演示出错点。
+    // 探测失败（双击 index.html 的 file://、或随便一个静态服务器）就**保留原地址不动**，
+    // 因为那些场景下没有 /ws，默认仍应是 websocket.py 的 8765。
+    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+    fetch("/api/status", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || j.ok !== true) return;
+        var want = (location.protocol === "https:" ? "wss://" : "ws://") +
+                   location.host + "/ws";
+        if (el.wsUrl.value.trim() === want) return;
+        el.wsUrl.value = want;
+        log("系统", "检测到本页由 api.py 托管，地址已自动填为 " + want, "#4da3ff");
+      })
+      .catch(function () { /* 不是 api.py 托管的：保持默认，不发日志避免误导 */ });
   }
 
   /* ---------------------------------------------------------------- WS 客户端 */
@@ -643,6 +673,8 @@
     drawVideo(null);
     renderChart();
     log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");
+
+    autodetectWsUrl();
 
     // 未接后端时自动进入离线演示，保证"双击文件就能看到东西"
     startOffline();
