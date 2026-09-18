@@ -105,7 +105,9 @@
     valid: 0,
     invalid: 0,
     forcedStatus: "",
-    lastFrame: null
+    lastFrame: null,
+    triggers: null,        // 旁路通道来的判定证据链 {frame_id, items}
+    pollTimer: null
   };
 
   /* ---------------------------------------------------------------- 工具 */
@@ -212,10 +214,21 @@
     el.reason.textContent = frame ? frame.reason : "—";
 
     el.triggers.innerHTML = "";
+    // 判定证据链优先取帧自带的 _triggers（离线 mock / 单进程场景）；
+    // 否则取旁路通道（/api/status 的 triggers）—— 且 frame_id 必须与当前这帧一致，
+    // 否则会把"上一帧的理由"贴在"这一帧的状态"旁边，那比没有更糟。
     var list = (frame && frame._triggers) || [];
+    // 断流帧不显示证据链：它的 frame_id 是**沿用**上一帧的（见 api.py 的 disconnect_frame），
+    // 光比 frame_id 会误判为吻合，于是"上一帧为什么判疲劳"就被贴在"连接中断"旁边 —— 那是误导。
+    if (!list.length && frame && frame.status !== "disconnected" &&
+        state.triggers && state.triggers.frame_id === frame.frame_id) {
+      list = state.triggers.items || [];
+    }
     if (!list.length) {
       var li = document.createElement("li");
-      li.textContent = frame ? "（后端未传 triggers：可解释链条由 A 线 decision.py 的 _triggers 提供）" : "—";
+      li.textContent = frame
+        ? "（暂无判定证据链：需 A 线推送时带上 triggers，见 docs/08_B线给A线的接口请求.md）"
+        : "—";
       el.triggers.appendChild(li);
     } else {
       list.forEach(function (t) {
@@ -568,12 +581,35 @@
     el.connName.textContent = text;
   }
 
+  /* ------------------------------- 判定证据链（旁路通道，1 Hz） */
+  function pollTriggers() {
+    // 证据链**不塞进契约帧**（契约 §1 的帧只允许那 9 个顶层字段），走 /api/status
+    // 的旁路字段。只在 http(s) 托管下轮询 —— file:// 没有同源后端，轮询只会白报错。
+    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+    if (state.pollTimer) return;
+    state.pollTimer = setInterval(function () {
+      if (state.mode !== "ws") return;
+      fetch("/api/status", { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j || !j.ok) return;
+          var t = j.triggers || null;
+          var changed = JSON.stringify(t) !== JSON.stringify(state.triggers);
+          state.triggers = t;
+          if (changed && state.lastFrame) renderState(state.lastFrame);
+        })
+        .catch(function () { /* 轮询失败无所谓：证据链是"有更好"，不是必需 */ });
+    }, 1000);
+  }
+
   function stopAll(silent) {
     if (state.ws) {
       try { state.ws.onclose = null; state.ws.close(); } catch (e) { /* ignore */ }
       state.ws = null;
     }
     if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; }
+    state.triggers = null;
     state.mode = "stopped";
     if (!silent) log("系统", "已停止数据源", "#5d6b85");
   }
@@ -586,6 +622,7 @@
     state.mode = "ws";
     setConn("", "连接中…");
     log("系统", "连接 " + url, "#4da3ff");
+    pollTriggers();
 
     var ws;
     try {

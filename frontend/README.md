@@ -105,8 +105,12 @@ python metrics/scripts/check_frontend_wiring.py                   # app.js 引�
       前端优先用它；**离线兜底**才用 `app.js` 的内置副本（双击 `index.html` 走这条）。
       随阈值一起下发的还有 `ws_disconnect_timeout_s` —— 客户端看门狗按 `服务端值 + 1 s` 计算，
       保证它始终比服务端晚触发。
-- [ ] 事件日志上方的 `_triggers`（可解释链条）仍是空壳：该字段**不在契约里**、A 线也未输出，
-      需先决定是否进契约，否则应从界面上摘掉
+- [ ] **判定证据链（`_triggers`）：B 侧已就绪，等 A 线推送。**
+      走**旁路**而不是改契约（帧一个字节不动）：`api.py` 的 `/api/ingest` 已接受与 `frame`
+      平级的可选字段 `triggers`，`/api/status` 已回传 `{frame_id, items}`，前端在 WebSocket
+      模式下按 1 Hz 取用，并做两道防呆（`frame_id` 必须与当前帧一致；断流帧不显示证据链）。
+      **A 线需要做的只有一处一行**，见 [`docs/08_B线给A线的接口请求.md`](../docs/08_B线给A线的接口请求.md)。
+      在 A 线改之前，界面显示"暂无判定证据链"——**无副作用，不阻塞任何事**。
 
 ## 依赖
 

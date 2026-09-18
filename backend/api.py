@@ -53,12 +53,20 @@ _events: deque[dict] = deque(maxlen=EVENTS_MAX)
 _lock = threading.Lock()
 _last_status: str | None = None
 
+# 判定证据链（A 线 decision.py 的 triggers）：**不走契约帧**，走旁路。
+# 形状：{"frame_id": 12, "items": [{"rule": ..., "metric": ..., "value": ..., "threshold": ..., "verdict": ...}, ...]}
+# 为什么是旁路：契约 §1 规定帧的顶层字段只能是那 9 个，多一个就是非法帧；
+# 而证据链是"给界面看的解释"，不是测量数据。详见 docs/08_B线给A线的接口请求.md。
+_latest_triggers: dict[str, Any] | None = None
 
-def ingest(frame: dict, *, source: str = "unknown") -> dict:
+
+def ingest(frame: dict, *, source: str = "unknown", triggers: list | None = None) -> dict:
     """接收一帧（来自 mock 循环、A 线 POST、或进程内 publish）。"""
-    global _last_status
+    global _last_status, _latest_triggers
     with _lock:
         _history.append(frame)
+        if triggers is not None:
+            _latest_triggers = {"frame_id": frame.get("frame_id"), "items": triggers}
         if frame.get("status") != _last_status:
             _events.append({
                 "ts": frame.get("ts"),
@@ -144,12 +152,15 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
         latest = HUB.latest
         if latest is None:
             latest = mock_frame(-1, status="disconnected", ts=None)
+        with _lock:
+            triggers = _latest_triggers
         return {
             "ok": True,
             "source": "mock" if mock else "ingest",
             "published": HUB.published,
             "subscribers": HUB.subscriber_count,
             "frame": latest,
+            "triggers": triggers,
             "thresholds": thresholds(),
             "server_time": round(time.time(), 3),
         }
@@ -192,7 +203,15 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
         if errs:
             return JSONResponse(status_code=422,
                                content={"ok": False, "errors": errs})
-        ingest(frame, source="ingest")
+        # 可选的旁路字段：判定证据链。**不塞进 frame**（那会让帧变成非法契约帧），
+        # 与 frame 平级传进来。缺省即不带，行为与从前完全一致。
+        triggers = payload.get("triggers")
+        if triggers is not None and not isinstance(triggers, list):
+            return JSONResponse(status_code=422, content={
+                "ok": False,
+                "errors": ["triggers 必须是数组（每项形如 {rule, metric, value, threshold, verdict}）"],
+            })
+        ingest(frame, source="ingest", triggers=triggers)
         return JSONResponse(content={"ok": True, "published": HUB.published})
 
     @app.websocket("/ws")
