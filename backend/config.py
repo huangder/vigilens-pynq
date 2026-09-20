@@ -28,7 +28,7 @@ DEFAULT_CONFIG_PATH = REPO_ROOT / "config.yaml"
 #    否则"没装 PyYAML"的机器会静默按旧帧率跑（本机历史上就是这么埋过雷）。
 FALLBACK: dict[str, Any] = {
     "window_seconds": 30,
-    "fps_nominal": 45,          # 契约 docs/interface.md §0（2026-09-13 v1.1：30→45）
+    "fps_nominal": 30,          # 契约 docs/interface.md §0（2026-09-20 v1.2 草案：45→30；v1.1 曾为 45）
     "ear_close_threshold": 0.21,
     "min_close_frames": 3,
     "long_close_ms": 500,

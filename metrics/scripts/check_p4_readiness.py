@@ -31,8 +31,8 @@ except Exception:  # noqa: BLE001
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# 契约 §0：640×480 RGB888 @45 fps；data/README.md：每段 20~30 s
-EXPECT_W, EXPECT_H, EXPECT_FPS = 640, 480, 45.0
+# 契约 §0：640×480 RGB888 @30 fps（v1.2 草案：45→30）；data/README.md：每段 20~30 s
+EXPECT_W, EXPECT_H, EXPECT_FPS = 640, 480, 30.0
 MIN_SECONDS, MAX_SECONDS = 18.0, 40.0      # 给转码留一点余量，但明显不对就报出来
 VIDEOS = ["still", "blink", "yawn", "turn"]
 EVENTS = {"blink", "long_close", "yawn", "turn", "occluded"}

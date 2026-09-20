@@ -120,7 +120,7 @@ def load_fir_coeffs(path: str | Path | None = None) -> tuple[list[int], int, int
     taps = _num("FIR_NUM_TAPS", len(coeffs))
     if len(coeffs) != taps:
         raise ValueError(f"系数个数 {len(coeffs)} 与 FIR_NUM_TAPS={taps} 不一致")
-    return coeffs, _num("FIR_COEFF_SHIFT", 15), _num("FIR_FS_HZ", 45)
+    return coeffs, _num("FIR_COEFF_SHIFT", 15), _num("FIR_FS_HZ", 30)
 
 
 def fir_process(samples, coeffs: list[int], shift: int = 15, hist=None):

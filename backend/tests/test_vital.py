@@ -65,7 +65,14 @@ def test_q15_rejects_empty_roi() -> None:
 def test_fir_uses_frozen_coefficients_and_arithmetic() -> None:
     """带通必须用冻结系数（唯一来源是 C 线的头文件），且首样本符合 y=h[0]*x>>15。"""
     coeffs, shift, fs = load_fir_coeffs()
-    assert len(coeffs) == 63 and shift == 15 and fs == 45
+    # ⚠️ 不要硬编码 30/45（帧率已改过两次：30 → 45（v1.1）→ 30（v1.2 草案））。
+    #    这里断言的是"C 线冻结头文件里的 fs 与契约 §0 的 fps_nominal 一致"，
+    #    即抓住两个单一来源之间的漂移 —— 比写死一个数字更强。
+    assert len(coeffs) == 63 and shift == 15
+    assert fs == float(CFG["fps_nominal"]), (
+        f"FIR 头文件 fs={fs} 与 config.yaml fps_nominal={CFG['fps_nominal']} 不一致："
+        "系数与帧率必须同改（见 docs/interface.md §0/§3.5）"
+    )
     ys, sat, _hist = fir_process([1000], coeffs, shift, None)
     assert ys[0] == (coeffs[0] * 1000) >> shift
     assert sat == 0

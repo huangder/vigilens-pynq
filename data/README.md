@@ -23,24 +23,25 @@
 
 **录制规范（三人一致，否则黄金结果没有可比性）：**
 
-- 分辨率 640×480、**45 fps**，与契约 `docs/interface.md` 第 0 节一致（转码命令见下）；
-  > ⚠️ 2026-09-13 契约由 **v1.1** 把全局帧率从 30 改成 **45 fps**（C 线发起），
-  > FIR 系数与黄金参考均已按 45 Hz 重生成。**旧的"30 fps"录制规范已作废**——
-  > 按 30 fps 录的视频会被管线按 45 fps 解释，眨眼率、长闭眼、哈欠去抖全部失真。
+- 分辨率 640×480、**30 fps**，与契约 `docs/interface.md` 第 0 节一致（转码命令见下）；
+  > ⚠️ 帧率沿革：**30（v1.0）→ 45（v1.1，2026-09-13）→ 30（🚧 v1.2 草案，2026-09-20，C 线发起）**。
+  > C 线已按 30 Hz 重生成 FIR 系数与黄金参考，**当前有效录制规范是 30 fps**。
+  > 按 45 fps 录的视频会被管线按 30 fps 解释，眨眼率、长闭眼、哈欠去抖全部失真。
+  > 本草案按 `AGENTS.md` §4 **待 A/B 会签**（见 `docs/interface.md` 第 6 节 2026-09-20 行）。
 - 正面、均匀光照，不要逆光；每段 **20~30 秒**（`window_seconds: 30` 需要窗口填满）；
 - 每段视频**只做一件事**（不要把眨眼和打哈欠混在一段里），否则无法判断是哪一项出的错；
 - 出镜者须**同意**收录（`README.md` 与 `LICENSE` 的附加声明已写明这一条）。
 
 ```bash
 # 用 ffmpeg 统一转码（本机 ffmpeg 见 .tools/ffmpeg，放 PATH 后可直接用）
-ffmpeg -i 原视频.mp4 -vf scale=640:480 -r 45 -pix_fmt yuv420p data/raw/blink.mp4
+ffmpeg -i 原视频.mp4 -vf scale=640:480 -r 30 -pix_fmt yuv420p data/raw/blink.mp4
 ```
 
 转码后**必须回读确认真实帧率**，别只信命令没报错：
 
 ```bash
 ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1 data/raw/blink.mp4
-# 期望：width=640  height=480  r_frame_rate=45/1
+# 期望：width=640  height=480  r_frame_rate=30/1
 ```
 
 ## 为什么默认不把视频入库

@@ -110,7 +110,8 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
   `roi_statistic`（28/28 + 45/45，II=1，Fmax 138.99 MHz，LUT 1267 / FF 723 / BRAM 0 / DSP 1）、
   `rgb2gray` v2（8/8 + 10/10，Fmax 137.46 MHz，BRAM 0）、
   `motion_quality` v2（6/6 + 9/9，Fmax 140.05 MHz，**BRAM 64 = 23%**，91% 风险已闭环）、
-  `fir_filter` v1（63 阶 Q15 带通 @45fps，8/8 + 17/17，**比对容差 0**，II=1，Fmax 154.38 MHz，BRAM 0 / DSP 26）。
+  `fir_filter` v1（63 阶 Q15 带通，**现役系数 @30fps**（🚧 v1.2 草案）/ v1.1 曾为 @45fps；比对容差 0；
+  @30fps 的 csim/csynth/cosim **本次未重跑**，v1.1 的 @45fps 实测为 8/8 + 17/17、II=1、Fmax 154.38 MHz、BRAM 0 / DSP 26）。
   四者合计 LUT 8221（15.4%）/ FF 8973（8.4%）/ BRAM 64（23%）/ DSP 33（15.0%）。
   证据见 `fpga/report/` 下的 `c3_c7_roi_statistic_v1.md`、`c4_rgb2gray_motion_quality_v1.md`、
   `cosim_all_ips_v1.md`、`c5_fir_filter_v1.md`。
@@ -120,7 +121,10 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
   **M3 系统级预算**（`fpga/report/m3_system_budget_v1.md`，含 9 条上板验收门限）、
   **M4 软硬件对比基线**（`fpga/report/m4_baseline_v1.md` + `metrics/scripts/bench_filter_ps.py`）。
   接口契约已由 C 线推进到 **v1.1 并会签完成**（v1.0 于 2026-09-11 冻结，v1.1 的"全局 45 fps"
-  于 **2026-09-16 三方会签完成**）；第 5.2 节里 A/B 的待表态项已补签——
+  于 **2026-09-16 三方会签完成**）；
+  🚧 **另有 v1.2 草案（2026-09-20，C 线发起，待 A/B 会签）：§0 帧率与 §3.5 FIR 采样率 45→30 Hz**
+  （为前期适配低帧率采集源；系数与黄金参考已重生成并通过逐样本对拍，csim/csynth/cosim **未重跑**）。
+  第 5.2 节里 A/B 的待表态项已补签——
   第 1/2/4/11 项认可（A 线）、第 3 项认可（B 线），第 7、12 项按契约明文**待真实视频**后回填。
   （`docs/interface.md` 第 5 节）
 - **A 线**：骨架就位（`backend/*.py`），`run_pipeline.py` 端到端链路为 **stub 状态**（EAR 为真指标，PERCLOS/MAR/头姿/质量/规则为占位），待按《02》A1~A10 逐项替换。

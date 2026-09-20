@@ -9,8 +9,14 @@
 
 # ---- 时间窗口 ---------------------------------------------------------------
 window_seconds: 30                  # PERCLOS / 眨眼率 / 质量评分的滑动窗口长度（s）
-fps_nominal: 45                     # 标称帧率，仅用于时间序列换算；IP 本身不感知帧率
-                                    #   契约依据：docs/interface.md 第 0 节（640x480 RGB888@45fps）
+fps_nominal: 30                     # 标称帧率，仅用于时间序列换算；IP 本身不感知帧率
+                                    #   契约依据：docs/interface.md 第 0 节（640x480 RGB888@30fps）
+                                    #   🚧 v1.2 草案（2026-09-20，C 线发起）：45 → 30，
+                                    #      为前期适配低帧率采集源（OpenMV 等）先按 30 Hz 冻结。
+                                    #   ⚠️ 改这里**必须**同步重生成 FIR 系数与黄金参考：
+                                    #      python fpga/sim/design_fir_coeffs.py --fs <新值> --d 0.0
+                                    #      python fpga/sim/gen_fir_vectors.py
+                                    #      两者不同改 = rPPG 频率轴错位（backend/tests/test_vital.py 会拦住）
 
 # ---- A 线：眼部指标 ---------------------------------------------------------
 ear_close_threshold: 0.21           # EAR 闭眼判定阈值

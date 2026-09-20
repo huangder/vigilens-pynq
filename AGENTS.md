@@ -244,7 +244,7 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 | 目标板卡 / 器件 | **PYNQ-Z2 / `xc7z020clg400-1`**（Zynq-7000） |
 | 工具链 | **Vitis HLS 2026.1**，入口 `vitis-run --mode hls --tcl <脚本>` |
 | 目标时钟 | **10 ns（100 MHz）** |
-| 图像尺寸 / 格式 / 帧率 | **640 × 480**，**RGB888**（`byte0=R, byte1=G, byte2=B`），**45 fps**（仅影响时间序列） |
+| 图像尺寸 / 格式 / 帧率 | **640 × 480**，**RGB888**（`byte0=R, byte1=G, byte2=B`），**30 fps**（仅影响时间序列）<br>⚠️ 帧率沿革 30→45（v1.1）→**30（🚧 v1.2 草案 2026-09-20，待 A/B 会签）** |
 | 局部窗口 | `window_seconds: 30`（PERCLOS / 眨眼率 / 质量滑窗） |
 | WebSocket 推送 | `ws_push_hz: 1.0`（1 帧/秒） |
 
@@ -297,6 +297,10 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
   沿革：v1.0 于 2026-09-11 冻结；v1.1（"全局 45 fps"）由 C 线 2026-09-13 发起、2026-09-16 会签完成。
 - `backend/contract.py` 的 `CONTRACT_VERSION` 当前为 **`v1.1`** —— **与契约文档同步**
   （会签完成时按第 4 节第 5 步「会签升级版本号」升级）。
+- 🚧 **v1.2 草案（2026-09-20，C 线发起，待 A/B 会签）**：§0 帧率 + §3.5 FIR 采样率 **45→30 Hz**
+  （为前期适配低帧率采集源）。系数与黄金参考已按 30 Hz 重生成，并通过主机端模型 / A↔C 逐样本 /
+  `pytest 78 passed` 三重对拍；**但 csim/csynth/cosim 未重跑**（受限沙箱跑不了 HLS）。
+  **会签前 v1.1 仍是生效版本**，`CONTRACT_VERSION` 保持 `v1.1`。
 - 本地/远端状态（本节容易过期，**每次用 `git status` / `git log` 复核**）：
   截至 2026-09-16，`main` 与 `origin/main` 同步、工作区干净。
 

@@ -69,10 +69,10 @@
     { key: "motion", label: "运动分（越低越好）", unit: "", digits: 2, get: function (f) { return f.quality.motion_score; }, warn: function (f) { return f.quality.motion_score > THRESHOLDS.motion_score_max; } },
     { key: "hr", label: "心率（门控）", unit: "bpm", digits: 1, gate: true, confKey: "hr_conf", get: function (f) { return f.vital.hr_bpm; } },
     // staticNote：只在**没有数值**时显示，用来解释"这张卡为什么出不来数"。
-    // 呼吸率是契约级限制（§3.5：63 阶 @45 fps 的过渡带吃掉了 0.1~0.5 Hz 呼吸带），
+    // 呼吸率是契约级限制（§3.5：63 阶 @30 fps 的过渡带吃掉了 0.1~0.5 Hz 呼吸带），
     // 不加说明的话，答辩现场它看起来就像坏了。
     { key: "rr", label: "呼吸率（门控）", unit: "/min", digits: 1, gate: true, confKey: "rr_conf",
-      staticNote: "契约 §3.5：63 阶 @45 fps 做不了呼吸带，待 PS 侧降采样",
+      staticNote: "契约 §3.5：63 阶 @30 fps 做不了呼吸带，待 PS 侧降采样",
       get: function (f) { return f.vital.rr_per_min; } }
   ];
 
