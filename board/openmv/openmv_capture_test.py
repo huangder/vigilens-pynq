@@ -82,8 +82,13 @@ SUSTAINED_SECONDS = 10.0     # 长跑时长
 DUMP_FRAMES       = 10       # 落盘帧数
 JPEG_QUALITY      = 90       # 仅 JPEG 格式有效
 
-# 落盘位置：SD 卡写大文件更合适；没有卡就退回内部 flash。
+# 落盘位置：**只认 SD 卡**。
+# ⚠️ 为什么把 /flash 也列进来却几乎必然被跳过：OpenMV Cam H7 的板载 FAT 盘极小
+#    （官方开发者："the onboard flash on the H7 is extremely small"；社区实测 main.py
+#    涨到 43 KB 就报 Not enough disk space），而一帧 320x240 RGB565 就有 153,600 B。
+#    列出来是为了让 `_first_writable` 明确打印"跳过了它、为什么"，而不是悄悄失败。
 DUMP_DIR_CANDIDATES = ("/sd/vigilens_frames", "/flash/vigilens_frames")
+# 报告只有几 KB，可以放 /flash（但仍会先查容量）。
 REPORT_PATH_CANDIDATES = ("/sd/vigilens_report.json", "/flash/vigilens_report.json")
 
 # 契约口径（docs/interface.md §0），仅用于「差距有多大」的对照展示，**不是实测值**
@@ -117,14 +122,46 @@ def _mkdir(path):
             return False
 
 
-def _first_writable(cands, is_dir):
-    """挑第一个能用的路径（SD 优先，退回 flash）。"""
+def _free_bytes(path):
+    """该挂载点的可用字节数；拿不到就返回 None（**不猜** 0、也不猜很大）。
+
+    为什么必须查这个：**OpenMV Cam H7 的板载 FAT 盘极小** —— 官方开发者原话是
+    "the onboard flash on the H7 is extremely small"，社区实测 **main.py 涨到 43 KB
+    就报 `Not enough disk space`**。而一帧 320x240 RGB565 就有 153,600 B ——
+    往 /flash 写帧必然是"内存不足"。所以落盘前必须先问容量。
+    """
+    try:
+        st = os.statvfs(path)
+        return st[0] * st[3]          # f_bsize * f_bfree
+    except Exception:
+        return None
+
+
+def _first_writable(cands, is_dir, need_bytes=0):
+    """挑第一个**确实装得下**的路径。
+
+    与旧版的区别：旧版只要 mkdir 成功就返回，于是会在 H7 那个 43 KB 的 /flash 上
+    "成功创建目录"然后每帧写失败。现在：
+      · 拿得到容量 → 可用字节 < need_bytes 就跳过（并说明）
+      · 拿不到容量 → **对 /flash 直接跳过**（极小且拿不到容量时不能赌）
+    """
     for c in cands:
         parent = c if is_dir else c.rsplit("/", 1)[0]
         if parent in ("", "/"):
             return c
-        if _mkdir(parent):
+        if not _mkdir(parent):
+            continue
+        free = _free_bytes(parent)
+        if free is None:
+            if parent.startswith("/flash"):
+                log("  跳过 %s：拿不到可用容量，且 /flash 在 H7 上极小（约 43 KB 级），不赌"
+                    % parent)
+                continue
             return c
+        if need_bytes and free < need_bytes:
+            log("  跳过 %s：可用 %d B < 需要 %d B" % (parent, free, need_bytes))
+            continue
+        return c
     return None
 
 
@@ -323,8 +360,10 @@ def run_matrix():
     log("怎么读这张表：")
     log("  · '最慢帧' 很重要 —— 它对应运动/眨眼检测里最坏情况的采样间隔。")
     log("  · '理论B' 是 w*h*每像素字节；若与 'B/帧' 差很多，说明实际生效的分辨率/格式与请求不同。")
-    log("  · 契约要 640x480 RGB888 = 921600 B/帧；H7 只有 1MB SRAM，")
-    log("    所以'能不能整帧装下'要看上面那列 gc.mem_free()，这是实测不是推算。")
+    log("  · 契约要 640x480 RGB888 = 921600 B/帧。H7 的 STM32H743 标称 1MB SRAM，")
+    log("    但**留给帧缓冲/图片处理的可用 RAM 小得多**（官方论坛实测口径约 400KB 级）——")
+    log("    这正好解释了官方规格表为什么写 'RGB565 上限 320x240'（VGA RGB565 = 614400 B，装不下）。")
+    log("    所以'能不能整帧装下'要看上面那列 gc.mem_free()，**这是实测不是推算**。")
     log("  · 帧率判据：契约要 30fps。低于 30 时注意 config.yaml 的 min_close_frames=3")
     log("    会让'最短可检出闭眼 = 3/fps'变大（10fps→300ms），会系统性漏掉短眨眼。")
     return results
@@ -370,11 +409,34 @@ def run_dump():
     log("落盘 %d 帧：%s / %s / fb=%d" % (DUMP_FRAMES, CHOSEN_PIXFORMAT,
                                        CHOSEN_FRAMESIZE, CHOSEN_FRAMEBUFFERS))
     log("=" * 78)
-    dump_dir = _first_writable(DUMP_DIR_CANDIDATES, True)
+
+    # 先按目标配置估一帧要多大，再决定往哪写。
+    # 保守放大 1.25 倍：JPEG 大小不定，未压缩格式还要留元数据空间。
+    bpp = _BPP.get(CHOSEN_PIXFORMAT, 0)
+    est_per_frame = 1
+    for _name, _w, _h in (("VGA", 640, 480), ("QVGA", 320, 240)):
+        if _name == CHOSEN_FRAMESIZE:
+            est_per_frame = max(1, int(_w * _h * (bpp or 2) * 1.25))
+    need = est_per_frame * DUMP_FRAMES
+
+    dump_dir = _first_writable(DUMP_DIR_CANDIDATES, True, need_bytes=need)
     if dump_dir is None:
-        log("找不到可写目录（试过 %s）—— 请插 SD 卡" % (DUMP_DIR_CANDIDATES,))
+        log("")
+        log("**落盘终止：找不到能装下 %d 帧（约 %d B）的可写目录。**" % (DUMP_FRAMES, need))
+        log("  试过的候选：%s" % (DUMP_DIR_CANDIDATES,))
+        log("")
+        log("  为什么不能在 /flash 上写：**OpenMV Cam H7 的板载 FAT 盘极小**。")
+        log("  官方开发者的原话是 'the onboard flash on the H7 is extremely small'；")
+        log("  社区实测 main.py 涨到 **43 KB** 就报 `Not enough disk space`。")
+        log("  而一帧 320x240 RGB565 = 153,600 B —— 一帧都放不下。")
+        log("")
+        log("  怎么办：**插一张 micro SD 卡**，然后重跑 dump 模式（数据写到 /sd）。")
+        log("  没有 SD 卡也能拿到同样的信息：先用 matrix 模式（纯内存，不落盘）。")
         return None
-    log("输出目录：%s" % dump_dir)
+    log("输出目录：%s（计划写入约 %d B）" % (dump_dir, need))
+    free = _free_bytes(dump_dir)
+    if free is not None:
+        log("该挂载点可用：%d B" % free)
 
     ok, note = _apply(CHOSEN_PIXFORMAT, CHOSEN_FRAMESIZE, CHOSEN_FRAMEBUFFERS)
     if not ok:

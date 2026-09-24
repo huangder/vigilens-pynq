@@ -344,9 +344,18 @@ python -m pip install pyserial                         # 串口模式需要
 
 用专门的采集测试程序 **`board/openmv/openmv_capture_test.py`**（不是联调用的 `openmv_stream.py`）。
 
-**准备**：把 `openmv_capture_test.py` 放到 OpenMV 的 U 盘根目录 —— 它**自包含**，
-**不需要** `vigilens_link.py`（只有 `openmv_stream.py` 才需要）。用 OpenMV IDE 或
-**VSCode 的 OpenMV 扩展**打开它、把 `MODE` 改成 `"matrix"`、点运行。
+**准备**：`openmv_capture_test.py` **自包含**，**不需要** `vigilens_link.py`（只有 `openmv_stream.py` 才需要）。
+用 OpenMV IDE 或 **VSCode 的 OpenMV 扩展**直接打开它、把 `MODE` 改成 `"matrix"`、点运行。
+
+> ⚠️ **不要把脚本存到 OpenMV 的 U 盘上再编辑。** OpenMV 官方开发者原话：
+> *"the onboard flash on the H7 is **extremely small** ... I do not recommend opening and editing
+> the script directly on device."* 社区实测 **`main.py` 涨到 43 KB 就报 `Not enough disk space`**；
+> 更糟的是 **FAT 挂载失败时相机会自动格式化整个盘**，你之前存的文件会全部丢失。
+> **正确做法**：在 PC 上编辑 → 点 Run（脚本经 USB 推给相机、在 RAM 里执行），**不往相机盘写任何东西**。
+
+> 📌 **`dump` 模式必须先插一张 micro SD 卡**，否则会拒绝执行并说明原因。
+> 因为一帧 320×240 RGB565 = 153,600 B，而 H7 的板载盘只有 43 KB 级 —— 一帧都放不下。
+> **只要 `matrix` 模式的数据的话，不需要 SD 卡**（它纯内存、不落盘）。
 
 **第 1 步：能力矩阵**（改顶部 `MODE = "matrix"`，在 OpenMV IDE 里运行）
 
