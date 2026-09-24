@@ -396,18 +396,20 @@ python board/openmv/raw_to_contract.py metrics\logs\openmv_dump `
 #### T1.1 让 A 线消费真实帧（UVC 路线，最直接）
 
 ```powershell
-# 1) 找到 OpenMV 的摄像头序号
+# 1) 找到 OpenMV 的摄像头序号（它会把序号直接打印出来）
 python board/openmv/host_capture_test.py --list
 
 # 2) 按契约口径测它的真实能力（这一步产出证据）
+#    把下面的 0 换成上一步打印的序号 —— PowerShell 里 < 和 > 是保留运算符，
+#    带尖括号的占位符**没法直接复制粘贴**。
 python board/openmv/host_capture_test.py `
-    --device <上一步找到的序号> --seconds 10 `
+    --device 0 --seconds 10 `
     --probe 640x480,320x240 `
     --dump-rgb-bin metrics/logs/openmv_vga.bin --dump-frames 30
 
-# 3) 让 A 线管线吃真实相机
+# 3) 让 A 线管线吃真实相机（同样把 0 换成实际序号）
 python backend/run_pipeline.py `
-    --source <序号> --seconds 30 `
+    --source 0 --seconds 30 `
     --json metrics/logs/last.json `
     --jsonl metrics/logs/openmv_stream.jsonl `
     --csv metrics/csv/openmv_metrics.csv `
@@ -494,7 +496,7 @@ python -c "import serial,time; s=serial.Serial('COMx',115200,timeout=1); t=time.
 
 ```bash
 ip addr                      # 看有没有 eth0 和 IP
-ping -c 3 <笔记本IP>          # 需要笔记本同网段
+ping -c 3 192.168.1.100      # 换成笔记本的 IP；两边必须在同一网段
 ```
 ⚠️ 手册对以太网速率自相矛盾（10/100 vs 10/100/1000），**以 `ethtool eth0` 的实测为准**。
 
