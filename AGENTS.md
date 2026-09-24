@@ -276,6 +276,7 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 | **`. .\env.ps1` → 不是可识别的命令** | 在 2026-09-24 之前 `env.ps1` 是**本机文件、不在仓库里**，新机器照文档做必然失败 | ✅ 已补为**可提交的通用脚本**（路径由 `$PSScriptRoot` 推导，无机器专属信息）。`git pull` 后即可用 |
 | **`.venv` 不存在**（新克隆的仓库） | `.venv/` 在 `.gitignore` 里（`.gitignore:39`），**不会随仓库分发** | `python -m venv .venv` → `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` |
 | **改了 `.ps1` 后语法莫名报错**（如 `Unexpected token '}'`） | **Windows PowerShell 5.1 读无 BOM 的 `.ps1` 会按 GBK 解码**，中文注释被解坏会破坏语法 | `.ps1` 一律存成 **UTF-8 with BOM**（`.md` / `.py` 不需要） |
+| **`git log` 里提交标题前多出一个看不见的字符**（首字符码点 `0xFEFF`） | **PowerShell 5.1 的 `Out-File -Encoding utf8` / `Set-Content -Encoding UTF8` 写出的文件带 BOM**，再 `git commit -F 那个文件` 就把 BOM 带进了标题。⚠️ 注意与上一行**要求正好相反**：`.ps1` 必须带 BOM，**喂给 `git commit -F` 的消息文件必须无 BOM** | 消息文件用编辑器/本工具的 write 存成 **UTF-8 无 BOM**；或改用 `git commit -m`。**写完先验一眼**：`git log -1 --pretty=%s`，必要时 `git commit --amend -F 新文件` 修回来 |
 | **`"<"运算符是为将来使用而保留的`** | 文档里的占位符 `<序号>` / `<dump目录>` 被**照抄**了。PowerShell 里 `<` `>` 是**保留运算符**，带尖括号的命令**无法复制粘贴执行** | 看命令行**上面的注释**：占位符要换成实际值。本项目文档已改用「具体示例 + 注释」写法；**任何 `<...>` 都不要直接执行** |
 | `python -m pytest` → `No module named pytest` | 系统 Python 没装 pytest | `. .\env.ps1` 后用项目解释器 |
 | `.venv\Scripts\python -m pip` → `No module named pip` | `.venv` 是 `--without-pip` 创建的 | `python -m ensurepip --upgrade`，或重建 venv（**不要在 .venv 里 pip install**） |
