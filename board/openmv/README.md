@@ -389,6 +389,15 @@ python -m pip install pyserial                         # 串口模式需要
 > ② **SD 卡挂载点从 `/sd` 变成 `/sdcard`** —— 脚本两个都试。
 > 脚本开头会打印 **固件/板子标识 + 走哪套 API**，并写进 `report.json`，
 > 这样数据可追溯到具体固件。
+>
+> 🔴 **但兼容层只加在了 `openmv_capture_test.py` 上，`openmv_stream.py` 还没有。**
+> 2026-09-24 实测确认相机走的是 **`csi`（v5.x）** 分支，而 `openmv_stream.py` 用的是
+> **v4 的 `sensor` 模块级 API**。官方说 `sensor` 这个 qstr 在 v5 上
+> "is still wired up ... for backwards-compatible firmware builds" ——
+> **【不确定】它在这台相机上到底还能不能 import 成功**。
+> 上板前先跑一次 `python board/openmv/offline_check.py`（那套假模块装置**可以**扩展成
+> 覆盖 `openmv_stream.py`），或直接在相机上试 `MODE="probe"`；**报错就把原文贴回来**。
+> ⚠️ 这条**没有**被任何本机自检覆盖，是当前已知的空白。
 
 **第 1 步：能力矩阵**（改顶部 `MODE = "matrix"`，在 OpenMV IDE 里运行）
 
@@ -666,7 +675,7 @@ build_bd.tcl（把 BOARD_PART 换成 Mizar-Z7 的板级文件，或手写 PS7；
 |---|---|---|
 | `vigilens_link.py` | **串口帧协议唯一实现**（12B 头 + CRC-16/CCITT-FALSE）。**刻意不用类型注解**，为了能在 MicroPython 里跑同一份 | ✅ `--selftest` **9/9 PASS**（已跑） |
 | `host_capture_test.py` | 上位机：列摄像头 / 测真实分辨率与帧率 / 判契约 §0 / 导契约布局 RGB888 / 收串口帧 | ✅ `--selftest` **10/10 PASS**（已跑） |
-| `openmv_stream.py` | OpenMV 侧（联调/演示用）：链路握手 / 字节回环 / 统计量流 / JPEG 流 | ⚠️ **语法与 API 引用已检，未在真机运行** |
+| `openmv_stream.py` | OpenMV 侧（联调/演示用）：链路握手 / 字节回环 / 统计量流 / JPEG 流 | ⚠️ **语法与 API 引用已检，未在真机运行**；🔴 **且它只用 v4 的 `sensor` 模块 API，没有 v5 兼容层** —— 相机实测走 `csi`，它能不能跑【不确定】（见 T1.0 的红字注） |
 | **`openmv_capture_test.py`** | **OpenMV 上运行的图像采集测试**：能力矩阵（格式×分辨率×帧缓冲数，按风险排序 + 可分段）+ 长跑帧率统计（含抖动/最慢帧）+ 无损落盘 + **pixel_samples 对拍样本** + 表末**契约可行性小结** | 🧪 **真机跑过一次**（2026-09-24，只回来 2 行 → `fpga/report/t6_openmv_capture_matrix_v1.md`）；本机逻辑自检见下一行 |
 | **`offline_check.py`** | **PC 上用假模块跑真脚本**（v5 `csi` / v4 `sensor` 两条分支，各 14 项）：验组合顺序、失败行的内存算术、契约小结、`_CAM_API` 作用域…… | ✅ `RESULT: PASS (28/28)`（已跑，且已纳入 `check_all.py` 回归） |
 | **`raw_to_contract.py`** | PC 侧：原始 dump → **契约 §4.1 布局 RGB888**；`--calibrate` 用对拍样本**反推** RGB565 位扩展公式；含 stride/行填充推断 | ✅ `--selftest` **18/18 PASS** + 合成 dump **端到端实测通过**（均已跑） |
