@@ -29,7 +29,7 @@
 | 本地 main | `git rev-parse main` | ✅ `ad9ad54` → **与远端 main 同步** |
 | 当前分支 | `git rev-parse --abbrev-ref HEAD` | ⚠️ **不在 main**，在 `c-line/fs30` @ `bc4c4fb` |
 | 该提交是否已推远端 | `git branch -r --contains HEAD` | ⚠️ **输出为空 → 这个提交还没推到任何远端** |
-| 仓库自检 | `.venv\Scripts\python.exe -m pytest -q` | ✅ `78 passed`（与 AGENTS.md 基线一致） |
+| 仓库自检 | `python -m pytest -q` | ✅ `78 passed`（与 AGENTS.md 基线一致） |
 | A 线链路 | `run_pipeline.py --source synthetic --pattern blink --seconds 5 --stub` | ✅ 处理 150 帧，末帧 `normal`，退出码 0 |
 | 本机依赖 | 逐个 import | ✅ `cv2 4.11.0` / `numpy 1.26.4` / `mediapipe 0.10.21`；❌ **缺 `pyserial`** |
 | Mizar-Z7 硬件 | MicroPhase 官方《Mizar-Z7 Reference Manual》 | ✅ 拿到**完整 40-pin 引脚表**、芯片型号、外设清单 |
@@ -242,7 +242,7 @@ Windows 上会出现一个 COM 口，用 `--serial COMx` 收。
 
 > ⚠️ **`pyserial` 目前没装**。先装：
 > ```
-> .venv\Scripts\python.exe -m pip install pyserial
+> python -m pip install pyserial
 > ```
 
 ### 4.2 通路 B：OpenMV ↔ Mizar-Z7020 的 USB Host 口
@@ -314,11 +314,11 @@ board/openmv/mizar_z7_openmv_uart.xdc    ← 上面那张表的引脚约束
 
 ```powershell
 # 在仓库根执行
-.venv\Scripts\python.exe board/openmv/vigilens_link.py --selftest        # 期望 RESULT: PASS (9/9)
-.venv\Scripts\python.exe board/openmv/host_capture_test.py --selftest    # 期望 RESULT: PASS (10/10)
-.venv\Scripts\python.exe board/openmv/raw_to_contract.py --selftest      # 期望 RESULT: PASS (18/18)
-.venv\Scripts\python.exe -m pytest -q                                    # 期望 78 passed
-.venv\Scripts\python.exe -m pip install pyserial                         # 串口模式需要
+python board/openmv/vigilens_link.py --selftest        # 期望 RESULT: PASS (9/9)
+python board/openmv/host_capture_test.py --selftest    # 期望 RESULT: PASS (10/10)
+python board/openmv/raw_to_contract.py --selftest      # 期望 RESULT: PASS (18/18)
+python -m pytest -q                                    # 期望 78 passed
+python -m pip install pyserial                         # 串口模式需要
 ```
 
 **判据**：9/9、10/10、18/18、78 passed。**任何一条红，先解决它再往下走。**
@@ -376,11 +376,11 @@ JPEG       QVGA   1    ...
 
 ```powershell
 # 先看这份 dump 是什么、有没有行填充
-.venv\Scripts\python.exe board/openmv/raw_to_contract.py metrics\logs\openmv_dump --info
+python board/openmv/raw_to_contract.py metrics\logs\openmv_dump --info
 # 用板上的对拍样本判定 RGB565 扩展公式（**别跳过**）
-.venv\Scripts\python.exe board/openmv/raw_to_contract.py metrics\logs\openmv_dump --calibrate
+python board/openmv/raw_to_contract.py metrics\logs\openmv_dump --calibrate
 # 转成契约 §4.1 的 RGB888
-.venv\Scripts\python.exe board/openmv/raw_to_contract.py metrics\logs\openmv_dump `
+python board/openmv/raw_to_contract.py metrics\logs\openmv_dump `
     --out metrics/logs/openmv_frames.bin --report metrics/logs/openmv_convert.json
 ```
 
@@ -397,16 +397,16 @@ JPEG       QVGA   1    ...
 
 ```powershell
 # 1) 找到 OpenMV 的摄像头序号
-.venv\Scripts\python.exe board/openmv/host_capture_test.py --list
+python board/openmv/host_capture_test.py --list
 
 # 2) 按契约口径测它的真实能力（这一步产出证据）
-.venv\Scripts\python.exe board/openmv/host_capture_test.py `
+python board/openmv/host_capture_test.py `
     --device <上一步找到的序号> --seconds 10 `
     --probe 640x480,320x240 `
     --dump-rgb-bin metrics/logs/openmv_vga.bin --dump-frames 30
 
 # 3) 让 A 线管线吃真实相机
-.venv\Scripts\python.exe backend/run_pipeline.py `
+python backend/run_pipeline.py `
     --source <序号> --seconds 30 `
     --json metrics/logs/last.json `
     --jsonl metrics/logs/openmv_stream.jsonl `
@@ -479,7 +479,7 @@ Mizar 的 USB-UART 是 CH340，接 PS 的 MIO14/MIO15（C8/C5）
 
 ```powershell
 # 没有串口工具就用 python（装 pyserial 后）
-.venv\Scripts\python.exe -c "import serial,time; s=serial.Serial('COMx',115200,timeout=1); t=time.time(); [print(s.readline()) for _ in range(100) if time.time()-t<5]"
+python -c "import serial,time; s=serial.Serial('COMx',115200,timeout=1); t=time.time(); [print(s.readline()) for _ in range(100) if time.time()-t<5]"
 ```
 
 - 有 U-Boot / Linux 日志滚动 → ✅ **PS 活着，镜像在跑**，跳到 T2.2
@@ -661,9 +661,9 @@ C: 新增 OpenMV 首次测试包（协议/上位机工具/PL 最小回环/接线
   OpenMV 侧程序、PL 最小字节回环与 Mizar 引脚约束、接线与分阶段测试方案。
 
 怎么验证的：
-  .venv\Scripts\python.exe board/openmv/vigilens_link.py --selftest      → RESULT: PASS (9/9)
-  .venv\Scripts\python.exe board/openmv/host_capture_test.py --selftest  → RESULT: PASS (10/10)
-  .venv\Scripts\python.exe -m pytest -q                                  → 78 passed
+  python board/openmv/vigilens_link.py --selftest      → RESULT: PASS (9/9)
+  python board/openmv/host_capture_test.py --selftest  → RESULT: PASS (10/10)
+  python -m pytest -q                                  → 78 passed
   （硬件相关结论均为【未验证】，待上板；本提交不含任何实测性能数字）
 ```
 

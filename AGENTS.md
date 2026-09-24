@@ -154,11 +154,18 @@
 ### 6.1 提交前自检（《07》第 6 节，全绿才算"完成"）
 
 ```bash
-# 在仓库根执行；Windows 下把 python 换成本项目解释器（见 6.4 环境坑）
+# 0) 【Windows PowerShell 必做】载入会话环境（切到仓库根 + 把 .venv 排到 PATH 最前）
+. .\env.ps1
+#    ⚠️ **不先做这一步**的话，`.venv\Scripts\python.exe` 这种裸相对路径**只在仓库根有效**；
+#       在别处执行时 PowerShell 会报 `无法加载模块 ".venv"`（建议你 `Import-Module .venv`）——
+#       这个报错**与真实原因（路径没找到）完全无关**，别被它带偏。
+#    ⚠️ `.venv/` 在 `.gitignore` 里，**新克隆的仓库不会带它**，要先建：
+#       python -m venv .venv && .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
 # ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
-.venv\Scripts\python.exe metrics/scripts/check_all.py    # 期望：回归结论 ✅ 全部通过（PASS 21 / FAIL 0）
+python metrics/scripts/check_all.py            # 期望：回归结论 ✅ 全部通过（PASS 21 / FAIL 0）
 # ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
-.venv\Scripts\python.exe -m pytest -q          # 期望：78 passed（**只增不减**）
+python -m pytest -q                            # 期望：78 passed（**只增不减**）
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
 # ⚠️ 写到 **metrics/logs/**（不入库）。别写成 metrics/evidence/js_frames.jsonl ——
@@ -227,10 +234,10 @@ python metrics/scripts/check_a_line_p5_m2.py   # 一条命令验证整条链路�
 
 ```bash
 # 一条命令：起服务 + 起管线 + 开浏览器（服务保持运行，Ctrl-C 退出）
-.venv\Scripts\python.exe metrics/scripts/run_demo.py                      # 合成帧源，先验链路
-.venv\Scripts\python.exe metrics/scripts/run_demo.py --list               # 找摄像头序号
-.venv\Scripts\python.exe metrics/scripts/run_demo.py --source 0           # 真实摄像头（OpenMV 刷 uvc.bin 后即可）
-.venv\Scripts\python.exe metrics/scripts/run_demo.py --source data/raw/blink.mp4 --loop
+python metrics/scripts/run_demo.py                      # 合成帧源，先验链路
+python metrics/scripts/run_demo.py --list               # 找摄像头序号
+python metrics/scripts/run_demo.py --source 0           # 真实摄像头（OpenMV 刷 uvc.bin 后即可）
+python metrics/scripts/run_demo.py --source data/raw/blink.mp4 --loop
 ```
 
 **画面走旁路，不进契约帧**（契约 §1 的帧只允许那 9 个顶层字段，塞图像就是非法帧）：
@@ -264,7 +271,11 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
-| `python -m pytest` → `No module named pytest` | 系统 Python 3.14.7 没装 pytest | 用项目解释器 `.venv\Scripts\python.exe -m pytest` |
+| **`.venv\Scripts\python.exe` → `无法加载模块 ".venv"`**（或 `Import-Module .venv`） | **不是缺模块** —— 是**当前目录不是仓库根**，这个裸相对路径没找到，PowerShell 遂把它当成"加载模块"。**报错信息与真实原因完全无关** | `. .\env.ps1`（自动切到仓库根）；或先 `cd` 到仓库根；或用绝对路径 |
+| **`. .\env.ps1` → 不是可识别的命令** | 在 2026-09-24 之前 `env.ps1` 是**本机文件、不在仓库里**，新机器照文档做必然失败 | ✅ 已补为**可提交的通用脚本**（路径由 `$PSScriptRoot` 推导，无机器专属信息）。`git pull` 后即可用 |
+| **`.venv` 不存在**（新克隆的仓库） | `.venv/` 在 `.gitignore` 里（`.gitignore:39`），**不会随仓库分发** | `python -m venv .venv` → `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` |
+| **改了 `.ps1` 后语法莫名报错**（如 `Unexpected token '}'`） | **Windows PowerShell 5.1 读无 BOM 的 `.ps1` 会按 GBK 解码**，中文注释被解坏会破坏语法 | `.ps1` 一律存成 **UTF-8 with BOM**（`.md` / `.py` 不需要） |
+| `python -m pytest` → `No module named pytest` | 系统 Python 没装 pytest | `. .\env.ps1` 后用项目解释器 |
 | `.venv\Scripts\python -m pip` → `No module named pip` | `.venv` 是 `--without-pip` 创建的 | `python -m ensurepip --upgrade`，或重建 venv（**不要在 .venv 里 pip install**） |
 | `PyYAML 可用: False` | 没装 PyYAML | 无需处理：`backend/config.py` 会降级为内置解析器读同一份 `config.yaml` |
 | 脚本打印中文乱码 | 控制台代码页是 GBK | 已内置 `console.enable_utf8_console()`；在 Windows Terminal / VS Code 里正常 |
