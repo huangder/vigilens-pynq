@@ -39,9 +39,13 @@ openmv_stream.py —— 在 **OpenMV Cam H7** 上运行的采集/链路程序（
 import sys
 import time
 
-import sensor
-import image  # noqa: F401  （部分固件需要显式 import 才有 img 方法）
-import pyb
+# ⚠️ 下面这几个模块**只存在于相机的 MicroPython 固件里**，PC 上没有，所以 Pylance 会报
+#    `reportMissingImports`（"无法解析导入"）。这**不是缺依赖**（`pip install sensor` 这种包
+#    不存在），**也不要**为了让告警消失就删掉它们 —— 删了相机上直接跑不起来。
+#    本仓库的统一处理：加 `# type: ignore`（与 `host_capture_test.py` 对 cv2/serial 的做法一致）。
+import sensor  # type: ignore
+import image  # type: ignore  # noqa: F401  （部分固件需要显式 import 才有 img 方法）
+import pyb  # type: ignore
 
 # ---------------------------------------------------------------------------
 # ↓↓↓ 改这里 ↓↓↓

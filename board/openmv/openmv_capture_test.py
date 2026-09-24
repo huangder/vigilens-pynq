@@ -72,6 +72,18 @@ import time
 #    两个路径都试，见下面的 DUMP_DIR_CANDIDATES。
 # ===========================================================================
 
+# ---------------------------------------------------------------------------
+# ⚠️ 关于编辑器/静态检查的告警（`reportMissingImports`）—— **别去"修"它**
+#
+#   `csi` / `sensor` / `omv` / `machine` / `pyb` **只存在于相机的 MicroPython 固件里**，
+#   PC 的 CPython 里根本不存在这几个模块，所以 Pylance 会报"无法解析导入"。
+#   · 这**不是缺依赖** —— `pip install csi` 这种包不存在，装了也没用；
+#   · **也不要**为了让告警消失就把这些 import 删掉 —— 删了相机上直接跑不起来。
+#   本仓库的统一处理是给这几行加 `# type: ignore`（`host_capture_test.py` 对 `cv2` / `serial`
+#   也是这么做的）。这些 import **全部在 try/except 里**，PC 上跑时走的是探测失败那条分支；
+#   要在本机验这个文件，用 `board/openmv/offline_check.py`（注入假模块）。
+# ---------------------------------------------------------------------------
+
 _CAM = None          # v5: CSI 实例；v4: sensor 模块本身
 _CAM_MOD = None      # 取常量用的模块（csi 或 sensor）
 _CAM_API = None      # "csi" | "sensor"
@@ -84,7 +96,7 @@ def _open_camera():
     if _CAM is not None:
         return
     try:
-        import csi as m                    # v5+
+        import csi as m                    # type: ignore  # v5+
         _CAM_API, _CAM_MOD, _CAM = "csi", m, m.CSI()
         return
     except ImportError:
@@ -92,7 +104,7 @@ def _open_camera():
     except Exception:
         raise
     try:
-        import sensor as m                 # v4.x
+        import sensor as m                 # type: ignore  # v4.x
         _CAM_API, _CAM_MOD, _CAM = "sensor", m, m
         return
     except ImportError:
@@ -160,7 +172,7 @@ def _probe_env():
         pass
     # 真正的 OpenMV 固件版本 / 板型 / 架构：优先问 `omv` 模块（新版固件才有）
     try:
-        import omv as _omv
+        import omv as _omv  # type: ignore  （新版固件的固件版本/板型信息模块；PC 上没有）
         for name in ("version", "board_type", "board_id", "arch"):
             fn = getattr(_omv, name, None)
             if fn is None:
@@ -244,11 +256,11 @@ def _blink():
     try:
         if _LED is None:
             try:
-                from machine import LED
+                from machine import LED  # type: ignore  （只存在于相机固件；v5 的 LED 写法）
                 _LED = [LED("LED_RED"), LED("LED_GREEN"), LED("LED_BLUE")]
             except Exception:
                 try:
-                    import pyb
+                    import pyb  # type: ignore  （老固件的 LED 写法）
                     _LED = [pyb.LED(1), pyb.LED(2), pyb.LED(3)]
                 except Exception:
                     _LED = []
