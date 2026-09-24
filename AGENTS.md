@@ -143,7 +143,7 @@
 | `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包；**`bitstream/` 仍为空**，上板结论不存在 |
 | `data/` | `raw/` 视频（不入库）、`annotations/`、`golden/`（当前均为空占位） |
 | `metrics/` | `csv/`、`logs/`（生成物，不入库）、`scripts/`（可复现检查脚本，入库）、`evidence/`（**正式证据入库**） |
-| `docs/` | `interface.md`（契约）+ `00`~`07` 方案文档 |
+| `docs/` | `interface.md`（契约）+ `00`~`12` 方案文档（**测试方案 = `11`，硬件文档 = `12`**） |
 | `skill/` | 沉淀的技能包（赛制加分项） |
 | `report/` | 设计报告素材 + `llm_log/` 大模型协作记录（**必交项**） |
 
@@ -155,6 +155,9 @@
 
 ```bash
 # 在仓库根执行；Windows 下把 python 换成本项目解释器（见 6.4 环境坑）
+# ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
+.venv\Scripts\python.exe metrics/scripts/check_all.py    # 期望：回归结论 ✅ 全部通过（PASS 21 / FAIL 0）
+# ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
 .venv\Scripts\python.exe -m pytest -q          # 期望：78 passed（**只增不减**）
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
@@ -166,6 +169,13 @@ python metrics/scripts/check_frontend_contract.py metrics/logs/_js_frames.jsonl 
 python metrics/scripts/check_video_bypass.py   # 期望：15/15 —— 旁路画面链路 + 契约未被污染
 git status --short                             # 只应出现你本线的改动
 ```
+
+> 📖 **完整的测试方案与分层步骤见 `docs/11_测试方案与执行步骤.md`**（L0~L10，含硬件层与"做不了"的项）；
+> **整机硬件清单、引脚表与接线见 `docs/12_硬件清单与接线文档.md`**。
+
+> ⚠️ **`check_all.py` 刻意把「回归测试」与「就绪状态」分开报**：前者计入退出码，
+> 后者（缺素材/缺板卡/缺工具链）**不计入** —— 否则总入口永远是红的，就没人看了。
+> 典型：`check_p4_readiness` 在 `data/raw/` 为空时返回 1，那是**预期状态**。
 
 > 📌 **跨语言检查是只读的**，不会改动任何入库文件。已入库的证据 `metrics/evidence/js_frames.jsonl`
 > 只在**前端 mock 真的改了**的时候才需要重新生成 —— 那是一次**有意的归档动作**：

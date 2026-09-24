@@ -68,6 +68,10 @@
 
 ### 2.1 Mizar-Z7 JP2 扩展口（**接线只用这张表**）
 
+> 📖 **引脚表的权威来源是 `docs/12_硬件清单与接线文档.md` §3**（那里有 JP1 + JP2 的**完整** 80 脚，
+> 以及 LED/KEY/时钟/USB-UART/MIPI 全套）。本节只是**本项目当前用到的子集**，与那份文档同源
+> （都出自 MicroPhase 官方《Mizar-Z7 Reference Manual》）。**改引脚请改 docs/12，再回来同步这里。**
+
 来源：MicroPhase 官方《Mizar-Z7 Reference Manual》GPIO 节。
 
 | JP2 脚 | 信号名 | FPGA 引脚 | 本文用它做 |
