@@ -22,7 +22,9 @@ openmv_capture_test.py —— 在 **OpenMV Cam H7** 上运行的「图像采集�
 
 安装与运行
 ----------
-1. 把本文件与 `vigilens_link.py` 一起拷到 OpenMV 的 U 盘（或 SD 卡）根目录。
+1. 本文件**自包含**（只 import sensor/pyb/gc/os/sys/time），**不需要** `vigilens_link.py`。
+   用 OpenMV IDE 或 VSCode 的 OpenMV 扩展打开它、改下面的 `MODE`、点运行即可。
+   （只有 `openmv_stream.py` 才需要把 `vigilens_link.py` 一并放到 OpenMV 的盘上。）
 2. 改下面 `MODE`，在 OpenMV IDE 里点"运行"。
 3. 跑完把打印的报告整段贴回项目记录；`dump` 模式另外会写 `report.json` 和原始帧。
 

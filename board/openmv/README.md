@@ -335,7 +335,9 @@ python -m pip install pyserial                         # 串口模式需要
 
 用专门的采集测试程序 **`board/openmv/openmv_capture_test.py`**（不是联调用的 `openmv_stream.py`）。
 
-**准备**：把 `openmv_capture_test.py` 与 `vigilens_link.py` 一起拷到 OpenMV 的 U 盘根目录。
+**准备**：把 `openmv_capture_test.py` 放到 OpenMV 的 U 盘根目录 —— 它**自包含**，
+**不需要** `vigilens_link.py`（只有 `openmv_stream.py` 才需要）。用 OpenMV IDE 或
+**VSCode 的 OpenMV 扩展**打开它、把 `MODE` 改成 `"matrix"`、点运行。
 
 **第 1 步：能力矩阵**（改顶部 `MODE = "matrix"`，在 OpenMV IDE 里运行）
 
