@@ -163,7 +163,7 @@
 #       python -m venv .venv && .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
-python metrics/scripts/check_all.py            # 期望：回归结论 ✅ 全部通过（PASS 21 / FAIL 0）
+python metrics/scripts/check_all.py            # 期望：回归结论 ✅ 全部通过（PASS 22 / FAIL 0）
 # ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
 python -m pytest -q                            # 期望：78 passed（**只增不减**）
 node frontend/mock.js --selftest               # 期望：ok: true
@@ -195,6 +195,7 @@ git status --short                             # 只应出现你本线的改动
 | `check_frontend_wiring` | `通过` | `app.js` 引用了不存在的 DOM id（症状：**页面不报错、区域空白**） |
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
 | `check_video_bypass` | `15/15 通过` | 旁路画面链路坏了，或**有人把图像塞进了契约帧**（T9/T10 会红）；或画面停推后仍显示冻结旧帧（T6 会红） |
+| `board/openmv/offline_check.py` | `RESULT: PASS (28/28)` | 只能在**相机上**跑的 `openmv_capture_test.py` 被改坏了（假模块跑 v5 `csi` / v4 `sensor` 两条分支）。它已真抓到过一个真机也会犯的作用域 bug，所以纳入回归 |
 
 > **基线沿革**：2026-09-10 起始基线 `49 passed in 0.51s`；2026-09-15 A 线补上 rPPG 链路的
 > 16 项测试（`backend/tests/test_vital.py`）后为 **`65 passed`**；2026-09-16 A 线补上 M2 交接面的
@@ -363,6 +364,26 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
   **这些提交都还没推送**。
   ⚠️ 也就是说 **v1.2 与 v1.3 两个草案都还没进 `main`**；`docs/09` 也还没进当前分支（要先合并）。
 
+### 7.7 OpenMV 采集能力（真机实测，2026-09-24）
+
+> 证据：`fpga/report/t6_openmv_capture_matrix_v1.md`（数据由人类真机回贴；AI 只做算术与判读）
+
+| 项 | 实测值 | 结论 |
+|---|---|---|
+| `gc.mem_free()`（启动时） | **308944 B** | H7 标称 1 MB SRAM，**留给帧缓冲的只有 ~302 KB** |
+| 契约帧 640×480 **RGB888** | 需 921600 B | **3.0 倍 → 装不下**，而且是**片上内存**限制，**换接口解决不了** |
+| 640×480 **RGB565** | 需 614400 B | 实测抛 `RuntimeError: Frame buffer overflow` |
+| `RGB565 / QVGA / fb=1` | **39.76 fps**、153600 B/帧 | 帧率超契约 30 fps，但**像素只有契约的 1/4 且不是 RGB888** |
+| 固件分支 | **`csi` 类 API（v5.x）** | v4 是 `sensor` 模块 API；脚本内置 v4/v5 兼容层 |
+
+- 【已验证】**OpenMV Cam H7 不能作为契约 §0 的像素源**：**内存天花板（3.0 倍）**与**链路带宽（29.5 倍）**
+  两条独立证据同时成立。它的位置是**降规格采集**与「人脸检测/追踪目标」（`docs/10` §3/§12）。
+- 【未拿到】矩阵其余各行：**JPEG 真实字节数**（A 线旁路画面带宽预算等它）、
+  `GRAYSCALE/VGA`（307200 B，离可用内存**只差 1744 B**）、完整固件串、传感器 `get_id()`。
+  ⚠️ **不要把"矩阵已跑完"当成既有事实**；那次只回来 2 行，原因未定（相机卡死 or 回帖截断）。
+- 【已验证】本机离线自检 `board/openmv/offline_check.py` = **28/28**（假模块跑真脚本，v5/v4 两条分支），
+  已纳入 `check_all.py` 回归。
+
 ---
 
 ## 8. 已知不一致与可信度标注（**不要把它当"已修好"**）
@@ -405,6 +426,8 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 - **C 线**：四个 IP（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter`）**均已完成 csim+csynth+cosim**；
   `board/` 已有上板脚本与 `board/openmv/` 首次测试包，但 **`board/bitstream/` 为空、`build_bd.tcl` 从未跑通** ——
   **上板相关的一切结论都不存在**。
+  🧪 **已接入过硬件的只有 OpenMV 一处**：2026-09-24 真机跑了一次采集能力矩阵，**只回来 2 行**
+  （详见 §7.7 与 `fpga/report/t6_openmv_capture_matrix_v1.md`）；**Mizar-Z7020 从未上电**。
   ⚠️ 另有一处 C 线自身的滞后值：`board/regmap.py` 的 `FPS = 45` 与本分支 `config.yaml` 的 30 不一致（v1.2 会签前不改）。
 - **确定性纪律**：时间戳用 `frame_id / fps` 而非墙上时钟；**同一段回放跑两次，末帧 JSON 与 CSV 必须逐字节相同**。
 
