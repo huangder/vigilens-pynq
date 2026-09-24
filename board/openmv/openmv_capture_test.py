@@ -49,8 +49,128 @@ import os
 import sys
 import time
 
-import sensor
-import pyb
+# ===========================================================================
+# 兼容层：同时支持 v4.x（`sensor` 模块 API）与 v5.x（`csi.CSI` 类 API）
+# ---------------------------------------------------------------------------
+# 为什么必须有这一层：**v5.0.0 有一条标记为 major 的破坏性变更** ——
+#   "sensor replaced by csi (major): Every official example was rewritten to drop
+#    `import sensor` in favor of `import csi`. The legacy module-level functional API
+#    (sensor.reset(), sensor.set_pixformat(), …) is superseded by the class-based
+#    csi.CSI API."
+#   官方同时说明 `sensor` 这个 qstr "is still wired up ... for backwards-compatible
+#   firmware builds" —— 也就是说 v5 上 `import sensor` **可能还能用，但不保证**。
+#   所以这里**不赌**：优先用 v5 的 csi，退回 v4 的 sensor，并把实际走的那条打出来。
+#
+# ⚠️ 另一个 v5 的坑（与 API 无关，但更隐蔽）：**SD 卡的挂载点从 `/sd` 变成了 `/sdcard`**。
+#    v5 的 H7 文档原文："When a card is inserted it is mounted automatically at `/sdcard`"。
+#    两个路径都试，见下面的 DUMP_DIR_CANDIDATES。
+# ===========================================================================
+
+_CAM = None          # v5: CSI 实例；v4: sensor 模块本身
+_CAM_MOD = None      # 取常量用的模块（csi 或 sensor）
+_CAM_API = None      # "csi" | "sensor"
+_LED = None          # 惰性初始化的 LED 句柄列表，拿不到就是 None（不影响测试）
+
+
+def _open_camera():
+    """探测并打开相机。只做一次。返回 None；失败抛 RuntimeError（带明确原因）。"""
+    global _CAM, _CAM_MOD, _CAM_API
+    if _CAM is not None:
+        return
+    try:
+        import csi as m                    # v5+
+        _CAM_API, _CAM_MOD, _CAM = "csi", m, m.CSI()
+        return
+    except ImportError:
+        pass
+    except Exception:
+        raise
+    try:
+        import sensor as m                 # v4.x
+        _CAM_API, _CAM_MOD, _CAM = "sensor", m, m
+        return
+    except ImportError:
+        pass
+    raise RuntimeError("固件里既没有 `csi`（v5+）也没有 `sensor`（v4）模块 —— 无法识别相机 API")
+
+
+def _cam_version():
+    """尽量拿到固件/板子的可读标识，写进报告用。"""
+    parts = []
+    try:
+        u = os.uname()
+        parts.append("%s %s" % (getattr(u, "machine", "?"), getattr(u, "release", "?")))
+    except Exception:
+        pass
+    try:
+        parts.append("MicroPython %s" % getattr(sys, "version", "?").split()[0])
+    except Exception:
+        pass
+    return " | ".join(parts) if parts else "未知"
+
+
+def _cam_reset():
+    _open_camera()
+    _CAM.reset()
+
+
+def _cam_set_pixformat(name):
+    _open_camera()
+    val = getattr(_CAM_MOD, name)
+    if _CAM_API == "csi":
+        _CAM.pixformat(val)
+    else:
+        _CAM.set_pixformat(val)
+
+
+def _cam_set_framesize(name):
+    _open_camera()
+    val = getattr(_CAM_MOD, name)
+    if _CAM_API == "csi":
+        _CAM.framesize(val)
+    else:
+        _CAM.set_framesize(val)
+
+
+def _cam_warmup(ms):
+    """等自动曝光稳定。v5 用 snapshot(time=)；v4 用 skip_frames(time=)。"""
+    _open_camera()
+    if _CAM_API == "csi":
+        _CAM.snapshot(time=ms)
+    else:
+        _CAM.skip_frames(time=ms)
+
+
+def _cam_snapshot():
+    _open_camera()
+    return _CAM.snapshot()
+
+
+def _cam_has_attr(name):
+    _open_camera()
+    return getattr(_CAM, name, None) is not None or getattr(_CAM_MOD, name, None) is not None
+
+
+def _blink():
+    """让用户 LED 闪一下表示进度。**纯装饰**：任何失败都静默忽略，绝不影响测试。"""
+    global _LED
+    try:
+        if _LED is None:
+            try:
+                from machine import LED
+                _LED = [LED("LED_RED"), LED("LED_GREEN"), LED("LED_BLUE")]
+            except Exception:
+                try:
+                    import pyb
+                    _LED = [pyb.LED(1), pyb.LED(2), pyb.LED(3)]
+                except Exception:
+                    _LED = []
+        if _LED:
+            led = _LED[int(time.ticks_ms() / 100) % len(_LED)]
+            led.toggle()
+    except Exception:
+        pass
+
 
 # ===========================================================================
 # ↓↓↓ 要改的配置都在这里 ↓↓↓
@@ -83,13 +203,17 @@ DUMP_FRAMES       = 10       # 落盘帧数
 JPEG_QUALITY      = 90       # 仅 JPEG 格式有效
 
 # 落盘位置：**只认 SD 卡**。
+# ⚠️ **挂载点在 v5 变了**：v5 的 H7 文档写 "mounted automatically at `/sdcard`"，
+#    而 v4.x 用的是 `/sd`。两个都列，谁先能用用谁。
 # ⚠️ 为什么把 /flash 也列进来却几乎必然被跳过：OpenMV Cam H7 的板载 FAT 盘极小
 #    （官方开发者："the onboard flash on the H7 is extremely small"；社区实测 main.py
 #    涨到 43 KB 就报 Not enough disk space），而一帧 320x240 RGB565 就有 153,600 B。
 #    列出来是为了让 `_first_writable` 明确打印"跳过了它、为什么"，而不是悄悄失败。
-DUMP_DIR_CANDIDATES = ("/sd/vigilens_frames", "/flash/vigilens_frames")
+DUMP_DIR_CANDIDATES = ("/sdcard/vigilens_frames", "/sd/vigilens_frames",
+                       "/flash/vigilens_frames")
 # 报告只有几 KB，可以放 /flash（但仍会先查容量）。
-REPORT_PATH_CANDIDATES = ("/sd/vigilens_report.json", "/flash/vigilens_report.json")
+REPORT_PATH_CANDIDATES = ("/sdcard/vigilens_report.json", "/sd/vigilens_report.json",
+                          "/flash/vigilens_report.json")
 
 # 契约口径（docs/interface.md §0），仅用于「差距有多大」的对照展示，**不是实测值**
 CONTRACT_W, CONTRACT_H = 640, 480
@@ -183,8 +307,12 @@ def _to_bytes(img):
 
 
 def _set_framebuffers(n):
-    """设置帧缓冲数量。老固件可能没有这个 API，缺失时明确报告而不是静默忽略。"""
-    fn = getattr(sensor, "set_framebuffers", None)
+    """设置帧缓冲数量。老固件可能没有这个 API，缺失时明确报告而不是静默忽略。
+
+    v5 的 `csi.CSI` 与 v4 的 `sensor` 模块都可能有这个方法，两个都探。
+    """
+    _open_camera()
+    fn = getattr(_CAM, "set_framebuffers", None) or getattr(_CAM_MOD, "set_framebuffers", None)
     if fn is None:
         return None
     try:
@@ -195,27 +323,28 @@ def _set_framebuffers(n):
 
 
 def _apply(pf_name, fs_name, fb_count):
-    """按给定组合配置传感器。返回 (ok, 说明)。"""
-    pf = getattr(sensor, pf_name, None)
-    fs = getattr(sensor, fs_name, None)
+    """按给定组合配置传感器。返回 (ok, 说明)。**v4/v5 都走这里。**"""
+    _open_camera()
+    pf = getattr(_CAM_MOD, pf_name, None)
+    fs = getattr(_CAM_MOD, fs_name, None)
     if pf is None:
-        return False, "本固件无 sensor.%s" % pf_name
+        return False, "本固件（%s API）无 %s 常量" % (_CAM_API, pf_name)
     if fs is None:
-        return False, "本固件无 sensor.%s" % fs_name
+        return False, "本固件（%s API）无 %s 常量" % (_CAM_API, fs_name)
 
-    sensor.reset()
+    _cam_reset()
     fbres = _set_framebuffers(fb_count)
-    sensor.set_pixformat(pf)
-    sensor.set_framesize(fs)
-    sensor.skip_frames(time=800)
-    note = ""
+    _cam_set_pixformat(pf_name)
+    _cam_set_framesize(fs_name)
+    _cam_warmup(800)
+    note = "%s API" % _CAM_API
     if fb_count > 1:
         if fbres is None:
-            note = "本固件无 set_framebuffers()，实际仍是单缓冲"
+            note += "；本固件无 set_framebuffers()，实际仍是单缓冲"
         elif isinstance(fbres, str):
-            note = "set_framebuffers(%d) 失败：%s" % (fb_count, fbres)
+            note += "；set_framebuffers(%d) 失败：%s" % (fb_count, fbres)
         else:
-            note = "双缓冲已生效"
+            note += "；双缓冲已生效"
     return True, note
 
 
@@ -272,7 +401,7 @@ def _measure(seconds):
     w = h = 0
     last_t = time.ticks_us()
     while time.ticks_diff(t_end, time.ticks_ms()) > 0:
-        img = sensor.snapshot()
+        img = _cam_snapshot()
         now = time.ticks_us()
         if n > 0 or True:
             dt = time.ticks_diff(now, last_t)
@@ -353,7 +482,7 @@ def run_matrix():
             log("%-10s %-8s %2d %8s %8s %8s %10s %10s %9s  %s" %
                 (pf_name, fs_name, fb, "-", "-", "-", "-", "-", "-", row["error"]))
         results.append(row)
-        pyb.LED(1).toggle()
+        _blink()
 
     log("-" * 118)
     log("")
@@ -448,7 +577,7 @@ def run_dump():
     frames = []
     t0 = time.ticks_ms()
     for i in range(DUMP_FRAMES):
-        img = sensor.snapshot()
+        img = _cam_snapshot()
         if CHOSEN_PIXFORMAT == "JPEG":
             blob = _to_bytes(img.compress(quality=JPEG_QUALITY))
         else:
@@ -474,7 +603,7 @@ def run_dump():
         })
         log("  帧 %d: 写入 %d B / 回读 %d B  %s" %
             (i, len(blob), len(back), "OK" if len(back) == len(blob) else "!! 不一致"))
-        pyb.LED(1).toggle()
+        _blink()
 
     bad = [f for f in frames if not f["ok"]]
 
@@ -489,7 +618,7 @@ def run_dump():
     samples = []
     if CHOSEN_PIXFORMAT in ("RGB565", "GRAYSCALE", "BAYER"):
         try:
-            img = sensor.snapshot()
+            img = _cam_snapshot()
             w, h = img.width(), img.height()
             # 取若干固定位置：四角 + 中心 + 三分点，尽量覆盖不同灰度
             pts = [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1),
@@ -573,9 +702,25 @@ def main():
     log("VigiLens / 知倦 —— OpenMV 图像采集测试，MODE=%s" % MODE)
     log("")
 
+    # 先把"这是哪台相机、哪版固件、走哪套 API"打出来并写进报告。
+    # 为什么重要：v5.0.0 把 `sensor` 换成了 `csi`（major 破坏性变更），
+    # 同一份脚本在不同固件上走的是不同分支 —— 不记下来的数据没法追溯。
+    ver = _cam_version()
+    log("固件/板子 : %s" % ver)
+    try:
+        _open_camera()
+        log("相机 API  : %s（%s）" % (_CAM_API, "csi.CSI 类 API（v5+）" if _CAM_API == "csi"
+                                     else "sensor 模块 API（v4.x）"))
+    except Exception as e:
+        log("相机 API  : **探测失败** —— %s" % e)
+        log("            （matrix 模式会逐个组合报错；请把下面的报错原文贴回项目记录）")
+        _CAM_API = None
+
     report = {
         "tool": "board/openmv/openmv_capture_test.py",
         "mode": MODE,
+        "firmware": ver,
+        "camera_api": _CAM_API,
         "micropython": getattr(sys, "version", "?"),
         "platform": getattr(sys, "platform", "?"),
         "contract": {"width": CONTRACT_W, "height": CONTRACT_H, "bpp": CONTRACT_BPP,
