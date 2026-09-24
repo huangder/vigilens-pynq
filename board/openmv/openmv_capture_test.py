@@ -666,7 +666,8 @@ def _print_verdict(results, mem_start):
         log("    装不下契约帧，而且**这与接哪个口无关** —— 是**片上内存**限制，不是链路带宽限制。")
         log("    所以：OpenMV Cam H7 **不可能**作为契约 §0（640x480 RGB888 @30fps）的像素源；")
         log("    它在本项目里的位置是**降规格采集源**（QVGA 级）与「人脸检测/追踪目标」，见 docs/10 §3。")
-        log("    要满足契约只能换 MIPI CSI 摄像头（Mizar-Z7020 自带该口），见 docs/12 §12。")
+        log("    要满足契约只能换 MIPI CSI 摄像头（Mizar-Z7020 自带该口）—— "
+            "选型见 docs/10 §12，采购优先级见 docs/12 §1.2。")
 
 
 def run_matrix():
