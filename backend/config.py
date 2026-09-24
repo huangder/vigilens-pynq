@@ -53,6 +53,10 @@ FALLBACK: dict[str, Any] = {
     "vital_require_quality": 0.75,
     "ws_push_hz": 1.0,
     "ws_disconnect_timeout_s": 3.0,
+    # ---- B 线旁路视频流（config.yaml 同名键；不是契约的一部分）----
+    "video_push_hz": 8.0,
+    "video_jpeg_quality": 80,
+    "video_max_width": 640,
     "fpga": {
         "device": "xc7z020clg400-1",
         "clock_ns": 10,

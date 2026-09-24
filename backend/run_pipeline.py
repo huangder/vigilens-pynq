@@ -51,7 +51,7 @@ try:
     from .decision import DecisionEngine
     from .face_landmark import make_landmarker
     from .quality import QualityScorer
-    from .publish import FramePoster, PostError, full_url
+    from .publish import FramePoster, PostError, VideoPusher, frame_url_from_ingest, full_url
     from .storage import MetricsStorage, write_snapshot
     from .vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 except ImportError:  # python backend/run_pipeline.py
@@ -63,7 +63,7 @@ except ImportError:  # python backend/run_pipeline.py
     from decision import DecisionEngine
     from face_landmark import make_landmarker
     from quality import QualityScorer
-    from publish import FramePoster, PostError, full_url
+    from publish import FramePoster, PostError, VideoPusher, frame_url_from_ingest, full_url
     from storage import MetricsStorage, write_snapshot
     from vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 
@@ -145,6 +145,18 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--post-retries", type=int, default=2, help="连接失败的重试次数（默认 2）")
     ap.add_argument("--no-done", action="store_true",
                     help="不发收尾帧（status=done）。默认会发：M2 要求六态都能在网页上出现")
+    ap.add_argument("--push-video", action="store_true",
+                    help="M3：同时把当前画面作为 **旁路 JPEG** 推到 B 线 /api/frame，"
+                         "网页上就能看到真实画面（而不再只是占位网格）。"
+                         "必须与 --post 一起用（地址从 --post 推导）。"
+                         "⚠️ 旁路画面失败**不改变退出码**，只计数并进 summary —— "
+                         "画面是给人看的，指标才是测量结果")
+    ap.add_argument("--video-hz", type=float, default=None,
+                    help="旁路画面推送节奏，默认取 config.yaml 的 video_push_hz（8 Hz）")
+    ap.add_argument("--video-quality", type=int, default=None,
+                    help="旁路 JPEG 质量 1..100，默认取 config.yaml 的 video_jpeg_quality（80）")
+    ap.add_argument("--video-max-width", type=int, default=None,
+                    help="旁路画面最长边（等比缩放），默认取 config.yaml 的 video_max_width（640）")
     ap.add_argument("--frame-id-offset", type=int, default=0,
                     help="帧号起点偏移（M2 连跑多段时必须用：契约要求 frame_id/ts 跨帧单调递增，"
                          "第二段从 0 重新开始会让 B 线趋势曲线的 frame_id 回退）")
@@ -202,6 +214,32 @@ def main(argv: list[str] | None = None) -> int:
         post_url = full_url() if args.post == "auto" else args.post
         poster = FramePoster(post_url, hz=post_hz, retries=args.post_retries)
         say(f"推送   : {post_url}（{post_hz} 帧/秒，按逻辑时间节流；失败即报错，不静默丢帧）")
+
+    # M3：旁路画面。与契约帧走**同一个服务、不同端点**，地址从 --post 推导。
+    vpusher: VideoPusher | None = None
+    if args.push_video:
+        if poster is None:
+            print("[FAIL] --push-video 需要同时给 --post（画面地址从 --post 推导）。",
+                  file=sys.stderr)
+            return 2
+        v_hz = float(cfg.get("video_push_hz") if args.video_hz is None else args.video_hz)
+        v_q = int(cfg.get("video_jpeg_quality") if args.video_quality is None else args.video_quality)
+        v_w = int(cfg.get("video_max_width") if args.video_max_width is None else args.video_max_width)
+        vpusher = VideoPusher(frame_url_from_ingest(poster.url), hz=v_hz, quality=v_q, max_width=v_w)
+        if synthetic_src:
+            # 合成帧源不是图像（SyntheticImage），没有 shape/像素 → 编码必然失败。
+            # 明确告知并**关掉**，而不是每帧刷一条错误。
+            say("[warn] 帧源是合成帧，没有真实像素 —— 已关闭 --push-video（网页会显示占位画面）。")
+            say("       要看真实画面请用真实视频或摄像头：--source <视频文件> 或 --source 0。")
+            vpusher = None
+        elif not vpusher._ensure_cv2():
+            say(f"[warn] {vpusher._encode_failed_reason} —— 已关闭 --push-video。")
+            say("       装依赖：pip install -r requirements.txt")
+            vpusher = None
+        else:
+            vpusher.start()
+            say(f"旁路画面: {vpusher.url}（{v_hz} Hz，JPEG q{v_q}，最长边 {v_w}）"
+                f" ← 网页上会显示真实画面；失败只计数，不影响退出码")
 
     post_failed = False      # 推送彻底失败过 → 结局非零退出（但仍跑完测量）
     post_stopped = False     # 已停止后续推送（不做逐帧重试）
@@ -261,6 +299,9 @@ def main(argv: list[str] | None = None) -> int:
             store.write(clean)
             write_snapshot(json_out, clean)
             push(clean)
+            if vpusher is not None:
+                # 旁路画面：非阻塞投递，编码与网络都在后台线程。这里**不等**它。
+                vpusher.offer(frame.image, frame_id=fid)
             status_counter[dec["status"]] += 1
             last_frame = clean
             n += 1
@@ -292,8 +333,13 @@ def main(argv: list[str] | None = None) -> int:
                          "written_to": "jsonl" + ("+post" if poster else "")}
 
     if last_frame is None:
+        if vpusher is not None:
+            vpusher.stop()
         print("[FAIL] 没有处理任何帧：帧源是空的。检查 --source 路径 / --limit 是否被设成 0。", file=sys.stderr)
         return 2
+
+    if vpusher is not None:
+        vpusher.stop()
 
     elapsed = time.perf_counter() - t_start
     hist = last_frame["behavior"]
@@ -323,6 +369,9 @@ def main(argv: list[str] | None = None) -> int:
         "done_frame": done_info,
         "post": ({**poster.stats(), "ok": not post_failed, "stopped_after_failure": post_stopped}
                  if poster is not None else None),
+        # 旁路画面统计：刻意放在独立的键里，**不混进 post** ——
+        # post 的 ok 参与退出码判定，画面不参与，两者混在一起会让人读错。
+        "video": (vpusher.stats() if vpusher is not None else None),
         # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够）
         "rppg_window_samples": rppg.samples,
         "rppg_window_need": rppg.need,
@@ -351,6 +400,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"推送      : 成功 {poster.posted} 帧 / 节流跳过 {poster.throttled} 帧 "
               f"→ {poster.url}（HTTP 次数 {poster.attempts}）"
               + ("  ← **推送失败，已停止推送**" if post_failed else ""))
+    if vpusher is not None:
+        v = vpusher.stats()
+        print(f"旁路画面  : 投递 {v['offered']} / 编码 {v['encoded']} / 送达 {v['posted']} "
+              f"/ 丢弃 {v['dropped']}  → {v['url']}")
+        if v["errors"]:
+            print(f"            ⚠️ 画面有 {len(v['errors'])} 类错误（**不影响本次测量**）：{v['errors'][0]}")
 
     if args.summary:
         sp = REPO_ROOT / args.summary

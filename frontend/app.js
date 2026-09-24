@@ -107,6 +107,8 @@
     forcedStatus: "",
     lastFrame: null,
     triggers: null,        // 旁路通道来的判定证据链 {frame_id, items}
+    videoOn: false,        // 旁路画面当前是否可用（由 /api/video_status 的过期判定驱动）
+    videoTimer: null,      // 画面状态轮询定时器（**独立于 WS 生命周期**，stopAll 不清它）
     pollTimer: null
   };
 
@@ -153,17 +155,21 @@
     var ctx = c.ctx, w = c.w, h = c.h;
     ctx.clearRect(0, 0, w, h);
 
-    // 占位底：暗格子 + 十字准星，明确表达"这里本来该是画面"
-    ctx.fillStyle = "#070a10";
-    ctx.fillRect(0, 0, w, h);
-    ctx.strokeStyle = "#131c2b";
-    ctx.lineWidth = 1;
-    for (var x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
-    for (var y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    // 有真实画面时 canvas 是**透明叠加层**：底图由 <img id="videostream"> 显示，
+    // 这里只画 bbox/四角。没有画面时才画占位网格 —— 两件事分开，别互相盖。
+    if (!state.videoOn) {
+      // 占位底：暗格子 + 十字准星，明确表达"这里本来该是画面"
+      ctx.fillStyle = "#070a10";
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "#131c2b";
+      ctx.lineWidth = 1;
+      for (var x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (var y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
 
-    ctx.strokeStyle = "#1b2740";
-    ctx.beginPath(); ctx.moveTo(w / 2, h / 2 - 12); ctx.lineTo(w / 2, h / 2 + 12);
-    ctx.moveTo(w / 2 - 12, h / 2); ctx.lineTo(w / 2 + 12, h / 2); ctx.stroke();
+      ctx.strokeStyle = "#1b2740";
+      ctx.beginPath(); ctx.moveTo(w / 2, h / 2 - 12); ctx.lineTo(w / 2, h / 2 + 12);
+      ctx.moveTo(w / 2 - 12, h / 2); ctx.lineTo(w / 2 + 12, h / 2); ctx.stroke();
+    }
 
     if (!frame || frame.status === "disconnected" || frame.face.bbox[2] === 0) {
       ctx.fillStyle = "#5d6b85";
@@ -196,8 +202,10 @@
     ctx.textAlign = "left";
     ctx.fillText("face " + frame.face.visible.toFixed(2) + "  yaw " + frame.face.pose.yaw.toFixed(1) + "°",
                  bx, Math.max(12, by - 6));
-    el.videoBadge.textContent = "占位画面 + face.bbox 叠加";
-    el.videoBadge.className = "badge";
+    el.videoBadge.textContent = state.videoOn
+      ? "真实画面（旁路 /video.mjpg）+ face.bbox 叠加"
+      : "占位画面 + face.bbox 叠加（未接入真实画面）";
+    el.videoBadge.className = state.videoOn ? "badge live" : "badge";
   }
 
   /* ---------------------------------------------------------------- 状态区 */
@@ -514,7 +522,8 @@
     el.srcName.textContent = source;
     el.srcPill.className = "pill " + (source === "WebSocket" ? "live" : "mock");
     el.modeName.textContent = "软件模式";
-    el.videoBadge.textContent = frame.status === "disconnected" ? "无视频源" : "占位画面 + face.bbox 叠加";
+    // 徽标由 drawVideo 统一设置（它知道占位/真实画面之分）；这里不再重复覆盖，
+    // 否则会把 drawVideo 刚写好的"真实画面"文案又改回"占位"，两处互相打架。
 
     renderState(frame);
     renderCards(frame);
@@ -579,6 +588,38 @@
   function setConn(kind, text) {
     el.connPill.className = "pill " + kind;
     el.connName.textContent = text;
+  }
+
+  /* --------------------------- 旁路画面（M3：网页上显示真实画面） */
+  // 画面**不塞进契约帧**（契约 §1 的帧只允许那 9 个顶层字段，塞了就是非法帧），
+  // 走旁路 /video.mjpg，与 triggers 是同一个范式。
+  //
+  // 关键：判断"有没有画面"用的是 /api/video_status 的**过期判定**，而不是
+  // "有没有收到过"。推送端一挂，MJPEG 流会停在最后一帧继续重发，
+  // 只看"收到过"就会**永远显示一张冻结的旧画面**（看起来像卡顿，实际源已死）。
+  function setVideoOn(on) {
+    if (state.videoOn === on) return;
+    state.videoOn = on;
+    if (el.videostream) el.videostream.style.display = on ? "block" : "none";
+    log("画面", on ? "已接入真实画面（旁路 /video.mjpg）"
+                  : "旁路画面不可用，回退占位网格（指标不受影响）",
+        on ? "#3ddc97" : "#5d6b85");
+    if (state.lastFrame) drawVideo(state.lastFrame);
+  }
+
+  function startVideoStream() {
+    // file:// 没有同源后端，轮询只会白报错（与 pollTriggers 同一条判断）
+    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+    if (!el.videostream) return;
+    // src 只设一次：MJPEG 是长连接，反复设 src 会把连接打断重来。
+    el.videostream.src = "/video.mjpg";
+    if (state.videoTimer) return;
+    state.videoTimer = setInterval(function () {
+      fetch("/api/video_status", { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { setVideoOn(!!(j && j.ok && j.has_video)); })
+        .catch(function () { setVideoOn(false); });
+    }, 1500);
   }
 
   /* ------------------------------- 判定证据链（旁路通道，1 Hz） */
@@ -704,6 +745,7 @@
   function init() {
     el = {
       video: $("video"), videoBadge: $("videoBadge"), chart: $("chart"),
+      videostream: $("videostream"),
       stateLamp: $("stateLamp"), stateName: $("stateName"), stateEn: $("stateEn"),
       advice: $("advice"), reason: $("reason"), triggers: $("triggers"),
       cards: $("cards"), log: $("log"),
@@ -745,6 +787,9 @@
     log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");
 
     syncWithServer();
+    // 旁路画面独立于 WS 数据源的生命周期：这里起一次，之后只由
+    // /api/video_status 的过期判定决定显示与否（所以 stopAll 里**不**清它）。
+    startVideoStream();
 
     // 未接后端时自动进入离线演示，保证"双击文件就能看到东西"
     startOffline();

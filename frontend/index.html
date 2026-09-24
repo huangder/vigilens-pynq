@@ -68,7 +68,11 @@
 
   /* ---- 视频占位区 ---- */
   .video-wrap { position: relative; border-radius: 10px; overflow: hidden; background: #070a10; }
-  canvas#video { display: block; width: 100%; height: auto; }
+  /* 旁路画面：默认隐藏。接入后垫在 canvas 底下，canvas 只当 bbox 叠加层。
+     画面走 /video.mjpg（MJPEG），浏览器自己解码 —— 前端零解码代码。 */
+  #videostream { position: absolute; inset: 0; width: 100%; height: 100%;
+                 object-fit: contain; display: none; background: #070a10; }
+  canvas#video { position: relative; z-index: 1; display: block; width: 100%; height: auto; }
   .badge {
     position: absolute; left: 10px; top: 10px; padding: 4px 9px; border-radius: 7px;
     font-size: 12px; background: #0009; border: 1px solid var(--line); color: var(--muted);
@@ -198,12 +202,16 @@
   <section class="panel">
     <h2>视频源 / 人脸检测框</h2>
     <div class="video-wrap">
+      <img id="videostream" alt="旁路画面" />
       <canvas id="video" width="640" height="480"></canvas>
       <div class="badge" id="videoBadge">无视频源（未接入摄像头/回放）</div>
     </div>
     <div class="hint" style="margin-top:8px">
-      当前为<b>占位画面</b>：矩形框来自帧里的 <code>face.bbox</code>（640×480 坐标系），
-      用于验证"指标与画面同源"。接入真实视频后此处替换为视频画面。
+      矩形框来自帧里的 <code>face.bbox</code>（640×480 坐标系），用于验证"指标与画面同源"。
+      <b>真实画面</b>走旁路 <code>/video.mjpg</code>（A 线 <code>run_pipeline --push-video</code>
+      推送）；<b>拿不到画面时自动退回占位网格</b>，离线双击本文件也照常可用。
+      <br />⚠️ 画面是<b>本地显示</b>的旁路数据，不属于接口契约、也不参与
+      <code>validateFrame</code> 校验；它<b>不上传任何外部服务</b>。
     </div>
   </section>
 
