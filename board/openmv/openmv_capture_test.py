@@ -372,6 +372,31 @@ def _fmt_theoretical(pf_name, val):
     return ("~%d" % val) if _BPP.get(pf_name, 0) == 0 else str(val)
 
 
+def _mem_risk(pf_name, est, free_now):
+    """对**未压缩**格式，用"此刻实测到的可用内存"判断这一组的风险；压缩格式只返回 None。
+
+    为什么值得单列一行预警：2026-09-24 真机第一次跑 matrix 时，只回帖了前 2 行，
+    排在大内存组合之后的行**一行都没打印出来**，分不清是"没跑到"还是"把相机搞死了"。
+    而真卡死时 **USB CDC 会一起失联** —— 在 PC 上的症状正是
+    "OpenMV IDE / VSCode 的 OpenMV 扩展**连接没有响应**"，必须**拔插 USB** 才恢复。
+    所以这里在动手之前就把"接下来这组有多危险"打出来，出问题时不用猜。
+
+    ⚠️ JPEG 的 est 是名义值（见 `_JPEG_NOMINAL_DIV`），**不能用它判断装不装得下**，故跳过。
+    """
+    if not _BPP.get(pf_name, 0) or not est:
+        return None
+    headroom = free_now - est
+    if headroom < 0:
+        return ("这一组**装不下**（需 %d B / 此刻可用 %d B，差 %d B）→ 预期抛 "
+                "Frame buffer overflow；**若相机在此之后失联，拔掉 micro-USB 再插上复位**"
+                % (est, free_now, -headroom))
+    if headroom < max(8192, int(est * 0.02)):
+        return ("**擦边**（需 %d B / 此刻可用 %d B，余量只有 %d B）→ "
+                "**有可能把相机卡死**（卡死需拔插 USB）；建议用 MATRIX_STAGE=\"big\" 单独跑"
+                % (est, free_now, headroom))
+    return None
+
+
 def log(*a):
     print(*a)
 
@@ -674,11 +699,17 @@ def run_matrix():
                "stage": stage}
         est = _est_bytes(pf_name, fs_name)
         row["bytes_theoretical"] = est
+        free_now = _mem_free()
         log("")
         log("---- [%d/%d] %s / %s / fb=%d 开始（此刻 gc.mem_free() = %d B）"
-            % (idx + 1, len(rows), pf_name, fs_name, fb, _mem_free()))
+            % (idx + 1, len(rows), pf_name, fs_name, fb, free_now))
+        risk = _mem_risk(pf_name, est, free_now)
+        if risk:
+            log("     ⚠️ 内存余量：%s" % risk)
         log("     提示：**如果这行之后就没有输出了，是这一组把相机搞死了**（内存耗尽/卡死），")
         log("           不是脚本逻辑问题 —— 请把最后一行原样报回，并用 MATRIX_STAGE 分段排查。")
+        log("           **卡死的恢复办法：拔掉 micro-USB 再插上**（整机断电复位）；")
+        log("           真卡死时 PC 侧的症状是 OpenMV IDE / 扩展『连接没有响应』，那是同一件事。")
         try:
             ok, note = _apply(pf_name, fs_name, fb)
             if not ok:

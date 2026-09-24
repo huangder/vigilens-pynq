@@ -10,8 +10,9 @@
 它做的事：造一个假的 `csi`（v5）或 `sensor`（v4）模块，**按 2026-09-24 真机实测到的行为**模拟 H7：
 
   · `gc.mem_free()` ≈ 308944 B（相机打开后 ≈ 307136 B —— 实测帧缓冲不占 MicroPython 堆）
-  · 请求 614400 B（VGA/RGB565）→ `RuntimeError: Frame buffer overflow, ...`（**真机原话**）
-  · 请求 153600 B（QVGA/RGB565）→ 成功，`bytearray()` 长度 = w*h*2
+  · 请求超过**当前**可用内存时 → `RuntimeError: Frame buffer overflow, ...`（**真机原话**）。
+    所以 `RGB565/VGA`（614400 B）必然失败，`GRAYSCALE/VGA`（307200 B）也会失败 ——
+    因为实测相机打开后只剩 **307136 B**，比它少 64 B。这正是"擦边"那一组的真实处境。
 
 然后真的调用脚本的 `main()`，检查它**没有抛异常、没有算出荒唐结论**：
 组合顺序、失败行是否带上内存算术、契约小结、`_CAM_API` 作用域、两条 API 分支等。
@@ -106,7 +107,7 @@ def _make_camera(api):
         pf_name = names[state["pf"]]
         bpp = _BPP.get(pf_name, 0)
         need = w * h * bpp if bpp else (w * h // 6 + 1000)
-        if need > MEM_FREE_H7:
+        if need > gc.mem_free():      # ⚠️ 用**当前**可用内存比，不是开机那个数（真机口径）
             raise RuntimeError("Frame buffer overflow, try reducing the frame size.")
         _sleep(0.001)
         return _Img(w, h, pf_name)
@@ -212,9 +213,9 @@ def _run_one(api):
         ("VGA/RGB565 失败行带上了内存算术",
          "Frame buffer overflow" in text and "614400" in text),
         ("失败行也记了 mem_free", ("308944" in text) or ("307136" in text)),
-        ("GRAYSCALE/VGA 边界组合成功（307200 < 308944）",
-         any(r.get("ok") and r["pixformat"] == "GRAYSCALE" and r["framesize"] == "VGA"
-             for r in results)),
+        ("边界组（GRAYSCALE/VGA）打印了内存余量预警，且该组结果被报出来（脚本没被带崩）",
+         ("⚠️ 内存余量" in text)
+         and any(r["pixformat"] == "GRAYSCALE" and r["framesize"] == "VGA" for r in results)),
         ("契约可行性小结出现", "契约可行性小结" in text),
         ("小结算出「装得下契约帧」= 无",
          "「整帧装得下契约帧（≥921600 B）」的成功组合：**无**" in text),
