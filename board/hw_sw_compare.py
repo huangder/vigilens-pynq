@@ -18,7 +18,7 @@ hw_sw_compare.py —— C10 软硬件一致性比对（PL vs 黄金参考，容�
   fpga/sim/data_fir/golden_fir.csv        每段小结（15 段）
   fpga/sim/data_fir/golden_fir_out.csv    逐样本期望输出（3940 行）
 
-用法（在 PYNQ-Z2 上，先把 fpga/sim/data* 拷到板上）：
+用法（在 **Mizar-Z7020** 上，先把 fpga/sim/data* 拷到板上；🚧 v1.3 板卡变更待会签）：
   python board/hw_sw_compare.py --bit system.bit --data-root fpga/sim
 
 退出码：0 = 全部容差 0 PASS；1 = 有 FAIL。

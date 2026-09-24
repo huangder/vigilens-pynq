@@ -1,15 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-load_overlay.py —— PYNQ Overlay 加载器 + 板级驱动 SDK（C 线 M3 上板用）
+load_overlay.py —— 板级加载器 + 驱动 SDK（C 线 M3 上板用）
 
 项目：知倦 / VigiLens（AMD 3.3 自主选题初级组）—— C 线（FPGA/HLS）
-依赖：本文件只在实际运行时 import pynq（PYNQ-Z2 板载 Python 环境），
-      因此可以在 PC 上 `py_compile` / 静态检查而不需要装 pynq。
+
+板卡：**Mizar-Z7020**（MicroPhase Mizar-Z7 7020 版）
+  🚧 v1.3 草案（2026-09-23，待 A/B 会签）：目标板卡由 PYNQ-Z2 改指本板。
+  器件相同（`xc7z020clg400-1`），所以本文件的寄存器/驱动逻辑**不受影响**；
+  **但"是否有 PYNQ 环境"这件事必须先在板上确认**（见下）。
+
+依赖与【未验证】的重要前提：
+  本文件在运行时才 `import pynq`，因此可以在 PC 上 `py_compile` / 静态检查。
+  ⚠️ **但 PYNQ 不是本板的既定前提**：MicroPhase 官方手册里**没有** Mizar 的 PYNQ 镜像记载
+  （开发环境写的是 Vivado 2018.3）。所以上板第一件事是在板子的 Linux 里跑：
+      python3 -c "import pynq; print(pynq.__version__)"
+  · 有 → 本文件的 `Overlay()` 路线可用。
+  · 无 → **走 `mmio` 回退路线**：普通 Linux + `/dev/mem` mmap（或 UIO）读写 AXI-Lite，
+          DMA 缓冲用 `mmap` 的物理连续内存。这条路线**本文件尚未实现**，是 M3 的待补工作。
 
 ⚠️ 纪律提示（AGENTS.md / docs/interface.md §5.3）：
    - 所有寄存器偏移来自 `board/regmap.py`（PS 侧镜像），不要在本文件里写死魔法数字。
    - 标有【未验证】的段落是"上板前无法在本机确认"的部分（DMA 握手顺序、axi_fifo_mm_s
-     寄存器语义、PL 复位源），必须上板逐条核到通过为止，不得当既成事实引用。
+     寄存器语义、PL 复位源），必须上板逐条核到通过为止，不得当成既成事实引用。
 
 分层：
    load()              —— 加载 bitstream，返回 overlay + 按名字检索到的 IP 句柄
@@ -41,7 +53,7 @@ def load(bitfile: str | None = None, *, ip_fragments: dict | None = None):
     from pynq import Overlay
 
     if bitfile is None:
-        # PYNQ-Z2 常用默认：当前目录下的 system.bit
+        # 板上常用默认：当前目录下的 system.bit（Mizar-Z7020 与 PYNQ-Z2 都用这个约定）
         bitfile = "system.bit"
     ol = Overlay(bitfile)
 

@@ -63,8 +63,13 @@
 并在受控条件下给出**心率 / 呼吸率趋势**估计。核心差异化能力是 **"测量是否可信"**：
 光照、运动、人脸可见率、波形稳定性融合为**信号质量门控**。
 
-**FPGA 不是转发器**：PYNQ-Z2 的 PL 端承担 ROI 像素统计、帧间运动量、FIR 带通滤波等确定性视觉与时序预处理
+**FPGA 不是转发器**：**Mizar-Z7020** 的 PL 端承担 ROI 像素统计、帧间运动量、FIR 带通滤波等确定性视觉与时序预处理
 （自研 Vitis HLS IP），提供低延迟、低抖动的特征流。若把 PL 降级成纯 DMA 搬运，会正中《01》4.2 点名的致命短板。
+
+> 🚧 **板卡沿革**：原定 **PYNQ-Z2**（2026-09-10 冻结）→ **Mizar-Z7020**（MicroPhase Mizar-Z7 7020 版，
+> 🚧 v1.3 草案 2026-09-23，待 A/B 会签）。**器件是同一颗**（`XC7Z020-1CLG400C` ≡ Vivado 的 `xc7z020clg400-1`），
+> 所以四个 HLS IP 与全部黄金参考**无需重做**；要重做的只有 PS 配置 / 引脚约束 / bitstream。
+> ⚠️ v1.3 会签前，**PYNQ-Z2 仍是契约上的生效板卡**；但实物已是 Mizar，写"上板结论"时务必写明是**哪块板**。
 
 ### 2.2 绝对不能说的话（本项目红线表述）
 
@@ -135,7 +140,7 @@
 | `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、FastAPI/WebSocket/Mock、65 项 pytest |
 | `frontend/` | 零依赖仪表盘（`index.html` / `app.js` / `mock.js`），**不用 CDN、不用 ES module**（`file://` 会白屏），曲线为原生 canvas |
 | `fpga/` | `src/` HLS 源码（3 个 IP）、`sim/` 测试台 + Python 黄金参考、`report/` 综合与 cosim 报告 |
-| `board/` | **M3 之前只有占位**，未开始 |
+| `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包；**`bitstream/` 仍为空**，上板结论不存在 |
 | `data/` | `raw/` 视频（不入库）、`annotations/`、`golden/`（当前均为空占位） |
 | `metrics/` | `csv/`、`logs/`（生成物，不入库）、`scripts/`（可复现检查脚本，入库）、`evidence/`（**正式证据入库**） |
 | `docs/` | `interface.md`（契约）+ `00`~`07` 方案文档 |
@@ -241,7 +246,7 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 
 | 项 | 值 |
 |---|---|
-| 目标板卡 / 器件 | **PYNQ-Z2 / `xc7z020clg400-1`**（Zynq-7000） |
+| 目标板卡 / 器件 | **Mizar-Z7020**（MicroPhase Mizar-Z7 7020 版）/ **`xc7z020clg400-1`**（Zynq-7000）<br>⚠️ 原定 **PYNQ-Z2**（2026-09-10）→ **2026-09-23 按实物改指 Mizar-Z7020**（🚧 v1.3 草案，待 A/B 会签）<br>**器件字符串不变**：实物 `XC7Z020-1CLG400C` 与 `xc7z020clg400-1` 是同一颗 |
 | 工具链 | **Vitis HLS 2026.1**，入口 `vitis-run --mode hls --tcl <脚本>` |
 | 目标时钟 | **10 ns（100 MHz）** |
 | 图像尺寸 / 格式 / 帧率 | **640 × 480**，**RGB888**（`byte0=R, byte1=G, byte2=B`），**30 fps**（仅影响时间序列）<br>⚠️ 帧率沿革 30→45（v1.1）→**30（🚧 v1.2 草案 2026-09-20，待 A/B 会签）** |
@@ -300,9 +305,14 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 - 🚧 **v1.2 草案（2026-09-20，C 线发起，待 A/B 会签）**：§0 帧率 + §3.5 FIR 采样率 **45→30 Hz**
   （为前期适配低帧率采集源）。系数与黄金参考已按 30 Hz 重生成，并通过主机端模型 / A↔C 逐样本 /
   `pytest 78 passed` 三重对拍；**但 csim/csynth/cosim 未重跑**（受限沙箱跑不了 HLS）。
-  **会签前 v1.1 仍是生效版本**，`CONTRACT_VERSION` 保持 `v1.1`。
+- 🚧 **v1.3 草案（2026-09-23，C 线发起，待 A/B 会签）**：§0 目标板卡 **PYNQ-Z2 → Mizar-Z7020**。
+  **器件字符串不变**，四个 HLS IP 与所有黄金参考**无需重做**；要重做的只有 PS 配置 / 引脚约束 / bitstream。
+  未闭合项：MicroPhase 是否为 Mizar-Z7 提供 Vivado board file **未确认**（若无，PS7 DDR 参数必须取自厂商资料，**不得猜**）。
+- **会签前 v1.1 仍是生效版本**，`CONTRACT_VERSION` 保持 `v1.1`。
 - 本地/远端状态（本节容易过期，**每次用 `git status` / `git log` 复核**）：
-  截至 2026-09-16，`main` 与 `origin/main` 同步、工作区干净。
+  **2026-09-23 实测** —— `origin/main = ad9ad54` = 本地 `main`（同步）；但**当前工作分支是 `c-line/fs30`**，
+  领先 `main` 1 个提交（v1.2 草案的 45→30 Hz），该提交**尚未推送到任何远端**。
+  ⚠️ 也就是说 **v1.2 与 v1.3 两个草案都还没进 `main`**。
 
 ---
 
@@ -343,7 +353,10 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
   `light_score_min` / `motion_score_max` / `quality_weights` 均为**占位值**，待真实视频/场景标定。
   `config.yaml` 里已用 `⚠️ 占位值` 标注，**改它们要写依据**。
 - **`motion_thresh` 暂定 16**：待 A 线用 OpenCV 口径复核；改它必须**同步重新生成黄金参考**。
-- **C 线**：`fir_filter`（C5）未开始；`board/` 为空；上板相关的一切结论**都不存在**。
+- **C 线**：四个 IP（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter`）**均已完成 csim+csynth+cosim**；
+  `board/` 已有上板脚本与 `board/openmv/` 首次测试包，但 **`board/bitstream/` 为空、`build_bd.tcl` 从未跑通** ——
+  **上板相关的一切结论都不存在**。
+  ⚠️ 另有一处 C 线自身的滞后值：`board/regmap.py` 的 `FPS = 45` 与本分支 `config.yaml` 的 30 不一致（v1.2 会签前不改）。
 - **确定性纪律**：时间戳用 `frame_id / fps` 而非墙上时钟；**同一段回放跑两次，末帧 JSON 与 CSV 必须逐字节相同**。
 
 ---

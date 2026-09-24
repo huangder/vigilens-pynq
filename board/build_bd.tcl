@@ -19,16 +19,33 @@
 #  ⚠️【未验证】本脚本是"照做脚手架"：Vivado 2026.1 未在本机跑过 BD，下列几处
 #     必须在实机首跑时核对并就地修正（都已用 [TODO-verify] 标出）：
 #        - PS7 / DMA / FIFO / SmartConnect 的 IP 版本号（VLNV 末段）
-#        - PYNQ-Z2 板级 preset（board_part / apply_board_preset）
+#        - **Mizar-Z7020 的 PS7 配置（DDR = 1 GB，异于 PYNQ-Z2 的 512 MB）—— 见下面"板级 preset"**
 #        - 每个 IP 的 BD 接口 pin 名（s_axi_ctrl 等，取决于导出的 IP-XACT）
 #     上板前逐条核到 validate_bd_design 无 ERROR，并把真实数字回填 m3 预算第 3 节。
+#
+#  🚧 v1.3 草案（2026-09-23）：目标板卡 PYNQ-Z2 → **Mizar-Z7020**，见 docs/interface.md §0 与 §6。
+#     **器件不变**（实物 XC7Z020-1CLG400C 与 `xc7z020clg400-1` 是同一颗），所以 PART 不动。
+#     本脚本相对原版的**唯一实质改动**：不再无条件套用 PYNQ-Z2 的板级 preset。
 # =============================================================================
 
 # ---- 可调参数 ---------------------------------------------------------------
 set PROJECT_DIR  "./vivado_project"
 set PART         "xc7z020clg400-1"
-set BOARD_PART   "tul.com.tw:pynq-z2:part0:1.0"   ;# [TODO-verify] 本机板库是否含此 preset
 set CLK_MHZ      100
+
+# ---- 板级 preset（v1.3 的关键开关）------------------------------------------
+# 为什么加这个开关：原脚本无条件 `set_property board_part tul.com.tw:pynq-z2:...`
+# 并 `apply_board_preset 1`，那会把 **PYNQ-Z2 的 DDR/外设配置**套到 Mizar 上 ——
+# Mizar 是 1 GB DDR3、PL 晶振 50 MHz、扩展口引脚全不同，套错的后果是**板子起不来**，
+# 而且报错会发生在很久以后，很难定位。
+#
+#   · 若你已安装 MicroPhase 的 Mizar 板级文件：填 BOARD_PART，并设 USE_BOARD_PRESET 1
+#       例：set BOARD_PART "microphase.com:mizar_z7:part0:1.0"   ;# 名字以本机 get_board_parts 为准
+#   · 若没有（**当前默认**）：保持空 + 0，然后本脚本会在 PS7 之后**主动停下**，
+#     要求你把 DDR 参数按 MicroPhase 参考设计手工补进来。
+#     ⚠️ **本项目不允许猜 DDR 参数** —— 猜错只会得到一块起不来的 PS（AGENTS.md 铁律 1）。
+set BOARD_PART        ""
+set USE_BOARD_PRESET  0
 
 # 四个 HLS 组件的导出 IP 目录（相对 fpga/）
 set IP_REPO_ROOT "D:/Desktop/AMD/fpga"
@@ -39,7 +56,7 @@ set ip_repos [list \
     "$IP_REPO_ROOT/component_fir_filter/hls/impl/ip" \
 ]
 
-# 实例名（PYNQ 侧 load_overlay.py 按这些名字检索）
+# 实例名（board/overlay/load_overlay.py 按这些名字检索）
 set ROI_IP  "roi_statistic_0"
 set RGB_IP  "rgb2gray_0"
 set MOT_IP  "motion_quality_0"
@@ -52,7 +69,28 @@ set FIFO_RX "axi_fifo_mm_s_rx"
 # 0. 建工程
 # =============================================================================
 create_project -force vigilens_bd $PROJECT_DIR -part $PART
-set_property board_part $BOARD_PART [current_project]
+
+if {$USE_BOARD_PRESET} {
+    if {$BOARD_PART eq ""} {
+        puts "ERROR: USE_BOARD_PRESET=1 但 BOARD_PART 是空的。请先填板级文件名。"
+        exit 1
+    }
+    # catch 住：板级文件没装时 board_part 赋值会失败，必须**当场报错**而不是继续往下跑
+    if {[catch {set_property board_part $BOARD_PART [current_project]} err]} {
+        puts "ERROR: 板级 preset '$BOARD_PART' 在本机不可用：$err"
+        puts "       请在 Vivado Tcl Console 里跑 `get_board_parts` 看本机板库到底有哪些，"
+        puts "       或把 USE_BOARD_PRESET 设回 0 并走手工配置 PS7 的路线。"
+        exit 1
+    }
+    puts "== 已套用板级 preset: $BOARD_PART =="
+} else {
+    puts "========================================================================"
+    puts "⚠️  未套用板级 preset（USE_BOARD_PRESET=0）"
+    puts "    目标板是 Mizar-Z7020（1 GB DDR3），不是 PYNQ-Z2（512 MB）。"
+    puts "    下面 PS7 的 DDR/UART/Ethernet/SD 配置**必须**按 MicroPhase 参考设计手工填写，"
+    puts "    本脚本会在 PS7 建好后主动停止，直到你补齐。"
+    puts "========================================================================"
+}
 set_property target_language Verilog [current_project]
 
 # 登记 HLS 导出 IP
@@ -73,10 +111,38 @@ create_bd_design "system"
 # ---- PS7（Zynq-7020）--------------------------------------------------------
 # [TODO-verify] processing_system7 版本号以本机 IP catalog 为准
 create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 ps7_0
+# ⚠️ 这里必须用 [list ...] 而**不能**用 {..}：Tcl 的花括号会阻止变量替换，
+#    写成 {.. apply_board_preset "$USE_BOARD_PRESET" ..} 会把字面量 "$USE_BOARD_PRESET"
+#    传给 Vivado，结果是**永远按 preset=1 或直接报错**，而且很难看出原因。
 apply_bd_automation -rule xilinx.com:bd_rule:processing_system7 \
-    -config {make_external "FIXED_IO, DDR" apply_board_preset "1" Master "Disable" Slave "Disable"} \
+    -config [list make_external "FIXED_IO, DDR" \
+                  apply_board_preset $USE_BOARD_PRESET \
+                  Master "Disable" Slave "Disable"] \
     [get_bd_cells ps7_0]
+
+# ⛔ 硬守卫：没有板级 preset 就**不许继续**。
+#    理由：PS7 的 DDR 配置（Mizar = 1 GB DDR3）如果沿用 PYNQ-Z2 的 512 MB 预设，
+#    生成的 FSBL/bitstream 会让 PS 在 DDR 初始化阶段挂住，症状是"板子完全没反应"，
+#    极易被误判为板子坏了或镜像坏了。宁可在这里停下并给出明确指引。
+if {!$USE_BOARD_PRESET} {
+    puts "========================================================================"
+    puts "ERROR: 本脚本已停止 —— Mizar-Z7020 的 PS7 配置尚未落实。"
+    puts ""
+    puts "  1) 在 Vivado GUI 里打开 ps7_0 → Re-customize IP → DDR Configuration，"
+    puts "     按 **MicroPhase 提供的 Mizar-Z7 参考设计/原理图** 填写 DDR3 参数"
+    puts "     （容量 1 GB、两片 16-bit DDR3 —— 见官方《Mizar-Z7 Reference Manual》DDR3 节）。"
+    puts "  2) 同时确认 UART1(MIO14/15, CH340)、Ethernet(RTL8211E)、SD 的 MIO 分配。"
+    puts "  3) 用 `write_bd_tcl` 或对照 GUI 里的 CONFIG.PCW_* 列表，把这些行补进本脚本后再重跑。"
+    puts ""
+    puts "  ⚠️ 也可以走另一条路：装上 MicroPhase 的 Mizar 板级文件后设 USE_BOARD_PRESET 1。"
+    puts "  ⚠️ **不要**用猜测的 DDR 参数往下跑 —— 本项目不允许编造/猜测硬件参数。"
+    puts "========================================================================"
+    exit 1
+}
+
 # 使能 GP0（接 AXI-Lite 控制面）+ HP0（接 DMA 数据面）；FCLK0 = 100 MHz
+# 注意：FCLK0 由 PS 的 33.333 MHz 时钟经 PLL 产生，**与 PL 侧那颗 50 MHz 晶振无关**，
+#       所以换板卡不影响 §3.5 的 100 MHz 目标时钟（契约 v1.3 草案已核）。
 set_property -dict [list \
     CONFIG.PCW_USE_M_AXI_GP0 {1} \
     CONFIG.PCW_USE_S_AXI_HP0 {1} \

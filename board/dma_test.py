@@ -9,7 +9,7 @@ dma_test.py —— C9 上板 DMA 测试：回环 + 缓存一致性 + 长跑不�
   门限 6  流深度不死锁：连续 ≥300 帧真实 DMA 节奏下不 stall
   门限 7  确定性：同一段 300 帧跑两次，寄存器结果逐位相同
 
-用法（在 PYNQ-Z2 上）：
+用法（在 **Mizar-Z7020** 上；🚧 v1.3 板卡变更待会签）：
   python board/dma_test.py --bit system.bit                       # 回环 smoke
   python board/dma_test.py --bit system.bit --frames 300          # 回环 + 长跑
   python board/dma_test.py --bit system.bit --golden-gray fpga/sim/data_motion/gray.bin

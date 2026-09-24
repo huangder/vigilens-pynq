@@ -8,7 +8,7 @@ bringup_check.py —— C8 上板自检：AXI-Lite 寄存器读写 + 计数器�
   门限 3  寄存器读写：按契约偏移逐个读写自检，含每个输出的 *_ctrl(ap_vld)
   门限 4  复位语义（P0-2）：显式 PL 复位后 frame_id / seg_id 从 1 开始
 
-用法（在 PYNQ-Z2 上，bitstream 已下载到板）：
+用法（在 **Mizar-Z7020** 上，bitstream 已下载到板；🚧 v1.3 板卡变更待会签）：
   python board/bringup_check.py --bit system.bit            # 只跑寄存器自检（不需 DMA）
   python board/bringup_check.py --bit system.bit --frame fpga/sim/data/frames.bin \
       --frames 2 --with-dma                                # 再加复位语义自检（需 DMA 已接好）

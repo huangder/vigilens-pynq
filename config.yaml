@@ -69,8 +69,15 @@ ws_disconnect_timeout_s: 3.0        # 超过此时长无数据 → 前端显示 
 
 # ---- C 线：FPGA 口径（改这里等于改契约，必须同步 docs/interface.md）--------
 fpga:
-  device: xc7z020clg400-1           # PYNQ-Z2
-  clock_ns: 10                      # 100 MHz
+  board: Mizar-Z7020                # 🚧 v1.3 草案（2026-09-23，待 A/B 会签）：实物板卡是
+                                    #   MicroPhase Mizar-Z7 的 7020 版，原定 PYNQ-Z2。
+                                    #   依据 docs/interface.md §0 与 §6 的 2026-09-23 行。
+                                    #   ⚠️ 板级差异（PS 配置 / 引脚约束 / bitstream）见 board/README.md；
+                                    #      **IP 口径与 data contract 完全不变**，四个 HLS IP 无需重做。
+  device: xc7z020clg400-1           # 器件字符串**两块板相同**：Mizar 的 XC7Z020-1CLG400C
+                                    #   与 PYNQ-Z2 的 xc7z020clg400-1 是同一颗
+                                    #   （`C` 只是商用温度等级后缀）。所以 v1.3 改板卡**不动这一行**。
+  clock_ns: 10                      # 100 MHz（来自 PS FCLK0，不是 PL 侧那颗 50 MHz 晶振）
   img_width: 640
   img_height: 480
   pixel_format: RGB888              # ⚠️ 通道顺序 R-G-B；OpenCV 默认 BGR，比对前须转换

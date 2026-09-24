@@ -17,6 +17,29 @@
 > **但 csim/csynth/cosim 未重跑**（受限沙箱跑不了，需完整权限终端 + Vitis）。
 > 按 `AGENTS.md` §4，**本草案在 A/B 回复"收到、不冲突"之前不生效**；
 > `backend/contract.py` 的 `CONTRACT_VERSION` 仍为 `v1.1`（会签后才升级）。
+>
+> 🚧 **v1.3 草案（2026-09-23，C 线发起，尚未会签）：§0 目标板卡 PYNQ-Z2 → Mizar-Z7020。**
+> 起因：M3 前拿到实物板卡是 **MicroPhase Mizar-Z7 的 7020 版**，而不是原定的 PYNQ-Z2。
+> **本草案只改"板级绑定"，不改任何 IP 口径与数据契约** ——
+> 关键事实：实物芯片是 `XC7Z020-1CLG400C`，与 §0 冻结的 `xc7z020clg400-1`
+> **是同一颗器件**（`C` 只是商用温度等级后缀，Vivado 的 part 字符串相同）。
+> 因此 §3/§4 的四个 IP 接口、寄存器偏移、灰度/缩放/Q1.15 口径、黄金参考与容差表
+> **全部继续有效，四个 IP 无需重做 HLS**。
+>
+> **真正需要重做的只有板级三件事**：
+> ① PS 配置（Mizar 是 **1 GB DDR3**，PYNQ-Z2 是 512 MB）→ `board/build_bd.tcl` 的板级 preset；
+> ② 引脚约束（PL 晶振 **50 MHz @ H16**，PYNQ-Z2 的 LED/KEY/PMOD 引脚号全部不同）；
+> ③ bitstream（`board/bitstream/` 目前为空）。
+> **注意 §3.5 的 100 MHz 目标时钟不受影响**：它来自 PS **FCLK0**（`build_bd.tcl` 中 `CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ = 100`），
+> 由 PS 的 33.333 MHz 时钟经 PLL 产生，与 PL 侧 50 MHz 晶振无关。
+>
+> ⚠️ **一处仍未闭合的前提**：MicroPhase 是否为 **Mizar-Z7** 提供 Vivado board file 尚**未确认**
+> （官方手册"Related Documents"只列了原理图/尺寸，同厂 Z7-Lite 有 board file，Mizar 未见）。
+> 若没有，`build_bd.tcl` 必须停用板级 preset 并**由人工按 MicroPhase 参考设计配置 PS7 DDR** ——
+> **DDR 参数不允许猜**（猜错会得到一块起不来的 PS），必须取自厂商资料。
+> 按 `AGENTS.md` §4，**本草案在 A/B 回复"收到、不冲突"之前不生效**；
+> `CONTRACT_VERSION` 维持 `v1.1`。
+>
 > 起草：C 线（2026-09-10）。对应《02》任务 **C2：定义 IP 接口（AXI-Stream + 控制寄存器）**，验收标准"与 A/B 线的数据契约对齐"。
 > 当前已实现并通过 csim+综合的 IP：`roi_statistic`(3.2) / `motion_quality` v2(3.3) / `rgb2gray` v2(3.4)。
 > 本文件是"三线并行不干扰"的唯一技术保障。**谁改契约谁发公告**，并在第 6 节变更记录签名。
@@ -27,7 +50,7 @@
 
 | 项 | 冻结值 | 依据 |
 |---|---|---|
-| 目标板卡 / 器件 | **PYNQ-Z2 / `xc7z020clg400-1`**（Zynq-7000） | 2026-09-10 确认；BASIC 免费授权覆盖 |
+| 目标板卡 / 器件 | **Mizar-Z7 / Mizar-Z7020（MicroPhase）/ `xc7z020clg400-1`**（Zynq-7000）<br>🚧 v1.3 草案（2026-09-23，待 A/B 会签）：板卡由 PYNQ-Z2 改指**实物板卡**；**器件字符串不变** —— 两块板都是同一颗 `XC7Z020-1CLG400C` | 2026-09-10 定 PYNQ-Z2；**2026-09-23 按实物改指 Mizar-Z7020**（见 §6） |
 | 工具链 | **Vitis HLS 2026.1**，入口 `vitis-run --mode hls --tcl <脚本>` | 赛制指定；见 `fpga/report/environment.md` |
 | 目标时钟 | **10 ns（100 MHz）** | `create_clock -period 10` |
 | 图像尺寸 | **640 × 480** | 2026-09-10 确认 |
@@ -785,4 +808,5 @@ A 线本次复核的实测差异：
 | 2026-09-13 | **v1.1** | C 线 | 🚧 **草案（待 A/B 会签）—— 全局 45 fps 切换**。① §0 帧率 30→45 fps；② §3.5 `fir_filter` 采样率 30→45 Hz：群延迟 31 样本 = 688.9 ms、−3 dB 0.998/3.206 Hz、−6 dB 0.710/3.495 Hz、`Σh=5710`（DC −15.18 dB）、`Σ|h|=47582`、`|acc|≤1,559,166,976`、实测频率响应（0.35 Hz −11.5 dB、8 Hz −86.3 dB）、已知限制过渡带 0.250→0.375 Hz、N≳105→158 / 158→236。③ 系数 `fir_coeffs_q15.h` 用 `design_fir_coeffs.py --fs 45 --d 0.0` 重生成，黄金参考 `data_fir/` 重生成（numpy 对拍 3940/3940 逐样本相等）。✅ **csynth/cosim 已于 2026-09-13 在 45 fps 重跑**：csim **8/8+17/17**、csynth **II=1 / Fmax 154.38 MHz / LUT 4043 / FF 6174 / BRAM 0 / DSP 26**、cosim **PASS**（29 事务、无死锁）；§5.2 新增第 12 项待 A 线表态 |
 | 2026-09-16 | **v1.1 会签完成** | A 线（代记会签） | ✅ **三方会签完成 → v1.1 生效**。A 线 09-15 补签第 1/2/4/11 项（证据 §5.4）、09-16 按 §5.3 在群里公告，**B/C 均回复"收到、不冲突"**；第 7、12 项按契约明文待真实视频后回填（不阻塞）。按 `AGENTS.md` §4 第 5 步「会签升级版本号」，`backend/contract.py` 的 `CONTRACT_VERSION` 由 `v1.0` **同步为 `v1.1`**；已核对第 1/2 节 A→B schema 与 6 值枚举**未变**，故 `frontend/mock.js` **无需改动**。同步更新 `AGENTS.md` §7.6/§8/§9、根 `README.md`、`docs/07`、`fpga/README.md` 中的版本与会签表述。仓库自检全绿 |
 | 2026-09-16 | （版本仍 v1.1） | A 线 | **§5.2 第 5 项闭环**：三方拍板把 A 线的**运动量口径**统一到本文件的冻结口径 —— `motion_thresh` **16** / 工作尺寸 **384×288** / 灰度 **冻结式**。改动全在 A 线侧：`backend/quality.py::to_gray` 重写为"冻结式灰度 + 3/5 相位抽取"（并按 BGR 的 R=2/G=1/B=0 取值）、`config.yaml` 的 `motion_thresh_gray` 25→16；`metrics/scripts/check_gray_formula.py` 改为直接调用 `quality.to_gray`（口径只留一处实现）。**本文件第 0~4 节一字未改，C 线黄金参考无需重生成，版本维持 v1.1**。验收：`check_motion_golden.py` → 灰度逐像素 0 差异、运动量 **9/9 逐项全等（容差 0）**；`pytest` 65 passed；证据 `metrics/evidence/2026-09-16_a_line_p1_golden_checks.json` |
+| 2026-09-23 | **v1.3** | C 线 | 🚧 **草案（待 A/B 会签）—— 目标板卡 PYNQ-Z2 → Mizar-Z7020（MicroPhase Mizar-Z7 7020 版）**。① §0 目标板卡行改指实物板卡；**器件字符串 `xc7z020clg400-1` 不变** —— 实物芯片 `XC7Z020-1CLG400C` 与之是同一颗（`C` 为商用温度等级后缀）。② **本草案不改任何 IP 口径与数据契约**：§3/§4 的接口、寄存器偏移、灰度式、3/5 缩放、Q1.15 量化、黄金参考与容差表**全部继续有效**，四个 IP **无需重做 HLS**。③ 板级需重做三件事：PS 配置（**1 GB DDR3**，异于 PYNQ-Z2 的 512 MB）、引脚约束（PL 晶振 **50 MHz @ H16**，LED/KEY/扩展口引脚号全不同）、bitstream（`board/bitstream/` 为空）。④ 已核：§3.5 的 **100 MHz 目标时钟不受影响**，它来自 PS **FCLK0**（`build_bd.tcl` 中 `PCW_FPGA0_PERIPHERAL_FREQMHZ=100`），由 PS 33.333 MHz 经 PLL 产生，与 PL 侧 50 MHz 晶振无关。⑤ 同步改动：`config.yaml`（`fpga` 段新增 `board` 字段并加草案注释，`device` 不变）、`board/build_bd.tcl`（板级 preset 参数化 + 缺失时报错停止，不再静默套用 PYNQ-Z2 preset）、`AGENTS.md` §2.1/§7.1/§7.6、根 `README.md`、`docs/00`、`board/` 下脚本用法注释。⑥ **未闭合项**：MicroPhase 是否为 Mizar-Z7 提供 Vivado board file **未确认**；若无，PS7 DDR 参数**必须取自厂商资料，不得猜**（猜错 → PS 起不来）。⚠️ 本草案**未跑** csim/csynth/cosim（板级变更本身不影响 IP），也**未上板**；`CONTRACT_VERSION` 维持 `v1.1`。证据：`board/openmv/README.md`（硬件事实与接线来源） |
 | 2026-09-20 | **v1.2** | C 线 | 🚧 **草案（待 A/B 会签）—— 采样率 45→30 Hz（"改回原本的 30"，为前期适配低帧率采集源）**。① §0 帧率 45→30 fps；② §3.5 `fir_filter` 采样率 45→30 Hz：群延迟 31 样本 = **1033.3 ms**、−3 dB **0.895 / 3.305 Hz**、−6 dB 0.704 / 3.496 Hz、`Σh=897`（DC −31.25 dB）、`Σ|h|=55073`、峰值系数 6101、`|acc|≤1,804,632,064`、通带 1.0~3.0 Hz 起伏 1.90 dB、低阻带最差 −16.2 dB @0.350 Hz、高阻带最差 −16.0 dB @3.850 Hz；已知限制过渡带 0.375→**0.250 Hz**、N≳158/236→**105/158**（仍做不了呼吸带）。③ 系数用 `design_fir_coeffs.py --fs 30 --d 0.0` 重生成，**与 git 历史里 v1.1 之前的 30 Hz 系数表逐项完全相同**（63 个 int16 全等、`Σh`/`Σ|h|` 一致）—— 是"改回原本的 30"，不是另设计一个 30；黄金参考 `data_fir/` 重生成（numpy 对拍 **4036/4036** 逐样本相等）。④ 已核：主机端模型 `host_model_fir.cpp` **== PASS ==**（16 段 0 failed、与黄金参考逐样本相等、对称折叠 vs 朴素累加逐位相同、饱和样本合计 40）；A↔C `check_fir_golden.py` **16 段 / 4036 样本容差 0 全等**；`pytest` **78 passed**。⚠️ **csim/csynth/cosim 未重跑**（受限沙箱跑不了 HLS，需完整权限终端 + Vitis）——**这是本草案唯一未闭合的验证项**，会签前必须补跑。⑤ 同一提交内同步：`config.yaml`（`fps_nominal`）、`backend/config.py` 兜底、`backend/vital.py` 的 `FIR_FS_HZ` 兜底、`metrics/scripts/check_p4_readiness.py`、`data/README.md` 录制规范、`AGENTS.md` §7.1、根 `README.md`、`fpga/README.md`、`fpga/src/fir_filter.cpp` 注释、`fpga/sim/tb_fir_filter.cpp` 注释、`frontend/app.js` 呼吸率卡文案；`backend/tests/test_vital.py` 由"写死 `fs == 45`"改为**与 `config.yaml` 对拍**（防两个单一来源漂移）。证据 `fpga/report/c5_fir_filter_30hz_revert.md` + `fpga/report/logs/2026-09-20_fir_filter_30hz_*.log` |
