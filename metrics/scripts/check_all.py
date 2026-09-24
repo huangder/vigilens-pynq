@@ -151,6 +151,10 @@ TOOL_SELFTESTS = (
     ("board/openmv/vigilens_link.py", "--selftest"),
     ("board/openmv/host_capture_test.py", "--selftest"),
     ("board/openmv/raw_to_contract.py", "--selftest"),
+    # 在 PC 上用假模块跑一遍**只能在相机上运行**的采集测试脚本（v5 csi / v4 sensor 两条分支）。
+    # 为什么放进回归：它已真抓到过一个真机也会犯的作用域 bug（`_CAM_API` 漏 global 被
+    # 自己的 except 吞掉、打印成假的"探测失败"）。硬件改不了它的逻辑，但本机能天天跑。
+    ("board/openmv/offline_check.py", None),
 )
 
 

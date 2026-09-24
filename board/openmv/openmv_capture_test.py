@@ -15,9 +15,13 @@ openmv_capture_test.py —— 在 **OpenMV Cam H7** 上运行的「图像采集�
   Q4  能不能把采到的帧**无损**落盘、供 A/C 线后续使用？
 
 ┌────────────────────────────────────────────────────────────────────────┐
-│ ⚠️ 本脚本**没有在真实 OpenMV 上运行过**（开发仓库的机器上没有硬件）。  │
-│    它按 OpenMV 官方 API 编写；**所有帧率/内存数字都必须由你跑出来**，   │
-│    不许把本文件里的任何"预期值"当成结论（AGENTS.md 铁律 1）。          │
+│ 真机状态（2026-09-24，OpenMV Cam H7，固件走 `csi` 类 API）：            │
+│   ✅ 已跑过一次 matrix —— **但只拿回前两组**（原因见下面的排序说明）：   │
+│      · RGB565 / VGA  → `RuntimeError: Frame buffer overflow`（预期内）  │
+│      · RGB565 / QVGA → 均值 39.76 fps；153600 B/帧；gc.mem_free 308944 B│
+│   ⚠️ 其余组合**一行都没打印**，尚分不清是"没跑到"还是"把相机搞死了"——   │
+│      所以本文件把组合重排成"先便宜后危险"，并加了分段开关 MATRIX_STAGE。 │
+│   ⚠️ 除上面两行外，本文件里任何"预期值"都**不是**结论（`AGENTS.md` 铁律 1）│
 └────────────────────────────────────────────────────────────────────────┘
 
 安装与运行
@@ -31,6 +35,8 @@ openmv_capture_test.py —— 在 **OpenMV Cam H7** 上运行的「图像采集�
 MODE 取值
 ---------
   "matrix"     能力矩阵：逐个试「像素格式 × 分辨率 × 帧缓冲数」，测帧率与内存。**先跑这个。**
+               组合按「信息量/风险」排序（小的、要 JPEG 字节数的在前，已知会 overflow 的在后）；
+               可用 `MATRIX_STAGE` 只跑 "small"/"mid"/"big" 其中一组 —— 分段跑更抗"相机卡死"。
   "sustained"  长跑：在 `CHOSEN_*` 指定的一组参数上连续跑 N 秒，给帧率统计（含抖动/最慢帧）。
   "dump"       落盘：按 `CHOSEN_*` 采 N 帧，**原样**写入 SD，并写 `meta.json` 说明布局。
                （RGB565→RGB888 的转换放在上位机做：`raw_to_contract.py`，
@@ -95,7 +101,14 @@ def _open_camera():
 
 
 def _cam_version():
-    """尽量拿到固件/板子的可读标识，写进报告用。"""
+    """尽量拿到固件/板子的可读标识，写进报告用。
+
+    ⚠️ **命名踩过的坑（2026-09-24 实测）**：`os.uname().release` 是 **MicroPython 的版本**，
+    不是 OpenMV 固件的版本；而 `sys.version` 的首段（如 `3.4.0`）是 **MicroPython 声称的
+    Python 语言级别**，也不是任何"MicroPython 版本"。第一次真机运行把两者拼成了
+    `OPENMV4 with STM32H743 1.28.0 | MicroPython 3.4.0` —— **看着像固件版本，其实都不是**。
+    所以这里把标签写准；真正的固件版本交给 `_probe_env()` 去问 `omv` 模块。
+    """
     parts = []
     try:
         u = os.uname()
@@ -103,10 +116,84 @@ def _cam_version():
     except Exception:
         pass
     try:
-        parts.append("MicroPython %s" % getattr(sys, "version", "?").split()[0])
+        parts.append("Python 语言级别 %s（MicroPython 声称）" % getattr(sys, "version", "?").split()[0])
     except Exception:
         pass
     return " | ".join(parts) if parts else "未知"
+
+
+# 传感器 ID → 型号。**参考表，不是事实来源**：事实是 `get_id()` 打出来的那个十六进制值。
+# 为什么关心这一条：**OV5640 自带 JPEG 输出，OV7725 没有** —— 这决定 VGA JPEG 那几行是
+# "传感器直出压缩流"还是"固件先整帧再压缩"（后者在 H7 上必然内存不够）。
+_SENSOR_ID_REF = {0x7725: "OV7725", 0x5640: "OV5640", 0x2640: "OV2640", 0x2145: "GC2145"}
+
+
+def _probe_env():
+    """把"这台相机到底是什么"能问到的全问一遍，返回 dict。任何人答不上来都只是 "?"。
+
+    为什么值得多打这么多行：矩阵的每一行只有在**知道板型 / 固件 / 传感器型号**时才有意义，
+    而且报告要能追溯到具体固件（v5.0.0 把 `sensor` 换成了 `csi`，同一份脚本走的是不同分支）。
+    **拿不到的一律记 "?"，绝不猜、也绝不影响测试**（每条都 try/except 兜住）。
+    """
+    facts = {}
+    try:
+        u = os.uname()
+        for k in ("sysname", "nodename", "release", "version", "machine"):
+            facts["uname." + k] = getattr(u, k, None)
+    except Exception as e:
+        facts["uname"] = "拿不到（%s）" % e
+    for k in ("platform", "maxsize", "byteorder"):
+        try:
+            facts["sys." + k] = getattr(sys, k, None)
+        except Exception:
+            pass
+    try:
+        facts["sys.version"] = getattr(sys, "version", None)
+    except Exception:
+        pass
+    try:
+        impl = sys.implementation
+        facts["sys.implementation"] = "%s %s" % (
+            getattr(impl, "name", "?"),
+            ".".join(str(x) for x in getattr(impl, "version", ()) or ()))
+    except Exception:
+        pass
+    # 真正的 OpenMV 固件版本 / 板型 / 架构：优先问 `omv` 模块（新版固件才有）
+    try:
+        import omv as _omv
+        for name in ("version", "board_type", "board_id", "arch"):
+            fn = getattr(_omv, name, None)
+            if fn is None:
+                continue
+            try:
+                facts["omv." + name] = fn() if callable(fn) else fn
+            except Exception as e:
+                facts["omv." + name] = "拿不到（%s）" % e
+    except Exception as e:
+        facts["omv"] = "不可用（%s）" % e
+    # 相机模块自己的版本属性（v4/v5 都可能有，命名不一定）
+    try:
+        _open_camera()
+        for name in ("version", "__version__"):
+            v = getattr(_CAM_MOD, name, None)
+            if v is not None:
+                facts["%s.%s" % (_CAM_API, name)] = v
+    except Exception:
+        pass
+    # 传感器 ID：确认到底是哪颗 sensor（见 _SENSOR_ID_REF 的说明）
+    try:
+        _open_camera()
+        fn = getattr(_CAM, "get_id", None) or getattr(_CAM_MOD, "get_id", None)
+        if fn is None:
+            facts["sensor_id"] = "本固件没有 get_id()"
+        else:
+            sid = fn()
+            facts["sensor_id"] = "0x%04X" % sid
+            facts["sensor_id_解读"] = "%s（参考表，以左侧十六进制值为准）" % \
+                _SENSOR_ID_REF.get(sid, "参考表里没有这个值 —— 请按数值查官方资料")
+    except Exception as e:
+        facts["sensor_id"] = "拿不到（%s）" % e
+    return facts
 
 
 def _cam_reset():
@@ -178,17 +265,34 @@ def _blink():
 
 MODE = "matrix"
 
-# matrix 模式要尝试的组合：(pixformat 名, framesize 名, 帧缓冲数)
+# matrix 模式要尝试的组合：(pixformat 名, framesize 名, 帧缓冲数, 分组)
 #   帧缓冲数 1 = 单缓冲；2 = 双缓冲（OpenMV 官方示例里 VGA JPEG 从 11.7 → 20 fps 的做法）
+#
+# ⚠️ **顺序是刻意的，不要随手重排**（2026-09-24 第一次真机运行的教训）：
+#   实测已证明「RGB565 / VGA」会抛 `RuntimeError: Frame buffer overflow`
+#   （需 614400 B > 片上可用 308944 B）。**内存耗尽的极端情况下相机会卡死/重启，
+#   排在它后面的行会全部丢失** —— 第一次真机运行正是只拿回了前两组（RGB565 VGA 失败行 +
+#   RGB565 QVGA 成功行），后面 5 组一行都没打印出来，分不清是"没跑到"还是"跑崩了"。
+#   所以排序原则改成「**先拿信息量最大、最便宜的，把已知会炸的放最后**」：
+#     组 small：小图 + **JPEG 的真实压缩后字节数**（A 线旁路画面链路要按它做带宽预算）
+#     组 mid  ：中等图，含已知能成的 RGB565/QVGA（复测一遍，确认可复现）
+#     组 big  ：大图 / 已知会抛 overflow 的组合（**故意排最后**，炸了也只剩它自己没跑完）
+#   `MATRIX_STAGE` 可以只跑其中一组 —— 万一某组让相机卡死，分段跑不会连带丢掉别的组。
 MATRIX = (
-    ("RGB565",    "VGA",  1),
-    ("RGB565",    "QVGA", 1),
-    ("GRAYSCALE", "VGA",  1),
-    ("GRAYSCALE", "QVGA", 1),
-    ("JPEG",      "VGA",  1),
-    ("JPEG",      "VGA",  2),   # ← 重点：双缓冲能不能把 VGA JPEG 拉到 20 fps
-    ("JPEG",      "QVGA", 1),
+    ("JPEG",      "QVGA", 1, "small"),
+    ("JPEG",      "QVGA", 2, "small"),
+    ("GRAYSCALE", "QQVGA", 1, "small"),
+    ("RGB565",    "QQVGA", 1, "small"),
+    ("RGB565",    "QVGA", 1, "mid"),      # ← 2026-09-24 实测：均值 39.76 fps
+    ("GRAYSCALE", "QVGA", 1, "mid"),
+    ("GRAYSCALE", "VGA",  1, "big"),      # ← 边界：307200 B vs 启动时可用 308944 B（只差 1744 B）
+    ("JPEG",      "VGA",  1, "big"),
+    ("JPEG",      "VGA",  2, "big"),      # ← 重点：双缓冲能不能把 VGA JPEG 拉到 20 fps
+    ("RGB565",    "VGA",  1, "big"),      # ← 已知会失败（留作证据，不要删）
 )
+
+# "auto" = 全表（按上面的顺序）；"small" / "mid" / "big" = 只跑那一组
+MATRIX_STAGE = "auto"
 
 # 每个组合测多久（秒）。太短会被启动瞬态污染；2 秒是"够稳又不太慢"的折中。
 MATRIX_SECONDS = 2.0
@@ -219,9 +323,41 @@ REPORT_PATH_CANDIDATES = ("/sdcard/vigilens_report.json", "/sd/vigilens_report.j
 CONTRACT_W, CONTRACT_H = 640, 480
 CONTRACT_BPP = 3             # RGB888
 
+# 仅用于把实测帧率折算成"最短可检出闭眼"给人看，**脚本不做任何判断**。
+# 来源：config.yaml 的 `min_close_frames: 3`（连续 3 帧低于阈值才记一次闭眼）。
+# ⚠️ 相机上读不到 config.yaml，所以这里是**引用值**；真要改阈值请改 config.yaml（三人共用文件）。
+MIN_CLOSE_FRAMES_FOR_DISPLAY = 3
+
 # ===========================================================================
 
 _BPP = {"GRAYSCALE": 1, "RGB565": 2, "BAYER": 2, "JPEG": 0, "PNG": 0}
+
+# JPEG 的"名义字节数"除数 —— **只用于给组合排序**（VGA ≈ 51 KB），
+# 不是实测值、更不是承诺。**真实压缩后字节数由 matrix 的 `B/帧` 列实测给出。**
+_JPEG_NOMINAL_DIV = 6
+
+# 分辨率名 → (w, h)。只列本脚本用到的；不认识的返回 (0,0)，**不猜**。
+_SIZE_WH = {"QQVGA": (160, 120), "QVGA": (320, 240), "VGA": (640, 480)}
+
+
+def _est_bytes(pf_name, fs_name):
+    """估算一组组合的单帧占用，仅用于「排序」和「装不装得下」的预判。"""
+    w, h = _SIZE_WH.get(fs_name, (0, 0))
+    if not w:
+        return 0
+    bpp = _BPP.get(pf_name, 0)
+    if bpp:
+        return w * h * bpp
+    if pf_name == "JPEG":
+        return w * h // _JPEG_NOMINAL_DIV
+    return 0
+
+
+def _fmt_theoretical(pf_name, val):
+    """`理论B` 列的显示：压缩格式（JPEG）的值前面加 `~`，提示它是名义值不是实测值。"""
+    if not val:
+        return "-"
+    return ("~%d" % val) if _BPP.get(pf_name, 0) == 0 else str(val)
 
 
 def log(*a):
@@ -434,6 +570,68 @@ def _measure(seconds):
 # ---------------------------------------------------------------------------
 
 
+def _matrix_rows():
+    """按 `MATRIX_STAGE` 过滤出本轮要跑的组合（**保持 MATRIX 里的顺序**）。"""
+    if MATRIX_STAGE == "auto":
+        return list(MATRIX)
+    return [r for r in MATRIX if r[3] == MATRIX_STAGE]
+
+
+def _print_verdict(results, mem_start):
+    """把上面那张表**自动**折算成「这对契约意味着什么」。
+
+    只用表里的实测数字做算术，**不引入任何新假设、不引用任何预期值**。
+    这一段的存在理由：第一次真机运行拿回表以后，人还是得自己算"这够不够"——
+    而算错/算漏正是《05》铁律 1 想防的事情。让脚本自己算，人只负责核对。
+    """
+    contract_bytes = CONTRACT_W * CONTRACT_H * CONTRACT_BPP
+    ok_rows = [r for r in results if r.get("ok")]
+    bad_rows = [r for r in results if not r.get("ok")]
+    log("")
+    log("=" * 78)
+    log("契约可行性小结（下面每一个数字都来自上面那张表的实测行）")
+    log("=" * 78)
+    log("  · 契约帧 = %dx%d RGB888 = %d B/帧；启动时 gc.mem_free() 实测 = %d B（相差 %.1f 倍）"
+        % (CONTRACT_W, CONTRACT_H, contract_bytes, mem_start,
+           contract_bytes / float(mem_start) if mem_start else 0.0))
+    log("  · 本轮成功 %d 组 / 失败 %d 组" % (len(ok_rows), len(bad_rows)))
+    if not ok_rows:
+        log("  · **一组都没成功** —— 先看上面的报错原文，别急着改脚本。")
+        return
+    biggest = max(ok_rows, key=lambda r: r.get("bytes_per_frame") or 0)
+    log("  · 单帧实测字节数最大的成功组合：%s / %s / fb=%d → %d B（= 契约帧的 %.1f%%）"
+        % (biggest["pixformat"], biggest["framesize"], biggest["framebuffers"],
+           biggest.get("bytes_per_frame") or 0,
+           100.0 * (biggest.get("bytes_per_frame") or 0) / contract_bytes))
+    # 「整帧装得下契约帧吗」只对**未压缩**格式可算；JPEG 是压缩流，字节数不可比，故排除。
+    fits = [r for r in ok_rows
+            if _BPP.get(r["pixformat"], 0) and (r.get("bytes_theoretical") or 0) >= contract_bytes]
+    log("  · 「整帧装得下契约帧（≥%d B）」的成功组合：%s"
+        % (contract_bytes,
+           "、".join("%s/%s" % (r["pixformat"], r["framesize"]) for r in fits) if fits
+           else "**无**"))
+    fast = [r for r in ok_rows if (r.get("fps_mean") or 0) >= 30.0]
+    log("  · 「实测均值帧率 ≥ 30 fps」的成功组合：%s"
+        % ("、".join("%s/%s=%.2f fps" % (r["pixformat"], r["framesize"], r["fps_mean"])
+                     for r in fast) if fast else "**无**"))
+    slow = min(ok_rows, key=lambda r: r.get("fps_min_inst") or 1e9)
+    worst = slow.get("fps_min_inst") or 0
+    log("  · 最坏单帧（决定「最坏采样间隔」）：%s / %s → %.2f fps（约 %.1f ms/帧）"
+        % (slow["pixformat"], slow["framesize"], worst, (1000.0 / worst) if worst else 0.0))
+    for r in [x for x in ok_rows if x.get("fps_mean")]:
+        f = r["fps_mean"]
+        log("      · 按 config.yaml 的 min_close_frames=%d 折算 %s/%s/fb=%d：最短可检出闭眼 ≈ %.0f ms"
+            % (MIN_CLOSE_FRAMES_FOR_DISPLAY, r["pixformat"], r["framesize"], r["framebuffers"],
+               MIN_CLOSE_FRAMES_FOR_DISPLAY / f * 1000.0))
+    log("      （正常眨眼 100~400 ms —— 短于左侧值的眨眼会**整段漏掉**，这是系统性低估疲劳）")
+    if not fits:
+        log("  · **算术推论（前提就是上面那列 mem_free 实测值）**：H7 留给帧缓冲的可用 RAM")
+        log("    装不下契约帧，而且**这与接哪个口无关** —— 是**片上内存**限制，不是链路带宽限制。")
+        log("    所以：OpenMV Cam H7 **不可能**作为契约 §0（640x480 RGB888 @30fps）的像素源；")
+        log("    它在本项目里的位置是**降规格采集源**（QVGA 级）与「人脸检测/追踪目标」，见 docs/10 §3。")
+        log("    要满足契约只能换 MIPI CSI 摄像头（Mizar-Z7020 自带该口），见 docs/12 §12。")
+
+
 def run_matrix():
     log("=" * 78)
     log("OpenMV 图像采集能力矩阵 —— 结果请原样贴回项目记录，不要手改任何数字")
@@ -443,22 +641,41 @@ def run_matrix():
         (CONTRACT_W, CONTRACT_H, CONTRACT_W * CONTRACT_H * CONTRACT_BPP,
          CONTRACT_W * CONTRACT_H * CONTRACT_BPP * 30 / 1e6))
     gc.collect()
-    log("启动时 gc.mem_free() = %d B（片上可用内存，用来判断帧缓冲装不装得下）" % gc.mem_free())
+    mem_start = gc.mem_free()
+    log("启动时 gc.mem_free() = %d B（片上可用内存，用来判断帧缓冲装不装得下）" % mem_start)
+    rows = _matrix_rows()
+    log("本轮 MATRIX_STAGE=%s → %d 组。**下面的顺序就是执行顺序**：" % (MATRIX_STAGE, len(rows)))
+    for i, (pf_name, fs_name, fb, stage) in enumerate(rows):
+        est = _est_bytes(pf_name, fs_name)
+        log("   %2d. %-10s %-8s fb=%d [%-5s] 预计整帧 %s B%s"
+            % (i + 1, pf_name, fs_name, fb, stage, _fmt_theoretical(pf_name, est),
+               "   ← 比可用内存大，**预期失败**" if est and est > mem_start else ""))
     log("")
     log("%-10s %-8s %2s %8s %8s %8s %10s %10s %9s  %s" %
-        ("pixformat", "size", "fb", "fps均值", "fps中位", "最慢帧", "B/帧", "理论B", "mem可用", "备注"))
+        ("pixformat", "size", "fb", "fps均值", "fps中位", "最慢帧fps", "B/帧", "理论B",
+         "mem可用", "备注"))
     log("-" * 118)
 
     results = []
-    for pf_name, fs_name, fb in MATRIX:
-        row = {"pixformat": pf_name, "framesize": fs_name, "framebuffers": fb}
+    for idx, (pf_name, fs_name, fb, stage) in enumerate(rows):
+        row = {"pixformat": pf_name, "framesize": fs_name, "framebuffers": fb,
+               "stage": stage}
+        est = _est_bytes(pf_name, fs_name)
+        row["bytes_theoretical"] = est
+        log("")
+        log("---- [%d/%d] %s / %s / fb=%d 开始（此刻 gc.mem_free() = %d B）"
+            % (idx + 1, len(rows), pf_name, fs_name, fb, _mem_free()))
+        log("     提示：**如果这行之后就没有输出了，是这一组把相机搞死了**（内存耗尽/卡死），")
+        log("           不是脚本逻辑问题 —— 请把最后一行原样报回，并用 MATRIX_STAGE 分段排查。")
         try:
             ok, note = _apply(pf_name, fs_name, fb)
             if not ok:
                 row["ok"] = False
                 row["error"] = note
-                log("%-10s %-8s %2d %8s %8s %8s %10s %10s %9s  %s" %
-                    (pf_name, fs_name, fb, "-", "-", "-", "-", "-", "-", note))
+                row["mem_free_after"] = _mem_free()
+                log("%-10s %-8s %2d %8s %8s %8s %10s %10s %9d  %s" %
+                    (pf_name, fs_name, fb, "-", "-", "-", "-",
+                     _fmt_theoretical(pf_name, est), row["mem_free_after"], note))
                 results.append(row)
                 continue
             st = _measure(MATRIX_SECONDS)
@@ -466,35 +683,44 @@ def run_matrix():
             row.update(st)
             row["note"] = note
             bpp = _BPP.get(pf_name, 0)
-            theoretical = st["w"] * st["h"] * bpp if bpp else 0
+            if bpp and st["w"] and st["h"]:
+                theoretical = st["w"] * st["h"] * bpp
+            else:
+                theoretical = est          # 压缩格式：保持**名义值**（显示时前面带 ~）
             row["bytes_theoretical"] = theoretical
-            log("%-10s %-8s %2d %8.2f %8.2f %8.2f %10d %10d %9d  %s" %
+            log("%-10s %-8s %2d %8.2f %8.2f %8.2f %10d %10s %9d  %s" %
                 (pf_name, fs_name, fb, st["fps_mean"], st["fps_median"],
-                 st["fps_min_inst"], st["bytes_per_frame"], theoretical,
+                 st["fps_min_inst"], st["bytes_per_frame"],
+                 _fmt_theoretical(pf_name, theoretical),
                  st["mem_free_after"], note))
-            if pf_name in ("RGB565", "GRAYSCALE") and st["bytes_per_frame"] and theoretical and \
+            if bpp and st["bytes_per_frame"] and theoretical and \
                     abs(st["bytes_per_frame"] - theoretical) > theoretical * 0.05:
                 log("            ⚠️ 实得字节数与 w*h*bpp 不符（%d vs %d）—— 说明实际分辨率或格式与设定不同"
                     % (st["bytes_per_frame"], theoretical))
         except Exception as e:
             row["ok"] = False
             row["error"] = "%s: %s" % (type(e).__name__, e)
-            log("%-10s %-8s %2d %8s %8s %8s %10s %10s %9s  %s" %
-                (pf_name, fs_name, fb, "-", "-", "-", "-", "-", "-", row["error"]))
+            row["mem_free_after"] = _mem_free()
+            log("%-10s %-8s %2d %8s %8s %8s %10s %10s %9d  %s" %
+                (pf_name, fs_name, fb, "-", "-", "-", "-",
+                 _fmt_theoretical(pf_name, est), row["mem_free_after"], row["error"]))
         results.append(row)
         _blink()
 
     log("-" * 118)
     log("")
     log("怎么读这张表：")
-    log("  · '最慢帧' 很重要 —— 它对应运动/眨眼检测里最坏情况的采样间隔。")
-    log("  · '理论B' 是 w*h*每像素字节；若与 'B/帧' 差很多，说明实际生效的分辨率/格式与请求不同。")
+    log("  · '最慢帧fps' 很重要 —— 它的倒数就是运动/眨眼检测里**最坏情况的采样间隔**。")
+    log("    第一行失败、第二行成功时容易看错：**'最慢帧fps' 是帧率不是毫秒**（16.08 = 62.2 ms/帧）。")
+    log("  · '理论B' 是 w*h*每像素字节；**前面带 `~` 的是压缩格式（JPEG）的名义值，不是实测值**，")
+    log("    那种格式只看 'B/帧' 列。未压缩格式若两者差很多，说明实际生效的分辨率/格式与请求不同。")
     log("  · 契约要 640x480 RGB888 = 921600 B/帧。H7 的 STM32H743 标称 1MB SRAM，")
-    log("    但**留给帧缓冲/图片处理的可用 RAM 小得多**（官方论坛实测口径约 400KB 级）——")
+    log("    但**留给帧缓冲/图片处理的可用 RAM 小得多**（2026-09-24 实测 gc.mem_free() = 308944 B）——")
     log("    这正好解释了官方规格表为什么写 'RGB565 上限 320x240'（VGA RGB565 = 614400 B，装不下）。")
-    log("    所以'能不能整帧装下'要看上面那列 gc.mem_free()，**这是实测不是推算**。")
+    log("    所以'能不能整帧装下'要看上面那列 mem_free，**这是实测不是推算**。")
     log("  · 帧率判据：契约要 30fps。低于 30 时注意 config.yaml 的 min_close_frames=3")
     log("    会让'最短可检出闭眼 = 3/fps'变大（10fps→300ms），会系统性漏掉短眨眼。")
+    _print_verdict(results, mem_start)
     return results
 
 
@@ -698,6 +924,14 @@ def write_report(report):
 
 
 def main():
+    # ⚠️ **必须声明 global**：下面的 `except` 分支会给 `_CAM_API` 赋值，若不声明，
+    #    Python 就会把 `_CAM_API` 当成 main() 的**局部变量** —— 于是**成功路径**读它时抛
+    #    `UnboundLocalError: cannot access local variable '_CAM_API'`，又被紧接着的
+    #    `except Exception` 抓住，最终打印出**"相机 API : 探测失败"**这种假故障，
+    #    并让 report.json 里的 `camera_api` 变成 null。
+    #    2026-09-24 由 `metrics/logs/_openmv_fake_run.py`（本机假模块自检）抓到 ——
+    #    真机上它同样会发生，只是那行"探测失败"很容易被当成"相机没连上"而放过。
+    global _CAM_API
     log("")
     log("VigiLens / 知倦 —— OpenMV 图像采集测试，MODE=%s" % MODE)
     log("")
@@ -706,7 +940,10 @@ def main():
     # 为什么重要：v5.0.0 把 `sensor` 换成了 `csi`（major 破坏性变更），
     # 同一份脚本在不同固件上走的是不同分支 —— 不记下来的数据没法追溯。
     ver = _cam_version()
-    log("固件/板子 : %s" % ver)
+    log("板子/版本线索 : %s" % ver)
+    log("   ⚠️ 读法：`uname.release` 是 **MicroPython 的版本**，`sys.version` 首段（如 3.4.0）")
+    log("      是 **MicroPython 声称的 Python 语言级别** —— 两个**都不是 OpenMV 固件版本**。")
+    log("      真正的固件版本看下面的 `omv.*` 行；那行若拿不到，就说明本固件没有 `omv` 模块。")
     try:
         _open_camera()
         log("相机 API  : %s（%s）" % (_CAM_API, "csi.CSI 类 API（v5+）" if _CAM_API == "csi"
@@ -716,11 +953,18 @@ def main():
         log("            （matrix 模式会逐个组合报错；请把下面的报错原文贴回项目记录）")
         _CAM_API = None
 
+    env = _probe_env()
+    log("")
+    log("环境事实（逐项尽力获取，拿不到就是带说明的 '?'；**任何一项缺失都不影响测试**）:")
+    for k in sorted(env.keys()):
+        log("  %-26s : %s" % (k, env[k]))
+
     report = {
         "tool": "board/openmv/openmv_capture_test.py",
         "mode": MODE,
         "firmware": ver,
         "camera_api": _CAM_API,
+        "env": env,
         "micropython": getattr(sys, "version", "?"),
         "platform": getattr(sys, "platform", "?"),
         "contract": {"width": CONTRACT_W, "height": CONTRACT_H, "bpp": CONTRACT_BPP,
@@ -742,9 +986,10 @@ def main():
     log("")
     log("下一步：")
     log("  · matrix 的表 → 贴回项目记录，并据此填 openmv_stream.py 的 STREAM_FRAMESIZE。")
-    log("  · 若做了 dump → 把整个目录拷回 PC，跑：")
+    log("  · 若做了 dump → 把整个目录拷回 PC，跑（`metrics\\logs\\openmv_dump` 换成你的实际目录）：")
     log("      .venv\\Scripts\\python.exe board/openmv/raw_to_contract.py "
-        "<目录> --out metrics/logs/openmv_frames.bin")
+        "metrics\\logs\\openmv_dump --out metrics/logs/openmv_frames.bin")
+    log("    （⚠️ 别把 <尖括号> 当命令照抄：PowerShell 里 < > 是保留运算符，无法执行）")
     log("    得到契约 §4.1 布局的 RGB888，可直接喂 A 线 / C 线。")
 
 

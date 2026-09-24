@@ -59,7 +59,7 @@
 | `build_bd.tcl` | Block Design 构建脚本（Vivado batch；**板级 preset 已参数化 + 有停止守卫**） | ⚠️【未验证】需在 Vivado 2026.1 实跑迭代 |
 | `bitstream/` | 导出的 `.bit` / `.hwdef`（体积大，考虑 Releases/LFS） | ⏳ 空 |
 | `overlay/` | Overlay 封装（`.tcl`/`.xsa`、`*.py` 加载器） | ⏳ 见上 |
-| `openmv/` | **OpenMV 首次测试包**：串口帧协议 / 上位机采集测试 / OpenMV 侧采集测试 / PL 最小回环 / 接线与分阶段测试方案 | ✅ 协议与上位机工具可离线自检；硬件部分待实测 |
+| `openmv/` | **OpenMV 首次测试包**：串口帧协议 / 上位机采集测试 / OpenMV 侧采集测试 / PL 最小回环 / 接线与分阶段测试方案 | ✅ 协议与上位机工具可离线自检（含 `offline_check.py` = 28/28，已纳入 `check_all.py`）；🧪 **OpenMV 已接入过 1 次**，但采集矩阵只回来 2 行 → `fpga/report/t6_openmv_capture_matrix_v1.md` |
 
 ## 上板执行顺序（M3 板卡到手后，按序做）
 

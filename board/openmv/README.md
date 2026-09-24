@@ -12,6 +12,15 @@
 >
 > 一句话：**OpenMV 能当 A 线的采集源，当不了 C 线的像素源。** 这不是配线问题，是带宽问题。
 
+> 🧪 **2026-09-24 真机首测（部分完成）** —— 上面那句话现在有**两条**硬证据了：
+> 实测 `gc.mem_free()` = **308944 B**，而契约帧 640×480 RGB888 = **921600 B = 3.0 倍**；
+> 连 VGA 的 **RGB565**（614400 B）都直接抛 `Frame buffer overflow`。
+> **带宽差 29 倍之外，又多了"片上内存差 3 倍"** —— 而内存是换接口也解决不了的。
+> 实测能用的最强组合：`RGB565 / QVGA / fb=1` = **39.76 fps 均值、153600 B/帧**。
+> 📄 完整数据、逐项算术、未闭合项见 **`fpga/report/t6_openmv_capture_matrix_v1.md`**。
+> ⚠️ 那次只回帖了矩阵的 **2 行**（7 组里），**JPEG 实际字节数等还没拿到** ——
+> 不要把"矩阵已跑完"当成既有事实（本文件 §5 与那份报告的 §5 列了缺什么）。
+
 > 📌 **板卡变更已落实（🚧 v1.3 草案，2026-09-23，待 A/B 会签）**
 > 目标板卡已由 PYNQ-Z2 改指 **Mizar-Z7020**，落在 `docs/interface.md` §0/§6、`config.yaml` 的 `fpga.board`、
 > `AGENTS.md` §2.1/§7.1/§7.6、根 `README.md`、`docs/00`、`board/README.md`、`board/build_bd.tcl`（板级 preset 已参数化 + 加停止守卫）。
@@ -105,12 +114,22 @@ JP1（另 40 脚，GPIO1_xP/N，引脚号见官方手册）本文不用，留给
 | 最大分辨率（描述段） | OV7725 "可拍 **640×480 8-bit 灰度** 或 **640×480 16-bit RGB565 @ 75 fps**" |
 | 最大分辨率（Specs 表） | Grayscale ≤ 640×480；**RGB565 ≤ 320×240**；Grayscale JPEG ≤ 640×480；**RGB565 JPEG ≤ 640×480** |
 
-> ⚠️ **同一页自相矛盾**：描述段说 VGA RGB565 能跑，规格表说 RGB565 上限 QVGA。
-> **我不替它裁决** —— `openmv_stream.py` 的 `MODE="probe"` 就是为把这矛盾变成**你的实测表**而写的。
+> ✅ **2026-09-24 真机实测裁决（部分）**：同一页自相矛盾的两处，在**我们这台 + v5 的 `csi` 分支**上
+> 实测结果是 —— **Specs 表那边对**：`RGB565 / VGA` 直接抛
+> `RuntimeError: Frame buffer overflow, try reducing the frame size.`，
+> 而 `RGB565 / QVGA`（153600 B）成功、**39.76 fps 均值**。
+> 原因也一并实测到了：`gc.mem_free()` = **308944 B**，而 VGA RGB565 要 **614400 B**（1.99 倍）。
+> ⚠️ 但**不要**据此说"OpenMV 官方文档错了"：描述段讲的可能是 OV7725 + 别的固件/模式下的情形，
+> 我们**没有**条件复现那个上下文。**只能说"我们这台在 v5 分支上 VGA RGB565 不可用"。**
+> 📄 数据：`fpga/report/t6_openmv_capture_matrix_v1.md`。
 >
 > 依据（仓库自己的记录）：`fpga/report/c5_fir_filter_30hz_revert.md` §9 已记录实测
 > "送 PC（USB VCP，JPEG）：VGA **11.7 fps**（官方示例）→ 定时器双缓冲 **20 fps**；QVGA 约 25~32 fps"。
 > 也就是说 **640×480 的彩色只能走 JPEG**（有损）。
+>
+> 📌 **本次首测还没拿到的那一行**：`GRAYSCALE / VGA` = **307200 B**，比可用内存 308944 B
+> **只小 1744 B** —— 这是"擦边"里最有信息量的一组（成 → VGA 灰度可用；崩 → 说明擦边请求会搞死相机），
+> 见 `fpga/report/t6_openmv_capture_matrix_v1.md` §5。
 
 ### 2.3 OpenMV H7 的 UART 引脚（固定）
 
@@ -317,15 +336,22 @@ board/openmv/mizar_z7_openmv_uart.xdc    ← 上面那张表的引脚约束
 python board/openmv/vigilens_link.py --selftest        # 期望 RESULT: PASS (9/9)
 python board/openmv/host_capture_test.py --selftest    # 期望 RESULT: PASS (10/10)
 python board/openmv/raw_to_contract.py --selftest      # 期望 RESULT: PASS (18/18)
+python board/openmv/offline_check.py                   # 期望 RESULT: PASS (28/28) —— 见下
 python -m pytest -q                                    # 期望 78 passed
 python -m pip install pyserial                         # 串口模式需要
 ```
 
-**判据**：9/9、10/10、18/18、78 passed。**任何一条红，先解决它再往下走。**
+> `offline_check.py` 是**在 PC 上用假模块跑真脚本**（`openmv_capture_test.py` 只能在相机上跑）：
+> 假的 `csi`（v5）/ 假的 `sensor`（v4）各 14 项，**两条分支都验**。
+> 它已经真抓到过一个真机也会犯的 bug（`main()` 里 `_CAM_API` 漏 `global`，
+> 被自己的 `except` 吞掉、打印成假的"相机 API 探测失败"）—— 见 §6 第 9 条。
+> 它也已纳入 `metrics/scripts/check_all.py` 的工具自检，所以**每次跑总入口都会顺带验它**。
 
-> 本节 9/9、10/10、18/18 与 78 passed 都是我**在本机真实跑出来的**（2026-09-23）。
+**判据**：9/9、10/10、18/18、28/28、78 passed。**任何一条红，先解决它再往下走。**
+
+> 本节 9/9、10/10、18/18、28/28 与 78 passed 都是我**在本机真实跑出来的**（2026-09-23 / 09-24）。
 > `raw_to_contract.py` 另外还跑过一次**端到端**：合成 dump → 转换 → 逐像素抽查通道顺序（见 §7 末尾）。
-> 硬件相关的数字一概还没有。
+> 硬件相关的数字目前只有 `matrix` 的前 2 行（`fpga/report/t6_openmv_capture_matrix_v1.md`）。
 
 ---
 
@@ -366,28 +392,40 @@ python -m pip install pyserial                         # 串口模式需要
 
 **第 1 步：能力矩阵**（改顶部 `MODE = "matrix"`，在 OpenMV IDE 里运行）
 
-它会逐个试「像素格式 × 分辨率 × 帧缓冲数」共 7 组，每组实测 2 秒，打印：
+它会逐个试「像素格式 × 分辨率 × 帧缓冲数」共 **10 组**，每组实测 2 秒，打印：
 
 ```
-pixformat  size  fb    fps均值   fps中位   最慢帧      B/帧     理论B   mem可用  备注
-RGB565     VGA    1    ...      ...       ...        ...      ...     ...     （预期：失败或很慢）
-RGB565     QVGA   1    ...
-GRAYSCALE  VGA    1    ...
-GRAYSCALE  QVGA   1    ...
-JPEG       VGA    1    ...
-JPEG       VGA    2    ...      ← 重点：双缓冲能不能把 VGA JPEG 拉到 20 fps
-JPEG       QVGA   1    ...
+# 先打印「本轮按什么顺序跑」以及每一组的预计占用与风险，再逐行出结果
+本轮 MATRIX_STAGE=auto → 10 组。**下面的顺序就是执行顺序**：
+    1. JPEG      QVGA     fb=1 [small] 预计整帧 ~12800 B
+    ...
+   10. RGB565    VGA      fb=1 [big  ] 预计整帧 614400 B   ← 比可用内存大，**预期失败**
+
+pixformat  size     fb    fps均值    fps中位   最慢帧fps        B/帧        理论B     mem可用  备注
+RGB565     VGA       1        -        -        -          -     614400    307136  RuntimeError: Frame buffer overflow, ...
+RGB565     QVGA      1    39.76    40.01    16.08     153600     153600    307136  csi API     ← 真机实测
 ```
+
+> ⚠️ **顺序是刻意的，别随手重排**：2026-09-24 第一次真机运行**只回来了 2 行**（7 组里），
+> 分不清是"没跑到"还是"某组把相机搞死了"（`RGB565/VGA` 已经证明内存会被请求爆掉，
+> 紧随其后的 `GRAYSCALE/VGA` 离可用内存只差 1744 B，是最容易拖死相机的擦边请求）。
+> 所以现在**小的、要 JPEG 字节数的在前面，已知会炸的大组合放最后** ——
+> 就算炸，也只剩它自己没跑完。
+>
+> 🔧 **万一还是没跑完**：把 `MATRIX_STAGE` 改成 `"small"` / `"mid"` / `"big"` 分段跑，
+> 并注意每组开跑前那行 `---- [k/N] … 开始（此刻 gc.mem_free() = … B）----`：
+> **最后一次出现的组号，就是把相机搞死的那一组。**
 
 **判据 / 这一步买到什么**：
 
 | 列 | 它能定论什么 |
 |---|---|
-| `fps均值` / `fps中位` | **契约 §0 要 30 fps** —— 一眼看出差多少 |
-| **`最慢帧`** | 最坏情况的采样间隔。运动/眨眼检测关心的是它，不是平均值 |
-| `B/帧` vs `理论B` | 若两者差很多 → **实际生效的分辨率/格式与请求的不是一回事**（工具会打警告） |
-| **`mem可用`** | 这是 `gc.mem_free()` 实测值。契约要 640×480 **RGB888** = **921,600 B/帧**，而 H7 只有 1 MB SRAM —— **能不能整帧装下，看这一列就定论了，不用推算** |
+| `fps均值` / `fps中位` | **契约 §0 要 30 fps** —— 一眼看出差多少（已实测 `RGB565/QVGA` = 39.76 fps） |
+| **`最慢帧fps`** | 最坏情况的采样间隔。运动/眨眼检测关心的是它，不是平均值。<br>⚠️ **它是帧率不是毫秒**（16.08 = 62.2 ms/帧），第一行失败时最容易看错 |
+| `B/帧` vs `理论B` | 若两者差很多 → **实际生效的分辨率/格式与请求的不是一回事**（工具会打警告）。<br>`理论B` 前带 `~` 的是压缩格式（JPEG）的**名义值**，那种格式只看 `B/帧` |
+| **`mem可用`** | `gc.mem_free()` 实测值。契约要 640×480 **RGB888** = **921600 B/帧**，实测可用只有 **308944 B** → **装不下，不需要推算** |
 | `备注` | 双缓冲是否真的生效（老固件没有 `set_framebuffers()` 时工具会明说，不静默忽略） |
+| 表末的**「契约可行性小结」** | 工具**自动**折算出来的：装得下契约帧的组合、≥30fps 的组合、最坏单帧、按 `min_close_frames` 折算的最短可检出闭眼。**只用实测数字，不引用任何预期值** |
 
 **第 2 步：无损落盘**（改 `MODE = "dump"`，并把 `CHOSEN_*` 填成第 1 步里可用的最好组合）
 
@@ -413,8 +451,11 @@ python board/openmv/raw_to_contract.py metrics\logs\openmv_dump `
 
 **把这整张矩阵表和转换报告原样贴进 `report/llm_log/` 的记录里**（不许手改数字）。
 
-> 按官方规格表预期：RGB565 的 VGA 会**失败**，JPEG 的 VGA 会成功但 fps 明显低于 30。
-> 如果实测与预期不同 —— **以实测为准**，这正好是 OpenMV 文档值得被记录的一处矛盾。
+> 📊 **已实测回填（2026-09-24，只回来 2 行）**：`RGB565/VGA` **确实失败**（overflow，与 Specs 表一致）；
+> `RGB565/QVGA` **成功且 39.76 fps**（比预期好，超过契约的 30 fps）。
+> **还没拿到的**：`GRAYSCALE/VGA`（擦边 1744 B）、四组 JPEG 的真实字节数
+> （A 线旁路画面的带宽预算就等这个）、`omv.version` 与传感器 `get_id()`。
+> 报错原文与全部算术见 `fpga/report/t6_openmv_capture_matrix_v1.md`。
 
 > ⚠️ **JPEG 是死路，别在这上面花时间**：即使 VGA JPEG 能到 20 fps，它也是**有损**的，
 > 转出的 RGB888 **不能**作为 C 线黄金参考（契约 §4.3 要求容差 0），
@@ -606,11 +647,13 @@ build_bd.tcl（把 BOARD_PART 换成 Mizar-Z7 的板级文件，或手写 PS7；
 | 2 | 当前分支 `c-line/fs30` 有 1 个**未推送**提交，且 v1.2 草案**未会签** | `git log main..HEAD`；`docs/interface.md` 头部自述 | 推之前先确认 A/B 是否已回复"收到、不冲突" | ❌ 没动 |
 | 3 | `board/README.md` 开头说"M3 之前这个目录应该是空的"，但目录里已有 5 个脚本 | `board/README.md:4` vs 实际文件 | 该 README 自己下面已经打了补丁说明，属**已自认**的滞后，可接受 | ❌ 没动 |
 | 4 | **Mizar-Z7 手册自相矛盾**：以太网 Key Features 写 10/100，Giga ETH 节写 10/100/1000 | 官方手册两处 | 以 `ethtool` 实测为准 | — |
-| 5 | **OpenMV 官方页面自相矛盾**：描述说 VGA RGB565@75fps，规格表说 RGB565 ≤ 320×240 | openmv.io 产品页 | `MODE="probe"` 实测裁决 | — |
+| 5 | **OpenMV 官方页面自相矛盾**：描述说 VGA RGB565@75fps，规格表说 RGB565 ≤ 320×240 | openmv.io 产品页 | ✅ **2026-09-24 实测裁决（部分）**：本机固件/传感器下 `RGB565/VGA` 抛 `Frame buffer overflow` → 与 Specs 表一致（**不下"官方文档错了"的结论**） | — |
 | 6 | 契约 §0 冻结的板卡是 **PYNQ-Z2**，实物是 **Mizar-Z7** | `config.yaml` `fpga.device` vs 实物 | **芯片相同（XC7Z020-1CLG400C），但板卡不同** → DDR 配置、引脚约束、bitstream 全部要重做。这是**契约层面的变更**，按 `AGENTS.md` §4 该走 `contract:` 流程，且 `config.yaml` 的 `device:` 注释 `# PYNQ-Z2` 已不准确 | ❌ 没动 |
 | 7 | **`board/build_bd.tcl` 曾硬编码 PYNQ-Z2 的板级 preset** | 原 `board/build_bd.tcl:30` = `set BOARD_PART "tul.com.tw:pynq-z2:part0:1.0"` | ✅ **2026-09-23 已改**：改为 `USE_BOARD_PRESET` 开关（默认 0）+ `catch` + 缺 preset 时 `exit 1`。同文件 L29 的 `set PART "xc7z020clg400-1"` **与实物一致，未动** ✅ | ✅ 已动 |
 | 7b | MicroPhase 是否为 **Mizar-Z7** 提供 Vivado board files | 官方手册"Related Documents"只列了原理图/尺寸/dxf，**没有 board file**（同厂的 Z7-Lite 有，Mizar 未确认） | 若没有 → 得手工配 PS7（**1GB DDR**、UART、Ethernet、SD）+ 自己写 XDC。这是对 `build_bd.tcl` 的**实质性返工**，要提前排进 M3 | — |
 | 8 | `board/overlay/load_overlay.py` 走 PYNQ `Overlay()`，但 Mizar 是否有 PYNQ 镜像**未确认** | 官方手册无 PYNQ 记载 | T2.3 的判定命令；若没有则 M3 要改成 `/dev/mem` mmap 路线 | ❌ 没动 |
+| 9 | **旧版 `openmv_capture_test.py` 的 `main()` 漏写 `global _CAM_API`** → 相机探测**成功**时也会打印 `相机 API : **探测失败**`（`UnboundLocalError` 被同一段 `except Exception` 吞掉），并让 `report.json` 的 `camera_api` 变成 `null` | 2026-09-24 本机假模块自检复现：把 `HEAD` 版脚本喂给 `offline_check.py`，输出确认含该行假故障（旧版 4/14，新版 14/14） | ✅ **2026-09-24 已修**（加 `global` + 说明注释），并把 `offline_check.py` 纳入 `check_all.py` 回归，防止复发 | ✅ 已动 |
+| 10 | 旧版把 `uname.release`（**MicroPython 版本**）标成"固件版本"，又把 `sys.version` 首段标成"MicroPython 版本" | 真机回帖那行：`OPENMV4 with STM32H743 1.28.0 \| MicroPython 3.4.0` —— **两个标签都不准** | ✅ **2026-09-24 已修**：标签写准，并新增 `omv.version` / `os.uname().version` / 传感器 `get_id()` 探测。**完整固件串仍待下次跑出来** | ✅ 已动 |
 
 > ⚠️ **第 6 条最需要你注意**：把目标板从 PYNQ-Z2 换成 Mizar-Z7 是一次**契约级变更**。
 > 我没有替你改 `config.yaml` 或 `docs/interface.md` —— 按规矩这要先公告、再改文档、再同步实现。
@@ -624,7 +667,8 @@ build_bd.tcl（把 BOARD_PART 换成 Mizar-Z7 的板级文件，或手写 PS7；
 | `vigilens_link.py` | **串口帧协议唯一实现**（12B 头 + CRC-16/CCITT-FALSE）。**刻意不用类型注解**，为了能在 MicroPython 里跑同一份 | ✅ `--selftest` **9/9 PASS**（已跑） |
 | `host_capture_test.py` | 上位机：列摄像头 / 测真实分辨率与帧率 / 判契约 §0 / 导契约布局 RGB888 / 收串口帧 | ✅ `--selftest` **10/10 PASS**（已跑） |
 | `openmv_stream.py` | OpenMV 侧（联调/演示用）：链路握手 / 字节回环 / 统计量流 / JPEG 流 | ⚠️ **语法与 API 引用已检，未在真机运行** |
-| **`openmv_capture_test.py`** | **OpenMV 上运行的图像采集测试**：能力矩阵（格式×分辨率×帧缓冲数）+ 长跑帧率统计（含抖动/最慢帧）+ 无损落盘 + **pixel_samples 对拍样本** | ⚠️ **语法已检，未在真机运行** |
+| **`openmv_capture_test.py`** | **OpenMV 上运行的图像采集测试**：能力矩阵（格式×分辨率×帧缓冲数，按风险排序 + 可分段）+ 长跑帧率统计（含抖动/最慢帧）+ 无损落盘 + **pixel_samples 对拍样本** + 表末**契约可行性小结** | 🧪 **真机跑过一次**（2026-09-24，只回来 2 行 → `fpga/report/t6_openmv_capture_matrix_v1.md`）；本机逻辑自检见下一行 |
+| **`offline_check.py`** | **PC 上用假模块跑真脚本**（v5 `csi` / v4 `sensor` 两条分支，各 14 项）：验组合顺序、失败行的内存算术、契约小结、`_CAM_API` 作用域…… | ✅ `RESULT: PASS (28/28)`（已跑，且已纳入 `check_all.py` 回归） |
 | **`raw_to_contract.py`** | PC 侧：原始 dump → **契约 §4.1 布局 RGB888**；`--calibrate` 用对拍样本**反推** RGB565 位扩展公式；含 stride/行填充推断 | ✅ `--selftest` **18/18 PASS** + 合成 dump **端到端实测通过**（均已跑） |
 | `pl_uart_echo.v` | PL 侧最小回环（UART 回环 + 心跳 + 1 kHz 测频） | ⚠️ **未综合、未上板** |
 | `mizar_z7_openmv_uart.xdc` | Mizar-Z7 引脚约束（含与 PYNQ-Z2 的关键差异说明） | ⚠️ **未在 Vivado 里验证** |
@@ -658,15 +702,21 @@ build_bd.tcl（把 BOARD_PART 换成 Mizar-Z7 的板级文件，或手写 PS7；
 
 **已验证 / 未验证的边界（按 `AGENTS.md` 的自检三条，必须分清）**：
 
-- 【已验证】四个 Python 程序的 `--selftest`：`vigilens_link` **9/9**、`host_capture_test` **10/10**、
-  `raw_to_contract` **18/18**（本机真实输出）；`openmv_capture_test` 只做了**语法**检查
+- 【已验证】五个程序的离线自检（本机真实输出）：`vigilens_link` **9/9**、`host_capture_test` **10/10**、
+  `raw_to_contract` **18/18**、`offline_check` **28/28**（v5/v4 两条分支各 14）；
+  `openmv_capture_test.py` 本体是**在相机上跑**的，其逻辑由 `offline_check` 在 PC 上代为验证
+- 【已验证】**真机硬件事实（2026-09-24）**：`gc.mem_free()` = **308944 B**；`RGB565/VGA` 抛
+  `Frame buffer overflow`；`RGB565/QVGA` = **39.76 fps 均值 / 153600 B/帧**；该固件走 **`csi` API**。
+  证据与逐项算术：`fpga/report/t6_openmv_capture_matrix_v1.md`
 - 【已验证】`raw_to_contract.py` 的**端到端**：合成一份 320×240 RGB565 × 3 帧的 dump（含 `meta.json`
   与 `pixel_samples`）→ `--info` / `--calibrate` / 转换全部跑通；输出 691200 B = 320×240×3×3，
   逐像素抽查 `c=0→R` 正确（纯红落在 (255,0,0)、纯蓝落在 (0,0,255)）
 - 【已验证】导出帧的通道顺序 `c=0→R`、总字节 = 帧数 × 921600（用生成的测试视频实测）
-- 【已验证】`pytest 78 passed`、A 线 synthetic 链路退出码 0
-- 【已验证】本目录文件均**未**产生任何"硬件性能数字"
-- 【未验证】OpenMV 的实际分辨率 / 帧率 / 内存余量 —— **必须由你在板上跑 `openmv_capture_test.py` 的 `matrix`**
+- 【已验证】`pytest 78 passed`、A 线 synthetic 链路退出码 0、`check_all.py` **PASS 22 / FAIL 0**
+- 【未验证/未拿到】**JPEG 的真实压缩后字节数**（A 线旁路画面的带宽预算等它）、
+  **`GRAYSCALE/VGA`（307200 B，离可用内存只差 1744 B）能否成功**、
+  **完整固件版本串与传感器 `get_id()`** —— 重跑 `matrix` 即可
+- 【不确定】第一次真机的矩阵**只回来 2 行**：是相机在某组卡死，还是回帖被截断 —— 见报告中 §4.2
 - 【未验证】OpenMV 实际采用哪种 RGB565 位扩展 —— 由板上 `pixel_samples` 对拍确定（工具会拒绝猜）
 - 【未验证】`pl_uart_echo.v` 的可综合性、时序、上板行为
 - 【未验证】`mizar_z7_openmv_uart.xdc` 的引脚正确性（引脚号来自官方手册，但没在 Vivado 里跑）
@@ -708,15 +758,22 @@ C: 新增 OpenMV 首次测试包（协议/上位机工具/PL 最小回环/接线
 ## 9. 我明确做不到的事（避免"已完成幻觉"）
 
 1. **我没看过 GitHub 网页** —— DNS 把 `github.com` 指到 `127.0.0.1`。上面关于远端的结论全部来自 `git ls-remote`。
-2. **我没跑过任何硬件** —— OpenMV、Mizar-Z7 都不在这台机器上。所有硬件数字都是"待你实测"。
+2. **我没跑过任何硬件** —— OpenMV、Mizar-Z7 都不在这台机器上。本文件里的硬件数字
+   **全部来自人类回帖的真机输出**（2026-09-24 那 2 行，见 `fpga/report/t6_openmv_capture_matrix_v1.md`），
+   我做的只有**算术与判读**；JPEG 字节数、`GRAYSCALE/VGA`、固件串、传感器型号**都还没拿到**。
 3. **我没跑过 Vivado / Vitis** —— `pl_uart_echo.v` 与 XDC 未综合、未实现、未上板。
-4. **本次我确实改了一些既有文件**（上一轮只报告不动，这一轮按你的指示落实了板卡变更）：
-   `docs/interface.md`（v1.3 草案：§0 + 文件头 + §6 变更记录）、`config.yaml`（新增 `fpga.board`，`device` **未动**）、
-   `AGENTS.md`（§2.1 / §5.1 / §7.1 / §7.6 / §9）、根 `README.md`、`docs/00`、
-   `board/README.md`、`board/build_bd.tcl`、`board/bringup_check.py`、`board/dma_test.py`、
-   `board/hw_sw_compare.py`、`board/overlay/load_overlay.py`。
-   **但 `CONTRACT_VERSION` 仍是 `v1.1`**（草案未会签，按 `AGENTS.md` §4 不升级），
-   且 **`backend/` 一个字没动**（A 线领地）。
+4. **我改过哪些既有文件**（分两轮，都在下方列清）：
+   - 板卡 v1.3 那一轮：`docs/interface.md`（v1.3 草案：§0 + 文件头 + §6 变更记录）、
+     `config.yaml`（新增 `fpga.board`，`device` **未动**）、`AGENTS.md`（§2.1 / §5.1 / §7.1 / §7.6 / §9）、
+     根 `README.md`、`docs/00`、`board/README.md`、`board/build_bd.tcl`、`board/bringup_check.py`、
+     `board/dma_test.py`、`board/hw_sw_compare.py`、`board/overlay/load_overlay.py`。
+   - **真机首测（2026-09-24）这一轮**：`board/openmv/openmv_capture_test.py`（修 `_CAM_API` bug +
+     组合重排 + `MATRIX_STAGE` + 环境探测 + 契约小结）、**新增 `board/openmv/offline_check.py`**、
+     `metrics/scripts/check_all.py`（工具自检 +1 → 基线 21→22）、
+     `board/openmv/README.md`、`docs/10`、`docs/11`、`docs/12`、`AGENTS.md`，
+     以及**新增证据文档 `fpga/report/t6_openmv_capture_matrix_v1.md`**。
+   **但 `CONTRACT_VERSION` 仍是 `v1.1`**（两个草案未会签，按 `AGENTS.md` §4 不升级），
+   且 **`backend/` 与 `frontend/` 一个字没动**（A/B 线领地）。
 5. **历史记录一律没有改写**：`fpga/report/` 的既有测量报告、`report/llm_log/`、`metrics/evidence/`
    全部原样 —— 它们记录的是"当时那块板（PYNQ-Z2）当时的事实"，改写它们等于篡改历史。
    只有**活规格**（契约/config/AGENTS/README/board 脚本）才随板卡更新。
