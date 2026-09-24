@@ -163,6 +163,7 @@ python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查
 #    而且在 Windows PowerShell 5.1 下 `>` 默认写 UTF-16，字节必然与入库的 UTF-8 版本不同。
 node frontend/mock.js --limit 6 > metrics/logs/_js_frames.jsonl
 python metrics/scripts/check_frontend_contract.py metrics/logs/_js_frames.jsonl      # 期望：通过
+python metrics/scripts/check_video_bypass.py   # 期望：15/15 —— 旁路画面链路 + 契约未被污染
 git status --short                             # 只应出现你本线的改动
 ```
 
@@ -176,6 +177,7 @@ git status --short                             # 只应出现你本线的改动
 | `--selftest` | `"ok": true` | JS 的 mock 与校验器不自洽 |
 | `check_frontend_wiring` | `通过` | `app.js` 引用了不存在的 DOM id（症状：**页面不报错、区域空白**） |
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
+| `check_video_bypass` | `15/15 通过` | 旁路画面链路坏了，或**有人把图像塞进了契约帧**（T9/T10 会红）；或画面停推后仍显示冻结旧帧（T6 会红） |
 
 > **基线沿革**：2026-09-10 起始基线 `49 passed in 0.51s`；2026-09-15 A 线补上 rPPG 链路的
 > 16 项测试（`backend/tests/test_vital.py`）后为 **`65 passed`**；2026-09-16 A 线补上 M2 交接面的
@@ -210,6 +212,29 @@ python metrics/scripts/check_a_line_p5_m2.py   # 一条命令验证整条链路�
 > 否则 `frame_id` 回退、违反契约 §1 的单调递增；**同一时刻只允许一个推送源**。
 > 网页默认地址栏是 `ws://127.0.0.1:8765`（`websocket.py` 的端口），用 `api.py` 时要改成
 > `ws://127.0.0.1:8000/ws`。
+
+### 6.2.2 一键跑通「采集 → 分析 → 网页」（含**真实画面**）
+
+```bash
+# 一条命令：起服务 + 起管线 + 开浏览器（服务保持运行，Ctrl-C 退出）
+.venv\Scripts\python.exe metrics/scripts/run_demo.py                      # 合成帧源，先验链路
+.venv\Scripts\python.exe metrics/scripts/run_demo.py --list               # 找摄像头序号
+.venv\Scripts\python.exe metrics/scripts/run_demo.py --source 0           # 真实摄像头（OpenMV 刷 uvc.bin 后即可）
+.venv\Scripts\python.exe metrics/scripts/run_demo.py --source data/raw/blink.mp4 --loop
+```
+
+**画面走旁路，不进契约帧**（契约 §1 的帧只允许那 9 个顶层字段，塞图像就是非法帧）：
+
+| 通道 | 入口 | 去向 |
+|---|---|---|
+| 指标（契约） | `POST /api/ingest` | `/ws` → 网页数字 / 曲线 / 状态 |
+| **画面（旁路）** | `POST /api/frame`（JPEG 原始字节） | `GET /video.mjpg`（MJPEG）→ 网页真实画面 |
+
+- A 线侧：`run_pipeline.py --push-video`（背景线程 + 单槽队列，**只丢帧不阻塞测量**）。
+- 参数在 `config.yaml`：`video_push_hz` / `video_jpeg_quality` / `video_max_width`。
+- ⚠️ **旁路画面失败不改变退出码**（画面是给人看的，指标才是测量结果），但会计数、打印、进 summary。
+- ⚠️ 前端用 `/api/video_status` 的**过期判定**决定是否显示画面；推送端一挂就自动隐藏，
+  **不会显示一张冻结的旧画面**（这一段由 `check_video_bypass.py` 的 T6 钉死）。
 
 ### 6.3 C 线（HLS，需完整权限终端）
 
@@ -310,9 +335,11 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
   未闭合项：MicroPhase 是否为 Mizar-Z7 提供 Vivado board file **未确认**（若无，PS7 DDR 参数必须取自厂商资料，**不得猜**）。
 - **会签前 v1.1 仍是生效版本**，`CONTRACT_VERSION` 保持 `v1.1`。
 - 本地/远端状态（本节容易过期，**每次用 `git status` / `git log` 复核**）：
-  **2026-09-23 实测** —— `origin/main = ad9ad54` = 本地 `main`（同步）；但**当前工作分支是 `c-line/fs30`**，
-  领先 `main` 1 个提交（v1.2 草案的 45→30 Hz），该提交**尚未推送到任何远端**。
-  ⚠️ 也就是说 **v1.2 与 v1.3 两个草案都还没进 `main`**。
+  **2026-09-24 实测** —— `origin/main = d3a788f`（B 线新增 `docs/09_桌面专注舱功能方案.md`）；
+  本地 `main` 落后 1 个提交，**当前工作分支 `c-line/fs30` 与远端已分叉**：
+  它领先 `origin/main` 若干提交（v1.2 草案 + 板卡 v1.3 草案 + OpenMV 测试包 + 架构评审稿），
+  **这些提交都还没推送**。
+  ⚠️ 也就是说 **v1.2 与 v1.3 两个草案都还没进 `main`**；`docs/09` 也还没进当前分支（要先合并）。
 
 ---
 
