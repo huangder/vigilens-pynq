@@ -245,6 +245,52 @@ long_close_ms: 500       # 单次闭眼 ≥ 此毫秒数记"长闭眼"而非"眨
 > ⚠️ **`uvc.bin` 会替换掉固件**，刷了它就跑不了 `openmv_stream.py` 的 MicroPython 脚本；
 > 要回去跑脚本得重新刷 `firmware.bin`。**两者不可兼得**，先想好这次要哪个。
 
+#### 🎬 刷完 `uvc.bin` 之后：**先量，再演示**（这条路不需要板卡）
+
+刷成 UVC 之后，OpenMV 就是**标准 USB 摄像头**：OpenCV 直接能开它，于是整条
+「采集 → 分析 → 网页」链路**全在笔记本上跑完**（`api.py` + `run_pipeline.py` + 浏览器），
+**Mizar-Z7020 全程不参与** —— 这就是"脱板测试"最直接的做法。
+
+**第 1 步：先量它的真实能力（这一步产出证据，别跳过）**
+
+```powershell
+python board/openmv/host_capture_test.py --list                       # 找到它的序号（与笔记本自带摄像头区分）
+python board/openmv/host_capture_test.py --device 0 --seconds 10 --probe 640x480,320x240
+#                                        ↑ 把 0 换成 --list 打印的序号
+```
+
+**判据**：JSON 里 `distinct_frames` **必须 ≈ `frames`**。
+若 `distinct_frames == 1`，说明你拿到的是**冻结画面**，那个"帧率"是假的（工具会打 ⚠️ 警告）。
+⚠️ UVC 走的是 **USB full-speed（12 Mb/s）**，所以**高分辨率只能靠 MJPEG 压缩** ——
+它到底能给多大/多快，**以这一步的实测为准**，不要引用官方页面上的数字。
+
+**第 2 步：一条命令跑通「采集 → 分析 → 网页」**
+
+```powershell
+python metrics/scripts/run_demo.py --source 0 --video-hz 25
+#                                  ↑ 换 --list 打印的序号
+```
+
+- **数字/曲线/状态**：走契约通道（`POST /api/ingest` → WebSocket）→ 网页
+- **真实画面**：走旁路（`POST /api/frame` → `GET /video.mjpg`）→ 网页里的真实图像
+- 画面的节奏/质量/尺寸**不必改三人共用的 `config.yaml`**，用
+  `--video-hz` / `--video-quality` / `--video-max-width` 临时覆盖即可。
+- ⚠️ **测量一结束，画面会被判定为"过期"并自动隐藏**（刻意设计：**不显示冻结的旧画面**）。
+  要长时间演示就加 `--loop`，或者干脆不给 `--seconds`。
+- ⚠️ **`landmark_source` 必须是 `mediapipe`**：是 `stub` 的话，这批数据的 EAR/MAR
+  **不能作为算法结果引用**（`AGENTS.md` 铁律 1）。
+
+**这条路**能**证明什么、不能证明什么**（别越界引用）：
+
+| | 说明 |
+|---|---|
+| ✅ 能证明 | 「相机 → 分析 → 网页」整条**软件链路**通了，网页上能看到**真实画面 + 真实指标** |
+| ❌ 不能证明 | 契约 §0 的口径（**画面是旁路，一个像素都不进契约帧** —— 这条由 `check_video_bypass.py` 的 T9/T10 钉死）；**也与 HLS IP / DMA / 上板**毫无关系 |
+
+> 📌 想**完全不碰相机固件**也能先看到真实画面：用**笔记本自带摄像头**（通常 `--source 0`）
+> 或一段手机拍的 mp4（`--source data/raw/xxx.mp4 --loop`）——
+> 链路是同一套代码，先把它跑通、再看 OpenMV 的真实能力。
+
 **方式 A2：USB 虚拟串口（VCP）模式**
 
 OpenMV 插上就是虚拟串口。用 `openmv_stream.py` 的 `MODE="usb_jpeg"` 往外送帧，

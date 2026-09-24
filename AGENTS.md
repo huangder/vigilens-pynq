@@ -250,6 +250,11 @@ python metrics/scripts/run_demo.py --source data/raw/blink.mp4 --loop
 
 - A 线侧：`run_pipeline.py --push-video`（背景线程 + 单槽队列，**只丢帧不阻塞测量**）。
 - 参数在 `config.yaml`：`video_push_hz` / `video_jpeg_quality` / `video_max_width`。
+  🎛️ **`run_demo.py` 也能临时覆盖它们**（**不必去改三人共用的 `config.yaml`**）：
+  `--video-hz` / `--video-quality` / `--video-max-width`，例如
+  `python metrics/scripts/run_demo.py --source 0 --video-hz 25`。
+- 📌 **这条路完全不需要板卡**（服务/管线/浏览器都在笔记本上，相机只是视频源）——
+  就是给"脱板演示 + 先看真实画面"用的。
 - ⚠️ **旁路画面失败不改变退出码**（画面是给人看的，指标才是测量结果），但会计数、打印、进 summary。
 - ⚠️ 前端用 `/api/video_status` 的**过期判定**决定是否显示画面；推送端一挂就自动隐藏，
   **不会显示一张冻结的旧画面**（这一段由 `check_video_bypass.py` 的 T6 钉死）。

@@ -25,6 +25,9 @@
     # 视频文件 + 循环，做长时间演示
     .venv\\Scripts\\python.exe metrics/scripts/run_demo.py --source data/raw/blink.mp4 --loop
 
+    # 脱板演示：让网页里的画面更流畅/更大（不改 config.yaml —— 那是三人共用文件）
+    .venv\\Scripts\\python.exe metrics/scripts/run_demo.py --source 0 --video-hz 25 --video-max-width 640
+
 退出码：0 = 正常；2 = 参数/前置问题；3 = 指标推送到 B 线失败（与 run_pipeline 一致）。
 """
 
@@ -120,6 +123,15 @@ def main() -> int:
                     help="跑完一轮再从头跑（用 --frame-id-offset 保证 frame_id 单调递增）")
     ap.add_argument("--no-video", action="store_true",
                     help="不推旁路画面（网页显示占位网格）——用来对照'画面没了但指标正常'")
+    # 下面三个是 run_pipeline 的旁路画面参数，这里做**透传**：
+    # 为什么需要：默认值来自 config.yaml（8 Hz / q80 / 最长边 640），而 config.yaml 是**三人共用文件**
+    # （AGENTS.md §5），只为让演示画面流畅就去改它并不合适。用自己的开关临时覆盖即可。
+    ap.add_argument("--video-hz", type=float, default=None,
+                    help="旁路画面推送节奏（默认取 config.yaml 的 video_push_hz = 8）")
+    ap.add_argument("--video-quality", type=int, default=None,
+                    help="旁路 JPEG 质量 1..100（默认取 config.yaml 的 video_jpeg_quality = 80）")
+    ap.add_argument("--video-max-width", type=int, default=None,
+                    help="旁路画面最长边（等比缩放；默认取 config.yaml 的 video_max_width = 640）")
     ap.add_argument("--no-open", action="store_true", help="不自动打开浏览器")
     ap.add_argument("--exit-when-done", action="store_true",
                     help="测量结束后立即退出（不保持服务运行）。给自动化测试/CI 用 —— "
@@ -145,6 +157,10 @@ def main() -> int:
     print(f"帧源    : {args.source}")
     print(f"网页    : {page}")
     print(f"旁路画面: {'关闭（只显示占位网格）' if args.no_video else page + 'video.mjpg'}")
+    if not args.no_video:
+        print(f"          （节奏/质量/最长边未指定的取 config.yaml："
+              f"{args.video_hz or '8'} Hz / q{args.video_quality or 80} / "
+              f"最长边 {args.video_max_width or 640}）")
     print()
 
     LOGS.mkdir(parents=True, exist_ok=True)
@@ -179,6 +195,12 @@ def main() -> int:
         cmd_base += ["--seconds", str(args.seconds)]
     if not args.no_video:
         cmd_base += ["--push-video"]
+        if args.video_hz is not None:
+            cmd_base += ["--video-hz", str(args.video_hz)]
+        if args.video_quality is not None:
+            cmd_base += ["--video-quality", str(args.video_quality)]
+        if args.video_max_width is not None:
+            cmd_base += ["--video-max-width", str(args.video_max_width)]
 
     print("[3/3] 开始测量（Ctrl-C 可中断；服务会保持运行到退出）\n")
     print("[提示] 每条命令都带 --post auto 与固定端口，所以请把上面的网页地址当作唯一入口；")
