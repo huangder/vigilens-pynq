@@ -333,6 +333,15 @@ python -m pip install pyserial                         # 串口模式需要
 
 #### T1.0 OpenMV 图像采集测试（**必须先做这一步**）
 
+> ⚠️ **第 0 步：确认固件版本 ≥ 4.5.6**（实测踩到：2026-09-24 相机上是 **4.5.3**，
+> VSCode 的 OpenMV 扩展直接拒绝连接 —— `Firmware version 4.5.3 is too old, requires >= 4.5.6`）。
+> **VSCode 的 OpenMV 扩展自带固件升级**（功能清单里的 `☁️ Upgrade firmware`）：
+> 连接设备后它会自动检测最新版并提示升级；也可以 `Ctrl+Shift+P` 输入 `OpenMV` 找升级命令。
+> 手动退路：从 <https://github.com/openmv/openmv/releases> 下载固件 zip，用 **`OPENMV4/firmware.bin`**
+> （OpenMV Cam H7 就是 `OPENMV4`），在 **bootloader 模式（绿灯呼吸）** 下刷入。
+> ⚠️ 刷固件前先把相机盘上你自己的文件拷出来备份。
+> ⚠️ 该扩展的 code intelligence **与 `ms-python` 扩展冲突** —— 官方要求用之前先禁用 `ms-python`。
+
 用专门的采集测试程序 **`board/openmv/openmv_capture_test.py`**（不是联调用的 `openmv_stream.py`）。
 
 **准备**：把 `openmv_capture_test.py` 放到 OpenMV 的 U 盘根目录 —— 它**自包含**，
