@@ -155,13 +155,28 @@ TOOL_SELFTESTS = (
     # 为什么放进回归：它已真抓到过一个真机也会犯的作用域 bug（`_CAM_API` 漏 global 被
     # 自己的 except 吞掉、打印成假的"探测失败"）。硬件改不了它的逻辑，但本机能天天跑。
     ("board/openmv/offline_check.py", None),
+    # 相机 → 网页的串口收帧器（.ps1）。**纯离线自检，不开串口**：CRC 检查值 + 用 CPython
+    # 的 vigilens_link 造帧再让本脚本的解析器解回来、逐字节比对。
+    # 为什么必须进回归：这个脚本曾因 `[byte] -shl 8` 被截断而在真机上表现成"0 帧 + 上百次
+    # CRC 错"，而当时它**连自检都没有**。第三方元组项 = 用哪个 shell 跑（本机没有 pwsh）。
+    ("metrics/scripts/omv_stream_bridge.ps1", "-SelfTest", ("pwsh", "powershell")),
 )
 
 
 def check_tools(rep: Report, py: str) -> None:
     print("[3/6] 工具自检 ...")
-    for script, flag in TOOL_SELFTESTS:
-        args = [py, script] + ([flag] if flag else [])
+    for entry in TOOL_SELFTESTS:
+        script, flag = entry[0], entry[1]
+        shells = entry[2] if len(entry) > 2 else None
+        if shells:
+            shell = next((shutil.which(s) for s in shells if shutil.which(s)), None)
+            if not shell:
+                rep.add("工具自检", f"{script} {flag or ''}".strip(), SKIP,
+                        f"本机没有 {' / '.join(shells)}，跳过")
+                continue
+            args = [shell, "-NoProfile", "-File", script] + ([flag] if flag else [])
+        else:
+            args = [py, script] + ([flag] if flag else [])
         code, out = run(args, timeout=180)
         rep.add("工具自检", f"{script} {flag or ''}".strip(), PASS if code == 0 else FAIL,
                 last_meaningful(out, 1) if out else f"退出码 {code}")

@@ -120,7 +120,8 @@ def strip_internal(frame: dict) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="VigiLens A 线：视频回放 → 契约 JSON / CSV")
     ap.add_argument("--source", default="synthetic",
-                    help="视频文件路径 / 摄像头序号 / synthetic（默认，不需要任何依赖）")
+                    help="视频文件路径 / 摄像头序号 / synthetic（默认，不需要任何依赖）"
+                         " / mjpeg:URL（网页旁路画面，如 mjpeg:http://127.0.0.1:8031/video.mjpg）")
     ap.add_argument("--pattern", default="blink", choices=["blink", "yawn", "still", "turn"],
                     help="stub 关键点的行为模式（装好 mediapipe 后此项被忽略）")
     ap.add_argument("--stub", action="store_true", help="强制使用 stub 关键点（对比用）")
