@@ -244,11 +244,11 @@ def run_pixel_chain(ol, handles, frame_rgb, *, roi=(0, 0, R.FRAME_W, R.FRAME_H),
 
 # axi_fifo_mm_s（Xilinx PG080）寄存器偏移。⚠️【未验证】需按 Vivado 2026.1 实际
 # 实例化的 IP 版本核对这些偏移，并以 .hwh 地址空间为准。
-FIFO_SRR   = 0x00   # 软复位（写 0x000000A5）
-FIFO_TX    = 0x10   # TxFIFO 写数据
-FIFO_TXV   = 0x14   # TxFIFO vacancy（bit31=full 语义以 PG080 为准）
-FIFO_RX    = 0x18   # RxFIFO 读数据
-FIFO_RXO   = 0x1C   # RxFIFO occupancy（bit31=empty 语义以 PG080 为准）
+FIFO_SRR = 0x00   # 软复位（写 0x000000A5）
+FIFO_TX = 0x10   # TxFIFO 写数据
+FIFO_TXV = 0x14   # TxFIFO vacancy（bit31=full 语义以 PG080 为准）
+FIFO_RX = 0x18   # RxFIFO 读数据
+FIFO_RXO = 0x1C   # RxFIFO occupancy（bit31=empty 语义以 PG080 为准）
 
 
 def run_fir_segment(ol, handles, samples, *, reset: bool = True, timeout_s: float = 15.0):

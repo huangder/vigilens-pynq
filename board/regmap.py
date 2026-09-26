@@ -30,18 +30,18 @@ FIR_GROUP_DELAY = 31     # (N-1)/2，群延迟（样本）
 # ---------------------------------------------------------------------------
 # AXI-Lite 通用控制寄存器（所有 IP 一致，docs/interface.md §3.1）
 # ---------------------------------------------------------------------------
-CTRL   = 0x00            # RW：bit0 AP_START / bit1 AP_DONE / bit2 AP_IDLE / bit3 AP_READY
-GIER   = 0x04            # 全局中断使能
+CTRL = 0x00            # RW：bit0 AP_START / bit1 AP_DONE / bit2 AP_IDLE / bit3 AP_READY
+GIER = 0x04            # 全局中断使能
 IP_IER = 0x08            # IP 中断使能
 IP_ISR = 0x0C            # IP 中断状态
 
 # CTRL 寄存器 bit 位（HLS 标准 s_axilite 约定）
-AP_START      = 0
-AP_DONE       = 1
-AP_IDLE       = 2
-AP_READY      = 3
-AUTO_RESTART  = 7
-INTERRUPT     = 9
+AP_START = 0
+AP_DONE = 1
+AP_IDLE = 2
+AP_READY = 3
+AUTO_RESTART = 7
+INTERRUPT = 9
 
 # ---------------------------------------------------------------------------
 # 每个输出数据寄存器后面都跟着一个 *_ctrl（ap_vld）寄存器（偏移 = 数据 + 4）。
@@ -50,49 +50,49 @@ INTERRUPT     = 9
 
 class RoiStatistic:
     """roi_statistic v1（docs/interface.md §3.2）"""
-    roi_x0   = 0x10   # W  ROI 左边界（含，11 bit）
-    roi_y0   = 0x18   # W  ROI 上边界（含）
-    roi_x1   = 0x20   # W  ROI 右边界（不含）
-    roi_y1   = 0x28   # W  ROI 下边界（不含）
-    width    = 0x30   # W  图像宽（640）
-    height   = 0x38   # W  图像高（480）
-    sum_r    = 0x40   # R  （+0x44 sum_r_ctrl）
-    sum_g    = 0x48   # R  （+0x4c sum_g_ctrl）
-    sum_b    = 0x50   # R  （+0x54 sum_b_ctrl）
-    count    = 0x58   # R  （+0x5c count_ctrl）
+    roi_x0 = 0x10   # W  ROI 左边界（含，11 bit）
+    roi_y0 = 0x18   # W  ROI 上边界（含）
+    roi_x1 = 0x20   # W  ROI 右边界（不含）
+    roi_y1 = 0x28   # W  ROI 下边界（不含）
+    width = 0x30   # W  图像宽（640）
+    height = 0x38   # W  图像高（480）
+    sum_r = 0x40   # R  （+0x44 sum_r_ctrl）
+    sum_g = 0x48   # R  （+0x4c sum_g_ctrl）
+    sum_b = 0x50   # R  （+0x54 sum_b_ctrl）
+    count = 0x58   # R  （+0x5c count_ctrl）
     frame_id = 0x60   # R  （+0x64 frame_id_ctrl）
 
 
 class Rgb2Gray:
     """rgb2gray v2（docs/interface.md §3.4）：640×480 RGB → 384×288 灰度"""
-    width       = 0x10   # W  输入宽 640（须为 5 的整数倍）
-    height      = 0x18   # W  输入高 480
-    out_width   = 0x20   # R  输出宽 384（+0x24 _ctrl）
-    out_height  = 0x28   # R  输出高 288（+0x2c _ctrl）
+    width = 0x10   # W  输入宽 640（须为 5 的整数倍）
+    height = 0x18   # W  输入高 480
+    out_width = 0x20   # R  输出宽 384（+0x24 _ctrl）
+    out_height = 0x28   # R  输出高 288（+0x2c _ctrl）
     pixel_count = 0x30   # R  输出像素数 110592（+0x34 _ctrl）
-    sum_gray    = 0x38   # R  灰度累加和（+0x3c _ctrl）
-    frame_id    = 0x40   # R  （+0x44 _ctrl）
+    sum_gray = 0x38   # R  灰度累加和（+0x3c _ctrl）
+    frame_id = 0x40   # R  （+0x44 _ctrl）
 
 
 class MotionQuality:
     """motion_quality v2（docs/interface.md §3.3）：工作尺寸 384×288 灰度"""
-    width            = 0x10   # W  工作灰度宽 = 384
-    height           = 0x18   # W  工作灰度高 = 288
-    motion_thresh    = 0x20   # W  运动判定阈值（u8，暂定 16）
-    diff_total       = 0x28   # R  帧差总量 Σ|cur-prev|（+0x2c _ctrl）
-    motion_pixels    = 0x30   # R  运动像素个数（+0x34 _ctrl）
+    width = 0x10   # W  工作灰度宽 = 384
+    height = 0x18   # W  工作灰度高 = 288
+    motion_thresh = 0x20   # W  运动判定阈值（u8，暂定 16）
+    diff_total = 0x28   # R  帧差总量 Σ|cur-prev|（+0x2c _ctrl）
+    motion_pixels = 0x30   # R  运动像素个数（+0x34 _ctrl）
     motion_ratio_q16 = 0x38   # R  运动比例 Q16（+0x3c _ctrl）
-    count            = 0x40   # R  本帧像素数 110592（+0x44 _ctrl）
-    frame_id         = 0x48   # R  （+0x4c _ctrl）
+    count = 0x40   # R  本帧像素数 110592（+0x44 _ctrl）
+    frame_id = 0x48   # R  （+0x4c _ctrl）
 
 
 class FirFilter:
     """fir_filter v1（docs/interface.md §3.5）：时间序列，TDATA=16（Q1.15）"""
-    n_samples        = 0x10   # W  本段样本数（1..65535）
-    reset            = 0x18   # W  1 = 读取样本前清空延迟线与饱和计数
-    out_count        = 0x20   # R  本段输出样本数（== n_samples）（+0x24 _ctrl）
+    n_samples = 0x10   # W  本段样本数（1..65535）
+    reset = 0x18   # W  1 = 读取样本前清空延迟线与饱和计数
+    out_count = 0x20   # R  本段输出样本数（== n_samples）（+0x24 _ctrl）
     saturation_count = 0x28   # R  本段饱和样本数（+0x2c _ctrl）
-    seg_id           = 0x30   # R  自 IP 上电以来的调用序号，从 1 开始（+0x34 _ctrl）
+    seg_id = 0x30   # R  自 IP 上电以来的调用序号，从 1 开始（+0x34 _ctrl）
 
 
 # ---------------------------------------------------------------------------
