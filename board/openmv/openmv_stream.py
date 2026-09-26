@@ -38,6 +38,7 @@ openmv_stream.py —— 在 **OpenMV Cam H7** 上运行的采集/链路程序（
 
 import sys
 import time
+import gc
 
 # ⚠️ 下面这几个模块**只存在于相机的 MicroPython 固件里**，PC 上没有，所以 Pylance 会报
 #    `reportMissingImports`（"无法解析导入"）。这**不是缺依赖**（`pip install sensor` 这种包
@@ -219,10 +220,11 @@ def stream(uart, use_jpeg, use_usb):
     global FRAME_IDLE
 
     sensor.reset()
-    if use_jpeg:
-        sensor.set_pixformat(sensor.JPEG)
-    else:
-        sensor.set_pixformat(sensor.RGB565)
+    # ⚠️ 刻意**不**用 `sensor.set_pixformat(sensor.JPEG)`：本固件（OpenMV v5.0.0 /
+    #    MicroPython v1.28.0-49，H7）会直接抛 `RuntimeError: Sensor control failed.`
+    #    （2026-09-26 真机实测；同一现象见 docs/16 的 BUG-017）。
+    #    JPEG 由下面的 `img.compress(quality=...)` 生成 —— 那条路本来就是通的。
+    sensor.set_pixformat(sensor.RGB565)
     # 帧尺寸取 STREAM_FRAMESIZE —— 到底哪个组合能成，以 probe 模式的实测表为准。
     sensor.set_framesize(getattr(sensor, STREAM_FRAMESIZE))
     sensor.skip_frames(time=1500)
@@ -238,6 +240,7 @@ def stream(uart, use_jpeg, use_usb):
     last_report = t_start
     frames_at_report = 0
     sent_bytes = 0
+    compress_fail = 0
 
     while True:
         img = sensor.snapshot()
@@ -245,7 +248,18 @@ def stream(uart, use_jpeg, use_usb):
         t_frame0 = time.ticks_ms()
 
         if use_jpeg:
-            blob = _to_bytes(img.compress(quality=JPEG_QUALITY))
+            # ① 每帧先回收一次。`img.compress()` 要一块**连续**内存，堆碎片攒起来就会抛
+            #    `OSError: Compression Failed!` —— 实测这个错会让整条流退出回 REPL
+            #    （见 docs/16 BUG-027，症状是"相机活着但串口 0 字节"）。
+            gc.collect()
+            try:
+                blob = _to_bytes(img.compress(quality=JPEG_QUALITY))
+            except Exception as e:
+                # ② 单帧压缩失败**不该**让整条流死掉：丢掉这一帧继续跑，并留下计数。
+                compress_fail += 1
+                if compress_fail <= 3 or compress_fail % 50 == 0:
+                    log("[stream] 第 %d 帧压缩失败（累计 %d）：%s" % (fid, compress_fail, e))
+                continue
             mtype = link.TYPE_JPEG
         else:
             # 只送统计量：ROI 是半开区间，OpenMV 的 get_statistics 要 (x, y, w, h)

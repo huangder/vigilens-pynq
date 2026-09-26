@@ -52,8 +52,12 @@ MAGIC = 0xA55A
 # 只允许从这里派生同步字节，不要在别处再手写一遍（T5 自检就是在钉这条）。
 MAGIC_BYTES = struct.pack("<H", MAGIC)
 
-_HDR = struct.Struct("<HBBII")  # magic, type, flags, frame_id, payload_len
-HDR_LEN = _HDR.size  # 12
+_HDR_FMT = "<HBBII"  # magic, type, flags, frame_id, payload_len
+# ⚠️ 刻意**不用** `struct.Struct(...)`：MicroPython 的 struct 模块**没有 Struct 类**
+#    （只有 pack/unpack/calcsize），用了它这一行就会在相机上直接
+#    `AttributeError: 'module' object has no attribute 'Struct'`。
+#    2026-09-26 真机实测踩到；自检跑在 CPython 上，所以一直没暴露。
+HDR_LEN = struct.calcsize(_HDR_FMT)  # 12
 CRC_LEN = 2
 MIN_FRAME_LEN = HDR_LEN + CRC_LEN  # 14（空 payload）
 
@@ -122,7 +126,7 @@ def crc16_ccitt(data, crc=0xFFFF):
 def encode(msg_type, frame_id, payload=b"", flags=0):
     """把一个逻辑帧编码成待发送的字节串。"""
     payload = bytes(payload)
-    head = _HDR.pack(MAGIC, msg_type & 0xFF, flags & 0xFF, frame_id & 0xFFFFFFFF, len(payload))
+    head = struct.pack(_HDR_FMT, MAGIC, msg_type & 0xFF, flags & 0xFF, frame_id & 0xFFFFFFFF, len(payload))
     body = head + payload
     return body + struct.pack("<H", crc16_ccitt(body))
 
@@ -174,7 +178,7 @@ class Decoder:
                 continue
 
             # 2) 解头
-            _magic, mtype, _flags, fid, plen = _HDR.unpack(bytes(buf[:HDR_LEN]))
+            _magic, mtype, _flags, fid, plen = struct.unpack(_HDR_FMT, bytes(buf[:HDR_LEN]))
 
             if plen > self.max_payload:
                 # 明显是垃圾/错位：丢 1 字节重新找 magic，绝不按 plen 去等
@@ -330,7 +334,7 @@ def _selftest():
         "frames=%d dropped=%d" % (len(got_frames), d.dropped_bytes))
 
     # T6 超大 payload_len 不允许把解码器卡死（不能按它去等）
-    evil = _HDR.pack(MAGIC, TYPE_JPEG, 0, 1, 0xFFFFFF) + b"\x00" * 20
+    evil = struct.pack(_HDR_FMT, MAGIC, TYPE_JPEG, 0, 1, 0xFFFFFF) + b"\x00" * 20
     d = Decoder(max_payload=1 << 20)
     got_frames = d.feed(evil + encode(TYPE_PING, 9, b""))
     chk("T6 恶意超长 payload_len 不会卡死，且不误吞后续帧",

@@ -310,13 +310,13 @@ MATRIX_STAGE = "auto"
 MATRIX_SECONDS = 2.0
 
 # sustained / dump 用的参数（**以 matrix 的实测结果为准来填**）
-CHOSEN_PIXFORMAT  = "JPEG"
-CHOSEN_FRAMESIZE  = "VGA"
+CHOSEN_PIXFORMAT = "JPEG"
+CHOSEN_FRAMESIZE = "VGA"
 CHOSEN_FRAMEBUFFERS = 2
 
 SUSTAINED_SECONDS = 10.0     # 长跑时长
-DUMP_FRAMES       = 10       # 落盘帧数
-JPEG_QUALITY      = 90       # 仅 JPEG 格式有效
+DUMP_FRAMES = 10       # 落盘帧数
+JPEG_QUALITY = 90       # 仅 JPEG 格式有效
 
 # 落盘位置：**只认 SD 卡**。
 # ⚠️ **挂载点在 v5 变了**：v5 的 H7 文档写 "mounted automatically at `/sdcard`"，
@@ -650,7 +650,7 @@ def _print_verdict(results, mem_start):
     fast = [r for r in ok_rows if (r.get("fps_mean") or 0) >= 30.0]
     log("  · 「实测均值帧率 ≥ 30 fps」的成功组合：%s"
         % ("、".join("%s/%s=%.2f fps" % (r["pixformat"], r["framesize"], r["fps_mean"])
-                     for r in fast) if fast else "**无**"))
+                    for r in fast) if fast else "**无**"))
     slow = min(ok_rows, key=lambda r: r.get("fps_min_inst") or 1e9)
     worst = slow.get("fps_min_inst") or 0
     log("  · 最坏单帧（决定「最坏采样间隔」）：%s / %s → %.2f fps（约 %.1f ms/帧）"
@@ -776,7 +776,7 @@ def run_matrix():
 def run_sustained():
     log("=" * 78)
     log("长跑 %.1fs：%s / %s / fb=%d" % (SUSTAINED_SECONDS, CHOSEN_PIXFORMAT,
-                                       CHOSEN_FRAMESIZE, CHOSEN_FRAMEBUFFERS))
+                                      CHOSEN_FRAMESIZE, CHOSEN_FRAMEBUFFERS))
     log("=" * 78)
     ok, note = _apply(CHOSEN_PIXFORMAT, CHOSEN_FRAMESIZE, CHOSEN_FRAMEBUFFERS)
     if not ok:
@@ -806,7 +806,7 @@ def run_sustained():
 def run_dump():
     log("=" * 78)
     log("落盘 %d 帧：%s / %s / fb=%d" % (DUMP_FRAMES, CHOSEN_PIXFORMAT,
-                                       CHOSEN_FRAMESIZE, CHOSEN_FRAMEBUFFERS))
+                                     CHOSEN_FRAMESIZE, CHOSEN_FRAMEBUFFERS))
     log("=" * 78)
 
     # 先按目标配置估一帧要多大，再决定往哪写。
@@ -991,7 +991,7 @@ def main():
     try:
         _open_camera()
         log("相机 API  : %s（%s）" % (_CAM_API, "csi.CSI 类 API（v5+）" if _CAM_API == "csi"
-                                     else "sensor 模块 API（v4.x）"))
+                                  else "sensor 模块 API（v4.x）"))
     except Exception as e:
         log("相机 API  : **探测失败** —— %s" % e)
         log("            （matrix 模式会逐个组合报错；请把下面的报错原文贴回项目记录）")
