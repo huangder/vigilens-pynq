@@ -143,7 +143,7 @@
 | `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包；**`bitstream/` 仍为空**，上板结论不存在 |
 | `data/` | `raw/` 视频（不入库）、`annotations/`、`golden/`（当前均为空占位） |
 | `metrics/` | `csv/`、`logs/`（生成物，不入库）、`scripts/`（可复现检查脚本，入库）、`evidence/`（**正式证据入库**） |
-| `docs/` | `interface.md`（契约）+ `00`~`13` 方案文档（**测试方案 = `11`，硬件文档 = `12`，测试交接单 = `13`**） |
+| `docs/` | **先看 `docs/README.md`（2026-09-27 起的统一文档索引）**；契约 = `interface.md`；方案/流程 = `00`~`17`（**测试总方案 = `11`，阶段二方案 = `14`，判定基准 = `15`，问题台账 = `16`，阶段二手册 = `17`**）。历史快照在 `docs/archive/` |
 | `skill/` | 沉淀的技能包（赛制加分项） |
 | `report/` | 设计报告素材 + `llm_log/` 大模型协作记录（**必交项**） |
 
@@ -163,9 +163,10 @@
 #       python -m venv .venv && .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
-python metrics/scripts/check_all.py            # 期望：回归结论 ✅ 全部通过（PASS 22 / FAIL 0）
+python metrics/scripts/check_all.py            # 期望：回归结论 ✅ 全部通过（PASS 23 / FAIL 0）
 # ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
-python -m pytest -q                            # 期望：78 passed（**只增不减**）
+python -m pytest -q                            # 期望：88 passed（**只增不减**）
+#    （2026-09-27 基线：88 = 78 + 旁路 MJPEG 帧源的 10 项；check_all 的工具自检 9/9，含收帧器 .ps1 自检）
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
 # ⚠️ 写到 **metrics/logs/**（不入库）。别写成 metrics/evidence/js_frames.jsonl ——
@@ -177,9 +178,11 @@ python metrics/scripts/check_video_bypass.py   # 期望：15/15 —— 旁路画
 git status --short                             # 只应出现你本线的改动
 ```
 
-> 📖 **完整的测试方案与分层步骤见 `docs/11_测试方案与执行步骤.md`**（L0~L10，含硬件层与"做不了"的项）；
-> **整机硬件清单、引脚表与接线见 `docs/12_硬件清单与接线文档.md`**；
-> **"明天要跑哪些、怎么算过、做完交什么"见 `docs/13_测试交接单.md`**（交接用的一页清单）。
+> 📖 **文档入口统一在 `docs/README.md`**（2026-09-27 新增的索引：按场景告诉你该读哪份）。
+> **完整测试方案与分层步骤见 `docs/11_测试方案与执行步骤.md`**（L0~L10，含硬件层与"做不了"的项）；
+> **阶段二（PC 模拟 + 相机采集）先读 `docs/14`（方案与判据），再照 `docs/17`（操作手册）敲**；
+> **整机硬件清单、引脚表与接线见 `docs/12_硬件清单与接线文档.md`**。
+> 历史的一次性交接单在 `docs/archive/13_测试交接单_20260924.md`（**已过期，别当现状**）。
 
 > ⚠️ **`check_all.py` 刻意把「回归测试」与「就绪状态」分开报**：前者计入退出码，
 > 后者（缺素材/缺板卡/缺工具链）**不计入** —— 否则总入口永远是红的，就没人看了。

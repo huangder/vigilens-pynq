@@ -86,7 +86,7 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
 | `board/` | C 线（M3 后） | `bitstream/`、`overlay/`、上板自检脚本 |
 | `data/` | A 线 | `raw/` 4 段标准视频、`annotations/` 人工标注、`golden/` 黄金结果 |
 | `metrics/` | 三方共享 | `csv/` 指标日志、`logs/` 运行日志、`scripts/` 复现脚本、`evidence/` 证据归档 |
-| `docs/` | 三方共享 | **`interface.md`（接口契约，改它先发公告）** + 00~06 方案文档 |
+| `docs/` | 三方共享 | **先看 [`docs/README.md`](docs/README.md)（文档索引，2026-09-27 起）**；**`interface.md`（接口契约，改它先发公告）** + `00`~`17` 方案/测试文档；历史快照在 `docs/archive/` |
 | `skill/` | 三方共享 | 沉淀的 Skill 包（赛制加分项） |
 | `report/` | 三方共享 | 设计报告素材 + `llm_log/` 大模型协作记录 |
 
