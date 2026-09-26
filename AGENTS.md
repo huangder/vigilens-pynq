@@ -386,6 +386,12 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 | 640×480 **RGB565** | 需 614400 B | 实测抛 `RuntimeError: Frame buffer overflow` |
 | `RGB565 / QVGA / fb=1` | **39.76 fps**、153600 B/帧 | 帧率超契约 30 fps，但**像素只有契约的 1/4 且不是 RGB888** |
 | 固件分支 | **`csi` 类 API（v5.x）** | v4 是 `sensor` 模块 API；脚本内置 v4/v5 兼容层 |
+| **板子型号** | **OpenMV Cam H7 R2** | H7 与 H7 R2 **是两种传感器**，别混着说（2026-09-27 用户确认实物） |
+| **传感器** | **ON Semi MT9M114** | 官方 v5.0.0 文档：*"the H7 with the **OV7725** and the H7 R2 with the **ON Semi MT9M114**"* |
+| **传感器能出 JPEG 吗** | **不能**（raw Bayer） | ⇒ `set_pixformat(sensor.JPEG)` 必然 `Sensor control failed`，**这是硬件正常表现，不是缺陷**（BUG-017 的根因） |
+| **传感器能出灰度吗** | **能**，原生 8-bit 灰度（40 FPS @640×480） | 这是"灰度直发 + PC 侧编码"路线（`docs/18` 路线②）的硬件底气 |
+| JPEG 从哪来 | **只能软件压缩**（`img.compress()`）；板子（STM32H743）**有**硬件 JPEG 编解码器，但固件没把它当作免内存通路 | ⇒ **相机侧压缩必然要一块大缓冲** = BUG-027 的固有矛盾 |
+| 传感器可换吗 | **可插拔模块**（官方文档："The sensor sits on a removable module"） | ⇒ 换一颗带 JPEG 的模块即可走"硬件 JPEG"路线（`docs/18` 路线①b，购买前需核实型号） |
 
 - 【已验证】**OpenMV Cam H7 不能作为契约 §0 的像素源**：**内存天花板（3.0 倍）**与**链路带宽（29.5 倍）**
   两条独立证据同时成立。它的位置是**降规格采集**与「人脸检测/追踪目标」（`docs/10` §3/§12）。
