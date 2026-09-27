@@ -163,10 +163,12 @@
 #       python -m venv .venv && .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
-python metrics/scripts/check_all.py            # 期望：回归结论 ✅ 全部通过（PASS 23 / FAIL 0）
+python metrics/scripts/check_all.py            # 期望：回归结论 ✅ 全部通过（PASS 24 / FAIL 0）
 # ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
 python -m pytest -q                            # 期望：88 passed（**只增不减**）
-#    （2026-09-27 基线：88 = 78 + 旁路 MJPEG 帧源的 10 项；check_all 的工具自检 9/9，含收帧器 .ps1 自检）
+#    （2026-09-27 基线：88 = 78 + 旁路 MJPEG 帧源的 10 项；check_all 的工具自检 10/10，
+#      其中 2 项是 OpenMV 侧的"假模块跑真脚本"——`offline_check.py` 28/28（采集矩阵）
+#      与 `offline_stream_check.py` 17/17（推流三分支，docs/18 路线②的离线证据））
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
 # ⚠️ 写到 **metrics/logs/**（不入库）。别写成 metrics/evidence/js_frames.jsonl ——
@@ -200,6 +202,8 @@ git status --short                             # 只应出现你本线的改动
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
 | `check_video_bypass` | `15/15 通过` | 旁路画面链路坏了，或**有人把图像塞进了契约帧**（T9/T10 会红）；或画面停推后仍显示冻结旧帧（T6 会红） |
 | `board/openmv/offline_check.py` | `RESULT: PASS (28/28)` | 只能在**相机上**跑的 `openmv_capture_test.py` 被改坏了（假模块跑 v5 `csi` / v4 `sensor` 两条分支）。它已真抓到过一个真机也会犯的作用域 bug，所以纳入回归 |
+| `board/openmv/offline_stream_check.py` | `RESULT: PASS (17/17)` | 推流脚本 `openmv_stream.py` 的三种 payload 分支被改坏了；**最关键的一条是"灰度模式下 `img.compress()` 一次都没被调用"** —— 那是 `docs/18` 路线②（BUG-027 的修法）的全部意义，没有硬件时只有它能钉住 |
+| `metrics/scripts/omv_stream_bridge.ps1 -SelfTest` | `RESULT: PASS` | 串口收帧器/PC 侧编码器坏了：CRC 检查值、CPython 造帧→本脚本解帧的逐字节比对、**GRAY→JPEG 逐像素比对**、畸形 GRAY 必须返回 `$null`、以及 `Send-OMVStreamer` 的字符串锚点（锚点被改名 = **静默**改错模式） |
 
 > **基线沿革**：2026-09-10 起始基线 `49 passed in 0.51s`；2026-09-15 A 线补上 rPPG 链路的
 > 16 项测试（`backend/tests/test_vital.py`）后为 **`65 passed`**；2026-09-16 A 线补上 M2 交接面的
@@ -387,17 +391,25 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 | `RGB565 / QVGA / fb=1` | **39.76 fps**、153600 B/帧 | 帧率超契约 30 fps，但**像素只有契约的 1/4 且不是 RGB888** |
 | 固件分支 | **`csi` 类 API（v5.x）** | v4 是 `sensor` 模块 API；脚本内置 v4/v5 兼容层 |
 | **板子型号** | **OpenMV Cam H7 R2** | H7 与 H7 R2 **是两种传感器**，别混着说（2026-09-27 用户确认实物） |
-| **传感器** | **ON Semi MT9M114** | 官方 v5.0.0 文档：*"the H7 with the **OV7725** and the H7 R2 with the **ON Semi MT9M114**"* |
-| **传感器能出 JPEG 吗** | **不能**（raw Bayer） | ⇒ `set_pixformat(sensor.JPEG)` 必然 `Sensor control failed`，**这是硬件正常表现，不是缺陷**（BUG-017 的根因） |
-| **传感器能出灰度吗** | **能**，原生 8-bit 灰度（40 FPS @640×480） | 这是"灰度直发 + PC 侧编码"路线（`docs/18` 路线②）的硬件底气 |
+| **传感器** | **ON Semi MT9M114** | 官方 v5.0.0 文档：*"the H7 with the **OV7725** and the H7 R2 with the **ON Semi MT9M114**"*<br>**2026-09-27 真机实锤**：`sensor.get_id()` = **`0x2481`** ← OpenMV 官方 changelog：*"MT9M114's ID was initially 0x81 and later corrected to **0x2481**"*（[ide v2.8.1](https://docs.openmv.io/fr/changelog/ide/v2.8.1.html)） |
+| **传感器能出 JPEG 吗** | **不能**（raw Bayer） | ⇒ `set_pixformat(sensor.JPEG)` 必然 `Sensor control failed`（**2026-09-27 真机复现**），**这是硬件正常表现，不是缺陷**（BUG-017 的根因） |
+| **传感器能出灰度吗** | **能**，原生 8-bit 灰度（40 FPS @640×480） | 这是"灰度直发 + PC 侧编码"路线（`docs/18` 路线②）的硬件底气<br>**2026-09-27 真机实测**：`GRAYSCALE/QVGA` = **320×240 / 76800 B**、`GRAYSCALE/QQVGA` = **160×120 / 19200 B**（`gc.mem_free()` 306k 量级） |
 | JPEG 从哪来 | **只能软件压缩**（`img.compress()`）；板子（STM32H743）**有**硬件 JPEG 编解码器，但固件没把它当作免内存通路 | ⇒ **相机侧压缩必然要一块大缓冲** = BUG-027 的固有矛盾 |
 | 传感器可换吗 | **可插拔模块**（官方文档："The sensor sits on a removable module"） | ⇒ 换一颗带 JPEG 的模块即可走"硬件 JPEG"路线（`docs/18` 路线①b，购买前需核实型号） |
+| **完整固件串**（2026-09-27 真机） | `OpenMV v5.0.0`；`sysname='OpenMV4-H7'`, `release='1.28.0'`, `version='v1.28.0-49 on 2026-07-02'`, `machine='OPENMV4 with STM32H743'` | 补上本表长期挂着的"未拿到"项（出处：`docs/18` §1 的真机转录） |
 
 - 【已验证】**OpenMV Cam H7 不能作为契约 §0 的像素源**：**内存天花板（3.0 倍）**与**链路带宽（29.5 倍）**
   两条独立证据同时成立。它的位置是**降规格采集**与「人脸检测/追踪目标」（`docs/10` §3/§12）。
 - 【未拿到】矩阵其余各行：**JPEG 真实字节数**（A 线旁路画面带宽预算等它）、
-  `GRAYSCALE/VGA`（307200 B，离可用内存**只差 1744 B**）、完整固件串、传感器 `get_id()`。
+  `GRAYSCALE/VGA`（307200 B，离可用内存**只差 1744 B**）。
   ⚠️ **不要把"矩阵已跑完"当成既有事实**；那次只回来 2 行，原因未定（相机卡死 or 回帖截断）。
+  ✅ **2026-09-27 补上两项**：完整固件串与传感器 `get_id()`（= `0x2481`，即 MT9M114）已由真机探针拿到，见上表；
+  但**矩阵本身仍未补齐**（探针只按需测了 `GRAYSCALE` 的 QVGA/QQVGA 两档）。
+- 【已验证】2026-09-27 真机跑通 **`docs/18` 路线②**（相机发原始灰度、PC 侧编码），并完成 **5 分钟验收**：
+  `gray=2988 / conv_fail=0 / crc_bad=0 / 0 次 Compression Failed!`、线上单帧恒为 **19208 B**（= 8 + 160×120）、
+  相机侧 ≈ **13.4 fps**、PC 侧投递 **9.95 fps**、`MAXAGE 0.29s / VISIBLE_PCT 100%`。
+  详见 `docs/16` BUG-027（**已改判"已解决"**）。⚠️ 同轮还修掉一个 PC 侧瓶颈：纯 PowerShell 逐位 CRC
+  **93.5 ms/帧 → 0.91 ms/帧**（不修就比来帧间隔 77 ms 还慢，画面会成串更新）。
 - 【已验证】本机离线自检 `board/openmv/offline_check.py` = **28/28**（假模块跑真脚本，v5/v4 两条分支），
   已纳入 `check_all.py` 回归。
 

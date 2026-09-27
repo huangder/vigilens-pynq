@@ -36,6 +36,10 @@
 **为什么必须先做 2A**：`fpga/report/t6_openmv_capture_matrix_v1.md` 里**只回来 2 行**（10 组里），
 而所有"带宽/帧率/能不能用"的决策都在等这张表。刷了 UVC 就跑不了脚本 → 那张表永远补不齐。
 
+> ⭐ **2026-09-27 更正**：上面的"互斥"只对 **UVC 那条路**成立。`docs/18` 路线②（相机发原始灰度、
+> PC 侧编码）**不需要刷固件**也能在网页看到画面 —— 所以现在"脚本能力测试"与"网页画面"**可以同时做**。
+> 用法见 **§5.5**；代价是画面为**灰度 QQVGA ~10 fps**（UVC 那条是彩色、更高分辨率）。
+
 ---
 
 ## 2. 开工前 5 分钟（每次都要做）
@@ -204,6 +208,11 @@ python board/openmv/host_capture_test.py --device 0 --seconds 10 --probe 640x480
 
 ### 5.3 看网页（一条命令）
 
+> ⭐ **2026-09-27 起，A2（VCP）路线也能看网页了 —— 不必再刷 `uvc.bin`。**
+> 见下面 §5.5（`docs/18` 路线②）。**5.3 这条（UVC）仍然有效**，只是不再是唯一选择：
+> UVC 给的是**彩色、分辨率更高**的画面，路线② 给的是**灰度 QQVGA ~10 fps**，但**不用刷固件**、
+> 也不与"跑相机脚本"互斥。
+
 ```powershell
 python metrics/scripts/run_demo.py --source 0 --seconds 60 --video-hz 25 `
     --csv metrics/logs/_uvc_demo.csv --json metrics/logs/_uvc_demo_last.json
@@ -235,6 +244,47 @@ python metrics/scripts/run_demo.py --source 0 --seconds 60 --video-hz 25 `
 | `python metrics/scripts/run_demo.py ...` | `--no-mock` + 自动挑端口 | ✅ **最省事，推荐** |
 
 （原因见 `docs/16` 的 **BUG-014**：`api.py` 默认会起一个 mock 泵，网页上可能**一半是假数据**。）
+
+### 5.5 ⭐ 不刷固件也在网页看画面（**2026-09-27 新增，`docs/18` 路线②**）
+
+**为什么有这条**：`uvc.bin` 会替换固件，**刷了就跑不了相机脚本**，两者互斥（§1）。
+`docs/18` 路线② 把画面走**另一条路**：相机发**原始灰度**（`MODE="usb_gray"`，QQVGA 160×120），
+JPEG 由 **PC 侧**编码后 `POST /api/frame` —— 所以**脚本照跑、画面照看**。
+
+**一条命令**（自己起 `api.py` + 相机流 + A 线指标，并自动挑好 WS 地址）：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File metrics\scripts\omv_camera_demo.ps1 -WithMetrics
+#   -Mode usb_jpeg   ← 回到旧的"相机侧压缩"路径做对照（就是 BUG-027 那条，不稳）
+#   -NoApi           ← api.py 你已经自己起好了
+#   -OpenBrowser     ← 顺手打开浏览器
+```
+
+然后打开它打印的 **`http://127.0.0.1:8031/`**（`app.js` 会自动把 WS 填成 `ws://127.0.0.1:8031/ws`，
+**不用手填**）。
+
+**2026-09-27 真机实测（同一台 H7 R2 / COM10）**：
+
+| 通道 | 实测 |
+|---|---|
+| 画面（旁路） | `/video.mjpg` **10 帧/秒**、`/api/video_status` → `has_video: true`、`age_s 0.055` |
+| 指标（契约） | `/api/status` → `source=ingest`、**`published=111`**、`frame_id=894` |
+| 页面 | `GET /` → **HTTP 200**（14 KB，含 `wsUrl` 与 canvas） |
+| 关键点来源 | 日志里 **`[face_landmark] 使用 MediaPipe FaceMesh（478 点）`** —— **不是 stub** |
+| 5 分钟长稳 | `gray=2988 / conv_fail=0 / crc_bad=0 / 0 次 Compression Failed!`、`MAXAGE 0.29s / 可见 100%` |
+
+**判据与注意**：
+
+| # | 判据 / 注意 | 怎么确认 |
+|---|---|---|
+| 1 | 画面是**灰度、小尺寸**（QQVGA 放大后偏糊） | 这是路线② 的设计取舍；要彩色清晰就还是走 UVC（§5.3） |
+| 2 | 数字/曲线/状态在动 | `/api/status` 的 `published` 在涨；**`published=0` 就按 [BUG-028] 查启动顺序** |
+| 3 | **顺序不能反**：先有画面，再起 A 线 | A 线是拉流（`--source mjpeg:`）；相机没出帧就起它会超时且**不重连** → 见 `docs/16` **BUG-028**（脚本已按正确顺序固化） |
+| 4 | 画面**黑/状态"不可靠"不是 bug** | 质量门控在干活：`light_score` 太低就不报数字（`docs/15` 的承诺）。**先开灯、摘镜头盖、让脸进画面** |
+| 5 | `landmark_source` 必须是 `mediapipe` | 是 `stub` 的话，那批 EAR/MAR **不能当算法结果引用**（`AGENTS.md` 铁律 1） |
+
+> ⚠️ **帧率口径**：这条路实测 **相机侧 ≈13.4 fps、PC 侧投递 ≈10 fps**（攒批边界每个 burst 丢约 1 帧）。
+> 对"看画面 + 看指标"够用；**要 ≥30 fps 的测量级数据请走契约像素源（树莓派摄像头 + MIPI），不是这条路**。
 
 ---
 
