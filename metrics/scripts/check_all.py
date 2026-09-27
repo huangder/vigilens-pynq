@@ -155,6 +155,10 @@ TOOL_SELFTESTS = (
     # 为什么放进回归：它已真抓到过一个真机也会犯的作用域 bug（`_CAM_API` 漏 global 被
     # 自己的 except 吞掉、打印成假的"探测失败"）。硬件改不了它的逻辑，但本机能天天跑。
     ("board/openmv/offline_check.py", None),
+    # 在 PC 上用假模块跑 `openmv_stream.py` 的三种 payload 分支（灰度直发 / JPEG / 统计量）。
+    # 为什么放进回归：灰度直发（docs/18 路线②）是 BUG-027 的修法本身，而它的**全部意义**
+    # 就是"相机侧不再调用 img.compress()" —— 这条只有本机能天天验（真机跑不了 5 分钟一次）。
+    ("board/openmv/offline_stream_check.py", None),
     # 相机 → 网页的串口收帧器（.ps1）。**纯离线自检，不开串口**：CRC 检查值 + 用 CPython
     # 的 vigilens_link 造帧再让本脚本的解析器解回来、逐字节比对。
     # 为什么必须进回归：这个脚本曾因 `[byte] -shl 8` 被截断而在真机上表现成"0 帧 + 上百次
@@ -249,6 +253,11 @@ def check_readiness(rep: Report, py: str) -> None:
 HARDWARE_ITEMS = (
     ("OpenMV Cam H7", "board/openmv/openmv_capture_test.py（MODE=\"matrix\"，在 OpenMV IDE 里跑）",
      "采集能力矩阵：真实分辨率/帧率/内存"),
+    # 需硬件，所以**不计入退出码**：相机接在 COM10 时一条命令跑 docs/18 路线② 的 5 分钟验收
+    # （0 次 Compression Failed! + age/可见占比）。它就是 docs/16 BUG-027 证据的来源。
+    ("OpenMV Cam H7（推流验收）",
+     "powershell -NoProfile -File metrics\\scripts\\omv_accept_route2.ps1 -Seconds 300",
+     "docs/18 路线② 的收帧验收：frames= / conv_fail= / crc_bad= / MAXAGE / VISIBLE_PCT"),
     ("Mizar-Z7020（PS）", "接 USB-UART 开 115200 8N1 看 console；Vivado Hardware Manager 认 JTAG",
      "PS bring-up：板子是否活、是否有 PYNQ 环境"),
     ("Mizar-Z7020（PL）", "Vivado 建最小工程：board/openmv/pl_uart_echo.v + mizar_z7_openmv_uart.xdc",

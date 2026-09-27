@@ -1,29 +1,38 @@
-# _omv_stream_recv.ps1 -- receive the OpenMV JPEG stream over COM10 and hand it to the web app.
+# omv_stream_bridge.ps1 -- receive the OpenMV stream over COM10 and hand it to the web app.
 #
 # WHY THIS EXISTS
 #   OpenMV can act as a UVC camera only by flashing a separate UVC firmware, and the only
 #   obtainable one (v4.6.20) bricked this camera once.  But the camera's MicroPython side can
-#   already push JPEG frames over the USB virtual serial port (openmv_stream.py MODE="usb_jpeg"),
-#   and the frame protocol is implemented once in board/openmv/vigilens_link.py.
+#   already push frames over the USB virtual serial port (openmv_stream.py), and the frame
+#   protocol is implemented once in board/openmv/vigilens_link.py.
 #   pyserial is NOT installed and pip has no network here, so the receiver is implemented on
 #   .NET's SerialPort instead.
 #
+# WHY TYPE_GRAY EXISTS (docs/18 route 2, the fix for docs/16 BUG-027)
+#   On-camera JPEG (TYPE_JPEG) is produced by img.compress(), which needs one large CONTIGUOUS
+#   heap block.  This board (OpenMV Cam H7 R2, sensor MT9M114 -- which physically cannot output
+#   JPEG) only has ~302 KB of heap and a QVGA RGB565 frame buffer already takes 153600 B, so the
+#   stream eventually dies with "OSError: Compression Failed!".
+#   Route 2 removes that requirement entirely: the camera sends RAW GRAYSCALE (no encoder call
+#   at all) and THIS script encodes the JPEG, where memory is not a problem.
+#
 # WIRE FORMAT (little-endian, from vigilens_link.py):
 #   0  2  magic 0xA55A   (on the wire: 5A A5)
-#   2  1  type           0x02 = JPEG
+#   2  1  type           0x02 = JPEG, 0x03 = GRAY, 0x01 = STATS
 #   3  1  flags
 #   4  4  frame_id       uint32, starts at 1
 #   8  4  payload_len
-#   12 N  payload
+#   12 N  payload        JPEG bytes (0x02) | 4B w + 4B h + w*h gray bytes (0x03)
 #   12+N 2 crc16  CRC-16/CCITT-FALSE over bytes [0, 12+N)
 #
 # ASCII-ONLY ON PURPOSE (PowerShell 5.1 decodes BOM-less .ps1 as GBK).
 #
 # USAGE
-#   . .\metrics\logs\_omv_stream_recv.ps1
-#   Send-OMVStreamer                          # load vigilens_link + openmv_stream, start streaming
-#   Receive-OMVFrames -Seconds 10 -ApiBase http://127.0.0.1:8011 -SaveDir metrics\logs\_omv_frames
-#   Stop-OMVStreamer                          # Ctrl-C the camera
+#   . .\metrics\scripts\omv_stream_bridge.ps1
+#   Send-OMVStreamer                              # default: MODE="usb_gray" (route 2)
+#   Send-OMVFramesToApi -TotalSeconds 300 -ApiBase http://127.0.0.1:8031 -BurstSeconds 0.25 -SaveMax 0
+#   Send-OMVStreamer -Mode usb_jpeg -Quality 50   # the old on-camera-JPEG path, for comparison
+#   Stop-OMVStreamer                              # Ctrl-C the camera
 
 param([switch]$SelfTest)
 
@@ -75,6 +84,76 @@ function Get-OMVFramesFromBytes {
     return [pscustomobject]@{ Frames = $out; CrcBad = $crcBad }
 }
 
+function Convert-OMVGrayToJpeg {
+    <#
+      GRAY payload -> JPEG bytes, so the web app gets a picture without the camera ever
+      calling an encoder (docs/18 route 2, the fix for BUG-027).
+
+      Payload layout (board/openmv/vigilens_link.py pack_gray):
+        0  4  width   int32 LE
+        4  4  height  int32 LE
+        8  N  w*h gray bytes, row-major (no padding)
+
+      Returns byte[] JPEG, or $null when the payload is not a plausible image (truncated or
+      absurd size).  $null MUST be counted by the caller -- a conversion that always failed
+      would otherwise be indistinguishable from "the camera sent nothing".
+
+      Implementation note: an 8bpp indexed bitmap with a LINEAR GRAY PALETTE takes the camera's
+      bytes as-is, so there is no per-pixel loop (a PowerShell loop over 19200 pixels would cap
+      the frame rate far below the link's).  Rows still have to be copied one by one because
+      GDI+ rows are padded to a 4-byte stride.
+    #>
+    param(
+        [byte[]]$Payload = @(),
+        [int]$Quality = 80
+    )
+    if (-not $Payload -or $Payload.Length -lt 9) { return $null }
+    # [int] cast before -shl: PowerShell keeps the left operand's type, so [byte]0xFF -shl 24
+    # would truncate back to a byte.  Same trap as the CRC code below.
+    $w = [int]$Payload[0] -bor ([int]$Payload[1] -shl 8) -bor ([int]$Payload[2] -shl 16) -bor ([int]$Payload[3] -shl 24)
+    $h = [int]$Payload[4] -bor ([int]$Payload[5] -shl 8) -bor ([int]$Payload[6] -shl 16) -bor ([int]$Payload[7] -shl 24)
+    if ($w -le 0 -or $h -le 0 -or $w -gt 4096 -or $h -gt 4096) { return $null }
+    if ($Payload.Length -lt (8 + $w * $h)) { return $null }
+
+    if (-not $script:OMV_DRAWING_READY) {
+        Add-Type -AssemblyName System.Drawing -ErrorAction Stop
+        $script:OMV_DRAWING_READY = $true
+    }
+    $bmp = $null; $ms = $null
+    try {
+        $bmp = New-Object System.Drawing.Bitmap($w, $h, [System.Drawing.Imaging.PixelFormat]::Format8bppIndexed)
+        $pal = $bmp.Palette
+        for ($i = 0; $i -lt 256; $i++) { $pal.Entries[$i] = [System.Drawing.Color]::FromArgb(255, $i, $i, $i) }
+        $bmp.Palette = $pal
+        $rect = New-Object System.Drawing.Rectangle(0, 0, $w, $h)
+        $data = $bmp.LockBits($rect, [System.Drawing.Imaging.ImageLockMode]::WriteOnly,
+                              [System.Drawing.Imaging.PixelFormat]::Format8bppIndexed)
+        try {
+            $stride = $data.Stride
+            $buf = New-Object byte[] ($stride * $h)
+            for ($y = 0; $y -lt $h; $y++) {
+                [Array]::Copy($Payload, 8 + $y * $w, $buf, $y * $stride, $w)
+            }
+            [System.Runtime.InteropServices.Marshal]::Copy($buf, 0, $data.Scan0, $buf.Length)
+        } finally {
+            $bmp.UnlockBits($data)
+        }
+        $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() |
+                 Where-Object { $_.MimeType -eq 'image/jpeg' } | Select-Object -First 1
+        if (-not $codec) { return $null }
+        $ps = New-Object System.Drawing.Imaging.EncoderParameters(1)
+        $ps.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter(
+            [System.Drawing.Imaging.Encoder]::Quality, [long]$Quality)
+        $ms = New-Object System.IO.MemoryStream
+        $bmp.Save($ms, $codec, $ps)
+        return $ms.ToArray()
+    } finally {
+        if ($ms) { $ms.Dispose() }
+        if ($bmp) { $bmp.Dispose() }
+    }
+}
+
+
 function Invoke-OMVBridgeSelfTest {
     <#
       Two offline checks:
@@ -94,6 +173,31 @@ function Invoke-OMVBridgeSelfTest {
     $ck = Get-Crc16Ccitt -Data ([System.Text.Encoding]::ASCII.GetBytes("123456789"))
     if ($ck -ne 0x29B1) { $fails.Add(("CRC check value wrong: 0x{0:X4} != 0x29B1" -f $ck)) }
 
+    # 1b. the fast (C#) CRC must agree with the PowerShell reference on real-sized input.
+    #     Why this is not optional: a wrong table would silently ACCEPT corrupt frames (or drop
+    #     good ones) and the protocol's whole integrity story would be theatre.  Route 2 runs the
+    #     fast path -- see Initialize-OMVCrc for the measured reason.
+    $fastOk = Initialize-OMVCrc
+    if (-not $fastOk) {
+        # Not a failure: constrained language mode has no compiler.  Say so, because it also means
+        # route 2 will fall behind on 19 KB frames (see the note in Initialize-OMVCrc).
+        Write-Verbose "fast CRC unavailable -- using the PowerShell reference implementation"
+    } else {
+        $probe = New-Object byte[] 4200
+        for ($i = 0; $i -lt $probe.Length; $i++) { $probe[$i] = ($i * 31 + 7) -band 0xFF }
+        $fastVal = Get-Crc16Ccitt -Data $probe
+        $savedReady = $script:OMV_CRC_READY
+        $script:OMV_CRC_READY = $false              # force the reference loop
+        $slowVal = Get-Crc16Ccitt -Data $probe
+        $script:OMV_CRC_READY = $savedReady
+        if ($fastVal -ne $slowVal) {
+            $fails.Add(("fast CRC (0x{0:X4}) != PowerShell reference (0x{1:X4}) on a 4200-byte buffer" -f $fastVal, $slowVal))
+        }
+        # and the fast path must still honour the protocol's published check value
+        $fastCheck = Get-Crc16Ccitt -Data ([System.Text.Encoding]::ASCII.GetBytes("123456789"))
+        if ($fastCheck -ne 0x29B1) { $fails.Add(("fast CRC check value wrong: 0x{0:X4}" -f $fastCheck)) }
+    }
+
     # 2. encode with CPython -> decode here -> compare
     $root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
     $py = Join-Path $root ".venv\Scripts\python.exe"
@@ -105,9 +209,14 @@ import sys
 sys.path.insert(0, r'board/openmv')
 import vigilens_link as vl
 payload = bytes(range(256)) * 4        # 1024 B: every byte value appears
+# docs/18 route 2: a RAW GRAYSCALE frame.  Left half bright / right half dark, so a stride or
+# row-offset bug in Convert-OMVGrayToJpeg shows up as a WRONG PIXEL, not as a crash.
+gw, gh = 32, 32
+gray = bytes(200 if x < gw // 2 else 40 for y in range(gh) for x in range(gw))
 blob = (b'GARBAGE-BEFORE-FRAME\x00\xff\x5a\xa5\x00'      # fake magic on purpose
         + vl.encode(vl.TYPE_JPEG, 4242, payload)
-        + vl.encode(vl.TYPE_STATS, 4243, b'xy'))
+        + vl.encode(vl.TYPE_STATS, 4243, b'xy')
+        + vl.encode(vl.TYPE_GRAY, 4244, vl.pack_gray(gw, gh, gray)))
 open(r'$tmp', 'wb').write(blob)
 "@
         $gen | & $py - 2>&1 | Out-Null
@@ -116,8 +225,8 @@ open(r'$tmp', 'wb').write(blob)
         } else {
             $res = Get-OMVFramesFromBytes -Data ([System.IO.File]::ReadAllBytes($tmp))
             $fr = $res.Frames
-            if ($fr.Count -ne 2) {
-                $fails.Add(("decoded {0} frames, expected 2 (resync or CRC accept is wrong)" -f $fr.Count))
+            if ($fr.Count -ne 3) {
+                $fails.Add(("decoded {0} frames, expected 3 (resync or CRC accept is wrong)" -f $fr.Count))
             } else {
                 if ($fr[0].Type -ne 0x02) { $fails.Add(("frame 1 type wrong: {0} != 2" -f $fr[0].Type)) }
                 if ($fr[0].FrameId -ne 4242) { $fails.Add(("frame 1 frame_id wrong: {0} != 4242" -f $fr[0].FrameId)) }
@@ -130,6 +239,66 @@ open(r'$tmp', 'wb').write(blob)
                 }
                 if ($fr[1].Type -ne 0x01) { $fails.Add(("frame 2 type wrong: {0} != 1" -f $fr[1].Type)) }
                 if ($fr[1].FrameId -ne 4243) { $fails.Add(("frame 2 frame_id wrong: {0} != 4243" -f $fr[1].FrameId)) }
+
+                # --- frame 3: the route-2 GRAY frame (parser + PC-side encoder) ---------------
+                if ($fr[2].Type -ne 0x03) { $fails.Add(("frame 3 type wrong: {0} != 3 (GRAY)" -f $fr[2].Type)) }
+                if ($fr[2].FrameId -ne 4244) { $fails.Add(("frame 3 frame_id wrong: {0} != 4244" -f $fr[2].FrameId)) }
+                if ($fr[2].Payload.Length -ne 1032) {
+                    $fails.Add(("frame 3 payload length wrong: {0} != 1032 (8 + 32*32)" -f $fr[2].Payload.Length))
+                } else {
+                    $gw = [int]$fr[2].Payload[0] -bor ([int]$fr[2].Payload[1] -shl 8) -bor
+                          ([int]$fr[2].Payload[2] -shl 16) -bor ([int]$fr[2].Payload[3] -shl 24)
+                    $gh = [int]$fr[2].Payload[4] -bor ([int]$fr[2].Payload[5] -shl 8) -bor
+                          ([int]$fr[2].Payload[6] -shl 16) -bor ([int]$fr[2].Payload[7] -shl 24)
+                    if ($gw -ne 32 -or $gh -ne 32) {
+                        $fails.Add(("frame 3 pack_gray header wrong: {0}x{1} != 32x32" -f $gw, $gh))
+                    }
+                    $badGray = 0
+                    for ($i = 0; $i -lt 1024; $i++) {
+                        $want = if (($i % 32) -lt 16) { 200 } else { 40 }
+                        if ($fr[2].Payload[8 + $i] -ne $want) { $badGray++ }
+                    }
+                    if ($badGray -ne 0) { $fails.Add(("frame 3 gray pixels differ in {0} bytes" -f $badGray)) }
+
+                    # The whole point of route 2: the PC encodes what the camera refused to.
+                    try {
+                        $jpg = Convert-OMVGrayToJpeg -Payload $fr[2].Payload -Quality 80
+                    } catch {
+                        $jpg = $null
+                        $fails.Add("Convert-OMVGrayToJpeg threw: $($_.Exception.Message)")
+                    }
+                    if ($null -eq $jpg -or $jpg.Length -lt 100) {
+                        $len = if ($null -eq $jpg) { "null" } else { $jpg.Length }
+                        $fails.Add("GRAY -> JPEG produced no image (bytes=$len)")
+                    } elseif ($jpg[0] -ne 0xFF -or $jpg[1] -ne 0xD8) {
+                        $fails.Add(("GRAY -> JPEG is not a JPEG: {0:X2}{1:X2}" -f $jpg[0], $jpg[1]))
+                    } else {
+                        # Decode it back: a wrong palette, stride or channel order would survive the
+                        # "starts with FFD8" check but not this one.
+                        $mss = New-Object System.IO.MemoryStream
+                        $mss.Write($jpg, 0, $jpg.Length); $mss.Position = 0
+                        $img = $null; $dec = $null
+                        try {
+                            $img = [System.Drawing.Image]::FromStream($mss)
+                            if ($img.Width -ne 32 -or $img.Height -ne 32) {
+                                $fails.Add(("GRAY -> JPEG size wrong: {0}x{1} != 32x32" -f $img.Width, $img.Height))
+                            } else {
+                                $dec = New-Object System.Drawing.Bitmap($img)
+                                # JPEG is lossy: compare BLOCK CENTRES with a wide tolerance.
+                                $lp = $dec.GetPixel(8, 16); $rp = $dec.GetPixel(24, 16)
+                                if ([Math]::Abs($lp.R - 200) -gt 24 -or [Math]::Abs($rp.R - 40) -gt 24) {
+                                    $fails.Add(("GRAY -> JPEG pixels wrong: left R={0} (want ~200), right R={1} (want ~40)" -f $lp.R, $rp.R))
+                                }
+                            }
+                        } catch {
+                            $fails.Add("decoding the converted JPEG threw: $($_.Exception.Message)")
+                        } finally {
+                            if ($dec) { $dec.Dispose() }
+                            if ($img) { $img.Dispose() }
+                            $mss.Dispose()
+                        }
+                    }
+                }
             }
         }
     } finally {
@@ -155,13 +324,121 @@ open(r'$tmp', 'wb').write(blob)
         }
     }
 
+    # 3b. malformed GRAY payloads must come back as $null, never as an exception and never as a
+    #     bogus image.  A truncated payload is what a dropped serial byte looks like, and route 2
+    #     must degrade to "this frame is counted as a conversion failure", not to a crash.
+    $badGrayCases = New-Object System.Collections.Generic.List[object]
+    $badGrayCases.Add((New-Object byte[] 4))                       # shorter than the 8-byte header
+    $trunc = New-Object byte[] 40                                  # claims 32x32, carries 32 pixels
+    $trunc[0] = 32; $trunc[4] = 32
+    $badGrayCases.Add($trunc)
+    $negW = New-Object byte[] 16                                   # width = 0xFFFFFFFF -> negative
+    for ($i = 0; $i -lt 4; $i++) { $negW[$i] = 0xFF }
+    $badGrayCases.Add($negW)
+    foreach ($bp in $badGrayCases) {
+        try {
+            $r1 = Convert-OMVGrayToJpeg -Payload $bp
+            if ($null -ne $r1) { $fails.Add("malformed GRAY payload produced an image, expected `$null") }
+        } catch {
+            $fails.Add("Convert-OMVGrayToJpeg threw on a malformed payload: $($_.Exception.Message)")
+        }
+    }
+
+    # 4. the mode/framesize overrides in Send-OMVStreamer are STRING REPLACEMENTS into
+    #    openmv_stream.py.  Rename one of those constants and the replacement silently becomes
+    #    a no-op: the camera then streams the in-file default instead of what we asked for
+    #    (the transcript's CAM_SEES line would show it, but only if somebody reads it).
+    #    Pin the anchors, and pin the route-2 pieces themselves.
+    $streamPy = Join-Path $root "board\openmv\openmv_stream.py"
+    if (-not (Test-Path $streamPy)) {
+        $fails.Add("openmv_stream.py not found: $streamPy")
+    } else {
+        $srcStream = [System.IO.File]::ReadAllText($streamPy)
+        foreach ($anchor in @('MODE = "probe"', 'STREAM_FRAMESIZE = "QVGA"',
+                              'GRAY_FRAMESIZE = "QQVGA"', 'JPEG_QUALITY = 90')) {
+            if ($srcStream -notmatch [regex]::Escape($anchor)) {
+                $fails.Add(("openmv_stream.py lost the anchor Send-OMVStreamer replaces: {0}" -f $anchor))
+            }
+        }
+        foreach ($needle in @('TYPE_GRAY', 'pack_gray', 'sensor.GRAYSCALE')) {
+            if ($srcStream -notmatch [regex]::Escape($needle)) {
+                $fails.Add(("openmv_stream.py has no {0} -- docs/18 route 2 is gone" -f $needle))
+            }
+        }
+    }
+
     if ($fails.Count -eq 0) {
-        return "RESULT: PASS  (CRC check value 0x29B1 + encode/decode byte compare + empty-input guard)"
+        return "RESULT: PASS  (CRC check value 0x29B1 + encode/decode byte compare + GRAY payload + GRAY->JPEG pixel check + stream anchors + empty-input guard)"
     }
     return ("RESULT: FAIL`n  - " + ($fails -join "`n  - "))
 }
 
 $script:OMV_PORT = 'COM10'
+# Set once, the first time a GRAY payload has to be turned into a JPEG (see
+# Convert-OMVGrayToJpeg).  Loading System.Drawing per frame would be wasted work.
+$script:OMV_DRAWING_READY = $false
+# Tri-state for the fast CRC: $null = not tried yet, $true = C# table-driven CRC is available,
+# $false = use the PowerShell reference loop (see Initialize-OMVCrc / Get-Crc16Ccitt).
+$script:OMV_CRC_READY = $null
+
+function Initialize-OMVCrc {
+    <#
+      Compile a table-driven CRC-16/CCITT-FALSE in C# and use it for frame validation.
+
+      WHY (measured 2026-09-27, this machine):
+        the pure-PowerShell bit-by-bit CRC costs ~112 ms for one 19220-byte GRAY frame, and the
+        whole parser ~93.5 ms/frame (41-frame blob, 3833 ms).  Route 2 (docs/18) delivers a frame
+        every ~77 ms (measured 13.2 fps), so the PARSER, not the link, became the bottleneck:
+        frames were handed over in clumps and /api/video_status showed a 0 -> 6 s age sawtooth
+        (VISIBLE_PCT 47%, i.e. the web page still blanked half the time).
+        A native CRC plus the same framing logic removes that bottleneck.
+
+      SAFETY: this only replaces the CRC arithmetic.  Framing/resync stays in
+      Get-OMVFramesFromBytes (the offline-verified code path), the protocol constants are
+      unchanged, and Invoke-OMVBridgeSelfTest asserts the fast path AGREES with the PowerShell
+      reference implementation -- a wrong table would otherwise silently accept corrupt frames.
+      If Add-Type is unavailable (constrained language mode), we silently keep the slow one.
+    #>
+    if ($null -ne $script:OMV_CRC_READY) { return $script:OMV_CRC_READY }
+    try {
+        Add-Type -TypeDefinition @'
+public static class VigiLensCrc
+{
+    private static readonly ushort[] Table = BuildTable();
+
+    private static ushort[] BuildTable()
+    {
+        var table = new ushort[256];
+        for (int i = 0; i < 256; i++)
+        {
+            ushort crc = (ushort)(i << 8);
+            for (int bit = 0; bit < 8; bit++)
+            {
+                crc = (ushort)(((crc & 0x8000) != 0) ? ((crc << 1) ^ 0x1021) : (crc << 1));
+            }
+            table[i] = crc;
+        }
+        return table;
+    }
+
+    public static ushort Crc(byte[] data, int offset, int count)
+    {
+        ushort crc = 0xFFFF;
+        int end = offset + count;
+        for (int i = offset; i < end; i++)
+        {
+            crc = (ushort)((crc << 8) ^ Table[((crc >> 8) ^ data[i]) & 0xFF]);
+        }
+        return crc;
+    }
+}
+'@ -ErrorAction Stop
+        $script:OMV_CRC_READY = $true
+    } catch {
+        $script:OMV_CRC_READY = $false
+    }
+    return $script:OMV_CRC_READY
+}
 
 function Get-OMVPort {
     param([string]$Port = $script:OMV_PORT)
@@ -179,8 +456,13 @@ function Get-OMVPort {
 function Get-Crc16Ccitt {
     # CRC-16/CCITT-FALSE: poly 0x1021, init 0xFFFF, no reflect, no xorout.
     # Check: crc16_ccitt(b"123456789") == 0x29B1
+    #
+    # The C# fast path (Initialize-OMVCrc) is what makes route 2 keep up; this PowerShell loop is
+    # the reference implementation and the fallback.  Invoke-OMVBridgeSelfTest pins the two together.
     param([byte[]]$Data, [int]$Offset = 0, [int]$Count = -1)
     if ($Count -lt 0) { $Count = $Data.Length - $Offset }
+    if ($null -eq $script:OMV_CRC_READY) { $null = Initialize-OMVCrc }
+    if ($script:OMV_CRC_READY) { return [VigiLensCrc]::Crc($Data, $Offset, $Count) }
     $crc = 0xFFFF
     for ($i = $Offset; $i -lt $Offset + $Count; $i++) {
         $crc = $crc -bxor ([int]$Data[$i] -shl 8)
@@ -195,16 +477,23 @@ function Get-Crc16Ccitt {
 function Send-OMVStreamer {
     <#
       Load vigilens_link.py into sys.modules (it must be importable on the camera) and then
-      exec openmv_stream.py with MODE="usb_jpeg".  Both sources are shipped as base64 chunks so
+      exec openmv_stream.py with MODE=<Mode>.  openmv_stream.py is shipped as base64 chunks so
       that no file has to be written to the camera's tiny FAT.
+
+      Default Mode is "usb_gray" = docs/18 route 2: the camera sends RAW GRAYSCALE and never
+      calls img.compress(), which is what used to kill the stream (docs/16 BUG-027).
+      "usb_jpeg" is kept for comparison -- it is the old, unreliable path.
     #>
     param(
         [string]$LinkPy   = 'board\openmv\vigilens_link.py',
         [string]$StreamPy = 'board\openmv\openmv_stream.py',
-        [string]$Mode = 'usb_jpeg',
-        [string]$Framesize = 'QVGA',
+        [string]$Mode = 'usb_gray',
+        # Empty = use the defaults hard-coded in openmv_stream.py
+        # (STREAM_FRAMESIZE="QVGA" for jpeg/stats, GRAY_FRAMESIZE="QQVGA" for gray).
+        [string]$Framesize = '',
         [int]$Quality = 80
     )
+    $isGray = ($Mode -eq 'usb_gray' -or $Mode -eq 'uart_gray')
     # The link module USED to be shipped as base64 and injected into sys.modules through a
     # fake class instance.  That injection does not work on MicroPython:
     #   exec(source, _m.__dict__)  ->  dies at the module's first `import` with a bare
@@ -225,9 +514,12 @@ function Send-OMVStreamer {
     $lines.Add('print("PYB_USB_VCP", hasattr(pyb, "USB_VCP"), hasattr(pyb, "LED"))')
     $lines.Add('if "/flash" not in sys.path: sys.path.append("/flash")')
     $lines.Add('import vigilens_link as _m')
-    $lines.Add('print("LINK_OK", _m.PROTOCOL_VERSION, _m.HDR_LEN, _m.TYPE_JPEG)')
+    $lines.Add('print("LINK_OK", _m.PROTOCOL_VERSION, _m.HDR_LEN, _m.TYPE_JPEG, _m.TYPE_GRAY)')
     # Fail on the camera BEFORE the stream starts, so the transcript says why.
-    $lines.Add('assert (_m.PROTOCOL_VERSION, _m.HDR_LEN, _m.TYPE_JPEG) == (1, 12, 2), "LINK_BAD"')
+    # TYPE_GRAY/pack_gray are route 2's whole point: a STALE /flash copy of the link module must
+    # fail loudly here instead of raising AttributeError in the middle of the stream loop.
+    $lines.Add('assert (_m.PROTOCOL_VERSION, _m.HDR_LEN, _m.TYPE_JPEG, _m.TYPE_GRAY) == (1, 12, 2, 3), "LINK_BAD"')
+    $lines.Add('assert hasattr(_m, "pack_gray") and hasattr(_m, "pack_stats"), "LINK_OLD_NO_PACK_GRAY"')
     $lines.Add('_S=bytearray()')
     for ($i = 0; $i -lt $s64.Length; $i += 200) {
         $lines.Add("_S.extend(binascii.a2b_base64('" + $s64.Substring($i, [Math]::Min(200, $s64.Length - $i)) + "'))")
@@ -235,9 +527,16 @@ function Send-OMVStreamer {
     $lines.Add('print("LEN", len(_S))')
     $lines.Add('_src=_S.decode()')
     $lines.Add('_src=_src.replace(''MODE = "probe"'', ''MODE = "' + $Mode + '"'')')
-    $lines.Add('_src=_src.replace(''STREAM_FRAMESIZE = "QVGA"'', ''STREAM_FRAMESIZE = "' + $Framesize + '"'')')
+    if ($Framesize) {
+        # Keep the anchors in step with openmv_stream.py: they ARE the contract between the two files.
+        if ($isGray) {
+            $lines.Add('_src=_src.replace(''GRAY_FRAMESIZE = "QQVGA"'', ''GRAY_FRAMESIZE = "' + $Framesize + '"'')')
+        } else {
+            $lines.Add('_src=_src.replace(''STREAM_FRAMESIZE = "QVGA"'', ''STREAM_FRAMESIZE = "' + $Framesize + '"'')')
+        }
+    }
     $lines.Add('_src=_src.replace(''JPEG_QUALITY = 90'', ''JPEG_QUALITY = ' + $Quality + ''')')
-    $lines.Add('print("CAM_SEES", [x for x in _src.split(chr(10)) if x.startswith("MODE = ") or x.startswith("STREAM_FRAMESIZE") or x.startswith("JPEG_QUALITY")])')
+    $lines.Add('print("CAM_SEES", [x for x in _src.split(chr(10)) if x.startswith("MODE = ") or x.startswith("STREAM_FRAMESIZE") or x.startswith("GRAY_FRAMESIZE") or x.startswith("JPEG_QUALITY")])')
     $lines.Add('del _S')
     $lines.Add('gc.collect()')
     $lines.Add('print("MEM", gc.mem_free())')
@@ -245,6 +544,7 @@ function Send-OMVStreamer {
     # img.compress() needs one large CONTIGUOUS buffer; keeping the ~16 KB source string
     # alive while the stream loop allocates a JPEG per frame is enough to make it raise
     # "OSError: Compression Failed!" after a while -- see docs/16 BUG-027.
+    # (Harmless for route 2, which never compresses, and it keeps the jpeg fallback usable.)
     $lines.Add('_code=compile(_src, "<omv_stream>", "exec")')
     $lines.Add('del _src')
     $lines.Add('gc.collect()')
@@ -308,8 +608,13 @@ function Send-OMVStreamer {
     }
     # Never let a broken link module look like a running stream: that failure mode cost a
     # whole afternoon ("camera alive, script started, zero bytes").  See docs/16 BUG-026.
-    if ($acc.ToString() -notmatch 'LINK_OK 1 12 2') {
-        return "LINK_FAIL: camera could not import vigilens_link from /flash (expected LINK_OK 1 12 2)`n$($acc.ToString())"
+    # The 4th number is TYPE_GRAY -- if the camera's /flash copy is stale this line is
+    # "LINK_OK 1 12 2" (or the assert above already said LINK_OLD_NO_PACK_GRAY).
+    if ($acc.ToString() -notmatch 'LINK_OK 1 12 2 3') {
+        return ("LINK_FAIL: camera could not import a CURRENT vigilens_link from /flash " +
+                "(expected LINK_OK 1 12 2 3 = PROTOCOL_VERSION, HDR_LEN, TYPE_JPEG, TYPE_GRAY; " +
+                "route 2 needs TYPE_GRAY/pack_gray). Copy board\openmv\vigilens_link.py to the " +
+                "camera's /flash with the OpenMV IDE and rerun.`n$($acc.ToString())")
     }
     return $acc.ToString()
 }
@@ -451,24 +756,36 @@ function Send-OMVFramesToApi {
     <#
       Robust receiver: keep the port open, grab one burst, parse it with plain array
       indexing (the same logic that was verified offline against a captured stream),
-      POST every JPEG to the web app, then repeat.
+      turn each frame into a JPEG, POST it to the web app, then repeat.
 
-      Why not the incremental List/RemoveRange parser: it produced CRC failures on live
-      data even though the identical bytes parsed cleanly offline, so this version uses
-      only the offline-verified code path.
+      Two payload types are accepted:
+        0x02 JPEG -- forwarded as-is (the old on-camera-compression path)
+        0x03 GRAY -- encoded HERE, on the PC (docs/18 route 2; see Convert-OMVGrayToJpeg)
+
+      Why not the incremental List/RemoveRange parser (Receive-OMVFrames): it produced CRC
+      failures on live data even though the identical bytes parsed cleanly offline, so this
+      version uses only the offline-verified code path.
+
+      NOTE on -BurstSeconds: a burst boundary can cut a frame in half, and the halves are
+      dropped (the parser resynchronises on the next magic) -- so roughly ONE frame is lost per
+      burst.  Smaller bursts make the picture fresher (the web page hides frames older than
+      1.5 s) at the cost of a few frames per second.  0.25 s is the value docs/18 suggests.
     #>
     param(
         [int]$TotalSeconds = 12,
         [double]$BurstSeconds = 1.0,
         [string]$ApiBase = '',
         [string]$SaveDir = '',
-        [int]$SaveMax = 3
+        [int]$SaveMax = 3,
+        [int]$GrayJpegQuality = 80
     )
     $p = $null
     try { $p = Get-OMVPort } catch { return "PORT_ERROR: $($_.Exception.Message)" }
     if ($SaveDir) { New-Item -ItemType Directory -Force -Path $SaveDir | Out-Null }
-    $frames = 0; $crcBad = 0; $posted = 0; $saved = 0; $bursts = 0
-    $sizes = New-Object System.Collections.Generic.List[int]
+    $frames = 0; $jpegFrames = 0; $grayFrames = 0; $convFail = 0
+    $crcBad = 0; $posted = 0; $saved = 0; $bursts = 0
+    $sizes = New-Object System.Collections.Generic.List[int]        # JPEG bytes we produced
+    $graySizes = New-Object System.Collections.Generic.List[int]    # GRAY bytes on the wire
     $ids = New-Object System.Collections.Generic.List[long]
     $chunk = New-Object byte[] 65536
     $all = [Diagnostics.Stopwatch]::StartNew()
@@ -488,19 +805,38 @@ function Send-OMVFramesToApi {
             $parsed = Get-OMVFramesFromBytes -Data $data
             $crcBad += $parsed.CrcBad
             foreach ($f in $parsed.Frames) {
-                if ($f.Type -ne 0x02) { continue }
+                if ($f.Type -eq 0x02) {
+                    $jpegFrames++
+                    $jpg = $f.Payload
+                } elseif ($f.Type -eq 0x03) {
+                    # docs/18 route 2: the camera sent raw grayscale (it never called an
+                    # encoder).  Encode it here, where memory is not the constraint.
+                    $grayFrames++
+                    $graySizes.Add([int]$f.Payload.Length)
+                    $jpg = $null
+                    try { $jpg = Convert-OMVGrayToJpeg -Payload $f.Payload -Quality $GrayJpegQuality }
+                    catch { $jpg = $null }
+                    if ($null -eq $jpg) {
+                        # Counted, never silent: an always-failing conversion would otherwise look
+                        # exactly like "the camera sent nothing".
+                        $convFail++
+                        continue
+                    }
+                } else {
+                    continue
+                }
                 $frames++
-                $sizes.Add([int]$f.Payload.Length); $ids.Add($f.FrameId)
+                $sizes.Add([int]$jpg.Length); $ids.Add($f.FrameId)
                 if ($SaveDir -and $saved -lt $SaveMax) {
                     $saved++
-                    [System.IO.File]::WriteAllBytes((Join-Path $SaveDir ("frame_%04d.jpg" -f $saved)), $f.Payload)
+                    [System.IO.File]::WriteAllBytes((Join-Path $SaveDir ("frame_%04d.jpg" -f $saved)), $jpg)
                 }
                 if ($ApiBase) {
                     try {
                         $req = [System.Net.HttpWebRequest]::Create("$ApiBase/api/frame")
                         $req.Method = 'POST'; $req.ContentType = 'image/jpeg'
-                        $req.ContentLength = $f.Payload.Length; $req.Timeout = 5000
-                        $rs = $req.GetRequestStream(); $rs.Write($f.Payload, 0, $f.Payload.Length); $rs.Close()
+                        $req.ContentLength = $jpg.Length; $req.Timeout = 5000
+                        $rs = $req.GetRequestStream(); $rs.Write($jpg, 0, $jpg.Length); $rs.Close()
                         $resp = $req.GetResponse(); $resp.Close(); $posted++
                     } catch { }
                 }
@@ -511,11 +847,16 @@ function Send-OMVFramesToApi {
         $p.Close(); $p.Dispose()
     }
     $out = @()
-    $out += "bursts=$bursts  frames=$frames  posted=$posted  saved=$saved  crc_bad=$crcBad  elapsed=$([math]::Round($all.Elapsed.TotalSeconds,1))s"
+    $out += "bursts=$bursts  frames=$frames  jpeg=$jpegFrames  gray=$grayFrames  conv_fail=$convFail  posted=$posted  saved=$saved  crc_bad=$crcBad  elapsed=$([math]::Round($all.Elapsed.TotalSeconds,1))s"
     if ($sizes.Count -gt 0) {
-        $out += ("payload: min={0} max={1} mean={2} B   frame_id: {3} -> {4}" -f `
+        $out += ("jpeg bytes: min={0} max={1} mean={2} B   frame_id: {3} -> {4}" -f `
             (($sizes | Measure-Object -Minimum).Minimum), (($sizes | Measure-Object -Maximum).Maximum), `
             [math]::Round((($sizes | Measure-Object -Average).Average), 1), $ids[0], $ids[$ids.Count - 1])
+    }
+    if ($graySizes.Count -gt 0) {
+        $out += ("gray bytes on the wire: min={0} max={1} mean={2} B" -f `
+            (($graySizes | Measure-Object -Minimum).Minimum), (($graySizes | Measure-Object -Maximum).Maximum), `
+            [math]::Round((($graySizes | Measure-Object -Average).Average), 1))
     }
     return ($out -join "`n")
 }

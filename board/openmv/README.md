@@ -439,6 +439,8 @@ python board/openmv/vigilens_link.py --selftest        # 期望 RESULT: PASS (9/
 python board/openmv/host_capture_test.py --selftest    # 期望 RESULT: PASS (10/10)
 python board/openmv/raw_to_contract.py --selftest      # 期望 RESULT: PASS (18/18)
 python board/openmv/offline_check.py                   # 期望 RESULT: PASS (28/28) —— 见下
+python board/openmv/offline_stream_check.py            # 期望 RESULT: PASS (17/17) —— 见下
+powershell -NoProfile -File metrics\scripts\omv_stream_bridge.ps1 -SelfTest   # 期望 RESULT: PASS
 python -m pytest -q                                    # 期望 78 passed
 python -m pip install pyserial                         # 串口模式需要
 ```
@@ -448,10 +450,16 @@ python -m pip install pyserial                         # 串口模式需要
 > 它已经真抓到过一个真机也会犯的 bug（`main()` 里 `_CAM_API` 漏 `global`，
 > 被自己的 `except` 吞掉、打印成假的"相机 API 探测失败"）—— 见 §6 第 9 条。
 > 它也已纳入 `metrics/scripts/check_all.py` 的工具自检，所以**每次跑总入口都会顺带验它**。
+>
+> `offline_stream_check.py`（2026-09-27 新增）是**同一套装置、另一个脚本**：它跑的是联调用的
+> `openmv_stream.py`，验三种 payload 分支（**灰度直发** / JPEG / 统计量）。其中最关键的一条是
+> **"灰度模式下 `img.compress()` 一次都没被调用"** —— 这正是 `docs/18` 路线②（BUG-027 的修法）
+> 的全部意义，也是没有硬件时唯一能钉住它的办法。它同样已进 `check_all.py` 的工具自检。
 
-**判据**：9/9、10/10、18/18、28/28、78 passed。**任何一条红，先解决它再往下走。**
+**判据**：9/9、10/10、18/18、28/28、17/17、桥接 `-SelfTest` PASS、78 passed。**任何一条红，先解决它再往下走。**
 
-> 本节 9/9、10/10、18/18、28/28 与 78 passed 都是我**在本机真实跑出来的**（2026-09-23 / 09-24）。
+> 本节 9/9、10/10、18/18、28/28 与 78 passed 都是我**在本机真实跑出来的**（2026-09-23 / 09-24）；
+> 17/17 与桥接 `-SelfTest` 是 **2026-09-27 新增**（`docs/18` 路线②的离线自检）本机实跑。
 > `raw_to_contract.py` 另外还跑过一次**端到端**：合成 dump → 转换 → 逐像素抽查通道顺序（见 §7 末尾）。
 > 硬件相关的数字目前只有 `matrix` 的前 2 行（`fpga/report/t6_openmv_capture_matrix_v1.md`）。
 
@@ -780,9 +788,10 @@ build_bd.tcl（把 BOARD_PART 换成 Mizar-Z7 的板级文件，或手写 PS7；
 |---|---|---|
 | `vigilens_link.py` | **串口帧协议唯一实现**（12B 头 + CRC-16/CCITT-FALSE）。**刻意不用类型注解**，为了能在 MicroPython 里跑同一份 | ✅ `--selftest` **9/9 PASS**（已跑） |
 | `host_capture_test.py` | 上位机：列摄像头 / 测真实分辨率与帧率 / 判契约 §0 / 导契约布局 RGB888 / 收串口帧 | ✅ `--selftest` **10/10 PASS**（已跑） |
-| `openmv_stream.py` | OpenMV 侧（联调/演示用）：链路握手 / 字节回环 / 统计量流 / JPEG 流 | ⚠️ **语法与 API 引用已检，未在真机运行**；🔴 **且它只用 v4 的 `sensor` 模块 API，没有 v5 兼容层** —— 相机实测走 `csi`，它能不能跑【不确定】（见 T1.0 的红字注） |
+| `openmv_stream.py` | OpenMV 侧（联调/演示用）：链路握手 / 字节回环 / 统计量流 / JPEG 流 / **灰度直发流（`docs/18` 路线②，2026-09-27 新增）** | ⚠️ **未在真机跑过灰度分支**；✅ 但 `import sensor`（v4 模块级 API）在本固件上**实测可用** —— 2026-09-26 真机用同一支脚本推了 353 帧（`docs/16` BUG-005 已推翻 / BUG-027 的证据区），灰度分支用的是同一套 API；逻辑由 `offline_stream_check.py` 在 PC 上验证 |
 | **`openmv_capture_test.py`** | **OpenMV 上运行的图像采集测试**：能力矩阵（格式×分辨率×帧缓冲数，按风险排序 + 可分段）+ 长跑帧率统计（含抖动/最慢帧）+ 无损落盘 + **pixel_samples 对拍样本** + 表末**契约可行性小结** | 🧪 **真机跑过一次**（2026-09-24，只回来 2 行 → `fpga/report/t6_openmv_capture_matrix_v1.md`）；本机逻辑自检见下一行 |
 | **`offline_check.py`** | **PC 上用假模块跑真脚本**（v5 `csi` / v4 `sensor` 两条分支，各 14 项）：验组合顺序、失败行的内存算术、契约小结、`_CAM_API` 作用域…… | ✅ `RESULT: PASS (28/28)`（已跑，且已纳入 `check_all.py` 回归） |
+| **`offline_stream_check.py`** | **PC 上用假模块跑 `openmv_stream.py`**（17 项）：三种 payload 分支（灰度直发 / JPEG / 统计量）、载荷逐字节比对、**"灰度模式下 `img.compress()` 一次都没被调用"**、压缩失败不退出流、`payload` 传错立刻 `ValueError` | ✅ `RESULT: PASS (17/17)`（2026-09-27 实跑；已纳入 `check_all.py` 回归） |
 | **`raw_to_contract.py`** | PC 侧：原始 dump → **契约 §4.1 布局 RGB888**；`--calibrate` 用对拍样本**反推** RGB565 位扩展公式；含 stride/行填充推断 | ✅ `--selftest` **18/18 PASS** + 合成 dump **端到端实测通过**（均已跑） |
 | `pl_uart_echo.v` | PL 侧最小回环（UART 回环 + 心跳 + 1 kHz 测频） | ⚠️ **未综合、未上板** |
 | `mizar_z7_openmv_uart.xdc` | Mizar-Z7 引脚约束（含与 PYNQ-Z2 的关键差异说明） | ⚠️ **未在 Vivado 里验证** |
@@ -816,9 +825,11 @@ build_bd.tcl（把 BOARD_PART 换成 Mizar-Z7 的板级文件，或手写 PS7；
 
 **已验证 / 未验证的边界（按 `AGENTS.md` 的自检三条，必须分清）**：
 
-- 【已验证】五个程序的离线自检（本机真实输出）：`vigilens_link` **9/9**、`host_capture_test` **10/10**、
-  `raw_to_contract` **18/18**、`offline_check` **28/28**（v5/v4 两条分支各 14）；
-  `openmv_capture_test.py` 本体是**在相机上跑**的，其逻辑由 `offline_check` 在 PC 上代为验证
+- 【已验证】六个程序的离线自检（本机真实输出）：`vigilens_link` **9/9**、`host_capture_test` **10/10**、
+  `raw_to_contract` **18/18**、`offline_check` **28/28**（v5/v4 两条分支各 14）、
+  `offline_stream_check` **17/17**（2026-09-27 新增，`docs/18` 路线②）、
+  `metrics/scripts/omv_stream_bridge.ps1 -SelfTest` **PASS**（2026-09-27 起含 GRAY→JPEG 逐像素比对与锚点检查）；
+  `openmv_capture_test.py` / `openmv_stream.py` 本体是**在相机上跑**的，其逻辑由上面两个 `offline_*` 在 PC 上代为验证
 - 【已验证】**真机硬件事实（2026-09-24）**：`gc.mem_free()` = **308944 B**；`RGB565/VGA` 抛
   `Frame buffer overflow`；`RGB565/QVGA` = **39.76 fps 均值 / 153600 B/帧**；该固件走 **`csi` API**。
   证据与逐项算术：`fpga/report/t6_openmv_capture_matrix_v1.md`

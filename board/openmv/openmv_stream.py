@@ -28,9 +28,14 @@ openmv_stream.py —— 在 **OpenMV Cam H7** 上运行的采集/链路程序（
                         这是**唯一能同时拿到真实采集帧率**的低带宽路径。
   MODE = "uart_jpeg"  ③ 送 VGA JPEG 流（有损）。用来测"UART 到底能不能扛住送图"。
   MODE = "usb_jpeg"   ④ 送 VGA JPEG 流到 USB（虚拟串口），不经 UART。
-  MODE = "link"       ⑤ 纯链路握手：发 PING、等 PONG，验证接线与波特率。
+  MODE = "usb_gray"   ⑤ 送**原始灰度**到 USB（**不压缩**）—— `docs/18` 路线②。
+                        相机侧一次编码器都不调用，JPEG 由 PC 侧（omv_stream_bridge.ps1）生成。
+                        这是 BUG-027 的根治方向：软件 `compress()` 需要一大块**连续**内存，
+                        本板（H7 R2 + MT9M114）跑一阵必然失败；这条路把该需求从原理上删掉。
+  MODE = "uart_gray"  ⑥ 同上，走 UART（带宽小得多，只适合 QQVGA 及以下）。
+  MODE = "link"       ⑦ 纯链路握手：发 PING、等 PONG，验证接线与波特率。
                         需要上位机侧回应（host_capture_test.py --serial）。
-  MODE = "echo"       ⑥ 字节回环：发什么收回什么（配合 PL 的 pl_uart_echo.v），
+  MODE = "echo"       ⑧ 字节回环：发什么收回什么（配合 PL 的 pl_uart_echo.v），
                         不需要上位机参与 —— 这是**第一次上板**最该跑的那条。
 
 接线（UART 模式）：OpenMV 的 **P4=TX、P5=RX、GND** —— 详见 README 的接线表。
@@ -58,12 +63,18 @@ UART_ID = 3               # UART(3) → P4 = TX, P5 = RX（OpenMV H7 固定）
 UART_TIMEOUT_CHAR = 200   # ms，写超时；太短会在高波特率下误报失败
 FRAME_IDLE = 0            # >0 时每帧之间强制 sleep(ms)，用来压帧率做对照实验（0 = 不限速）
 
-JPEG_QUALITY = 90         # 1..100；越高越清晰也越大。VGA 建议 70~90
+JPEG_QUALITY = 90         # 1..100；越高越清晰也越大。VGA 建议 70~90。**只对 *_jpeg 生效**。
 
 # 送图模式的帧尺寸。**以 probe 模式的实测表为准**：
 # OpenMV 官方对 H7 的说法自相矛盾（描述说 OV7725 可 VGA RGB565@75fps，
 # 规格表又说 RGB565 上限 320x240），所以先用 probe 测，再回来填这里。
-STREAM_FRAMESIZE = "QVGA"  # 可选 "VGA" / "QVGA"
+STREAM_FRAMESIZE = "QVGA"  # 可选 "VGA" / "QVGA"（`*_jpeg` / `stats` 用）
+
+# 灰度直发（`*_gray`，docs/18 路线②）的帧尺寸。**为什么默认是 QQVGA**：
+# 灰度单帧 = w*h 字节，而 VCP 实测吞吐约 258 KB/s（fpga/report/t8_*.md）——
+# QQVGA 160x120 = 19200 B → 折算约 13 fps（够网页画面）；QVGA 76800 B → 只有约 3.4 fps。
+# ⚠️ 这两个数都是**按吞吐折算的估计**（docs/18 §2 路线②的表），真机帧率以实测为准。
+GRAY_FRAMESIZE = "QQVGA"
 
 ROI = (0, 0, 640, 480)    # (x0, y0, x1, y1) **半开区间**，与契约 §0.1 第 2 条一致
 # ---------------------------------------------------------------------------
@@ -212,27 +223,49 @@ def link_test(uart):
 
 
 # ---------------------------------------------------------------------------
-# 模式 ②③④：送数据
+# 模式 ②③④⑤⑥：送数据
 # ---------------------------------------------------------------------------
 
+# `stream()` 的 payload 三选一 —— 对应"相机侧越做越少"的三种做法。
+# ⚠️ 不要在这三个之外再加值：本机没有硬件，任何新的编码路径都只能靠真机试错（AGENTS.md 铁律 2）。
+PAYLOAD_KINDS = ("jpeg", "gray", "stats")
 
-def stream(uart, use_jpeg, use_usb):
+
+def stream(uart, payload, use_usb):
+    """按 `payload` 指定的类型持续送帧，直到被 Ctrl-C 打断。
+
+      "jpeg"  —— RGB565 + `img.compress()`（相机侧软件 JPEG）。**BUG-027 的来源**，留作对照。
+      "gray"  —— 灰度**原样**送出，相机侧一次编码器都不调用（`docs/18` 路线②，根治方向）。
+      "stats" —— 只送 ROI 统计量（几十字节/帧），相机侧**不产生任何图像**（`docs/18` 路线④）。
+    """
     global FRAME_IDLE
 
+    if payload not in PAYLOAD_KINDS:
+        raise ValueError("未知 payload=%r，只能是 %s" % (payload, PAYLOAD_KINDS))
+    framesize_name = GRAY_FRAMESIZE if payload == "gray" else STREAM_FRAMESIZE
+
     sensor.reset()
-    # ⚠️ 刻意**不**用 `sensor.set_pixformat(sensor.JPEG)`：本固件（OpenMV v5.0.0 /
-    #    MicroPython v1.28.0-49，H7）会直接抛 `RuntimeError: Sensor control failed.`
-    #    （2026-09-26 真机实测；同一现象见 docs/16 的 BUG-017）。
-    #    JPEG 由下面的 `img.compress(quality=...)` 生成 —— 那条路本来就是通的。
-    sensor.set_pixformat(sensor.RGB565)
-    # 帧尺寸取 STREAM_FRAMESIZE —— 到底哪个组合能成，以 probe 模式的实测表为准。
-    sensor.set_framesize(getattr(sensor, STREAM_FRAMESIZE))
+    if payload == "gray":
+        # 路线②：**灰度直发，相机侧不压缩**。
+        # 为什么这样能根治 BUG-027：失败点是"编码器要一块**连续**内存"，而本板可用堆
+        # 只有 ~302 KB、QVGA 帧缓冲已占 153600 B（docs/18 §0）。这一路既不调 JPEG 编码器、
+        # 也不要大缓冲，所以那个失败点在**原理上**不再存在。
+        # 硬件底气：本板是 H7 R2（ON Semi MT9M114），**原生 8-bit 灰度**（docs/18 §0.1）。
+        sensor.set_pixformat(sensor.GRAYSCALE)
+    else:
+        # ⚠️ 刻意**不**用 `sensor.set_pixformat(sensor.JPEG)`：本板传感器 MT9M114 是 raw Bayer，
+        #    **物理上不输出 JPEG**，调用会直接抛 `RuntimeError: Sensor control failed.`
+        #    （2026-09-26 真机实测；根因见 docs/16 BUG-017 与 docs/18 §0.1）。
+        #    JPEG 只能由下面的 `img.compress(quality=...)` 生成 —— 而那条路就是 BUG-027。
+        sensor.set_pixformat(sensor.RGB565)
+    # 帧尺寸取上面两个常量之一 —— 到底哪个组合能成，以 probe 模式的实测表为准。
+    sensor.set_framesize(getattr(sensor, framesize_name))
     sensor.skip_frames(time=1500)
 
     vcp = pyb.USB_VCP() if use_usb else None
     x0, y0, x1, y1 = ROI
-    log("[stream] 开始：jpeg=%s usb=%s %s roi=%s" %
-        (use_jpeg, use_usb, STREAM_FRAMESIZE, ROI))
+    log("[stream] 开始：payload=%s usb=%s %s roi=%s" %
+        (payload, use_usb, framesize_name, ROI))
     log("[stream] 每约 1 秒打一行进度。让上位机跑 host_capture_test.py 收。")
 
     fid = 0
@@ -247,7 +280,14 @@ def stream(uart, use_jpeg, use_usb):
         fid += 1
         t_frame0 = time.ticks_ms()
 
-        if use_jpeg:
+        if payload == "gray":
+            # 路线②：灰度**原样**发。载荷 = 4B 宽 + 4B 高 + 逐行逐列 uint8（link.pack_gray）。
+            # ⚠️ 这里**没有** `compress()`、也**不需要** `gc.collect()`：
+            #    这条路径不分配任何大缓冲，所以既不会抛 Compression Failed，
+            #    也没有"每帧回收一次"的必要（那本来是给 compress 的连续块让路的）。
+            blob = link.pack_gray(img.width(), img.height(), _to_bytes(img))
+            mtype = link.TYPE_GRAY
+        elif payload == "jpeg":
             # ① 每帧先回收一次。`img.compress()` 要一块**连续**内存，堆碎片攒起来就会抛
             #    `OSError: Compression Failed!` —— 实测这个错会让整条流退出回 REPL
             #    （见 docs/16 BUG-027，症状是"相机活着但串口 0 字节"）。
@@ -364,7 +404,12 @@ def main():
         return
 
     if MODE == "usb_jpeg":
-        stream(None, use_jpeg=True, use_usb=True)
+        stream(None, payload="jpeg", use_usb=True)
+        return
+
+    if MODE == "usb_gray":
+        # docs/18 路线②：灰度直发，PC 侧编码。**这是本板推流画面的首选模式**。
+        stream(None, payload="gray", use_usb=True)
         return
 
     uart = pyb.UART(UART_ID, UART_BAUD, timeout_char=UART_TIMEOUT_CHAR)
@@ -375,11 +420,14 @@ def main():
     elif MODE == "echo":
         echo_test(uart)
     elif MODE == "stats":
-        stream(uart, use_jpeg=False, use_usb=False)
+        stream(uart, payload="stats", use_usb=False)
     elif MODE == "uart_jpeg":
-        stream(uart, use_jpeg=True, use_usb=False)
+        stream(uart, payload="jpeg", use_usb=False)
+    elif MODE == "uart_gray":
+        stream(uart, payload="gray", use_usb=False)
     else:
-        log("未知 MODE=%r。可选：probe / link / echo / stats / uart_jpeg / usb_jpeg" % MODE)
+        log("未知 MODE=%r。可选：probe / link / echo / stats / uart_jpeg / usb_jpeg / "
+            "uart_gray / usb_gray" % MODE)
 
 
 try:
