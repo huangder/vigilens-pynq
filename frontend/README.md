@@ -10,6 +10,7 @@
 | `index.html` | 页面骨架 + 深色主题样式（内联 CSS，无外部依赖） |
 | `app.js` | 仪表盘逻辑：数据源切换、渲染、曲线、日志、契约校验 |
 | `mock.js` | 离线 mock 数据源 + **契约校验器**；同时是 node 可执行脚本（跨语言契约检查用） |
+| `preview.js` | 同源预览坐标换算 + 响应头解析；浏览器和 Node 共用 |
 
 ## 三种打开方式（都试一遍，它们验证的是不同的事）
 
@@ -25,6 +26,12 @@ python backend/websocket.py                 # 默认 ws://127.0.0.1:8765
 # 方式 3：后端托管页面（省掉 file:// 的麻烦，M2 推荐）
 python backend/api.py                       # 浏览器打开 http://127.0.0.1:8000/
 #         验证的是：REST + WS + 静态页面同源，无跨域问题
+
+# 方式 4：真实视频 + 同源检测框（两个终端）
+python backend/api.py --no-mock
+python backend/run_pipeline.py --source <本地视频> --post auto \
+    --preview-post auto --preview-hz 12 --realtime
+#         指标仍是冻结契约 1 Hz；视频 JPEG 约 12 fps，经 /api/preview 独立旁路传输
 ```
 
 `frontend/index.html` 默认地址填的是 8765；若用 `api.py`，把地址改成 `ws://127.0.0.1:8000/ws`。
@@ -64,6 +71,7 @@ python backend/api.py                       # 浏览器打开 http://127.0.0.1:8
 
 ```bash
 node frontend/mock.js --selftest                                  # JS 侧：六态帧合法 + 5 个坏帧必须被抓
+node frontend/preview.js                                          # 同源 bbox 的 contain/留白/缩放自检
 node frontend/mock.js --limit 6 > metrics/evidence/js_frames.jsonl
 python metrics/scripts/check_frontend_contract.py metrics/evidence/js_frames.jsonl   # Python 侧再验一遍
 python metrics/scripts/check_frontend_wiring.py                   # app.js 引用的 DOM id 是否都存在
@@ -77,7 +85,7 @@ python metrics/scripts/check_frontend_wiring.py                   # app.js 引�
 - [x] B1 FastAPI 三接口（`/api/status` `/api/metrics` `/api/events`）+ `/api/ingest`
 - [x] B2 Mock 数据生成器（契约一致、状态自洽、可复现）
 - [x] B3 WebSocket 每秒推送，断开有明确提示
-- [x] B4 页面骨架：视频占位区 + 指标卡 + 状态区（占位区额外叠了 `face.bbox` 检测框，用来验证"指标与画面同源"）
+- [x] B4 页面骨架：同源视频 + 状态 / 门控 / 指标 / 趋势；开发者控制和日志收在页面底部折叠区
 - [x] B5 趋势曲线（眨眼率 / PERCLOS / 心率 / 质量，原生 canvas，保留 120 秒）
 - [x] B6 事件日志 + 六态状态机展示，样式区分清晰
 - [x] B7 软硬件模式切换**占位**（顶部"模式：软件模式"标签；M3 接 C 线后切"硬件模式"）
@@ -98,7 +106,9 @@ python metrics/scripts/check_frontend_wiring.py                   # app.js 引�
 - [x] 页面由 `api.py` 托管时**自动填好** `ws://<host>/ws`（探测 `/api/status` 是否可用），
       不用再手填；`file://` 或普通静态服务器下仍保留 `websocket.py` 的 8765 默认值
 - [x] 断流帧**不进趋势曲线**：把它当"这段没有数据"（留空），而不是画出一根掉到 0 的假尖峰
-- [ ] 视频区接入真实画面（现在是占位网格 + 检测框）
+- [x] 视频区接入**同源画面旁路**：A 线把 JPEG 与该帧 bbox 一起推到 `/api/preview`，页面用
+      `object-fit: contain` 同口径计算留白与缩放；不再把浏览器自己开的摄像头画面与后端框混在一起。
+      服务端只保留最新帧，GET 用 ETag/304；断流后页面清除过期框。`file://` 仍明确显示 Mock 示意。
 - [ ] 心率/呼吸趋势在 M2 后的真实曲线形态复核（现在心率多数为 `null`，符合门控承诺）
 - [x] **门控阈值改为后端下发**（原本是 `app.js` 里 `THRESHOLDS` 的一份副本，A 线一标定就会
       无声漂移）：`api.py` 的 `/api/status` 带回 `thresholds`（值取自 `config.yaml`，键名逐字一致），

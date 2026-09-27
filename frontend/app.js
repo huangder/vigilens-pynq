@@ -14,6 +14,7 @@
   "use strict";
 
   var M = window.VigiLensMock;
+  var P = window.VigiLensPreview;
   // 客户端看门狗：**故意比服务端的 ws_disconnect_timeout_s（3.0 s）慢 1 秒**。
   // 断流的权威来源是服务端 —— api.py 的 /ws 在超时后会下发一帧契约合法的 `disconnected`
   // （见 backend/api.py 的 disconnect_frame 与 backend/A_LINE_DEV_STEPS.md §9 第 8 条）。
@@ -22,6 +23,8 @@
   var WS_TIMEOUT_MS = 4000;
   var MAX_POINTS = 120;              // 趋势曲线保留点数（1 Hz → 120 秒）
   var MOCK_PERIOD_MS = 1000;         // 与契约 1 帧/秒一致
+  var PREVIEW_POLL_MS = 80;
+  var PREVIEW_STALE_MS = 1500;
 
   /* 六态配色：与 panel 顶部状态灯、日志 tag 共用一套 */
   var STATUS_COLOR = {
@@ -69,10 +72,10 @@
     { key: "motion", label: "运动分（越低越好）", unit: "", digits: 2, get: function (f) { return f.quality.motion_score; }, warn: function (f) { return f.quality.motion_score > THRESHOLDS.motion_score_max; } },
     { key: "hr", label: "心率（门控）", unit: "bpm", digits: 1, gate: true, confKey: "hr_conf", get: function (f) { return f.vital.hr_bpm; } },
     // staticNote：只在**没有数值**时显示，用来解释"这张卡为什么出不来数"。
-    // 呼吸率是契约级限制（§3.5：63 阶 @30 fps 的过渡带吃掉了 0.1~0.5 Hz 呼吸带），
+    // 呼吸率是契约级限制（§3.5：63 阶 @45 fps 的过渡带吃掉了 0.1~0.5 Hz 呼吸带），
     // 不加说明的话，答辩现场它看起来就像坏了。
     { key: "rr", label: "呼吸率（门控）", unit: "/min", digits: 1, gate: true, confKey: "rr_conf",
-      staticNote: "契约 §3.5：63 阶 @30 fps 做不了呼吸带，待 PS 侧降采样",
+      staticNote: "契约 §3.5：63 阶 @45 fps 做不了呼吸带，待 PS 侧降采样",
       get: function (f) { return f.vital.rr_per_min; } }
   ];
 
@@ -106,9 +109,14 @@
     invalid: 0,
     forcedStatus: "",
     lastFrame: null,
+    previewTimer: null,
+    previewWatchdog: null,
+    previewBusy: false,
+    previewEtag: "",
+    previewMeta: null,
+    previewObjectUrl: "",
+    previewLastRxAt: 0,
     triggers: null,        // 旁路通道来的判定证据链 {frame_id, items}
-    videoOn: false,        // 旁路画面当前是否可用（由 /api/video_status 的过期判定驱动）
-    videoTimer: null,      // 画面状态轮询定时器（**独立于 WS 生命周期**，stopAll 不清它）
     pollTimer: null
   };
 
@@ -128,8 +136,7 @@
   function fitCanvas(cv) {
     var dpr = window.devicePixelRatio || 1;
     var w = cv.clientWidth || cv.width;
-    var h = parseInt(cv.getAttribute("data-css-h") || "0", 10) || (cv.id === "video" ? Math.round(w * 480 / 640) : 200);
-    cv.setAttribute("data-css-h", String(h));
+    var h = cv.clientHeight || (cv.id === "video" ? Math.round(w * 480 / 640) : 210);
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
@@ -149,47 +156,54 @@
     while (el.log.childNodes.length > 200) el.log.removeChild(el.log.lastChild);
   }
 
-  /* ------------------------------------------------------- 视频占位 + 检测框 */
-  function drawVideo(frame) {
+  /* ------------------------------------------------------- 同源预览 + 同帧检测框 */
+  function setPreviewBadge(kind, text) {
+    el.videoBadge.className = "badge" + (kind ? " " + kind : "");
+    el.videoBadge.textContent = text;
+  }
+
+  function clearPreviewImage(message) {
+    if (state.previewObjectUrl) URL.revokeObjectURL(state.previewObjectUrl);
+    state.previewObjectUrl = "";
+    state.previewMeta = null;
+    state.previewEtag = "";
+    el.previewImage.removeAttribute("src");
+    el.previewImage.classList.remove("ready");
+    el.videoPlaceholder.hidden = false;
+    el.videoPlaceholderText.textContent = message || "等待同源预览";
+    el.previewFreshness.textContent = "—";
+    el.previewFreshness.className = "badge";
+    el.previewSync.textContent = "未配对";
+    el.previewSync.className = "badge";
+    drawVideo();
+  }
+
+  function drawVideo() {
     var c = fitCanvas(el.video);
     var ctx = c.ctx, w = c.w, h = c.h;
     ctx.clearRect(0, 0, w, h);
-
-    // 有真实画面时 canvas 是**透明叠加层**：底图由 <img id="videostream"> 显示，
-    // 这里只画 bbox/四角。没有画面时才画占位网格 —— 两件事分开，别互相盖。
-    if (!state.videoOn) {
-      // 占位底：暗格子 + 十字准星，明确表达"这里本来该是画面"
-      ctx.fillStyle = "#070a10";
-      ctx.fillRect(0, 0, w, h);
-      ctx.strokeStyle = "#131c2b";
-      ctx.lineWidth = 1;
-      for (var x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
-      for (var y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
-
-      ctx.strokeStyle = "#1b2740";
-      ctx.beginPath(); ctx.moveTo(w / 2, h / 2 - 12); ctx.lineTo(w / 2, h / 2 + 12);
-      ctx.moveTo(w / 2 - 12, h / 2); ctx.lineTo(w / 2 + 12, h / 2); ctx.stroke();
+    var meta = state.previewMeta;
+    if (!meta) {
+      if (state.mode === "offline" && state.lastFrame && state.lastFrame.face.bbox[2] > 0) {
+        meta = {
+          frameId: state.lastFrame.frame_id, bbox: state.lastFrame.face.bbox,
+          sourceWidth: 640, sourceHeight: 480, faceVisible: state.lastFrame.face.visible,
+          status: state.lastFrame.status, mock: true
+        };
+      } else {
+        return;
+      }
     }
-
-    if (!frame || frame.status === "disconnected" || frame.face.bbox[2] === 0) {
-      ctx.fillStyle = "#5d6b85";
-      ctx.font = "13px 'Segoe UI', 'Microsoft YaHei', sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("无视频源", w / 2, h / 2 + 36);
-      el.videoBadge.textContent = "无视频源（未接入摄像头/回放）";
-      el.videoBadge.className = "badge warn";
+    if (meta.status === "disconnected") return;
+    var mapped = P.mapBbox(meta.bbox, w, h, meta.sourceWidth, meta.sourceHeight);
+    if (!mapped) {
       return;
     }
-
-    // face.bbox 是 640×480 坐标系 → 按画布尺寸等比缩放
-    var sx = w / 640, sy = h / 480;
-    var b = frame.face.bbox;
-    var bx = b[0] * sx, by = b[1] * sy, bw = b[2] * sx, bh = b[3] * sy;
-    var color = STATUS_COLOR[frame.status] || "#4da3ff";
+    var bx = mapped.x, by = mapped.y, bw = mapped.width, bh = mapped.height;
+    var color = STATUS_COLOR[meta.status] || "#55a8ff";
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.strokeRect(bx, by, bw, bh);
-    // 四角强调，便于截图时一眼看到检测框
     ctx.lineWidth = 3;
     var L = Math.min(18, bw / 3, bh / 3);
     [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]].forEach(function (p) {
@@ -200,12 +214,8 @@
     ctx.fillStyle = color;
     ctx.font = "12px ui-monospace, Consolas, monospace";
     ctx.textAlign = "left";
-    ctx.fillText("face " + frame.face.visible.toFixed(2) + "  yaw " + frame.face.pose.yaw.toFixed(1) + "°",
-                 bx, Math.max(12, by - 6));
-    el.videoBadge.textContent = state.videoOn
-      ? "真实画面（旁路 /video.mjpg）+ face.bbox 叠加"
-      : "占位画面 + face.bbox 叠加（未接入真实画面）";
-    el.videoBadge.className = state.videoOn ? "badge live" : "badge";
+    ctx.fillText((meta.mock ? "mock face " : "face ") + Number(meta.faceVisible).toFixed(2),
+                 bx, Math.max(14, by - 7));
   }
 
   /* ---------------------------------------------------------------- 状态区 */
@@ -282,7 +292,7 @@
       var frac = has ? (g.dir === "min" ? v : 1 - v) : 0;
       frac = Math.max(0, Math.min(1, frac));
       var limitFrac = g.dir === "min" ? limit : 1 - limit;
-      row.querySelector(".fill").style.width = (frac * 100).toFixed(1) + "%";
+      row.querySelector(".fill").style.transform = "scaleX(" + frac.toFixed(4) + ")";
       row.querySelector(".mark").style.left = (limitFrac * 100).toFixed(1) + "%";
       row.querySelector(".val").textContent = has
         ? v.toFixed(3) + (g.dir === "min" ? " ≥ " : " ≤ ") + limit
@@ -522,14 +532,20 @@
     el.srcName.textContent = source;
     el.srcPill.className = "pill " + (source === "WebSocket" ? "live" : "mock");
     el.modeName.textContent = "软件模式";
-    // 徽标由 drawVideo 统一设置（它知道占位/真实画面之分）；这里不再重复覆盖，
-    // 否则会把 drawVideo 刚写好的"真实画面"文案又改回"占位"，两处互相打架。
+    if (source !== "WebSocket") {
+      setPreviewBadge("warn", "模拟定位框 · 非真实视频");
+      el.previewFreshness.textContent = "离线 Mock";
+      el.previewSync.textContent = "同一 Mock 帧";
+      el.previewSync.className = "badge ok";
+    } else if (frame.status === "disconnected" && !state.previewMeta) {
+      setPreviewBadge("danger", "预览中断");
+    }
 
     renderState(frame);
     renderCards(frame);
     renderGate(frame);
     renderBlink(frame);
-    drawVideo(frame);
+    drawVideo();
     renderChart();
   }
 
@@ -584,42 +600,109 @@
     }
   }
 
+  /* ------------------------------------------- 同源 JPEG 旁路（约 12 Hz） */
+  function previewEndpointAvailable() {
+    return location.protocol === "http:" || location.protocol === "https:";
+  }
+
+  function updatePreviewFreshness() {
+    if (!state.previewLastRxAt || !state.previewMeta) return;
+    var age = Date.now() - state.previewLastRxAt;
+    el.previewFreshness.textContent = age < 1000 ? "刚刚" : (age / 1000).toFixed(1) + "s 前";
+    el.previewFreshness.className = "badge" + (age > PREVIEW_STALE_MS ? " danger" : "");
+    if (age > PREVIEW_STALE_MS) {
+      setPreviewBadge("danger", "预览中断");
+      el.previewSync.textContent = "已清除过期框";
+      el.previewSync.className = "badge danger";
+      state.previewMeta = null;
+      drawVideo();
+    }
+  }
+
+  function renderPreviewDebug(meta, etag) {
+    if (!meta) {
+      el.previewDebug.textContent = "preview: 尚未收到同源 JPEG";
+      return;
+    }
+    el.previewDebug.textContent = "preview: frame_id=" + meta.frameId +
+      " · " + meta.sourceWidth + "×" + meta.sourceHeight +
+      " · bbox=[" + meta.bbox.join(",") + "] · etag=" + etag;
+  }
+
+  function replacePreviewImage(blob, meta, etag) {
+    var nextUrl = URL.createObjectURL(blob);
+    var probe = new Image();
+    probe.onload = function () {
+      var old = state.previewObjectUrl;
+      state.previewObjectUrl = nextUrl;
+      state.previewMeta = meta;
+      state.previewEtag = etag || "";
+      state.previewLastRxAt = Date.now();
+      el.previewImage.src = nextUrl;
+      el.previewImage.classList.add("ready");
+      el.videoPlaceholder.hidden = true;
+      if (old) URL.revokeObjectURL(old);
+      setPreviewBadge("ok", "同源预览");
+      el.previewSync.textContent = "frame " + meta.frameId + " 同帧框";
+      el.previewSync.className = "badge ok";
+      renderPreviewDebug(meta, state.previewEtag);
+      updatePreviewFreshness();
+      drawVideo();
+    };
+    probe.onerror = function () {
+      URL.revokeObjectURL(nextUrl);
+      setPreviewBadge("danger", "JPEG 解码失败");
+    };
+    probe.src = nextUrl;
+  }
+
+  function fetchPreviewOnce() {
+    if (!previewEndpointAvailable() || state.previewBusy || state.mode !== "ws") return;
+    state.previewBusy = true;
+    var headers = state.previewEtag ? { "If-None-Match": state.previewEtag } : {};
+    fetch("/api/preview/latest", { cache: "no-store", headers: headers })
+      .then(function (response) {
+        if (response.status === 304) return null;
+        if (response.status === 404) {
+          if (!state.previewMeta) {
+            setPreviewBadge("warn", "等待同源预览");
+            el.videoPlaceholderText.textContent = "A 线尚未推送同源 JPEG";
+          }
+          return null;
+        }
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        var meta = P.parseMeta(response.headers);
+        var etag = response.headers.get("etag") || "";
+        return response.blob().then(function (blob) { return { blob: blob, meta: meta, etag: etag }; });
+      })
+      .then(function (packet) {
+        if (packet) replacePreviewImage(packet.blob, packet.meta, packet.etag);
+      })
+      .catch(function (err) {
+        if (state.previewMeta) setPreviewBadge("danger", "预览读取失败");
+        el.previewDebug.textContent = "preview error: " + err.message;
+      })
+      .then(function () { state.previewBusy = false; });
+  }
+
+  function startPreviewPolling() {
+    if (!previewEndpointAvailable()) return;
+    if (!state.previewTimer) state.previewTimer = setInterval(fetchPreviewOnce, PREVIEW_POLL_MS);
+    if (!state.previewWatchdog) state.previewWatchdog = setInterval(updatePreviewFreshness, 250);
+    fetchPreviewOnce();
+  }
+
+  function stopPreviewPolling(clearImage) {
+    if (state.previewTimer) { clearInterval(state.previewTimer); state.previewTimer = null; }
+    if (state.previewWatchdog) { clearInterval(state.previewWatchdog); state.previewWatchdog = null; }
+    state.previewBusy = false;
+    if (clearImage) clearPreviewImage("等待同源预览");
+  }
+
   /* ---------------------------------------------------------------- WS 客户端 */
   function setConn(kind, text) {
     el.connPill.className = "pill " + kind;
     el.connName.textContent = text;
-  }
-
-  /* --------------------------- 旁路画面（M3：网页上显示真实画面） */
-  // 画面**不塞进契约帧**（契约 §1 的帧只允许那 9 个顶层字段，塞了就是非法帧），
-  // 走旁路 /video.mjpg，与 triggers 是同一个范式。
-  //
-  // 关键：判断"有没有画面"用的是 /api/video_status 的**过期判定**，而不是
-  // "有没有收到过"。推送端一挂，MJPEG 流会停在最后一帧继续重发，
-  // 只看"收到过"就会**永远显示一张冻结的旧画面**（看起来像卡顿，实际源已死）。
-  function setVideoOn(on) {
-    if (state.videoOn === on) return;
-    state.videoOn = on;
-    if (el.videostream) el.videostream.style.display = on ? "block" : "none";
-    log("画面", on ? "已接入真实画面（旁路 /video.mjpg）"
-                  : "旁路画面不可用，回退占位网格（指标不受影响）",
-        on ? "#3ddc97" : "#5d6b85");
-    if (state.lastFrame) drawVideo(state.lastFrame);
-  }
-
-  function startVideoStream() {
-    // file:// 没有同源后端，轮询只会白报错（与 pollTriggers 同一条判断）
-    if (location.protocol !== "http:" && location.protocol !== "https:") return;
-    if (!el.videostream) return;
-    // src 只设一次：MJPEG 是长连接，反复设 src 会把连接打断重来。
-    el.videostream.src = "/video.mjpg";
-    if (state.videoTimer) return;
-    state.videoTimer = setInterval(function () {
-      fetch("/api/video_status", { cache: "no-store" })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (j) { setVideoOn(!!(j && j.ok && j.has_video)); })
-        .catch(function () { setVideoOn(false); });
-    }, 1500);
   }
 
   /* ------------------------------- 判定证据链（旁路通道，1 Hz） */
@@ -650,6 +733,7 @@
     }
     if (state.timer) { clearInterval(state.timer); state.timer = null; }
     if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; }
+    stopPreviewPolling(false);
     state.triggers = null;
     state.mode = "stopped";
     if (!silent) log("系统", "已停止数据源", "#5d6b85");
@@ -657,6 +741,7 @@
 
   function connectWs() {
     stopAll(true);
+    clearPreviewImage("等待同源预览");
     var url = el.wsUrl.value.trim();
     if (!url) { log("错误", "请填写 WebSocket 地址", "#ff5d5d"); return; }
 
@@ -664,6 +749,7 @@
     setConn("", "连接中…");
     log("系统", "连接 " + url, "#4da3ff");
     pollTriggers();
+    startPreviewPolling();
 
     var ws;
     try {
@@ -714,6 +800,7 @@
   /* ------------------------------------------------------- 离线 mock（无后端） */
   function startOffline() {
     stopAll(true);
+    clearPreviewImage("离线 Mock · 非真实视频");
     state.mode = "offline";
     state.lastRxAt = Date.now();
     setConn("mock", "离线模式");
@@ -744,8 +831,10 @@
   /* ---------------------------------------------------------------- 初始化 */
   function init() {
     el = {
-      video: $("video"), videoBadge: $("videoBadge"), chart: $("chart"),
-      videostream: $("videostream"),
+      previewImage: $("previewImage"), video: $("video"), videoBadge: $("videoBadge"),
+      videoPlaceholder: $("videoPlaceholder"), videoPlaceholderText: $("videoPlaceholderText"),
+      previewFreshness: $("previewFreshness"), previewSync: $("previewSync"),
+      previewDebug: $("previewDebug"), chart: $("chart"),
       stateLamp: $("stateLamp"), stateName: $("stateName"), stateEn: $("stateEn"),
       advice: $("advice"), reason: $("reason"), triggers: $("triggers"),
       cards: $("cards"), log: $("log"),
@@ -768,7 +857,7 @@
 
     $("btnConnect").onclick = connectWs;
     $("btnOffline").onclick = startOffline;
-    $("btnStop").onclick = function () { stopAll(false); setConn("down", "未连接"); };
+    $("btnStop").onclick = function () { stopAll(false); clearPreviewImage("已停止数据源"); setConn("down", "未连接"); };
     $("btnSelftest").onclick = runSelftest;
     $("btnClear").onclick = function () { el.log.innerHTML = ""; };
     el.forceStatus.onchange = function () {
@@ -776,23 +865,30 @@
       log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8b7cff");
     };
 
-    window.addEventListener("resize", function () { drawVideo(state.lastFrame); renderChart(); });
+    window.addEventListener("resize", function () { drawVideo(); renderChart(); });
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(function () { drawVideo(); }).observe(el.video.parentElement);
+    }
 
     renderState(null);
     renderCards(null);
     renderGate(null);
     renderBlink(null);
-    drawVideo(null);
+    drawVideo();
     renderChart();
     log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");
 
     syncWithServer();
-    // 旁路画面独立于 WS 数据源的生命周期：这里起一次，之后只由
-    // /api/video_status 的过期判定决定显示与否（所以 stopAll 里**不**清它）。
-    startVideoStream();
 
-    // 未接后端时自动进入离线演示，保证"双击文件就能看到东西"
-    startOffline();
+    // file:// 离线打开时自动演示；由 api.py 托管时必须等待用户主动连接，
+    // 避免把 Mock 六态误认为摄像头/后端的实时数据。
+    if (location.protocol === "file:" || location.protocol === "") {
+      startOffline();
+    } else {
+      state.mode = "stopped";
+      setConn("down", "未连接");
+      log("系统", "实时页面已就绪：请点击“连接 WebSocket”；当前不自动播放 Mock", "#4da3ff");
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

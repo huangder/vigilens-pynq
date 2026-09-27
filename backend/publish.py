@@ -53,6 +53,7 @@ except ImportError:  # python backend/publish.py
     from contract import validate_frame
 
 DEFAULT_INGEST_PATH = "/api/ingest"
+DEFAULT_PREVIEW_PATH = "/api/preview"
 DEFAULT_FRAME_PATH = "/api/frame"
 _EPS = 1e-9
 
@@ -89,6 +90,16 @@ def _http_post_json(url: str, payload: dict, timeout: float) -> tuple[int, str]:
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 —— 只允许本机/自定 URL
             return int(resp.status), resp.read().decode("utf-8", errors="replace")
     except urllib.error.HTTPError as e:  # 4xx / 5xx：正文里通常有 B 线的 errors
+        return int(e.code), e.read().decode("utf-8", errors="replace")
+
+
+def _http_post_bytes(url: str, data: bytes, headers: dict[str, str],
+                     timeout: float) -> tuple[int, str]:
+    req = urllib.request.Request(url, data=data, method="POST", headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 —— 本机/自定 URL
+            return int(resp.status), resp.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as e:
         return int(e.code), e.read().decode("utf-8", errors="replace")
 
 
@@ -210,9 +221,109 @@ class FramePoster:
         }
 
 
+class PreviewPoster:
+    """把同一帧 JPEG + bbox 元数据独立推到 B 线预览旁路。"""
+
+    def __init__(self, url: str, *, hz: float = 12.0, timeout: float = 1.0,
+                 retries: int = 0, backoff: float = 0.05) -> None:
+        if not url:
+            raise ValueError("PreviewPoster 需要一个 URL")
+        self.url = url
+        self.hz = float(hz)
+        self.timeout = float(timeout)
+        self.retries = max(0, int(retries))
+        self.backoff = float(backoff)
+        self.posted = 0
+        self.throttled = 0
+        self.attempts = 0
+        self.errors: list[str] = []
+        self.last_frame_id: int | None = None
+        self._last_ts: float | None = None
+
+    @property
+    def period(self) -> float:
+        return 1.0 / self.hz if self.hz > 0 else 0.0
+
+    def due(self, ts: float) -> bool:
+        if self._last_ts is None or self.period <= 0:
+            return True
+        return float(ts) - self._last_ts >= self.period - _EPS
+
+    def maybe_post(self, jpeg: bytes, *, frame_id: int, ts: float, bbox: list[int],
+                   source_width: int, source_height: int, face_visible: float,
+                   status: str) -> bool:
+        if not self.due(ts):
+            self.throttled += 1
+            return False
+        self.post(jpeg, frame_id=frame_id, ts=ts, bbox=bbox,
+                  source_width=source_width, source_height=source_height,
+                  face_visible=face_visible, status=status)
+        return True
+
+    def post(self, jpeg: bytes, *, frame_id: int, ts: float, bbox: list[int],
+             source_width: int, source_height: int, face_visible: float,
+             status: str) -> dict[str, Any]:
+        if len(bbox) != 4:
+            raise ValueError("bbox 必须是 [x,y,w,h]")
+        x, y, w, h = (int(v) for v in bbox)
+        headers = {
+            "Content-Type": "image/jpeg",
+            "Accept": "application/json",
+            "User-Agent": "VigiLens-A-line-preview/1.0 (+backend/publish.py)",
+            "X-VigiLens-Frame-Id": str(int(frame_id)),
+            "X-VigiLens-Ts": str(float(ts)),
+            "X-VigiLens-Bbox-X": str(x),
+            "X-VigiLens-Bbox-Y": str(y),
+            "X-VigiLens-Bbox-W": str(w),
+            "X-VigiLens-Bbox-H": str(h),
+            "X-VigiLens-Source-Width": str(int(source_width)),
+            "X-VigiLens-Source-Height": str(int(source_height)),
+            "X-VigiLens-Face-Visible": str(float(face_visible)),
+            "X-VigiLens-Status": status,
+        }
+        last_error: str | None = None
+        for attempt in range(1, self.retries + 2):
+            self.attempts += 1
+            try:
+                code, body = _http_post_bytes(self.url, jpeg, headers, self.timeout)
+            except (urllib.error.URLError, OSError, TimeoutError) as e:
+                last_error = str(e)
+            else:
+                if 200 <= code < 300:
+                    self.posted += 1
+                    self.last_frame_id = int(frame_id)
+                    self._last_ts = float(ts)
+                    try:
+                        return json.loads(body) if body.strip() else {}
+                    except json.JSONDecodeError:
+                        return {"_raw": body}
+                last_error = f"HTTP {code}: {body[:200]}"
+            if attempt <= self.retries and self.backoff:
+                time.sleep(self.backoff * attempt)
+
+        message = f"预览推送失败：{self.url}（frame_id={frame_id}，最后错误：{last_error}）"
+        self.errors.append(message)
+        raise PostError(message, url=self.url, attempts=self.attempts)
+
+    def stats(self) -> dict[str, Any]:
+        return {
+            "url": self.url,
+            "hz": self.hz,
+            "posted": self.posted,
+            "throttled": self.throttled,
+            "http_attempts": self.attempts,
+            "last_frame_id": self.last_frame_id,
+            "errors": list(self.errors),
+        }
+
+
 def full_url(host: str = "127.0.0.1", port: int = 8000) -> str:
     """拼一个默认的 ingest 地址（给 CLI 的 `--post auto` 用）。"""
     return f"http://{host}:{port}{DEFAULT_INGEST_PATH}"
+
+
+def preview_url(host: str = "127.0.0.1", port: int = 8000) -> str:
+    return f"http://{host}:{port}{DEFAULT_PREVIEW_PATH}"
 
 
 def frame_url_from_ingest(ingest_url: str) -> str:

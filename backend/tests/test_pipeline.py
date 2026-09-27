@@ -200,6 +200,30 @@ def test_run_pipeline_is_byte_reproducible(workdir: Path) -> None:
     assert frame["behavior"]["blink_count"] > 0
 
 
+def test_snapshot_replace_retries_transient_permission_error(monkeypatch: pytest.MonkeyPatch,
+                                                             workdir: Path) -> None:
+    """Windows 短暂占用 last.json 时有界重试，但仍保持原子替换。"""
+    import os
+    from backend import storage
+
+    real_replace = os.replace
+    attempts = 0
+
+    def flaky_replace(src, dst):
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise PermissionError(5, "temporary lock")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(storage.os, "replace", flaky_replace)
+    monkeypatch.setattr(storage.time, "sleep", lambda _: None)
+    target = workdir / "last.json"
+    storage.write_snapshot(target, {"ok": True})
+    assert attempts == 3
+    assert json.loads(target.read_text(encoding="utf-8")) == {"ok": True}
+
+
 def test_run_pipeline_writes_contract_valid_csv(workdir: Path) -> None:
     import csv
 
