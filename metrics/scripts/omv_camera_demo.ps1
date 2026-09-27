@@ -93,9 +93,15 @@ $metricsLog = Join-Path $env:TEMP 'omv_demo_metrics.log'
 function Start-DemoMetrics {
     if (-not $WithMetrics) { return }
     if ($script:metricsProc -and -not $script:metricsProc.HasExited) { return }
+    # --preview-post is what puts the SAME camera frame on the page's same-source preview
+    # panel (B line's /api/preview, added 2026-09-27). Without it the page shows numbers
+    # but an empty preview box. The URL must be EXPLICIT: preview_url() defaults to port
+    # 8000, while this demo may run on 8031. The box drawn on the page is the bbox of the
+    # very same frame, so picture and numbers cannot drift apart.
     $script:metricsProc = Start-Process $python -ArgumentList @('backend/run_pipeline.py',
         '--source', "$ApiBase/video.mjpg", '--wall-clock',
-        '--post', "$ApiBase/api/ingest", '--summary', 'metrics/logs/demo_web_summary.json',
+        '--post', "$ApiBase/api/ingest", '--preview-post', "$ApiBase/api/preview",
+        '--summary', 'metrics/logs/demo_web_summary.json',
         '--print-every', '15') -PassThru -NoNewWindow -RedirectStandardOutput $metricsLog
     Write-Output "[demo] metrics pipeline started (pid $($script:metricsProc.Id)) -> $metricsLog"
     Write-Output "[demo]   ^ check that log for: [face_landmark] ... MediaPipe FaceMesh  (stub => metrics meaningless)"
@@ -115,6 +121,15 @@ Write-Output "[demo]   - the WebSocket box fills itself in when api.py hosts the
 Write-Output "[demo]   - picture = bypass (route 2 gray -> PC JPEG); numbers/curves = contract frames"
 Write-Output "[demo]   - if the picture is black / status says unreliable, that is the quality gate"
 Write-Output "[demo]     working: check the lens cap, the light, and that a face is in view"
+if (-not $WithMetrics) {
+    # Since 2026-09-27 the page (B-line main) takes its picture from the SAME-SOURCE preview
+    # bypass (/api/preview), which is posted by the A-line pipeline -- not by this bridge.
+    # So without -WithMetrics the page shows an empty preview box AND no numbers.
+    Write-Output "[demo] WARNING: -WithMetrics is NOT set, so the page will look empty:"
+    Write-Output "[demo]   the new page's picture comes from the pipeline's /api/preview post,"
+    Write-Output "[demo]   and the numbers come from the pipeline's /api/ingest post."
+    Write-Output "[demo]   Re-run with -WithMetrics (or start run_pipeline.py yourself)."
+}
 Write-Output "[demo] ------------------------------------------------------------------"
 if ($OpenBrowser) { Start-Process $demoUrl | Out-Null }
 
