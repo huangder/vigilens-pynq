@@ -13,6 +13,10 @@
 | `sim/gen_frames.py` | 测试向量 + Python 黄金参考生成器（**只用标准库**，有 numpy 时自动对拍） | 同 seed 必得同产物 |
 | `sim/gen_mipi_vectors.py` | 🆕 `raw10_unpack` / `bayer_demosaic` 的向量 + 黄金参考（`sim/data_mipi/`） | 同上；产物含逐帧抽查点 CSV（入库） |
 | `sim/host_model_mipi.cpp` | 🆕 新 IP 的**主机端算术模型**（本机 g++ 可运行，秒级；**不是** HLS 证据） | `== PASS ==`：内嵌用例 + 流式vs朴素 + 跨语言 + CSV复核 |
+| `src/frame_scale.cpp` | 🆕 1280×720 → 640×480（双轴 3:2 + 横向中心裁剪，**无几何畸变**、**0 BRAM**）—— `docs/20` 的 720p60 方案 | 语法 ✅ / 主机模型逐位 ✅ / csim ❌ |
+| `sim/gen_scale_vectors.py` | 🆕 `frame_scale` 的向量 + 黄金参考（`sim/data_scale/`） | numpy 独立对拍 PASS |
+| `sim/host_model_scale.cpp` | 🆕 `frame_scale` 的主机端算术模型 | `== PASS ==`（正向 vs 反向映射两条路径逐位相同） |
+| `sim/link_budget.py` | 🆕 **链路预算判定器**：分辨率×帧率×格式 能不能用（含片内 BRAM 台阶判定） | 本机真跑，退出码即结论；自带"1080p@60 必须判为不可行"自检 |
 | `sim/design_fir_coeffs.py` | **fir_filter 系数设计器**（纯标准库：响应评估 / −3dB 搜索 / d 扫描 / 呼吸带可行性） | 同一条命令必得同一张系数表 |
 | `sim/host_model_fir.cpp` | **主机端算术模型**（秒级自检，本机 g++ 可运行；**不是** HLS 证据） | 与黄金参考逐样本相等 + 折叠逐位相同 |
 | `sim/q15_ref.py` | **Q1.15 量化参考实现**（契约 4.6 节，P0-1）：ROI 均值 → Q1.15，含 5 条性质自检与 CSV 批量转换 | `--selftest` 必须 PASS |

@@ -1,0 +1,11 @@
+in_width=1280
+in_height=720
+crop_x0=160
+crop_w=960
+out_width=640
+out_height=480
+frames=5
+rgb_in_bytes=2764800
+rgb_out_bytes=921600
+decim=2/3
+frame_names=random,all_zero,all_full,ramp,impulse_keep_and_drop
