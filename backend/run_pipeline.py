@@ -51,7 +51,7 @@ try:
     from .decision import DecisionEngine
     from .face_landmark import make_landmarker
     from .quality import QualityScorer
-    from .publish import FramePoster, PostError, full_url
+    from .publish import FramePoster, PostError, PreviewPoster, full_url, preview_url
     from .storage import MetricsStorage, write_snapshot
     from .vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 except ImportError:  # python backend/run_pipeline.py
@@ -63,7 +63,7 @@ except ImportError:  # python backend/run_pipeline.py
     from decision import DecisionEngine
     from face_landmark import make_landmarker
     from quality import QualityScorer
-    from publish import FramePoster, PostError, full_url
+    from publish import FramePoster, PostError, PreviewPoster, full_url, preview_url
     from storage import MetricsStorage, write_snapshot
     from vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 
@@ -117,6 +117,21 @@ def strip_internal(frame: dict) -> dict:
     return {k: v for k, v in frame.items() if not k.startswith("_")}
 
 
+def encode_preview_jpeg(image: Any, quality: int = 80) -> bytes | None:
+    """真实 ndarray → JPEG；SyntheticImage 等非图像源明确返回 None。"""
+    try:
+        import cv2
+        import numpy as np
+    except ImportError:
+        return None
+    if not isinstance(image, np.ndarray) or image.ndim not in (2, 3):
+        return None
+    ok, encoded = cv2.imencode(
+        ".jpg", image, [int(cv2.IMWRITE_JPEG_QUALITY), max(1, min(100, int(quality)))]
+    )
+    return encoded.tobytes() if ok else None
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="VigiLens A 线：视频回放 → 契约 JSON / CSV")
     ap.add_argument("--source", default="synthetic",
@@ -143,6 +158,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--post-hz", type=float, default=None,
                     help="推送节奏，默认取 config.yaml 的 ws_push_hz（契约 1 帧/秒，按逻辑时间）")
     ap.add_argument("--post-retries", type=int, default=2, help="连接失败的重试次数（默认 2）")
+    ap.add_argument("--preview-post", default=None,
+                    help="同源 JPEG 预览旁路（如 http://127.0.0.1:8000/api/preview）；"
+                         "写 auto 等价于本机默认地址")
+    ap.add_argument("--preview-hz", type=float, default=12.0,
+                    help="同源预览发送帧率（默认 12 fps，独立于指标 1 Hz）")
+    ap.add_argument("--preview-jpeg-quality", type=int, default=80,
+                    help="同源预览 JPEG 质量 1~100（默认 80）")
+    ap.add_argument("--realtime", action="store_true",
+                    help="文件/合成回放按逻辑帧率节奏播放；摄像头本身已按自然采集节奏运行")
     ap.add_argument("--no-done", action="store_true",
                     help="不发收尾帧（status=done）。默认会发：M2 要求六态都能在网页上出现")
     ap.add_argument("--frame-id-offset", type=int, default=0,
@@ -203,8 +227,16 @@ def main(argv: list[str] | None = None) -> int:
         poster = FramePoster(post_url, hz=post_hz, retries=args.post_retries)
         say(f"推送   : {post_url}（{post_hz} 帧/秒，按逻辑时间节流；失败即报错，不静默丢帧）")
 
+    preview_poster: PreviewPoster | None = None
+    if args.preview_post:
+        purl = preview_url() if args.preview_post == "auto" else args.preview_post
+        preview_poster = PreviewPoster(purl, hz=args.preview_hz)
+        say(f"预览   : {purl}（{args.preview_hz:g} fps，同源 JPEG 旁路；失败不截断测量）")
+
     post_failed = False      # 推送彻底失败过 → 结局非零退出（但仍跑完测量）
     post_stopped = False     # 已停止后续推送（不做逐帧重试）
+    preview_stopped = False
+    preview_unavailable = False
 
     def push(frame: dict, *, force: bool = False) -> None:
         """推一帧给 B 线。失败**不打断测量**（见文件头第 4 条）。
@@ -235,9 +267,15 @@ def main(argv: list[str] | None = None) -> int:
     t_start = time.perf_counter()
     last_frame: dict | None = None
     n = 0
+    replay_started = time.perf_counter()
 
     with MetricsStorage(jsonl_out, csv_out) as store:
         for frame in frames_iter:
+            if args.realtime and not str(args.source).strip().isdigit():
+                target = frame.frame_id / fps
+                remain = target - (time.perf_counter() - replay_started)
+                if remain > 0:
+                    time.sleep(remain)
             # 对外的帧号 = 帧源帧号 + 偏移。M2 连跑多段时用它保证 frame_id/ts
             # 跨段单调递增（契约 §1：前端断点重连靠这两个字段对齐）。
             # 帧源自己的 frame_id 仍喂给 landmarker：stub 的眨眼/哈欠节拍按**本段**时间走，
@@ -261,6 +299,29 @@ def main(argv: list[str] | None = None) -> int:
             store.write(clean)
             write_snapshot(json_out, clean)
             push(clean)
+            if preview_poster is not None and not preview_stopped:
+                jpeg = encode_preview_jpeg(frame.image, args.preview_jpeg_quality)
+                if jpeg is None:
+                    if not preview_unavailable:
+                        preview_unavailable = True
+                        print("[warn] 当前帧源不是可编码的真实图像；同源预览未发送（指标测量继续）。",
+                              file=sys.stderr)
+                else:
+                    try:
+                        sh = tuple(getattr(frame.image, "shape", (height, width)))
+                        source_height, source_width = int(sh[0]), int(sh[1])
+                        preview_poster.maybe_post(
+                            jpeg, frame_id=fid, ts=float(clean["ts"]), bbox=clean["face"]["bbox"],
+                            source_width=source_width, source_height=source_height,
+                            face_visible=float(clean["face"]["visible"]), status=clean["status"],
+                        )
+                    except (PostError, ValueError) as e:
+                        preview_stopped = True
+                        if isinstance(e, ValueError) and preview_poster is not None:
+                            preview_poster.errors.append(str(e))
+                        print(f"[warn] {e}", file=sys.stderr)
+                        print("[warn] 已停止同源预览推送；指标测量、JSON/CSV 与正式 1 Hz 推送继续。",
+                              file=sys.stderr)
             status_counter[dec["status"]] += 1
             last_frame = clean
             n += 1
@@ -323,6 +384,11 @@ def main(argv: list[str] | None = None) -> int:
         "done_frame": done_info,
         "post": ({**poster.stats(), "ok": not post_failed, "stopped_after_failure": post_stopped}
                  if poster is not None else None),
+        "preview_post": ({**preview_poster.stats(),
+                          "ok": not preview_stopped and not preview_unavailable,
+                          "stopped_after_failure": preview_stopped,
+                          "image_available": not preview_unavailable}
+                         if preview_poster is not None else None),
         # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够）
         "rppg_window_samples": rppg.samples,
         "rppg_window_need": rppg.need,
@@ -351,6 +417,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"推送      : 成功 {poster.posted} 帧 / 节流跳过 {poster.throttled} 帧 "
               f"→ {poster.url}（HTTP 次数 {poster.attempts}）"
               + ("  ← **推送失败，已停止推送**" if post_failed else ""))
+    if preview_poster is not None:
+        print(f"同源预览  : 成功 {preview_poster.posted} 帧 / 节流跳过 {preview_poster.throttled} 帧 "
+              f"→ {preview_poster.url}"
+              + ("  ← 当前源无真实图像" if preview_unavailable else "")
+              + ("  ← 推送失败后已停止" if preview_stopped else ""))
 
     if args.summary:
         sp = REPO_ROOT / args.summary
