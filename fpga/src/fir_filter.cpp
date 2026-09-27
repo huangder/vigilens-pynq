@@ -48,7 +48,21 @@
 #include <ap_axi_sdata.h>
 #include <ap_int.h>
 
+// ---- 系数表选择（2026-09-29 新增 60 Hz 档）---------------------------------
+//  默认 = 30 Hz 表（契约 v1.1/v1.2 的现表）；定义 FIR_FS_60HZ 则用 60 Hz 表。
+//  ⚠️ 两张表的**抽头数不同**（63 vs 127），必须配套各自的黄金参考目录：
+//       30 Hz -> fpga/sim/data_fir/          本 IP 默认
+//       60 Hz -> fpga/sim/data_fir_60hz/
+//  ⚠️ 60 Hz **不能**沿用 63 抽头：过渡带宽 Δf ≈ 3.3/(2πN)·fs 与 fs 成正比，
+//     63 抽头在 60 Hz 下 Δf 翻倍到 0.50 Hz，停止带从 −16 dB 退化到 −6 dB。
+//     N=127 时与 30 Hz/63 抽头**逐项等价**（Σ|h| 54949 vs 55073、
+//     阻带 −16.4/−16.2 vs −16.2/−16.0 dB、群延迟 1050 ms vs 1033 ms）。
+//     依据与完整对比见 docs/22 §2。
+#if defined(FIR_FS_60HZ)
+#include "fir_coeffs_q15_60hz.h"
+#else
 #include "fir_coeffs_q15.h"
+#endif
 
 typedef ap_axiu<16, 1, 1, 1> axis_fir_t;   // TDATA = int16（Q1.15 归一化样本）
 

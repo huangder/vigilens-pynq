@@ -24,6 +24,13 @@ fpga/sim/data_motion/gray.bin
 #       是黄金参考，**必须入库**（golden_fir_out.csv 是逐样本期望输出，可人工评审）。
 fpga/sim/data_fir/series.bin
 
+# ---- C 线：fir_filter 的 60 Hz 档系数与向量（docs/22 §2）--------------------
+# 系数表 fpga/src/fir_coeffs_q15_60hz.h 由 design_fir_coeffs.py 生成，**必须入库**；
+# 黄金参考：python fpga/sim/gen_fir_vectors.py --header fpga/src/fir_coeffs_q15_60hz.h \
+#                                             --out-dir fpga/sim/data_fir_60hz
+# 注意：fpga/sim/data_fir_60hz/{meta.txt, golden_fir.csv, golden_fir_out.csv} 必须入库。
+fpga/sim/data_fir_60hz/series.bin
+
 # ---- C 线：raw10_unpack / bayer_demosaic 的生成向量（docs/19 新像素源链路）----
 # 一键重建：python fpga/sim/gen_mipi_vectors.py
 # 注意：fpga/sim/data_mipi/{meta.txt, golden_mipi.csv} 是黄金参考，**必须入库**

@@ -16,6 +16,7 @@
 | `src/frame_scale.cpp` | 🆕 1280×720 → 640×480（双轴 3:2 + 横向中心裁剪，**无几何畸变**、**0 BRAM**）—— `docs/20` 的 720p60 方案 | 语法 ✅ / 主机模型逐位 ✅ / csim ❌ |
 | `sim/gen_scale_vectors.py` | 🆕 `frame_scale` 的向量 + 黄金参考（`sim/data_scale/`） | numpy 独立对拍 PASS |
 | `sim/host_model_scale.cpp` | 🆕 `frame_scale` 的主机端算术模型 | `== PASS ==`（正向 vs 反向映射两条路径逐位相同） |
+| `sim/data_fir_60hz/` | 🆕 **60 Hz 档的黄金参考**（与 `fir_coeffs_q15_60hz.h` 配套；`meta.txt` + 两个 golden CSV 入库） | 由 `gen_fir_vectors.py --header ... --out-dir ...` 生成 |
 | `sim/link_budget.py` | 🆕 **链路预算判定器**：分辨率×帧率×格式 能不能用（含片内 BRAM 台阶判定） | 本机真跑，退出码即结论；自带"1080p@60 必须判为不可行"自检 |
 | `sim/design_fir_coeffs.py` | **fir_filter 系数设计器**（纯标准库：响应评估 / −3dB 搜索 / d 扫描 / 呼吸带可行性） | 同一条命令必得同一张系数表 |
 | `sim/host_model_fir.cpp` | **主机端算术模型**（秒级自检，本机 g++ 可运行；**不是** HLS 证据） | 与黄金参考逐样本相等 + 折叠逐位相同 |
@@ -39,6 +40,12 @@ python D:\Desktop\AMD\fpga\sim\gen_frames.py
 
 :: 2) C 仿真 + C 综合
 cd /d D:\Desktop\AMD\fpga
+vitis-run --mode hls --tcl run_hls.tcl
+
+:: 3) 60 Hz 档的 fir_filter（系数表 N=127，黄金参考切到 sim/data_fir_60hz）
+::    ⚠️ 60 Hz **不能**沿用 63 抽头：停止带会从 -16 dB 退化到 -6 dB，理由见 docs/22 §2.1
+set HLS_IP=fir_filter
+set FIR_FS=60
 vitis-run --mode hls --tcl run_hls.tcl
 ```
 

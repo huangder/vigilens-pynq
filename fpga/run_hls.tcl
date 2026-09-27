@@ -47,6 +47,17 @@ if {$ip_name eq "rgb2gray" || $ip_name eq "motion_quality"} {
     set default_data "sim/data_scale"
 }
 
+# ---- fir_filter 的 60 Hz 档（2026-09-29 新增）-------------------------------
+#   用法：  set "FIR_FS=60"   然后照常跑 run_hls.tcl（HLS_IP=fir_filter）
+#   60 Hz 必须用 N=127 的系数表（63 抽头在 60 Hz 下停止带会从 -16 dB 退化到 -6 dB），
+#   所以它有自己的黄金参考目录；不设这个变量时一切照旧走 30 Hz 的 sim/data_fir。
+set fir_60 0
+if {$ip_name eq "fir_filter" && [info exists ::env(FIR_FS)] && $::env(FIR_FS) eq "60"} {
+    set fir_60 1
+    set default_data "sim/data_fir_60hz"
+    puts "INFO: fir_filter 60 Hz 档（N=127 系数表 + sim/data_fir_60hz 黄金参考）"
+}
+
 set src_file "src/$ip_name.cpp"
 set tb_file  "sim/tb_$ip_name.cpp"
 if {![file exists $src_file] || ![file exists $tb_file]} {
@@ -61,7 +72,11 @@ puts "INFO: testbench = $tb_file"
 # Create project / component
 open_component -reset component_$ip_name -flow_target vivado
 
-add_files $src_file
+if {$fir_60} {
+    add_files $src_file -cflags "-DFIR_FS_60HZ"
+} else {
+    add_files $src_file
+}
 add_files -tb $tb_file
 set_top $ip_name
 

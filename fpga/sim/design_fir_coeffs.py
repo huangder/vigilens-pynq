@@ -297,6 +297,12 @@ def scan_d(n_taps, fs, f1, f2, d_list):
 
 
 def write_header(path, h_q15, fs, f1, f2, d):
+    # include guard 必须**由文件名派生**，否则多张系数表会共用一个 guard：
+    # 先包含的那张表会让后一张被静默跳过（`#ifndef` 已定义）——那是最难查的一类 bug。
+    # fir_coeffs_q15.h -> FIR_COEFFS_Q15_H（与历史输出逐字节兼容）
+    # fir_coeffs_q15_60hz.h -> FIR_COEFFS_Q15_60HZ_H
+    guard = "".join(c if c.isalnum() else "_"
+                    for c in os.path.splitext(os.path.basename(path))[0]).upper() + "_H"
     lines = []
     lines.append("// =============================================================================")
     lines.append("//  %s —— fir_filter 的冻结系数表（**自动生成，请勿手改**）" % os.path.basename(path))
@@ -310,8 +316,8 @@ def write_header(path, h_q15, fs, f1, f2, d):
     lines.append("//  量化：int16 Q15，四舍五入远离零；运算约定见契约 3.5 节")
     lines.append("// =============================================================================")
     lines.append("")
-    lines.append("#ifndef FIR_COEFFS_Q15_H")
-    lines.append("#define FIR_COEFFS_Q15_H")
+    lines.append("#ifndef %s" % guard)
+    lines.append("#define %s" % guard)
     lines.append("")
     lines.append("#define FIR_NUM_TAPS    %d" % len(h_q15))
     lines.append("#define FIR_FS_HZ       %d" % int(fs))
@@ -325,7 +331,7 @@ def write_header(path, h_q15, fs, f1, f2, d):
         lines.append("    " + chunk + ("," if i + 8 < len(h_q15) else ""))
     lines.append("};")
     lines.append("")
-    lines.append("#endif  // FIR_COEFFS_Q15_H")
+    lines.append("#endif  // %s" % guard)
     lines.append("")
     with open(path, "w", newline="\n", encoding="utf-8") as f:
         f.write("\n".join(lines))
