@@ -14,6 +14,7 @@
 #      python fpga/sim/gen_frames.py           -> sim/data/        (roi_statistic)
 #      python fpga/sim/gen_motion_vectors.py   -> sim/data_motion/ (rgb2gray, motion_quality)
 #      python fpga/sim/gen_fir_vectors.py      -> sim/data_fir/    (fir_filter)
+#      python fpga/sim/gen_mipi_vectors.py     -> sim/data_mipi/   (raw10_unpack, bayer_demosaic)
 #
 #  契约：docs/interface.md —— 器件/时钟/寄存器映射/比对口径均已冻结。
 # =============================================================================
@@ -24,7 +25,10 @@ if {[info exists ::env(HLS_IP)] && $::env(HLS_IP) ne ""} {
     set ip_name $::env(HLS_IP)
 }
 
-set known_ips [list roi_statistic rgb2gray motion_quality fir_filter]
+# ⚠️ raw10_unpack / bayer_demosaic 是 docs/19 的**新像素源链路** IP：
+#    接口口径尚未进入 docs/interface.md（提案见 docs/19 §6，待 A/B 会签），
+#    故它们可以 csim/csynth，但在契约冻结前**不得**被当作已冻结接口对接。
+set known_ips [list roi_statistic rgb2gray motion_quality fir_filter raw10_unpack bayer_demosaic]
 if {[lsearch -exact $known_ips $ip_name] < 0} {
     puts "ERROR: unknown HLS_IP '$ip_name'. Known: $known_ips"
     exit 1
@@ -36,6 +40,8 @@ if {$ip_name eq "rgb2gray" || $ip_name eq "motion_quality"} {
     set default_data "sim/data_motion"
 } elseif {$ip_name eq "fir_filter"} {
     set default_data "sim/data_fir"
+} elseif {$ip_name eq "raw10_unpack" || $ip_name eq "bayer_demosaic"} {
+    set default_data "sim/data_mipi"
 }
 
 set src_file "src/$ip_name.cpp"
@@ -74,7 +80,7 @@ lappend cand_list [file normalize "[pwd]/$default_data"]
 lappend cand_list [file normalize "[pwd]/fpga/$default_data"]
 
 foreach c $cand_list {
-    if {[file exists "$c/golden_roi.csv"] || [file exists "$c/golden_motion.csv"] || [file exists "$c/golden_fir.csv"]} {
+    if {[file exists "$c/golden_roi.csv"] || [file exists "$c/golden_motion.csv"] || [file exists "$c/golden_fir.csv"] || [file exists "$c/golden_mipi.csv"]} {
         set data_dir $c
         break
     }

@@ -1,0 +1,11 @@
+in_width=640
+in_height=480
+out_width=640
+out_height=480
+frames=5
+raw10_bytes=384000
+bayer16_bytes=614400
+rgb_bytes=921600
+bayer_pattern=RGGB
+seed=20260928
+frame_names=random,all_zero,all_max,col_stripes,impulse

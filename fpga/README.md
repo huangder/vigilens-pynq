@@ -8,9 +8,11 @@
 
 | 目录 / 文件 | 内容 | 验收 |
 |---|---|---|
-| `src/` | HLS 源码（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter`）+ `fir_coeffs_q15.h`（自动生成的冻结系数） | C 仿真与 Python 参考逐点一致（容差 0） |
+| `src/` | HLS 源码（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter`）+ `fir_coeffs_q15.h`（自动生成的冻结系数）。<br>🆕 **`raw10_unpack` / `bayer_demosaic`**（`docs/19` 新像素源链路；**接口未进契约**，仅 C 线内部使用） | C 仿真与 Python 参考逐点一致（容差 0）；新 IP 见 `docs/19` §5 |
 | `sim/tb_*.cpp` | C 测试台（内嵌边界用例 + 跨语言黄金比对） | 两层全 PASS |
 | `sim/gen_frames.py` | 测试向量 + Python 黄金参考生成器（**只用标准库**，有 numpy 时自动对拍） | 同 seed 必得同产物 |
+| `sim/gen_mipi_vectors.py` | 🆕 `raw10_unpack` / `bayer_demosaic` 的向量 + 黄金参考（`sim/data_mipi/`） | 同上；产物含逐帧抽查点 CSV（入库） |
+| `sim/host_model_mipi.cpp` | 🆕 新 IP 的**主机端算术模型**（本机 g++ 可运行，秒级；**不是** HLS 证据） | `== PASS ==`：内嵌用例 + 流式vs朴素 + 跨语言 + CSV复核 |
 | `sim/design_fir_coeffs.py` | **fir_filter 系数设计器**（纯标准库：响应评估 / −3dB 搜索 / d 扫描 / 呼吸带可行性） | 同一条命令必得同一张系数表 |
 | `sim/host_model_fir.cpp` | **主机端算术模型**（秒级自检，本机 g++ 可运行；**不是** HLS 证据） | 与黄金参考逐样本相等 + 折叠逐位相同 |
 | `sim/q15_ref.py` | **Q1.15 量化参考实现**（契约 4.6 节，P0-1）：ROI 均值 → Q1.15，含 5 条性质自检与 CSV 批量转换 | `--selftest` 必须 PASS |
