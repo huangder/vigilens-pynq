@@ -31,6 +31,15 @@ fpga/sim/data_fir/series.bin
 # 注意：fpga/sim/data_fir_60hz/{meta.txt, golden_fir.csv, golden_fir_out.csv} 必须入库。
 fpga/sim/data_fir_60hz/series.bin
 
+# ---- C 线：v1.5 测量口径档位的生成向量（docs/interface.md 头部 v1.5 草案）----
+# 720p 档（抽取 3/8 -> 480x270）：
+#   python fpga/sim/gen_motion_vectors.py --width 1280 --height 720 --decim 3 8 \
+#          --out-dir fpga/sim/data_motion_720p
+# 1080p 档（抽取 1/4 -> 480x270）：同上，改 --width 1920 --height 1080 --decim 1 4
+# 注意：fpga/sim/data_motion_720p/{meta.txt, golden_motion.csv} 是黄金参考，**必须入库**。
+fpga/sim/data_motion_720p/rgb_frames.bin
+fpga/sim/data_motion_720p/gray.bin
+
 # ---- C 线：raw10_unpack / bayer_demosaic 的生成向量（docs/19 新像素源链路）----
 # 一键重建：python fpga/sim/gen_mipi_vectors.py
 # 注意：fpga/sim/data_mipi/{meta.txt, golden_mipi.csv} 是黄金参考，**必须入库**
