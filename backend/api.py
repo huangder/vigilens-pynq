@@ -63,6 +63,7 @@ PREVIEW_HEADER_NAMES = {
     "source_height": "x-vigilens-source-height",
     "face_visible": "x-vigilens-face-visible",
     "status": "x-vigilens-status",
+    "detector": "x-vigilens-detector",
 }
 
 _history: deque[dict] = deque(maxlen=HISTORY_MAX)
@@ -182,6 +183,7 @@ def validate_preview(jpeg: bytes, content_type: str, headers: Any) -> dict[str, 
     ]
     face_visible = _parse_float(headers, "face_visible")
     status = headers.get(PREVIEW_HEADER_NAMES["status"])
+    detector = headers.get(PREVIEW_HEADER_NAMES["detector"], "unknown")
 
     if frame_id < 0:
         raise PreviewValidationError("frame_id 必须 >= 0")
@@ -198,6 +200,8 @@ def validate_preview(jpeg: bytes, content_type: str, headers: Any) -> dict[str, 
         from contract import STATUS_VALUES
     if status not in STATUS_VALUES:
         raise PreviewValidationError("status 不在契约六态枚举内")
+    if detector not in ("mediapipe", "stub", "unknown"):
+        raise PreviewValidationError("detector 必须是 mediapipe、stub 或 unknown")
 
     return {
         "frame_id": frame_id,
@@ -207,6 +211,7 @@ def validate_preview(jpeg: bytes, content_type: str, headers: Any) -> dict[str, 
         "source_height": source_height,
         "face_visible": face_visible,
         "status": status,
+        "detector": detector,
     }
 
 
@@ -226,6 +231,7 @@ def preview_response_headers(packet: dict[str, Any]) -> dict[str, str]:
         PREVIEW_HEADER_NAMES["source_height"]: str(meta["source_height"]),
         PREVIEW_HEADER_NAMES["face_visible"]: str(meta["face_visible"]),
         PREVIEW_HEADER_NAMES["status"]: str(meta["status"]),
+        PREVIEW_HEADER_NAMES["detector"]: str(meta.get("detector", "unknown")),
     }
 
 

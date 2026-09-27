@@ -615,6 +615,9 @@
       el.previewSync.textContent = "已清除过期框";
       el.previewSync.className = "badge danger";
       state.previewMeta = null;
+      el.previewImage.classList.remove("ready");
+      el.videoPlaceholder.hidden = false;
+      el.videoPlaceholderText.textContent = "预览已停止更新";
       drawVideo();
     }
   }
@@ -626,7 +629,8 @@
     }
     el.previewDebug.textContent = "preview: frame_id=" + meta.frameId +
       " · " + meta.sourceWidth + "×" + meta.sourceHeight +
-      " · bbox=[" + meta.bbox.join(",") + "] · etag=" + etag;
+      " · bbox=[" + meta.bbox.join(",") + "]" +
+      " · detector=" + (meta.detector || "unknown") + " · etag=" + etag;
   }
 
   function replacePreviewImage(blob, meta, etag) {
@@ -645,6 +649,9 @@
       setPreviewBadge("ok", "同源预览");
       el.previewSync.textContent = "frame " + meta.frameId + " 同帧框";
       el.previewSync.className = "badge ok";
+      if (meta.detector === "stub") {
+        setPreviewBadge("warn", "预览帧 · stub 框（非人脸检测）");
+      }
       renderPreviewDebug(meta, state.previewEtag);
       updatePreviewFreshness();
       drawVideo();

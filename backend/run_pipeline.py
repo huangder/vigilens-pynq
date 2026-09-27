@@ -314,6 +314,7 @@ def main(argv: list[str] | None = None) -> int:
                             jpeg, frame_id=fid, ts=float(clean["ts"]), bbox=clean["face"]["bbox"],
                             source_width=source_width, source_height=source_height,
                             face_visible=float(clean["face"]["visible"]), status=clean["status"],
+                            detector="mediapipe" if lm_source == "mediapipe" else "stub",
                         )
                     except (PostError, ValueError) as e:
                         preview_stopped = True

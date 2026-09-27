@@ -157,11 +157,12 @@
       <div class="badge-stack">
         <span class="badge warn" id="videoBadge">等待同源预览</span>
         <span class="badge" id="previewFreshness">—</span>
-        <span class="badge" id="previewSync">未配对</span>
+      <span class="badge" id="previewSync">未配对</span>
       </div>
     </div>
     <div class="video-note">
-      画面与检测框由 A 线同一帧产生，并通过本机旁路传输；离线 Mock 只显示模拟定位框，不冒充真实视频。
+      画面与检测框由 A 线同一帧产生，并通过本机旁路传输；必须持续运行 A 线预览推送，
+      页面不会从一张静止 JPEG 继续追踪。若显示 stub，表示没有使用真实人脸检测器。
     </div>
   </section>
 

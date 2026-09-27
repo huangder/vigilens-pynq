@@ -17,7 +17,8 @@
     sourceWidth: "x-vigilens-source-width",
     sourceHeight: "x-vigilens-source-height",
     faceVisible: "x-vigilens-face-visible",
-    status: "x-vigilens-status"
+    status: "x-vigilens-status",
+    detector: "x-vigilens-detector"
   };
 
   function finiteNumber(value, label) {
@@ -81,7 +82,8 @@
       sourceWidth: Math.trunc(finiteNumber(get(HEADERS.sourceWidth), "sourceWidth")),
       sourceHeight: Math.trunc(finiteNumber(get(HEADERS.sourceHeight), "sourceHeight")),
       faceVisible: finiteNumber(get(HEADERS.faceVisible), "faceVisible"),
-      status: get(HEADERS.status)
+      status: get(HEADERS.status),
+      detector: headers.get(HEADERS.detector) || "unknown"
     };
   }
 
@@ -106,7 +108,12 @@
     near(scaled.x, 5, "scaled.x"); near(scaled.y, 10, "scaled.y");
     near(scaled.width, 50, "scaled.width"); near(scaled.height, 60, "scaled.height");
     if (mapBbox([0, 0, 0, 10], 320, 240, 640, 480) !== null) failures.push("空 bbox 应返回 null");
-    return { checked: 5, failures: failures, ok: failures.length === 0 };
+    var moving = [
+      mapBbox([100, 80, 180, 220], 640, 480, 640, 480),
+      mapBbox([260, 80, 180, 220], 640, 480, 640, 480)
+    ];
+    if (moving[0].x === moving[1].x) failures.push("连续帧 bbox 改变时屏幕坐标必须同步改变");
+    return { checked: 6, failures: failures, ok: failures.length === 0 };
   }
 
   return { HEADERS: HEADERS, containLayout: containLayout, mapBbox: mapBbox, parseMeta: parseMeta, selfTest: selfTest };

@@ -394,6 +394,7 @@ def test_preview_poster_uses_logical_timestamps_and_same_frame_metadata() -> Non
             sent += p.maybe_post(
                 jpeg, frame_id=fid, ts=fid / 45.0, bbox=[10 + fid, 20, 100, 120],
                 source_width=640, source_height=480, face_visible=0.9, status="normal",
+                detector="mediapipe",
             )
     assert sent == 12
     assert p.posted == 12 and p.throttled == 34
@@ -404,6 +405,7 @@ def test_preview_poster_uses_logical_timestamps_and_same_frame_metadata() -> Non
     assert headers["x-vigilens-frame-id"] == "44"
     assert headers["x-vigilens-bbox-x"] == "54"
     assert headers["x-vigilens-source-width"] == "640"
+    assert headers["x-vigilens-detector"] == "mediapipe"
 
 
 def test_preview_failure_is_nonfatal_and_recorded(workdir: Path) -> None:

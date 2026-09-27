@@ -248,18 +248,18 @@ class PreviewPoster:
 
     def maybe_post(self, jpeg: bytes, *, frame_id: int, ts: float, bbox: list[int],
                    source_width: int, source_height: int, face_visible: float,
-                   status: str) -> bool:
+                   status: str, detector: str = "unknown") -> bool:
         if not self.due(ts):
             self.throttled += 1
             return False
         self.post(jpeg, frame_id=frame_id, ts=ts, bbox=bbox,
                   source_width=source_width, source_height=source_height,
-                  face_visible=face_visible, status=status)
+                  face_visible=face_visible, status=status, detector=detector)
         return True
 
     def post(self, jpeg: bytes, *, frame_id: int, ts: float, bbox: list[int],
              source_width: int, source_height: int, face_visible: float,
-             status: str) -> dict[str, Any]:
+             status: str, detector: str = "unknown") -> dict[str, Any]:
         if len(bbox) != 4:
             raise ValueError("bbox 必须是 [x,y,w,h]")
         x, y, w, h = (int(v) for v in bbox)
@@ -277,6 +277,7 @@ class PreviewPoster:
             "X-VigiLens-Source-Height": str(int(source_height)),
             "X-VigiLens-Face-Visible": str(float(face_visible)),
             "X-VigiLens-Status": status,
+            "X-VigiLens-Detector": detector,
         }
         last_error: str | None = None
         for attempt in range(1, self.retries + 2):

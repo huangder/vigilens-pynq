@@ -34,6 +34,8 @@ python backend/run_pipeline.py --source <本地视频> --post auto \
 #         指标仍是冻结契约 1 Hz；视频 JPEG 约 12 fps，经 /api/preview 独立旁路传输
 ```
 
+跟框验收必须使用持续的真实视频/摄像头源。`--no-mock` 只启动接收服务；A 线回放结束后页面会保留最后一帧并在超时后清框。摘要或开发者工具中 `landmark_source=mediapipe` / `detector=mediapipe` 才表示真实人脸检测；`stub` 只代表占位几何量，不会跟随视频中的真实人脸。
+
 `frontend/index.html` 默认地址填的是 8765；若用 `api.py`，把地址改成 `ws://127.0.0.1:8000/ws`。
 
 ## 六种状态怎么演示（B6 验收）
