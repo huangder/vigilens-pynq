@@ -191,6 +191,32 @@ def test_internal_fields_are_stripped(ingest: _Server) -> None:
     assert validate_frame(sent) == [], "内部字段漏出去会让对面 422"
 
 
+def test_triggers_travel_beside_the_frame(ingest: _Server) -> None:
+    """判定证据链走**旁路**：与 frame 平级，不塞进帧里（B 线 docs/08 的请求）。
+
+    两头都要成立，缺一不可：
+      · 帧里**不许**出现 `_triggers`（否则契约校验必炸）；
+      · payload 顶层**要有** `triggers`（否则网页的"可解释链条"永远是空的）。
+    """
+    fr = _good_frame(9, 2.0)
+    items = [{"rule": "perclos", "metric": "behavior.perclos", "value": 0.321,
+              "threshold": 0.25, "verdict": "fail"}]
+    fr["_triggers"] = items
+    FramePoster(ingest.url, backoff=0.0).post(fr)
+
+    payload = ingest.received[0]
+    assert payload.get("triggers") == items, "triggers 必须与 frame 平级地发出去"
+    assert "_triggers" not in payload["frame"], "帧里仍然不许夹带内部字段"
+    assert validate_frame(payload["frame"]) == []
+    assert payload["frame"]["frame_id"] == 9, "旁路字段不影响帧本身"
+
+
+def test_payload_without_triggers_stays_backward_compatible(ingest: _Server) -> None:
+    """没有 `_triggers` 时 payload 只有 `frame` —— 与 B 线接入这道旁路之前完全一致。"""
+    FramePoster(ingest.url, backoff=0.0).post(_good_frame(10, 0.0))
+    assert set(ingest.received[0]) == {"frame"}
+
+
 def test_invalid_frame_is_rejected_before_sending(ingest: _Server) -> None:
     fr = _good_frame(2, 0.0)
     fr["status"] = "nonsense"                     # 契约只允许 6 个枚举值

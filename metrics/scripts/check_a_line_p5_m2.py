@@ -288,6 +288,35 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001
             ck.add("GET / 返回仪表盘", False, f"{e}")
 
+        # ---------- [9] 判定证据链旁路（B 线 docs/08 的请求） ------------------
+        print()
+        print("[9] 判定证据链旁路：triggers 与 frame 平级 → B 线 /api/status 能取回")
+        from backend.publish import FramePoster  # noqa: PLC0415 —— 只在用到时导入
+
+        marker = json.loads(json.dumps(runs[-1]["stream"][-2]))      # 一帧真实的测量帧
+        marker["frame_id"] = int(marker["frame_id"]) + 200_000
+        marker["ts"] = float(marker["ts"]) + 200_000.0
+        items = [{"rule": "perclos", "metric": "behavior.perclos", "value": 0.31,
+                  "threshold": 0.25, "verdict": "fail"},
+                 {"rule": "quality_gate", "metric": "quality.overall", "value": 0.9,
+                  "threshold": 0.6, "verdict": "pass"}]
+        marker["_triggers"] = items
+        # 用 A 线**自己的推送器**发，确保走的就是 run_pipeline --post 那条代码路径
+        FramePoster(ingest_url, hz=0.0, retries=0, backoff=0.0).post(marker)
+        code, st = http_json(f"{base}/api/status")
+        got_trig = (st or {}).get("triggers") if isinstance(st, dict) else None
+        got_frame = (st or {}).get("frame") or {}
+        ok = (isinstance(got_trig, dict)
+              and got_trig.get("frame_id") == marker["frame_id"]
+              and got_trig.get("items") == items
+              and got_frame.get("frame_id") == marker["frame_id"]
+              and "_triggers" not in got_frame)
+        ck.add("证据链随帧到达 /api/status", bool(ok),
+               f"triggers.frame_id={got_trig.get('frame_id') if isinstance(got_trig, dict) else got_trig}"
+               f"（帧 frame_id={got_frame.get('frame_id')}），"
+               f"items={len(got_trig.get('items') or []) if isinstance(got_trig, dict) else 0} 条，"
+               f"帧里无 _triggers={' _triggers' not in str(got_frame)}")
+
         report["steps"] = [
             {"name": n, "ok": ok, "detail": d} for n, ok, d in ck.results
         ]

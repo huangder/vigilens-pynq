@@ -69,7 +69,7 @@ python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 -
 python backend/mock.py --frames 6           # 六态各一帧契约 JSON
 python backend/config.py                    # 确认阈值读到了什么
 python backend/decision.py                  # 四条判定规则的自检
-python -m pytest                            # 78 项测试（契约一致性 + rPPG 链路 + M2 交接面）
+python -m pytest                            # 110 项测试（契约/可复现性 + rPPG + M2 交接面 + 姿态回归）
 
 # 4) 【P4】真实视频到位后要做的标定（现在就能跑第一个）
 python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？分辨率帧率合规吗？
@@ -108,7 +108,8 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 
 ## 测试覆盖了什么
 
-`python -m pytest`（**78 项** = 契约/可复现性 49 项 + rPPG 链路 16 项 + M2 交接面 13 项）刻意覆盖的是
+`python -m pytest`（**110 项** = 契约/可复现性 50 项 + rPPG 链路 16 项 + M2 交接面 18 项 +
+姿态回归 19 项 + B 线预览/断流 7 项）刻意覆盖的是
 **契约、可复现性与算法正确性**，不是"函数能跑"：
 
 **契约与可复现性**（`tests/test_contract.py` 29 项 + `tests/test_pipeline.py` 20 项 = 49 项）
@@ -138,7 +139,7 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 > （段长都 ≥ 63），因此漏掉了"逐样本喂时延迟线历史长度算错"这条路径 ——
 > 而 `run_pipeline` 恰恰是逐样本喂的。**只测顺利路径 ≈ 没测**，这条就是补上的那一格。
 
-**M2 交接面**（`tests/test_publish.py`，13 项，**接真的 HTTP**，不打桩 urllib）
+**M2 交接面**（`tests/test_publish.py`，18 项，**接真的 HTTP**，不打桩 urllib）
 
 - **节流按逻辑时间**：45 fps 回放 3 秒（136 帧）在 1 Hz 下只发 4 帧（ts=0/1/2/3）——
   回放比实时快几十倍，按墙上时钟节流会几乎一帧都不发；
@@ -147,8 +148,27 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 - **422 不重试**（契约不匹配，重试一百次也没用），**连不上重试后报错**：停推、**测量继续跑完**、
   产物完整落盘，最后以**退出码 3** 收场（既有响声，又不让整段测量白跑）；
 - **推送可复现**：同样的命令跑两次，推给 B 线的帧集合**逐字节相同**（防有人把节流改成按墙钟）；
+- **判定证据链走旁路**：`triggers` 与 `frame` 平级发出（帧里仍不许带 `_triggers`），
+  没有 `_triggers` 时 payload 与从前完全一致（见 `docs/08_B线给A线的接口请求.md`）；
 - **收尾帧 `done` 只进 jsonl 流与推送，不进 CSV、不覆盖 `last.json`**；
 - **`--frame-id-offset` 让多段回放的 frame_id/ts 跨段单调递增**（这条是实测踩到的坑）。
+
+**姿态回归**（`tests/test_face_pose.py`，19 项，**已知答案**，不需要相机 / 人脸视频 / mediapipe）
+
+为什么单独写一条：头部姿态曾经整体是坏的 —— 正对镜头的脸解出 `roll ≈ ±180°`、
+`yaw` 逐帧在 176°/−2° 之间跳，于是 98% 的帧被判成 `adjust_posture`（C 线 `docs/16` 的 BUG-006/007）。
+根因有三条：模型点写成"Y 朝上"（相机是 Y 朝下，基准整体偏 180°）、
+下巴用了索引 199（**内部点**）而不是 152（脸轮廓上的下巴尖）、
+以及 `yaw / pitch / roll` 三个分解式子**贴错了标签**。
+
+这组用例用"已知姿态的合成脸"当答案纸：正立正面→`(0,0,0)`；歪头只动 `roll`；
+转头只动 `yaw`；点头只动 `pitch`；连续扫描不出现 >5° 的跳变、角度不越 ±90°；
+所有解都在相机前方（`tvec[2] > 0`）；退化输入返回 0 而不是垃圾角度；
+外加一条模型护栏（下巴必须是 152、Y 轴必须朝下）。
+
+> ⚠️ 仍缺真实素材验证：`data/raw/` 目前只有 `.gitkeep`，
+> "真实视频上 `status` 不再误报 `adjust_posture`"这条验收要等 P4 素材；
+> `pose_reproj_max_px`（平均重投影误差上限）也是**占位值**。
 
 ## 已知环境问题（不是代码问题，别浪费时间）
 

@@ -160,7 +160,16 @@ class FramePoster:
             self.errors.append(msg)
             raise PostError(msg, url=self.url, errors=errs, contract_mismatch=True)
 
-        payload = {"frame": clean}     # api.py 的 /api/ingest 兼容 {"frame": ...} 与裸帧
+        # 判定证据链（decision.py 的 triggers）走**旁路**：与 frame 平级，不塞进帧里。
+        # 理由：证据链是"给界面看的解释"，不是测量结果 —— 塞进帧就得改契约 schema、
+        # 两个校验器与跨语言检查，而帧本身应当保持最小且冻结。
+        # B 线的 /api/ingest 收下后经 /api/status 回给页面；见
+        # `docs/08_B线给A线的接口请求.md`（B 线 2026-09-18 发起，A 线实现）。
+        # ⚠️ 必须从**原始 frame** 取 `_triggers`：clean 里已经被剥掉了，读它必然为空。
+        payload: dict[str, Any] = {"frame": clean}   # api.py 的 /api/ingest 兼容 {"frame": ...} 与裸帧
+        triggers = frame.get("_triggers")
+        if triggers:
+            payload["triggers"] = list(triggers)
         last_exc: Exception | None = None
         for attempt in range(1, self.retries + 2):      # 首次 + retries 次重试
             self.attempts += 1
