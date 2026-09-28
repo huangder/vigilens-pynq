@@ -16,6 +16,7 @@ import csv
 import json
 import os
 import tempfile
+import time
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -33,6 +34,21 @@ CSV_COLUMNS = [
     "light_score", "motion_score", "quality_overall",
     "status", "advice", "reason",
 ]
+
+SNAPSHOT_REPLACE_RETRIES = 5
+SNAPSHOT_REPLACE_BACKOFF_S = 0.01
+
+
+def _replace_snapshot(tmp: str, target: Path) -> None:
+    """原子替换；Windows 短暂占用目标文件时做有界重试。"""
+    for attempt in range(SNAPSHOT_REPLACE_RETRIES):
+        try:
+            os.replace(tmp, target)
+            return
+        except PermissionError:
+            if attempt + 1 >= SNAPSHOT_REPLACE_RETRIES:
+                raise
+            time.sleep(SNAPSHOT_REPLACE_BACKOFF_S * (attempt + 1))
 
 
 def flatten(frame: dict) -> dict[str, Any]:
@@ -60,7 +76,7 @@ def write_snapshot(path: str | os.PathLike[str], frame: dict) -> None:
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(frame, f, ensure_ascii=False, indent=2)
-        os.replace(tmp, p)
+        _replace_snapshot(tmp, p)
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
         raise

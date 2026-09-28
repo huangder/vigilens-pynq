@@ -14,9 +14,17 @@
   "use strict";
 
   var M = window.VigiLensMock;
-  var WS_TIMEOUT_MS = 3000;          // 与 config.yaml 的 ws_disconnect_timeout_s 对应
+  var P = window.VigiLensPreview;
+  // 客户端看门狗：**故意比服务端的 ws_disconnect_timeout_s（3.0 s）慢 1 秒**。
+  // 断流的权威来源是服务端 —— api.py 的 /ws 在超时后会下发一帧契约合法的 `disconnected`
+  // （见 backend/api.py 的 disconnect_frame 与 backend/A_LINE_DEV_STEPS.md §9 第 8 条）。
+  // 客户端看门狗只在"服务端整个挂掉、连断开帧都发不出来"时兜底，所以必须比服务端晚触发；
+  // 同刻触发会让两边抢着宣布断流，日志里多一条误导性的"超过 Ns 未收到帧"。
+  var WS_TIMEOUT_MS = 4000;
   var MAX_POINTS = 120;              // 趋势曲线保留点数（1 Hz → 120 秒）
   var MOCK_PERIOD_MS = 1000;         // 与契约 1 帧/秒一致
+  var PREVIEW_POLL_MS = 80;
+  var PREVIEW_STALE_MS = 1500;
 
   /* 六态配色：与 panel 顶部状态灯、日志 tag 共用一套 */
   var STATUS_COLOR = {
@@ -29,12 +37,14 @@
   };
 
   /* --------------------------------------------------------------------------
-   * 阈值集中在这里 —— 数值来自仓库根 config.yaml（前端是静态页面，读不到 yaml）。
+   * 阈值 —— **唯一来源是仓库根 config.yaml**，下面的数值只是「离线兜底」。
    *
-   * ⚠️ 这是一份**副本**，不是唯一来源。A 线拿真实视频标定后改了 config.yaml，
-   *    这里不会自动跟着变，症状是"卡片该报警却不报警"，还很难查。
-   *    正解是让后端把阈值随 /api/status 一起下发，届时此表退化为离线兜底。
-   *    在此之前，改任何阈值都必须**两边一起改**。
+   * 取值顺序（applyServerThresholds()）：
+   *   1) 页面由 api.py 托管 → /api/status 会带回 thresholds，**覆盖**下表（权威）；
+   *   2) 双击 index.html（file://）或后端不在 → 用下表，保证离线演示照常能跑。
+   *
+   * 所以：A 线标定后改 config.yaml，**前端会自动跟着变**，不会再无声漂移。
+   * 下表只在离线时生效；改阈值仍然只改 config.yaml 一处。
    * ------------------------------------------------------------------------ */
   var THRESHOLDS = {
     perclos_warning: 0.25,        // config.yaml: perclos_warning
@@ -69,13 +79,15 @@
       get: function (f) { return f.vital.rr_per_min; } }
   ];
 
-  /* 门控条目：方向 min = 越大越好，max = 越小越好 */
+  /* 门控条目：方向 min = 越大越好，max = 越小越好。
+     ⚠️ 这里存的是**阈值键名**而不是数值 —— 数值要在渲染时从 THRESHOLDS 现取，
+     否则后端下发的阈值覆盖 THRESHOLDS 之后，这里还钉着启动时那份旧值。 */
   var GATE_DEFS = [
-    { key: "light",   label: "光照",              dir: "min", limit: THRESHOLDS.light_score_min,    get: function (f) { return f.quality.light_score; } },
-    { key: "motion",  label: "运动（越小越好）",   dir: "max", limit: THRESHOLDS.motion_score_max,   get: function (f) { return f.quality.motion_score; } },
-    { key: "visible", label: "人脸可见率",         dir: "min", limit: THRESHOLDS.face_visible_min,   get: function (f) { return f.face.visible; } },
-    { key: "overall", label: "信号质量总分",       dir: "min", limit: THRESHOLDS.quality_min_score,  get: function (f) { return f.quality.overall; } },
-    { key: "vital",   label: "心率/呼吸额外门控",  dir: "min", limit: THRESHOLDS.vital_require_quality, extra: true,
+    { key: "light",   label: "光照",              dir: "min", limitKey: "light_score_min",    get: function (f) { return f.quality.light_score; } },
+    { key: "motion",  label: "运动（越小越好）",   dir: "max", limitKey: "motion_score_max",   get: function (f) { return f.quality.motion_score; } },
+    { key: "visible", label: "人脸可见率",         dir: "min", limitKey: "face_visible_min",   get: function (f) { return f.face.visible; } },
+    { key: "overall", label: "信号质量总分",       dir: "min", limitKey: "quality_min_score",  get: function (f) { return f.quality.overall; } },
+    { key: "vital",   label: "心率/呼吸额外门控",  dir: "min", limitKey: "vital_require_quality", extra: true,
       get: function (f) { return f.quality.overall; } }
   ];
 
@@ -96,7 +108,16 @@
     valid: 0,
     invalid: 0,
     forcedStatus: "",
-    lastFrame: null
+    lastFrame: null,
+    previewTimer: null,
+    previewWatchdog: null,
+    previewBusy: false,
+    previewEtag: "",
+    previewMeta: null,
+    previewObjectUrl: "",
+    previewLastRxAt: 0,
+    triggers: null,        // 旁路通道来的判定证据链 {frame_id, items}
+    pollTimer: null
   };
 
   /* ---------------------------------------------------------------- 工具 */
@@ -115,8 +136,7 @@
   function fitCanvas(cv) {
     var dpr = window.devicePixelRatio || 1;
     var w = cv.clientWidth || cv.width;
-    var h = parseInt(cv.getAttribute("data-css-h") || "0", 10) || (cv.id === "video" ? Math.round(w * 480 / 640) : 200);
-    cv.setAttribute("data-css-h", String(h));
+    var h = cv.clientHeight || (cv.id === "video" ? Math.round(w * 480 / 640) : 210);
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
@@ -136,43 +156,54 @@
     while (el.log.childNodes.length > 200) el.log.removeChild(el.log.lastChild);
   }
 
-  /* ------------------------------------------------------- 视频占位 + 检测框 */
-  function drawVideo(frame) {
+  /* ------------------------------------------------------- 同源预览 + 同帧检测框 */
+  function setPreviewBadge(kind, text) {
+    el.videoBadge.className = "badge" + (kind ? " " + kind : "");
+    el.videoBadge.textContent = text;
+  }
+
+  function clearPreviewImage(message) {
+    if (state.previewObjectUrl) URL.revokeObjectURL(state.previewObjectUrl);
+    state.previewObjectUrl = "";
+    state.previewMeta = null;
+    state.previewEtag = "";
+    el.previewImage.removeAttribute("src");
+    el.previewImage.classList.remove("ready");
+    el.videoPlaceholder.hidden = false;
+    el.videoPlaceholderText.textContent = message || "等待同源预览";
+    el.previewFreshness.textContent = "—";
+    el.previewFreshness.className = "badge";
+    el.previewSync.textContent = "未配对";
+    el.previewSync.className = "badge";
+    drawVideo();
+  }
+
+  function drawVideo() {
     var c = fitCanvas(el.video);
     var ctx = c.ctx, w = c.w, h = c.h;
     ctx.clearRect(0, 0, w, h);
-
-    // 占位底：暗格子 + 十字准星，明确表达"这里本来该是画面"
-    ctx.fillStyle = "#070a10";
-    ctx.fillRect(0, 0, w, h);
-    ctx.strokeStyle = "#131c2b";
-    ctx.lineWidth = 1;
-    for (var x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
-    for (var y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
-
-    ctx.strokeStyle = "#1b2740";
-    ctx.beginPath(); ctx.moveTo(w / 2, h / 2 - 12); ctx.lineTo(w / 2, h / 2 + 12);
-    ctx.moveTo(w / 2 - 12, h / 2); ctx.lineTo(w / 2 + 12, h / 2); ctx.stroke();
-
-    if (!frame || frame.status === "disconnected" || frame.face.bbox[2] === 0) {
-      ctx.fillStyle = "#5d6b85";
-      ctx.font = "13px 'Segoe UI', 'Microsoft YaHei', sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("无视频源", w / 2, h / 2 + 36);
-      el.videoBadge.textContent = "无视频源（未接入摄像头/回放）";
-      el.videoBadge.className = "badge warn";
+    var meta = state.previewMeta;
+    if (!meta) {
+      if (state.mode === "offline" && state.lastFrame && state.lastFrame.face.bbox[2] > 0) {
+        meta = {
+          frameId: state.lastFrame.frame_id, bbox: state.lastFrame.face.bbox,
+          sourceWidth: 640, sourceHeight: 480, faceVisible: state.lastFrame.face.visible,
+          status: state.lastFrame.status, mock: true
+        };
+      } else {
+        return;
+      }
+    }
+    if (meta.status === "disconnected") return;
+    var mapped = P.mapBbox(meta.bbox, w, h, meta.sourceWidth, meta.sourceHeight);
+    if (!mapped) {
       return;
     }
-
-    // face.bbox 是 640×480 坐标系 → 按画布尺寸等比缩放
-    var sx = w / 640, sy = h / 480;
-    var b = frame.face.bbox;
-    var bx = b[0] * sx, by = b[1] * sy, bw = b[2] * sx, bh = b[3] * sy;
-    var color = STATUS_COLOR[frame.status] || "#4da3ff";
+    var bx = mapped.x, by = mapped.y, bw = mapped.width, bh = mapped.height;
+    var color = STATUS_COLOR[meta.status] || "#55a8ff";
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.strokeRect(bx, by, bw, bh);
-    // 四角强调，便于截图时一眼看到检测框
     ctx.lineWidth = 3;
     var L = Math.min(18, bw / 3, bh / 3);
     [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]].forEach(function (p) {
@@ -183,10 +214,8 @@
     ctx.fillStyle = color;
     ctx.font = "12px ui-monospace, Consolas, monospace";
     ctx.textAlign = "left";
-    ctx.fillText("face " + frame.face.visible.toFixed(2) + "  yaw " + frame.face.pose.yaw.toFixed(1) + "°",
-                 bx, Math.max(12, by - 6));
-    el.videoBadge.textContent = "占位画面 + face.bbox 叠加";
-    el.videoBadge.className = "badge";
+    ctx.fillText((meta.mock ? "mock face " : "face ") + Number(meta.faceVisible).toFixed(2),
+                 bx, Math.max(14, by - 7));
   }
 
   /* ---------------------------------------------------------------- 状态区 */
@@ -203,10 +232,21 @@
     el.reason.textContent = frame ? frame.reason : "—";
 
     el.triggers.innerHTML = "";
+    // 判定证据链优先取帧自带的 _triggers（离线 mock / 单进程场景）；
+    // 否则取旁路通道（/api/status 的 triggers）—— 且 frame_id 必须与当前这帧一致，
+    // 否则会把"上一帧的理由"贴在"这一帧的状态"旁边，那比没有更糟。
     var list = (frame && frame._triggers) || [];
+    // 断流帧不显示证据链：它的 frame_id 是**沿用**上一帧的（见 api.py 的 disconnect_frame），
+    // 光比 frame_id 会误判为吻合，于是"上一帧为什么判疲劳"就被贴在"连接中断"旁边 —— 那是误导。
+    if (!list.length && frame && frame.status !== "disconnected" &&
+        state.triggers && state.triggers.frame_id === frame.frame_id) {
+      list = state.triggers.items || [];
+    }
     if (!list.length) {
       var li = document.createElement("li");
-      li.textContent = frame ? "（后端未传 triggers：可解释链条由 A 线 decision.py 的 _triggers 提供）" : "—";
+      li.textContent = frame
+        ? "（暂无判定证据链：需 A 线推送时带上 triggers，见 docs/08_B线给A线的接口请求.md）"
+        : "—";
       el.triggers.appendChild(li);
     } else {
       list.forEach(function (t) {
@@ -223,7 +263,8 @@
   /* ------------------------------------------------ 信号质量门控（能不能测） */
   function gatePass(g, v) {
     if (v === null || v === undefined || !isFinite(v)) return false;
-    return g.dir === "min" ? v >= g.limit : v <= g.limit;
+    var limit = THRESHOLDS[g.limitKey];
+    return g.dir === "min" ? v >= limit : v <= limit;
   }
 
   function buildGate() {
@@ -246,14 +287,15 @@
       var v = frame ? g.get(frame) : null;
       var ok = gatePass(g, v);
       var has = !(v === null || v === undefined || !isFinite(v));
+      var limit = THRESHOLDS[g.limitKey];
       // 条形图统一成"越长越好"：max 型（运动，越小越好）取 1-v 翻转
       var frac = has ? (g.dir === "min" ? v : 1 - v) : 0;
       frac = Math.max(0, Math.min(1, frac));
-      var limitFrac = g.dir === "min" ? g.limit : 1 - g.limit;
-      row.querySelector(".fill").style.width = (frac * 100).toFixed(1) + "%";
+      var limitFrac = g.dir === "min" ? limit : 1 - limit;
+      row.querySelector(".fill").style.transform = "scaleX(" + frac.toFixed(4) + ")";
       row.querySelector(".mark").style.left = (limitFrac * 100).toFixed(1) + "%";
       row.querySelector(".val").textContent = has
-        ? v.toFixed(3) + (g.dir === "min" ? " ≥ " : " ≤ ") + g.limit
+        ? v.toFixed(3) + (g.dir === "min" ? " ≥ " : " ≤ ") + limit
         : "—";
       row.classList.toggle("fail", !!frame && !ok);
       if (frame && !ok && !g.extra) failed.push(g.label);
@@ -479,24 +521,189 @@
       state.lastStatus = frame.status;
     }
 
-    state.points.push(frame);
-    while (state.points.length > MAX_POINTS) state.points.shift();
+    // 断流帧不进趋势曲线：把它当"这一段没有数据"（曲线留空），而不是"测出来是 0"。
+    // 兜底帧是 mock 造的 disconnected，它的 perclos / 眨眼率 / 质量都是 0，
+    // 画上去会变成一根掉到 0 的假尖峰 —— 那等于替系统编了一个它没测到的结论。
+    if (frame.status !== "disconnected") {
+      state.points.push(frame);
+      while (state.points.length > MAX_POINTS) state.points.shift();
+    }
 
     el.srcName.textContent = source;
     el.srcPill.className = "pill " + (source === "WebSocket" ? "live" : "mock");
     el.modeName.textContent = "软件模式";
-    el.videoBadge.textContent = frame.status === "disconnected" ? "无视频源" : "占位画面 + face.bbox 叠加";
+    if (source !== "WebSocket") {
+      setPreviewBadge("warn", "模拟定位框 · 非真实视频");
+      el.previewFreshness.textContent = "离线 Mock";
+      el.previewSync.textContent = "同一 Mock 帧";
+      el.previewSync.className = "badge ok";
+    } else if (frame.status === "disconnected" && !state.previewMeta) {
+      setPreviewBadge("danger", "预览中断");
+    }
 
     renderState(frame);
     renderCards(frame);
     renderGate(frame);
     renderBlink(frame);
-    drawVideo(frame);
+    drawVideo();
     renderChart();
   }
 
   function synthesizeDisconnected() {
     return M.mockFrame(-1, { status: "disconnected" });
+  }
+
+  /* ------------------------------------------- 与后端同步（地址 + 阈值） */
+  function syncWithServer() {
+    // 由 api.py 托管时，一次 /api/status 解决两件事：
+    //   ① WS 与页面**同源** → 自动填好地址，省掉"记得手填 :8000/ws"这个演示出错点；
+    //   ② 门控阈值的**权威值在 config.yaml**，由后端下发 → 前端那份副本不会再无声漂移。
+    // 探测失败（双击 index.html 的 file://、普通静态服务器、后端没起）→ 全部保持内置默认，
+    // 离线演示照常能跑。
+    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+    fetch("/api/status", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || j.ok !== true) return;
+        var want = (location.protocol === "https:" ? "wss://" : "ws://") +
+                   location.host + "/ws";
+        if (el.wsUrl.value.trim() !== want) {
+          el.wsUrl.value = want;
+          log("系统", "检测到本页由 api.py 托管，地址已自动填为 " + want, "#4da3ff");
+        }
+        applyServerThresholds(j.thresholds);
+      })
+      .catch(function () { /* 不是 api.py 托管的：保持默认，不发日志避免误导 */ });
+  }
+
+  function applyServerThresholds(fromServer) {
+    if (!fromServer || typeof fromServer !== "object") return;
+    var changed = [];
+    Object.keys(THRESHOLDS).forEach(function (k) {
+      var v = fromServer[k];
+      if (typeof v === "number" && isFinite(v) && v !== THRESHOLDS[k]) {
+        THRESHOLDS[k] = v;
+        changed.push(k + "=" + v);
+      }
+    });
+    // 客户端看门狗必须比服务端**慢**（服务端才是断流的权威来源）——跟着服务端超时一起算，
+    // 不然 config.yaml 调了 ws_disconnect_timeout_s，两边又会同刻抢着宣布断流。
+    var t = fromServer.ws_disconnect_timeout_s;
+    if (typeof t === "number" && isFinite(t) && t > 0) {
+      WS_TIMEOUT_MS = Math.round((t + 1) * 1000);
+    }
+    if (changed.length) {
+      // 只有真的与内置副本不同才说话，避免每次打开页面都刷一行噪音
+      log("系统", "阈值已按 config.yaml 更新：" + changed.join("、"), "#8b7cff");
+      renderGate(state.lastFrame);
+      renderCards(state.lastFrame);
+    }
+  }
+
+  /* ------------------------------------------- 同源 JPEG 旁路（约 12 Hz） */
+  function previewEndpointAvailable() {
+    return location.protocol === "http:" || location.protocol === "https:";
+  }
+
+  function updatePreviewFreshness() {
+    if (!state.previewLastRxAt || !state.previewMeta) return;
+    var age = Date.now() - state.previewLastRxAt;
+    el.previewFreshness.textContent = age < 1000 ? "刚刚" : (age / 1000).toFixed(1) + "s 前";
+    el.previewFreshness.className = "badge" + (age > PREVIEW_STALE_MS ? " danger" : "");
+    if (age > PREVIEW_STALE_MS) {
+      setPreviewBadge("danger", "预览中断");
+      el.previewSync.textContent = "已清除过期框";
+      el.previewSync.className = "badge danger";
+      state.previewMeta = null;
+      el.previewImage.classList.remove("ready");
+      el.videoPlaceholder.hidden = false;
+      el.videoPlaceholderText.textContent = "预览已停止更新";
+      drawVideo();
+    }
+  }
+
+  function renderPreviewDebug(meta, etag) {
+    if (!meta) {
+      el.previewDebug.textContent = "preview: 尚未收到同源 JPEG";
+      return;
+    }
+    el.previewDebug.textContent = "preview: frame_id=" + meta.frameId +
+      " · " + meta.sourceWidth + "×" + meta.sourceHeight +
+      " · bbox=[" + meta.bbox.join(",") + "]" +
+      " · detector=" + (meta.detector || "unknown") + " · etag=" + etag;
+  }
+
+  function replacePreviewImage(blob, meta, etag) {
+    var nextUrl = URL.createObjectURL(blob);
+    var probe = new Image();
+    probe.onload = function () {
+      var old = state.previewObjectUrl;
+      state.previewObjectUrl = nextUrl;
+      state.previewMeta = meta;
+      state.previewEtag = etag || "";
+      state.previewLastRxAt = Date.now();
+      el.previewImage.src = nextUrl;
+      el.previewImage.classList.add("ready");
+      el.videoPlaceholder.hidden = true;
+      if (old) URL.revokeObjectURL(old);
+      setPreviewBadge("ok", "同源预览");
+      el.previewSync.textContent = "frame " + meta.frameId + " 同帧框";
+      el.previewSync.className = "badge ok";
+      if (meta.detector === "stub") {
+        setPreviewBadge("warn", "预览帧 · stub 框（非人脸检测）");
+      }
+      renderPreviewDebug(meta, state.previewEtag);
+      updatePreviewFreshness();
+      drawVideo();
+    };
+    probe.onerror = function () {
+      URL.revokeObjectURL(nextUrl);
+      setPreviewBadge("danger", "JPEG 解码失败");
+    };
+    probe.src = nextUrl;
+  }
+
+  function fetchPreviewOnce() {
+    if (!previewEndpointAvailable() || state.previewBusy || state.mode !== "ws") return;
+    state.previewBusy = true;
+    var headers = state.previewEtag ? { "If-None-Match": state.previewEtag } : {};
+    fetch("/api/preview/latest", { cache: "no-store", headers: headers })
+      .then(function (response) {
+        if (response.status === 304) return null;
+        if (response.status === 404) {
+          if (!state.previewMeta) {
+            setPreviewBadge("warn", "等待同源预览");
+            el.videoPlaceholderText.textContent = "A 线尚未推送同源 JPEG";
+          }
+          return null;
+        }
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        var meta = P.parseMeta(response.headers);
+        var etag = response.headers.get("etag") || "";
+        return response.blob().then(function (blob) { return { blob: blob, meta: meta, etag: etag }; });
+      })
+      .then(function (packet) {
+        if (packet) replacePreviewImage(packet.blob, packet.meta, packet.etag);
+      })
+      .catch(function (err) {
+        if (state.previewMeta) setPreviewBadge("danger", "预览读取失败");
+        el.previewDebug.textContent = "preview error: " + err.message;
+      })
+      .then(function () { state.previewBusy = false; });
+  }
+
+  function startPreviewPolling() {
+    if (!previewEndpointAvailable()) return;
+    if (!state.previewTimer) state.previewTimer = setInterval(fetchPreviewOnce, PREVIEW_POLL_MS);
+    if (!state.previewWatchdog) state.previewWatchdog = setInterval(updatePreviewFreshness, 250);
+    fetchPreviewOnce();
+  }
+
+  function stopPreviewPolling(clearImage) {
+    if (state.previewTimer) { clearInterval(state.previewTimer); state.previewTimer = null; }
+    if (state.previewWatchdog) { clearInterval(state.previewWatchdog); state.previewWatchdog = null; }
+    state.previewBusy = false;
+    if (clearImage) clearPreviewImage("等待同源预览");
   }
 
   /* ---------------------------------------------------------------- WS 客户端 */
@@ -505,24 +712,51 @@
     el.connName.textContent = text;
   }
 
+  /* ------------------------------- 判定证据链（旁路通道，1 Hz） */
+  function pollTriggers() {
+    // 证据链**不塞进契约帧**（契约 §1 的帧只允许那 9 个顶层字段），走 /api/status
+    // 的旁路字段。只在 http(s) 托管下轮询 —— file:// 没有同源后端，轮询只会白报错。
+    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+    if (state.pollTimer) return;
+    state.pollTimer = setInterval(function () {
+      if (state.mode !== "ws") return;
+      fetch("/api/status", { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j || !j.ok) return;
+          var t = j.triggers || null;
+          var changed = JSON.stringify(t) !== JSON.stringify(state.triggers);
+          state.triggers = t;
+          if (changed && state.lastFrame) renderState(state.lastFrame);
+        })
+        .catch(function () { /* 轮询失败无所谓：证据链是"有更好"，不是必需 */ });
+    }, 1000);
+  }
+
   function stopAll(silent) {
     if (state.ws) {
       try { state.ws.onclose = null; state.ws.close(); } catch (e) { /* ignore */ }
       state.ws = null;
     }
     if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; }
+    stopPreviewPolling(false);
+    state.triggers = null;
     state.mode = "stopped";
     if (!silent) log("系统", "已停止数据源", "#5d6b85");
   }
 
   function connectWs() {
     stopAll(true);
+    clearPreviewImage("等待同源预览");
     var url = el.wsUrl.value.trim();
     if (!url) { log("错误", "请填写 WebSocket 地址", "#ff5d5d"); return; }
 
     state.mode = "ws";
     setConn("", "连接中…");
     log("系统", "连接 " + url, "#4da3ff");
+    pollTriggers();
+    startPreviewPolling();
 
     var ws;
     try {
@@ -573,6 +807,7 @@
   /* ------------------------------------------------------- 离线 mock（无后端） */
   function startOffline() {
     stopAll(true);
+    clearPreviewImage("离线 Mock · 非真实视频");
     state.mode = "offline";
     state.lastRxAt = Date.now();
     setConn("mock", "离线模式");
@@ -603,7 +838,10 @@
   /* ---------------------------------------------------------------- 初始化 */
   function init() {
     el = {
-      video: $("video"), videoBadge: $("videoBadge"), chart: $("chart"),
+      previewImage: $("previewImage"), video: $("video"), videoBadge: $("videoBadge"),
+      videoPlaceholder: $("videoPlaceholder"), videoPlaceholderText: $("videoPlaceholderText"),
+      previewFreshness: $("previewFreshness"), previewSync: $("previewSync"),
+      previewDebug: $("previewDebug"), chart: $("chart"),
       stateLamp: $("stateLamp"), stateName: $("stateName"), stateEn: $("stateEn"),
       advice: $("advice"), reason: $("reason"), triggers: $("triggers"),
       cards: $("cards"), log: $("log"),
@@ -626,7 +864,7 @@
 
     $("btnConnect").onclick = connectWs;
     $("btnOffline").onclick = startOffline;
-    $("btnStop").onclick = function () { stopAll(false); setConn("down", "未连接"); };
+    $("btnStop").onclick = function () { stopAll(false); clearPreviewImage("已停止数据源"); setConn("down", "未连接"); };
     $("btnSelftest").onclick = runSelftest;
     $("btnClear").onclick = function () { el.log.innerHTML = ""; };
     el.forceStatus.onchange = function () {
@@ -634,18 +872,30 @@
       log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8b7cff");
     };
 
-    window.addEventListener("resize", function () { drawVideo(state.lastFrame); renderChart(); });
+    window.addEventListener("resize", function () { drawVideo(); renderChart(); });
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(function () { drawVideo(); }).observe(el.video.parentElement);
+    }
 
     renderState(null);
     renderCards(null);
     renderGate(null);
     renderBlink(null);
-    drawVideo(null);
+    drawVideo();
     renderChart();
     log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");
 
-    // 未接后端时自动进入离线演示，保证"双击文件就能看到东西"
-    startOffline();
+    syncWithServer();
+
+    // file:// 离线打开时自动演示；由 api.py 托管时必须等待用户主动连接，
+    // 避免把 Mock 六态误认为摄像头/后端的实时数据。
+    if (location.protocol === "file:" || location.protocol === "") {
+      startOffline();
+    } else {
+      state.mode = "stopped";
+      setConn("down", "未连接");
+      log("系统", "实时页面已就绪：请点击“连接 WebSocket”；当前不自动播放 Mock", "#4da3ff");
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

@@ -26,8 +26,8 @@ import pytest
 
 from backend.config import load_config
 from backend.contract import validate_frame
-from backend.publish import FramePoster, PostError
-from backend.run_pipeline import main as run_pipeline_main
+from backend.publish import FramePoster, PostError, PreviewPoster
+from backend.run_pipeline import encode_preview_jpeg, main as run_pipeline_main
 from backend.storage import load_jsonl
 
 
@@ -90,6 +90,44 @@ class _Server:
     @property
     def frames(self) -> list[dict]:
         return [p["frame"] for p in self.received if isinstance(p.get("frame"), dict)]
+
+
+class _PreviewServer:
+    """记录 JPEG 正文与同帧请求头的最小本机服务。"""
+
+    def __init__(self) -> None:
+        self.received: list[tuple[bytes, dict[str, str]]] = []
+        outer = self
+
+        class Handler(BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+
+            def do_POST(self) -> None:  # noqa: N802
+                n = int(self.headers.get("Content-Length") or 0)
+                outer.received.append((self.rfile.read(n), dict(self.headers.items())))
+                data = b'{"ok":true}'
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
+            def log_message(self, *a: Any) -> None:
+                pass
+
+        self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.port = self.httpd.server_address[1]
+        self.url = f"http://127.0.0.1:{self.port}/api/preview"
+        self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
+
+    def __enter__(self) -> "_PreviewServer":
+        self.thread.start()
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.httpd.shutdown()
+        self.httpd.server_close()
+        self.thread.join(timeout=5)
 
 
 @pytest.fixture
@@ -341,3 +379,64 @@ def test_posting_is_byte_reproducible(ingest: _Server, workdir: Path) -> None:
     assert first and first[-1]["status"] == "done"
     assert [f["ts"] for f in first[:-1]] == [float(i) for i in range(len(first) - 1)], \
         "1 Hz 逻辑时间节流：ts 应恰好落在整秒上"
+
+
+# ---------------------------------------------------------------------------
+# 5) 同源 JPEG 预览旁路
+# ---------------------------------------------------------------------------
+
+def test_preview_poster_uses_logical_timestamps_and_same_frame_metadata() -> None:
+    jpeg = b"\xff\xd8preview\xff\xd9"
+    with _PreviewServer() as srv:
+        p = PreviewPoster(srv.url, hz=12.0, backoff=0.0)
+        sent = 0
+        for fid in range(46):  # 45 fps 的 1 秒：0,4,8,...,44 共 12 帧
+            sent += p.maybe_post(
+                jpeg, frame_id=fid, ts=fid / 45.0, bbox=[10 + fid, 20, 100, 120],
+                source_width=640, source_height=480, face_visible=0.9, status="normal",
+                detector="mediapipe",
+            )
+    assert sent == 12
+    assert p.posted == 12 and p.throttled == 34
+    assert len(srv.received) == 12
+    body, headers = srv.received[-1]
+    headers = {k.lower(): v for k, v in headers.items()}
+    assert body == jpeg
+    assert headers["x-vigilens-frame-id"] == "44"
+    assert headers["x-vigilens-bbox-x"] == "54"
+    assert headers["x-vigilens-source-width"] == "640"
+    assert headers["x-vigilens-detector"] == "mediapipe"
+
+
+def test_preview_failure_is_nonfatal_and_recorded(workdir: Path) -> None:
+    import cv2
+    import numpy as np
+
+    video = workdir / "preview.avi"
+    writer = cv2.VideoWriter(str(video), cv2.VideoWriter_fourcc(*"MJPG"), 45.0, (64, 48))
+    for i in range(5):
+        writer.write(np.full((48, 64, 3), i * 20, dtype=np.uint8))
+    writer.release()
+
+    summary = workdir / "summary.json"
+    rc = run_pipeline_main([
+        "--source", str(video), "--limit", "5", "--stub", "--quiet",
+        "--width", "64", "--height", "48", "--json", str(workdir / "last.json"),
+        "--summary", str(summary), "--preview-post",
+        f"http://127.0.0.1:{_free_port()}/api/preview",
+    ])
+    assert rc == 0, "预览旁路失败不应改变测量退出码"
+    result = json.loads(summary.read_text(encoding="utf-8"))
+    assert result["frames_processed"] == 5
+    assert result["preview_post"]["ok"] is False
+    assert result["preview_post"]["stopped_after_failure"] is True
+    assert result["preview_post"]["errors"]
+
+
+def test_encode_preview_jpeg_rejects_synthetic_and_encodes_ndarray() -> None:
+    import numpy as np
+    from backend.capture import SyntheticImage
+
+    assert encode_preview_jpeg(SyntheticImage(64, 48, 0)) is None
+    encoded = encode_preview_jpeg(np.zeros((48, 64, 3), dtype=np.uint8), quality=80)
+    assert encoded is not None and encoded.startswith(b"\xff\xd8") and encoded.endswith(b"\xff\xd9")
