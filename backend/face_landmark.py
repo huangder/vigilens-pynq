@@ -33,6 +33,17 @@ MP_LEFT_EYE = (33, 160, 158, 133, 153, 144)
 MP_RIGHT_EYE = (362, 385, 387, 263, 373, 380)
 MP_MOUTH = (61, 291, 13, 14)
 
+# config.yaml 的读取缓存：`load_config()` 每次都读盘解析 YAML，
+# 而姿态是逐帧算的，不能每帧读一次配置。
+_CFG_CACHE: dict[str, float] = {}
+
+
+def _pose_reproj_max_px() -> float:
+    """头部姿态的平均重投影误差上限（px）。阈值只来自 config.yaml。"""
+    if "pose_reproj_max_px" not in _CFG_CACHE:
+        _CFG_CACHE["pose_reproj_max_px"] = float(load_config()["pose_reproj_max_px"])
+    return _CFG_CACHE["pose_reproj_max_px"]
+
 
 @dataclass
 class FaceObservation:
@@ -260,29 +271,84 @@ class MediaPipeLandmarker:
         pose = self._pose_from_landmarks(lm, w, h)
         return FaceObservation(visible=1.0, bbox=bbox, pose=pose, eyes=eyes, mouth=mouth, source="mediapipe")
 
-    @staticmethod
-    def _pose_from_landmarks(lm: Any, w: int, h: int) -> dict[str, float]:
-        """用 solvePnP 解头部姿态（度）。失败时返回 0 而不是崩溃。"""
+    # ---- 头部姿态的 3D 参考模型（**相机坐标系**：X 右 / Y 下 / Z 朝前，与 OpenCV 一致）
+    #
+    # 关键点索引取自 mediapipe FaceMesh 的官方轮廓：
+    #     1   鼻尖      152 下巴尖  ← 在 FACEMESH_FACE_OVAL 上
+    #     33  左眼外角  263 右眼外角
+    #     61  左嘴角    291 右嘴角
+    #
+    # ⚠️ 两条都是踩过的坑（BUG-006 / BUG-007），改这里之前先看 `docs/16_测试问题台账.md`：
+    #   1) 下巴必须是 **152**。199 只是 TESSELATION 里的**内部点**，不在脸轮廓上
+    #      （本机核对：`152 ∈ FACEMESH_FACE_OVAL`，`199 ∉`），拿它当下巴会让模型比例整体错位；
+    #   2) 坐标必须写成"相机系"（Y 朝下、Z 朝前）。常见的人脸模型是 Y 朝上，
+    #      照抄进来等于基准整体转了 180°：正立正面脸会解出 `roll ≈ ±180°`，
+    #      进而让 98% 的帧被判成"头姿异常"。
+    _POSE_MODEL = ((0.0, 0.0, 0.0), (0.0, 63.6, 12.5), (-43.3, -32.7, 26.0),
+                   (43.3, -32.7, 26.0), (-28.9, 28.9, 24.1), (28.9, 28.9, 24.1))
+    _POSE_IDX = (1, 152, 33, 263, 61, 291)
+
+    @classmethod
+    def _solve_head_pose(cls, img_pts: Any, cam: Any, *, reproj_max_px: float | None = None) -> Any:
+        """解 PnP 并**拒绝镜像解**：返回 `(rvec, tvec)`，解不出来返回 None。
+
+        为什么两条路都走：模型点近似共面（Z 跨度远小于 XY），平面 PnP 存在"真实解 / 镜像解"
+        两支，`SOLVEPNP_ITERATIVE` 没有初值时会落到任意一支 —— 实测曾解出 `Z = -447`
+        （人脸在相机背后）。EPNP 对共面点更稳，所以先 EPNP；不管哪条路，
+        **`tvec[2] <= 0` 一律当失败**，绝不把"脸在相机背后"当成结果。
+
+        再加一道**平均重投影误差**护栏（阈值 `pose_reproj_max_px` 在 config.yaml）：
+        关键点塌成一团时 solvePnP 仍会"成功"返回一组垃圾角度，只有重投影误差能把它认出来。
+        """
         import cv2  # type: ignore
         import numpy as np  # type: ignore
 
-        model = np.array([
-            [0.0, 0.0, 0.0], [0.0, -63.6, -12.5], [-43.3, 32.7, -26.0],
-            [43.3, 32.7, -26.0], [-28.9, -28.9, -24.1], [28.9, -28.9, -24.1],
-        ], dtype="double")
-        idx = [1, 199, 33, 263, 61, 291]
-        img_pts = np.array([[lm[i].x * w, lm[i].y * h] for i in idx], dtype="double")
-        focal = w
-        cam = np.array([[focal, 0, w / 2], [0, focal, h / 2], [0, 0, 1]], dtype="double")
-        ok, rvec, _ = cv2.solvePnP(model, img_pts, cam, np.zeros((4, 1)),
-                                   flags=cv2.SOLVEPNP_ITERATIVE)
-        if not ok:
+        model = np.array(cls._POSE_MODEL, dtype="double")
+        limit = float(reproj_max_px if reproj_max_px is not None else _pose_reproj_max_px())
+        # 6 个点完全重合 = 检测塌陷：solvePnP 会给出"脸在很远处"这种重投影误差同样很小的伪解，
+        # 所以要在求解前就按退化输入拒掉。⚠️ 只挡住"完全重合"，"几乎重合"仍可能解出伪解 ——
+        # 这条要等真实视频（P4）把 `pose_reproj_max_px` 标定出来才能真正收紧。
+        if float(np.ptp(img_pts, axis=0).max()) <= 0.0:
+            return None
+        for flags in (cv2.SOLVEPNP_EPNP, cv2.SOLVEPNP_ITERATIVE):
+            ok, rvec, tvec = cv2.solvePnP(model, img_pts, cam, np.zeros((4, 1)), flags=flags)
+            if not ok or float(tvec[2][0]) <= 0:
+                continue
+            proj, _ = cv2.projectPoints(model, rvec, tvec, cam, np.zeros((4, 1)))
+            err = float(np.abs(proj.reshape(-1, 2) - img_pts).mean())
+            if err <= limit:
+                return rvec, tvec
+        return None
+
+    @classmethod
+    def _pose_from_landmarks(cls, lm: Any, w: int, h: int) -> dict[str, float]:
+        """用 solvePnP 解头部姿态（度）。解不出来返回 0，**不返回垃圾值**。
+
+        分解约定：`R = Rz(roll)·Ry(yaw)·Rx(pitch)`，于是
+
+            yaw   = atan2(-R20, hypot(R00, R10))
+            pitch = atan2( R21,  R22)
+            roll  = atan2( R10,  R00)
+
+        ⚠️ 旧实现把这三个式子**贴错了标签**（把 roll 的式子写成 yaw、把 yaw 的式子写成 pitch），
+        后果是"转头"显示在 `pitch` 上、"歪头"显示在 `yaw` 上 —— 本机复现：
+        真实 yaw=+15° 解出 `pitch=-15, yaw=0`。见 BUG-006 / BUG-007。
+        """
+        import cv2  # type: ignore
+        import numpy as np  # type: ignore
+
+        img_pts = np.array([[lm[i].x * w, lm[i].y * h] for i in cls._POSE_IDX], dtype="double")
+        focal = float(w)
+        cam = np.array([[focal, 0, w / 2.0], [0, focal, h / 2.0], [0, 0, 1]], dtype="double")
+        solved = cls._solve_head_pose(img_pts, cam)
+        if solved is None:
             return {"yaw": 0.0, "pitch": 0.0, "roll": 0.0}
+        rvec, _tvec = solved
         rmat, _ = cv2.Rodrigues(rvec)
-        sy = math.sqrt(rmat[0, 0] ** 2 + rmat[1, 0] ** 2)
-        pitch = math.degrees(math.atan2(-rmat[2, 0], sy))
-        yaw = math.degrees(math.atan2(rmat[1, 0], rmat[0, 0]))
-        roll = math.degrees(math.atan2(rmat[2, 1], rmat[2, 2]))
+        yaw = math.degrees(math.atan2(-float(rmat[2, 0]),
+                                      math.hypot(float(rmat[0, 0]), float(rmat[1, 0]))))
+        pitch = math.degrees(math.atan2(float(rmat[2, 1]), float(rmat[2, 2])))
+        roll = math.degrees(math.atan2(float(rmat[1, 0]), float(rmat[0, 0])))
         return {"yaw": round(yaw, 2), "pitch": round(pitch, 2), "roll": round(roll, 2)}
 
 
