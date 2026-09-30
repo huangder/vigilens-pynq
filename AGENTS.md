@@ -335,8 +335,11 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 - **A 线**：`run_pipeline.py` 端到端链路**部分为 stub** —— EAR/眨眼/PERCLOS/MAR 已是**真实现**；
   但 `face_landmark.py` 在没装 mediapipe 时走 `StubLandmarker`，此刻 EAR/MAR 是**没有算法意义的占位几何量**。
 - **必须看 `landmark_source` 字段**：为 `"stub"` 时该次运行的指标**不得作为算法结果引用**（《05》铁律 1 / 《07》§10）。
-- **rPPG 尚未实现**：`vital.*` 大面积为 `null` 是**正确行为**（质量门控不通过时系统承诺不输出心率数值），
-  不是 bug，也不要"顺手补一个数字上去"。
+- **rPPG 链路已实现，但**还没有真实视频验证：`backend/vital.py` + `backend/tests/test_vital.py`
+  （16 项，**合成信号驱动**）已就位（P3，2026-09-15）。真实素材上 `vital.*` 仍大面积为 `null` 是
+  **正确行为**（质量门控不通过、或帧源是合成帧没有真人时不输出数值 —— 这是产品承诺），
+  不是 bug，也不要"顺手补一个数字上去"；真实视频到位后按 P4 标定，才允许引用具体数值。
+  （本条为台账 DOC-001 的修正：旧文写"rPPG 尚未实现"，与代码/测试不符。）
 - **未标定阈值**：`ear_close_threshold` / `mar_threshold` / `pose_yaw_max_deg` / `pose_pitch_max_deg` /
   `light_score_min` / `motion_score_max` / `quality_weights` 均为**占位值**，待真实视频/场景标定。
   `config.yaml` 里已用 `⚠️ 占位值` 标注，**改它们要写依据**。
