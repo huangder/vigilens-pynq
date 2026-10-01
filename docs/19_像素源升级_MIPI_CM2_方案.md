@@ -143,11 +143,11 @@ Mizar 手册："tested to operate at up to **672 Mbps per channel**"（芯片规
 
 | 项 | 产物 | 验证到哪一层 |
 |---|---|---|
-| `raw10_unpack` IP | `fpga/src/raw10_unpack.cpp` | 语法自检 ✅ / 主机模型逐位对拍 ✅ / csim ❌ |
+| `raw10_unpack` IP | `fpga/src/raw10_unpack.cpp` | 语法自检 ✅ / 主机模型逐位对拍 ✅ / ✅ **已于 2026-09-30 / 10-01 跑通**（csim + csynth + cosim 全 PASS，逐字节容差 0；证据见 `docs/26` §2.2 与 `fpga/report/c7_sim_closed_loop_20261001.md`） |
 | `bayer_demosaic` IP | `fpga/src/bayer_demosaic.cpp` | 同上 |
 | 主机端算术模型 | `fpga/sim/host_model_mipi.cpp` | **本机真跑，RESULT: PASS** ✅ |
 | 测试向量 + 黄金参考生成器 | `fpga/sim/gen_mipi_vectors.py` | **本机真跑**，含 numpy 独立对拍 ✅ |
-| 两层测试台 | `fpga/sim/tb_raw10_unpack.cpp`、`tb_bayer_demosaic.cpp` | 语法自检 ✅ / csim ❌ |
+| 两层测试台 | `fpga/sim/tb_raw10_unpack.cpp`、`tb_bayer_demosaic.cpp` | 语法自检 ✅ / ✅ **已于 2026-09-30 / 10-01 跑通**（csim + csynth + cosim 全 PASS，逐字节容差 0；证据见 `docs/26` §2.2 与 `fpga/report/c7_sim_closed_loop_20261001.md`） |
 | `run_hls.tcl` 接线 | 两个新 IP + `sim/data_mipi` | 静态检查 ✅ |
 
 **后续（按依赖顺序）**
@@ -239,7 +239,7 @@ g++ -O2 -std=c++17 -I fpga/src fpga/sim/host_model_mipi.cpp -o host_model_mipi.e
 
 | 项 | 状态 | 怎么补 |
 |---|---|---|
-| `raw10_unpack` / `bayer_demosaic` 的 **csim / csynth** | ❌ 未跑（受限沙箱跑不了 HLS：需命名管道 → Win32 error 5） | 完整权限终端 + `call D:\Xilinx\2026.1\Vitis\settings64.bat` |
+| `raw10_unpack` / `bayer_demosaic` 的 **csim / csynth** | ✅ **已于 2026-09-30 / 10-01 跑通**（csim + csynth + cosim 全 PASS，逐字节容差 0；证据见 `docs/26` §2.2 与 `fpga/report/c7_sim_closed_loop_20261001.md`） | 完整权限终端 + `call D:\Xilinx\2026.1\Vitis\settings64.bat` |
 | II / Fmax / LUT / FF / BRAM 占用 | ❌ **一个数都没有** | 同上，csynth 后归档 `fpga/report/` |
 | 与 **Xilinx MIPI CSI-2 RX** 的真实握手（beat 宽度、打包形式） | ❌ **本 IP 唯一的集成假设**：假定"1 beat = 5 字节组、装在 64 bit 低 40 位、`tkeep=0b11111`" | 上板用 ILA 抓一次；若 RX 直接按"1 beat = 1 像素"输出，则本 IP 退化为直通 |
 | 相机在 Mizar 上**是否出图** | ❌ 相机未买、板子未上电 | §0 的 3 个前置先做 |
@@ -336,7 +336,7 @@ Bayer 相位：RGGB —— (0,0)=R (1,0)=G (0,1)=G (1,1)=B
 - 【已验证】本机 MinGW **可以**编译运行不含 `hls::stream` 的主机模型（`host_model_mipi.exe` 实测 exit 0）；**不能**运行 `hls::stream` 模型
 - 【算术，非实测】§1.1 的全部带宽数字（基于厂商给的 672 Mbps/lane 与像素格式算得，未含协议开销）
 - 【推测】"协议开销需留 ≥20% 裕量"—— 工程经验值，非厂商数据
-- 【未验证】Mizar 的 MIPI 口供电/时钟；Xilinx RX 的实际 beat 形式；两个新 IP 的 csim/csynth/cosim/资源/时序；相机能否在 Mizar 上出图；MIPI CSI-2 RX IP 的授权
+- 【未验证】Mizar 的 MIPI 口供电/时钟；Xilinx RX 的实际 beat 形式；两个新 IP 的**资源/时序**报表；相机能否在 Mizar 上出图；MIPI CSI-2 RX IP 的授权（两个新 IP 的 csim/csynth/cosim 已 ✅ **于 2026-09-30 / 10-01 跑通**：csim + csynth + cosim 全 PASS，逐字节容差 0；证据见 `docs/26` §2.2 与 `fpga/report/c7_sim_closed_loop_20261001.md`）
 - 【不确定】IMX219 是否有可用的 **720p60** 档（官方产品页只列了 1080p45 与 480p100）→ 用 `rpicam` 实际枚举
 - 【未做】60 Hz FIR 系数、PS 侧 DMA/mmap 软件、BD、bitstream、上板
 

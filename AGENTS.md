@@ -3,7 +3,7 @@
 > **本文件是任何 AI（含 DSH / Claude Code / Cursor / Copilot 等）进入本仓库后的第一份必读文件。**
 > 动手改任何文件之前，**先读完本文件**。本文件与 `docs/05_AI使用约束.md`、`docs/07_提交规范与分工提交说明.md` 配套：
 > **详版规则以那两份文档为准，本文件只做"入口 + 底线 + 事实索引"**，冲突时以详版文档为准。
-> 维护：改动本文件用 `docs:` 前缀提交。最后核对：2026-09-10（基于仓库当时真实状态）。
+> 维护：改动本文件用 `docs:` 前缀提交。最后核对：**2026-10-01**（基于仓库当时真实状态；本次逐条复核见 `docs/29` §1）。
 
 ---
 
@@ -137,15 +137,15 @@
 
 | 目录 | 内容 |
 |---|---|
-| `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、FastAPI/WebSocket/Mock、65 项 pytest |
-| `frontend/` | 零依赖仪表盘（`index.html` / `app.js` / `mock.js`），**不用 CDN、不用 ES module**（`file://` 会白屏），曲线为原生 canvas |
-| `fpga/` | `src/` HLS 源码（3 个 IP）、`sim/` 测试台 + Python 黄金参考、`report/` 综合与 cosim 报告 |
-| `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包；**`bitstream/` 仍为空**，上板结论不存在 |
-| `data/` | `raw/` 视频（不入库）、`annotations/`、`golden/`（当前均为空占位） |
+| `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、**年龄分层旁路**（`age_*` / `fatigue_*`）、FastAPI/WebSocket/Mock；`pytest` 现有 **141 项收集** |
+| `frontend/` | 零依赖仪表盘（`index.html` / `app.js` / `age.js` / `mock.js`），**不用 CDN、不用 ES module**（`file://` 会白屏），曲线为原生 canvas |
+| `fpga/` | `src/` HLS 源码（**7 个 IP**）、`sim/` 测试台 + Python 黄金参考、`report/` 综合/cosim 报告与**归档日志** |
+| `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包 + 🆕 `imx219_driver.py` / `imx219_sccb_check.py`；**`bitstream/` 仍为空**，上板结论不存在 |
+| `data/` | `raw/` 视频（不入库）、`annotations/`、`golden/`、`reference/age_bands.json`（基线）、`fatigue_db/`（`schema.sql` 入库、库本体不入库） |
 | `metrics/` | `csv/`、`logs/`（生成物，不入库）、`scripts/`（可复现检查脚本，入库）、`evidence/`（**正式证据入库**） |
-| `docs/` | **先看 `docs/README.md`（2026-09-27 起的统一文档索引）**；契约 = `interface.md`；方案/流程 = `00`~`17`（**测试总方案 = `11`，阶段二方案 = `14`，判定基准 = `15`，问题台账 = `16`，阶段二手册 = `17`**）。历史快照在 `docs/archive/` |
+| `docs/` | **先看 `docs/README.md`（统一文档索引）**；契约 = `interface.md`；方案/流程 = `00`~`29`。重点：**测试总方案 = `11`、阶段二方案 = `14`、判定基准 = `15`、问题台账 = `16`、阶段二手册 = `17`、C 线成果与遗留 = `26`、IMX219 = `27`、年龄分层 = `28`、🆕 后续任务清单 = `29`**；`20` 的 **§7** 是原 `22`（帧率选型）并入的附录。历史快照在 `docs/archive/` |
 | `skill/` | 沉淀的技能包（赛制加分项） |
-| `report/` | 设计报告素材 + `llm_log/` 大模型协作记录（**必交项**） |
+| `report/` | 设计报告素材 + `research/` 文献侦察 + `llm_log/` 大模型协作记录（**必交项**） |
 
 ---
 
@@ -163,12 +163,19 @@
 #       python -m venv .venv && .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
-python metrics/scripts/check_all.py            # 期望：回归结论 ✅ 全部通过（PASS 24 / FAIL 0）
+python metrics/scripts/check_all.py            # 期望：工具自检 14/14；回归结论 PASS 27 / FAIL 2（**那 2 项与本线无关**，见下注）
+#    （2026-10-01 本机实测：工具自检 **14/14**；回归 **PASS 27 / FAIL 2**，用时 316.5 s。2 项红 =
+#      ① A 段 pytest 在受限环境 300 s 超时（本机 `metrics/logs/` 不可写，见 `docs/29` §1.4 —— 环境问题）
+#      ② check_video_bypass 的 **T11 + T13/T14**：T13/T14 断言的是 B 线旧的 MJPEG UI（台账 BUG-032），
+#        T11 是本机 OpenCV 4.11 创建不了 MJPG .avi（环境限制）。都不是"跑不起来"，而是**已知的、非本线的**红。）
 # ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
-python -m pytest -q                            # 期望：88 passed（**只增不减**）
-#    （2026-09-27 基线：88 = 78 + 旁路 MJPEG 帧源的 10 项；check_all 的工具自检 10/10，
-#      其中 2 项是 OpenMV 侧的"假模块跑真脚本"——`offline_check.py` 28/28（采集矩阵）
-#      与 `offline_stream_check.py` 17/17（推流三分支，docs/18 路线②的离线证据））
+python -m pytest -q                            # 基线只增不减；2026-10-01 实测 **141 项收集**
+#    （⚠️ 141 是 `--collect-only` 的**收集数**，不等于"全部通过"；完整套件在受限环境跑不完。
+#      沿革：78 → 88（+旁路 MJPEG 帧源 10 项）→ 98（合并分支）→ **141**（+2026-10-01 年龄分层 43 项）。
+#      另有单项：`python -m pytest backend/tests/test_age_fatigue.py -q` → **43 passed**）
+#    （工具自检沿革：10/10 → 12/12（bringup/hw_sw/dma 三条）→ 13/13 → **14/14**（+board/imx219_sccb_check.py，79/79）；
+#      其中 2 项是 OpenMV 侧的"假模块跑真脚本"——`offline_check.py` **44/44**（采集矩阵）
+#      与 `offline_stream_check.py` **22/22**（推流三分支，docs/18 路线②的离线证据））
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
 # ⚠️ 写到 **metrics/logs/**（不入库）。别写成 metrics/evidence/js_frames.jsonl ——
@@ -176,7 +183,7 @@ python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查
 #    而且在 Windows PowerShell 5.1 下 `>` 默认写 UTF-16，字节必然与入库的 UTF-8 版本不同。
 node frontend/mock.js --limit 6 > metrics/logs/_js_frames.jsonl
 python metrics/scripts/check_frontend_contract.py metrics/logs/_js_frames.jsonl      # 期望：通过
-python metrics/scripts/check_video_bypass.py   # 期望：15/15 —— 旁路画面链路 + 契约未被污染
+python metrics/scripts/check_video_bypass.py   # 当前 11/14（T13/T14 = BUG-032；T11 = 本机 OpenCV 造不出 MJPG .avi 的环境限制）
 git status --short                             # 只应出现你本线的改动
 ```
 
@@ -196,14 +203,16 @@ git status --short                             # 只应出现你本线的改动
 
 | 命令 | 期望 | 失败说明什么 |
 |---|---|---|
-| `pytest` | `78 passed`（只增不减） | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
+| `pytest` | 基线只增不减；2026-10-01 实测 **141 项收集**（⚠️ 收集数≠全部通过） | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
 | `--selftest` | `"ok": true` | JS 的 mock 与校验器不自洽 |
 | `check_frontend_wiring` | `通过` | `app.js` 引用了不存在的 DOM id（症状：**页面不报错、区域空白**） |
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
-| `check_video_bypass` | `15/15 通过` | 旁路画面链路坏了，或**有人把图像塞进了契约帧**（T9/T10 会红）；或画面停推后仍显示冻结旧帧（T6 会红） |
-| `board/openmv/offline_check.py` | `RESULT: PASS (28/28)` | 只能在**相机上**跑的 `openmv_capture_test.py` 被改坏了（假模块跑 v5 `csi` / v4 `sensor` 两条分支）。它已真抓到过一个真机也会犯的作用域 bug，所以纳入回归 |
-| `board/openmv/offline_stream_check.py` | `RESULT: PASS (17/17)` | 推流脚本 `openmv_stream.py` 的三种 payload 分支被改坏了；**最关键的一条是"灰度模式下 `img.compress()` 一次都没被调用"** —— 那是 `docs/18` 路线②（BUG-027 的修法）的全部意义，没有硬件时只有它能钉住 |
+| `check_video_bypass` | 当前 **11/14**（T11 环境 + T13/T14 = BUG-032）；其余项全绿 | 旁路画面链路坏了，或**有人把图像塞进了契约帧**（T9/T10 会红）；或画面停推后仍显示冻结旧帧（T6 会红） |
+| `board/openmv/offline_check.py` | `RESULT: PASS (44/44)` | 只能在**相机上**跑的 `openmv_capture_test.py` 被改坏了（假模块跑 v5 `csi` / v4 `sensor` 两条分支）。它已真抓到过一个真机也会犯的作用域 bug，所以纳入回归 |
+| `board/openmv/offline_stream_check.py` | `RESULT: PASS (22/22)` | 推流脚本 `openmv_stream.py` 的三种 payload 分支被改坏了；**最关键的一条是"灰度模式下 `img.compress()` 一次都没被调用"** —— 那是 `docs/18` 路线②（BUG-027 的修法）的全部意义，没有硬件时只有它能钉住 |
 | `metrics/scripts/omv_stream_bridge.ps1 -SelfTest` | `RESULT: PASS` | 串口收帧器/PC 侧编码器坏了：CRC 检查值、CPython 造帧→本脚本解帧的逐字节比对、**GRAY→JPEG 逐像素比对**、畸形 GRAY 必须返回 `$null`、以及 `Send-OMVStreamer` 的字符串锚点（锚点被改名 = **静默**改错模式） |
+| `board/imx219_sccb_check.py` | `总计：79 项，PASS 79，FAIL 0` | **IMX219 的"离线能验的那一半"坏了**：真机读出模式表与 libcamera 列表不符、三档几何与 `regmap.py` 不一致、链路预算越了 IMX219 像素率/2-lane 带宽、SCCB 线上字节序错、或**安全阀失效**（寄存器表未核实时竟允许下装）。⚠️ 它**不证明相机能用** —— 寄存器初始化序列本机读不到来源，见 `docs/27` §1.1/§4 |
+| `board/dma_test.py --selftest` / `board/hw_sw_compare.py --selftest` | `RESULT: PASS`（**看退出码，别只看末行**） | 测试图与当前档位不配套（拿错档黄金参考会在板上表现成"PL 算错了"）。⚠️ 这两个脚本曾在 GBK 代码页下**崩在打印 `RESULT: PASS` 之后**（`⚠️` 编不出 ⇒ 退出码 1）—— 2026-10-02 已加 `console_utf8()` 修掉；复现判据见 `docs/27` §6 |
 
 > **基线沿革**：2026-09-10 起始基线 `49 passed in 0.51s`；2026-09-15 A 线补上 rPPG 链路的
 > 16 项测试（`backend/tests/test_vital.py`）后为 **`65 passed`**；2026-09-16 A 线补上 M2 交接面的
@@ -373,11 +382,12 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
   未闭合项：MicroPhase 是否为 Mizar-Z7 提供 Vivado board file **未确认**（若无，PS7 DDR 参数必须取自厂商资料，**不得猜**）。
 - **会签前 v1.1 仍是生效版本**，`CONTRACT_VERSION` 保持 `v1.1`。
 - 本地/远端状态（本节容易过期，**每次用 `git status` / `git log` 复核**）：
-  **2026-09-24 实测** —— `origin/main = d3a788f`（B 线新增 `docs/09_桌面专注舱功能方案.md`）；
-  本地 `main` 落后 1 个提交，**当前工作分支 `c-line/fs30` 与远端已分叉**：
-  它领先 `origin/main` 若干提交（v1.2 草案 + 板卡 v1.3 草案 + OpenMV 测试包 + 架构评审稿），
-  **这些提交都还没推送**。
-  ⚠️ 也就是说 **v1.2 与 v1.3 两个草案都还没进 `main`**；`docs/09` 也还没进当前分支（要先合并）。
+  **2026-10-01 实测** —— `origin/main = 7634803`（`origin/HEAD`）；本地 `main` = `ad9ad54`，**落后 `origin/main` 3 个提交**。
+  `origin/c-line/fs30 = 91811ee`、`origin/c-line/mipi-cm2 = ca835f5`；
+  本地工作分支 `feat/age-fatigue-db` 是 `origin/c-line/mipi-cm2` 的**线性后继**（领先 3 个提交：年龄分层、档位矩阵入口、档位仿真闭环证据），
+  另有本地分支 `c-line/fs30`、`c-line/mipi-cm2`、`b-line/preview-openmv`。
+  ⚠️ **v1.2 / v1.3 / v1.5 三个草案都还没有进 `main`**；`docs/09` 已在本分支（commit `d3a788f`）。
+  ⚠️ 未提交的工作区改动里含**尚未入库**的 IMX219 交付物（`board/imx219_driver.py`、`board/imx219_sccb_check.py`、`docs/27`）。
 
 ### 7.7 OpenMV 采集能力（真机实测，2026-09-24）
 
@@ -410,8 +420,8 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
   相机侧 ≈ **13.4 fps**、PC 侧投递 **9.95 fps**、`MAXAGE 0.29s / VISIBLE_PCT 100%`。
   详见 `docs/16` BUG-027（**已改判"已解决"**）。⚠️ 同轮还修掉一个 PC 侧瓶颈：纯 PowerShell 逐位 CRC
   **93.5 ms/帧 → 0.91 ms/帧**（不修就比来帧间隔 77 ms 还慢，画面会成串更新）。
-- 【已验证】本机离线自检 `board/openmv/offline_check.py` = **28/28**（假模块跑真脚本，v5/v4 两条分支），
-  已纳入 `check_all.py` 回归。
+- 【已验证】本机离线自检 `board/openmv/offline_check.py` = **44/44**（假模块跑真脚本，v5/v4 两条分支），
+  已纳入 `check_all.py` 回归（2026-10-01 复跑；同期 `offline_stream_check.py` 为 **22/22**）。
 
 ---
 
@@ -425,6 +435,7 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 | 1 | `contract.py` 的 `CONTRACT_VERSION` 落后于 `docs/interface.md` | `backend/contract.py` vs `docs/interface.md` | ✅ **2026-09-16 已解决**：v1.1 会签完成时按第 4 节第 5 步升级，两侧现同为 **v1.1** |
 | 2 | `fpga/README.md` 部分小节滞后（如末节"M0 欠账"仍列已完成的 `git init` / `README` / `config.yaml`） | `fpga/README.md` 末尾 | ⏳ **2026-09-16 未当场复核**（C 线文件）；正文结论可信，**引用末尾清单前先核对 `fpga/report/` 实际文件** |
 | 3 | `docs/07` / `fpga/README.md` 中的版本号曾滞后于 `docs/interface.md` | `docs/07` §7、`fpga/README.md` | ✅ **2026-09-16 已同步**（两处均改为 v1.1 会签完成）；**始终以 `docs/interface.md` 头部为准** |
+| 4 | 文档里的回归基线数字多处滞后（check_all、pytest、offline_check 等） | 本次逐条复核，见 `docs/29` §1.2 | ✅ **2026-10-01 已统一**：现行基线 = 工具自检 14/14、回归 PASS 27 / FAIL 2、pytest 141 项收集；**引用基线一律以 `docs/29` §1 为准** |
 
 > **代码是否真的"实现"某功能，只以三样为准**：源码可读到的实现 + 测试是否覆盖 + 真实运行输出。
 > 文档里的"✅ 完成"是**人类维护者的声明**，可能滞后一天到几周 —— 关键判断请自己跑第 6 节的命令。
@@ -437,7 +448,7 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 |---|---|
 | **M0** 冻结（主场景/项目名/指标/契约/目录/仓库） | ✅ 完成（契约 **🔒 v1.1 已会签**，2026-09-16） |
 | **M1** 基础框架 | 🔄 **进行中**（A/B 骨架就位；C 线跑到计划前面） |
-| **M2** 软件合体（A 的 JSON 接 B 的网页） | ⏳ 待 A/B 骨架替换完成 |
+| **M2** 软件合体（A 的 JSON 接 B 的网页） | 🟡 **链路已具备**（`run_demo.py` 一键 + `check_a_line_p5_m2.py` 17 项真起两进程）；⚠️ **2026-10-01 未复跑** |
 | **M3** 硬件上板（Overlay + DMA，**首次需要板卡**） | ⏳ 未开始 |
 | **M4** 完整闭环（软硬件同屏 + 黄金回归 + 可复现脚本） | ⏳ 未开始 |
 
@@ -452,12 +463,17 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
   `light_score_min` / `motion_score_max` / `quality_weights` 均为**占位值**，待真实视频/场景标定。
   `config.yaml` 里已用 `⚠️ 占位值` 标注，**改它们要写依据**。
 - **`motion_thresh` 暂定 16**：待 A 线用 OpenCV 口径复核；改它必须**同步重新生成黄金参考**。
-- **C 线**：四个 IP（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter`）**均已完成 csim+csynth+cosim**；
+- **C 线**：**七个 IP**（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter` / `raw10_unpack` / `bayer_demosaic` / `frame_scale`）**均已完成 csim+csynth+cosim**（逐字节容差 0）；并落地 45fps/1080p 与 60fps/720p 两条档位链路（两档灰度工作尺寸都固定 480×270）；
   `board/` 已有上板脚本与 `board/openmv/` 首次测试包，但 **`board/bitstream/` 为空、`build_bd.tcl` 从未跑通** ——
   **上板相关的一切结论都不存在**。
   🧪 **已接入过硬件的只有 OpenMV 一处**：2026-09-24 真机跑了一次采集能力矩阵，**只回来 2 行**
   （详见 §7.7 与 `fpga/report/t6_openmv_capture_matrix_v1.md`）；**Mizar-Z7020 从未上电**。
-  ⚠️ 另有一处 C 线自身的滞后值：`board/regmap.py` 的 `FPS = 45` 与本分支 `config.yaml` 的 30 不一致（v1.2 会签前不改）。
+  🆕 **IMX219（CM2）侧**：`board/imx219_driver.py` + `board/imx219_sccb_check.py`（**79/79**，已入回归）
+  完成的是**"离线能验的那一半"** —— 真机读出模式表、三档几何、链路预算、SCCB 线上字节序、安全阀。
+  ⚠️ **寄存器初始化序列仍未填**（本机网络读不到任何 IMX219 注册表来源，`docs/27` §1.1）；驱动因此**拒绝下装**，
+  所以**不得**表述成"IMX219 驱动已完成 / 相机能起来了"。另有一条**待 A/B 决策**：
+  真机读出模式列表里**没有 1280×720**，而 720p60 是 v1.5 主档 —— "像素从哪来"这一环此前无出处（`docs/27` §2.2）。
+- ⚠️ 另有一处 C 线自身的滞后值：`board/regmap.py` 的 `FPS = 45` 与本分支 `config.yaml` 的 30 不一致（v1.2 会签前不改）。
 - **确定性纪律**：时间戳用 `frame_id / fps` 而非墙上时钟；**同一段回放跑两次，末帧 JSON 与 CSV 必须逐字节相同**。
 
 ---
