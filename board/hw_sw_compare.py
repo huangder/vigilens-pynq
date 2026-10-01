@@ -48,6 +48,109 @@ def read_frames(bin_path, frame_bytes, n_frames):
     return [data[i * frame_bytes:(i + 1) * frame_bytes] for i in range(n_frames)]
 
 
+def selftest(roi_dir=None, motion_dir=None, fir_dir=None):
+    """离线自检（**不需要板卡**）：验"黄金参考数据与当前档位口径是否配套"。
+
+    为什么值得有：本脚本是**上板**才跑的，而它最大的风险不是寄存器读写，而是
+    **拿错档位的黄金参考** —— 那会在板子上表现为"PL 算错了"，实际是数据配错。
+    这个坑本项目已经踩过三次（`tb_rgb2gray.cpp` Layer 1 写死 3/5、
+    `rgb2gray` cosim 拿 3/5 数据跑 3/8、`fir_filter` 拿 45 Hz 数据跑 30 Hz 系数表），
+    症状与"IP 算错"完全一样。所以上板**之前**先把这套一致性验掉。
+    """
+    import os
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    roi_dir = roi_dir or os.path.join(root, "fpga", "sim", "data")
+    motion_dir = motion_dir or os.path.join(root, "fpga", "sim", "data_motion")
+    fir_dir = fir_dir or os.path.join(root, "fpga", "sim", "data_fir")
+
+    checks = []
+
+    def chk(name, ok, detail=""):
+        checks.append((name, bool(ok), detail))
+
+    print("=" * 72)
+    print("[离线自检] hw_sw_compare 的数据/口径一致性（不需要板卡）")
+    print("=" * 72)
+    print(f"  档位 VIGILENS_TIER = {R.TIER}  (帧 {R.FRAME_W}x{R.FRAME_H}, 灰度 {R.GRAY_W}x{R.GRAY_H})")
+    print(f"  roi_dir    = {roi_dir}")
+    print(f"  motion_dir = {motion_dir}")
+    print(f"  fir_dir    = {fir_dir}")
+    print("-" * 72)
+
+    # ---- roi_statistic：frames.bin 要够 5 帧、且每帧正好是本档的 RGB_BYTES ----
+    fb = os.path.join(roi_dir, "frames.bin")
+    gc = os.path.join(roi_dir, "golden_roi.csv")
+    if os.path.exists(fb) and os.path.exists(gc):
+        size = os.path.getsize(fb)
+        chk("roi: frames.bin 至少 5 帧（每帧 = FRAME_W*FRAME_H*3）",
+            size >= R.RGB_BYTES * 5, f"{size} B vs need {R.RGB_BYTES * 5} B")
+        # 关键：文件大小必须能被本档单帧整除，否则就是**别的档**的数据
+        chk("roi: frames.bin 能被本档单帧整除（否则是别的档的数据）",
+            size % R.RGB_BYTES == 0, f"{size} % {R.RGB_BYTES} = {size % R.RGB_BYTES}")
+        header = _rows(gc)[0]
+        chk("roi: golden_roi.csv 表头符合契约字段",
+            header == ["case", "frame", "x0", "y0", "x1", "y1",
+                       "sum_r", "sum_g", "sum_b", "count"], str(header))
+        chk("roi: golden_roi.csv 有数据行", len(_rows(gc)) > 1, f"{len(_rows(gc)) - 1} 行")
+    else:
+        chk("roi: 数据文件存在（frames.bin + golden_roi.csv）", False,
+            "缺文件 —— 先跑 python fpga/sim/gen_frames.py")
+
+    # ---- rgb2gray / motion_quality ----
+    gb = os.path.join(motion_dir, "gray.bin")
+    gm = os.path.join(motion_dir, "golden_motion.csv")
+    rgbf = os.path.join(motion_dir, "rgb_frames.bin")
+    if os.path.exists(gb) and os.path.exists(gm):
+        gsize = os.path.getsize(gb)
+        chk("motion: gray.bin 能被本档 GRAY_PIXELS 整除（否则是别的抽取比的数据）",
+            gsize % R.GRAY_PIXELS == 0, f"{gsize} % {R.GRAY_PIXELS} = {gsize % R.GRAY_PIXELS}")
+        chk("motion: gray.bin 至少 10 帧", gsize >= R.GRAY_PIXELS * 10, f"{gsize} B")
+        if os.path.exists(rgbf):
+            rsize = os.path.getsize(rgbf)
+            chk("motion: rgb_frames.bin 能被本档单帧整除",
+                rsize % R.RGB_BYTES == 0, f"{rsize} % {R.RGB_BYTES} = {rsize % R.RGB_BYTES}")
+            # 灰度帧数应与 RGB 帧数一致（同一段序列）
+            chk("motion: 灰度帧数 == RGB 帧数（同一段序列）",
+                gsize // R.GRAY_PIXELS == rsize // R.RGB_BYTES,
+                f"gray {gsize // R.GRAY_PIXELS} 帧 vs rgb {rsize // R.RGB_BYTES} 帧")
+        chk("motion: golden_motion.csv 有数据行", len(_rows(gm)) > 1, f"{len(_rows(gm)) - 1} 行")
+    else:
+        chk("motion: 数据文件存在（gray.bin + golden_motion.csv）", False,
+            "缺文件 —— 先跑 python fpga/sim/gen_motion_vectors.py（并确认 --decim 与本档一致）")
+
+    # ---- fir_filter ----
+    fc = os.path.join(fir_dir, "golden_fir.csv")
+    fo = os.path.join(fir_dir, "golden_fir_out.csv")
+    if os.path.exists(fc) and os.path.exists(fo):
+        seg_rows = _rows(fc)
+        chk("fir: golden_fir.csv 有数据行", len(seg_rows) > 1, f"{len(seg_rows) - 1} 行")
+        chk("fir: golden_fir_out.csv 有数据行", len(_rows(fo)) > 0, f"{len(_rows(fo))} 行")
+        # 段级 csv 通常带 fs= 说明；有就核对它是否与档位一致（30/45/60）
+        meta = os.path.join(fir_dir, "meta.txt")
+        if os.path.exists(meta):
+            fs_line = ""
+            with open(meta, encoding="utf-8", errors="replace") as f:
+                for ln in f:
+                    if ln.startswith("fs="):
+                        fs_line = ln.strip()
+            chk("fir: meta.txt 声明了 fs=", bool(fs_line), fs_line or "未找到 fs=")
+    else:
+        chk("fir: 数据文件存在（golden_fir.csv + golden_fir_out.csv）", False,
+            "缺文件 —— 先跑 python fpga/sim/gen_fir_vectors.py")
+
+    bad = [n for n, ok, _ in checks if not ok]
+    print("")
+    for n, ok, detail in checks:
+        line = f"  [{'PASS' if ok else 'FAIL'}] {n}"
+        if detail:
+            line += f"   ({detail})"
+        print(line)
+    print("-" * 72)
+    print("RESULT:", "PASS" if not bad else "FAIL")
+    print("⚠️ 本自检只证明'数据与档位配套'；PL 侧数值一致性仍必须上板跑本脚本正文。")
+    return 0 if not bad else 1
+
+
 def _rows(csv_path):
     rows = []
     with open(csv_path, newline="") as f:
@@ -198,12 +301,24 @@ def main(argv=None):
     ap.add_argument("--bit", default="system.bit")
     ap.add_argument("--data-root", default="fpga/sim", help="黄金参考根目录")
     ap.add_argument("--skip-fir", action="store_true")
+    ap.add_argument("--selftest", action="store_true",
+                    help="离线自检：只验黄金参考数据与本档口径是否配套，不需要板卡")
     args = ap.parse_args(argv)
 
     d = args.data_root
+    # ⚠️ 相对路径锚到**仓库根**，而不是当前工作目录。
+    #    原来直接用 os.path.join(d, ...)：从 board/ 目录调用 `python hw_sw_compare.py`
+    #    就会去找 board/fpga/sim/...（不存在），于是自检报"缺文件" —— 那是**路径假故障**，
+    #    与"数据真缺"长得一模一样（本自检本身就是为了消灭这类假故障）。
+    if not os.path.isabs(d):
+        _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        d = os.path.join(_root, d)
     roi_dir = os.path.join(d, "data")
     motion_dir = os.path.join(d, "data_motion")
     fir_dir = os.path.join(d, "data_fir")
+
+    if args.selftest:
+        return selftest(roi_dir=roi_dir, motion_dir=motion_dir, fir_dir=fir_dir)
 
     ol, handles = load(args.bit)
 

@@ -95,3 +95,26 @@ fpga:
   img_height: 480
   pixel_format: RGB888              # ⚠️ 通道顺序 R-G-B；OpenCV 默认 BGR，比对前须转换
   roi_is_half_open: true            # ROI 为半开区间 [x0,x1)，等价 img[y0:y1, x0:x1]
+
+# ---- 测量口径档位化（用户 2026-09-30 决策；契约见 docs/interface.md §0 v1.5 草案）----
+# 为什么要有这一段：**"帧率"与"测量分辨率"从此不再是一个全局常量**。
+#   · 契约 v1.1 冻结的是 640x480 @45fps；v1.2 草案改 30fps；v1.5 草案又把测量口径
+#     档位化成 **720p 主 / 1080p 备**。三份口径同时在仓库里 ⇒ 谁都可以引用出不同的数字。
+#   · 用户 2026-09-30 选定两条链路：**45fps/1080p** 与 **60fps/720p**，要求分别落地。
+#   · 实现上**两档的灰度工作尺寸都是 480x270**（720p 抽 3/8、1080p 抽 1/4，
+#     129600 像素 ≤ 2^17）⇒ motion_quality 的片内帧缓存仍是 64 个 BRAM18（23%）。
+#     这是 v1.5 能成立的全部理由，实测数字见 fpga/sim/link_budget.py 的输出表。
+#
+# ⚠️ 沿用扁平键名（tier_720p60_* / tier_1080p45_*）而不是三级嵌套：
+#    backend/config.py 的内置 mini-YAML 解析器**只支持一层嵌套**（PyYAML 缺失时的兜底路径），
+#    写成三段嵌套会让没装 PyYAML 的机器读到空值 —— 那是"静默降级"，比报错更难查。
+# ⚠️ 这两个键组目前是**声明性的**：IP 侧不读它们，C 线靠 run_hls.tcl 的 VIGILENS_TIER 取同一组数字。
+#    改这里**必须同时**核对 docs/interface.md §0 与 fpga/run_hls.tcl 的档位块。
+tier_720p60_width: 1280             # 主档：1280x720 @60fps（链路含余量 48%）
+tier_720p60_height: 720
+tier_720p60_fps: 60
+tier_720p60_gray_decim: [3, 8]      # rgb2gray 抽取比 -> 灰度 480x270
+tier_1080p45_width: 1920            # 备档：1920x1080 @45fps（链路含余量 82%）
+tier_1080p45_height: 1080
+tier_1080p45_fps: 45
+tier_1080p45_gray_decim: [1, 4]     # rgb2gray 抽取比 -> 灰度 480x270（与主档同一片内台阶）

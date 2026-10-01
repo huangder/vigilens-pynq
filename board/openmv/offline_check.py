@@ -33,10 +33,14 @@
     python board/openmv/offline_check.py csi        # 只跑 v5 的 csi.CSI 分支
     python board/openmv/offline_check.py sensor     # 只跑 v4 的 sensor 模块分支
 
-期望输出末行：`RESULT: PASS (28/28)`（两条分支各 14 项）。
+期望输出末行：`RESULT: PASS (44/44)`（两条分支各 14 项 + 纯函数回归 8 项）。
+新增的 8 项纯函数回归是为 [BUG-018](../../docs/16_测试问题台账.md#bug-018)（`B/帧 = 0` 被静默接受）
+与 [BUG-019](../../docs/16_测试问题台账.md#bug-019)（回退写 Python repr 却仍叫 `.json`）——
+这两条**假模块永远碰不到**，只能直接喂输入才验得到。
 """
 
 import gc
+import json
 import os
 import sys
 import time
@@ -230,6 +234,46 @@ def _run_one(api):
         ("打印了传感器 ID", "0x7725" in text),
     ]
     bad = [n for n, ok in checks if not ok]
+    return len(checks) - len(bad), len(checks), bad, ns
+
+
+def _run_pure_functions(ns):
+    """直接回归脚本里的**纯函数**（不需要假相机、不需要跑 matrix）。
+
+    为什么要有这一段（BUG-018 / BUG-019）：
+      · BUG-018 是"`B/帧 = 0` 被静默当合法值" —— 而假模块**永远返回非 0 字节数**，
+        所以"跑一遍 matrix"根本碰不到那个分支。必须**直接喂 0** 才验得到。
+      · BUG-019 是"回退写 repr 却仍叫 .json" —— 纯函数 `_dumps_json` 可以直接判。
+    这里只用 CPython 调被测脚本的函数，**不产生任何硬件数字**。
+    """
+    checks = []
+
+    al = ns["_bytes_alert"]
+    # ① 未压缩格式拿到 0 字节 → 必须报警（这就是 2026-09-26 真机 RGB565/QVGA 的情形）
+    r0 = al("RGB565", 2, 0, 153600)
+    checks.append(("BUG-018: B/帧=0 必须报警（不再被短路）", r0 is not None and r0[0] == "zero"))
+    # ② 正常值 → 不报警
+    checks.append(("BUG-018: 精确等于 w*h*bpp 时不报警", al("RGB565", 2, 153600, 153600) is None))
+    # ③ 差 >5% → 必须报警
+    r2 = al("RGB565", 2, 100000, 153600)
+    checks.append(("BUG-018: 与理论值差 >5% 报警", r2 is not None and r2[0] == "mismatch"))
+    # ④ 差 ≤5% → 不报警（容差边界不能被收紧成 0）
+    checks.append(("BUG-018: 差 4% 不报警（容差保持 5%）",
+                   al("RGB565", 2, int(153600 * 0.96), 153600) is None))
+    # ⑤ 压缩格式（bpp=0）不做这个判定
+    checks.append(("BUG-018: JPEG（bpp=0）不参与字节数判定", al("JPEG", 0, 0, 40000) is None))
+
+    dj = ns["_dumps_json"]
+    text, is_json = dj({"a": 1, "中文": "值"})
+    checks.append(("BUG-019: 产出是 JSON 且能被 CPython json.load 读回",
+                   is_json and json.loads(text) == {"a": 1, "中文": "值"}))
+
+    src_now = open(SCRIPT, "r", encoding="utf-8").read()
+    checks.append(("BUG-019: 回退分支不再写 .json（文件名会改成 .txt）",
+                   'path[:-len(".json")] + ".txt"' in src_now))
+    checks.append(("BUG-019: 写后回读校验存在（截断文件不会被当成成功）",
+                   "报告回读不一致" in src_now))
+    bad = [n for n, ok in checks if not ok]
     return len(checks) - len(bad), len(checks), bad
 
 
@@ -256,7 +300,12 @@ def main():
     passed = total = 0
     bad_all = []
     for api in apis:
-        ok_n, tot, bad = _run_one(api)
+        ok_n, tot, bad, ns = _run_one(api)
+        # 再补一段"纯函数"回归：假模块碰不到的分支（BUG-018 的 0 字节、BUG-019 的 repr 回退）
+        pf_ok, pf_tot, pf_bad = _run_pure_functions(ns)
+        ok_n += pf_ok
+        tot += pf_tot
+        bad += pf_bad
         passed += ok_n
         total += tot
         bad_all += ["%s:%s" % (api, b) for b in bad]

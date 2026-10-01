@@ -164,6 +164,16 @@ TOOL_SELFTESTS = (
     # 为什么必须进回归：这个脚本曾因 `[byte] -shl 8` 被截断而在真机上表现成"0 帧 + 上百次
     # CRC 错"，而当时它**连自检都没有**。第三方元组项 = 用哪个 shell 跑（本机没有 pwsh）。
     ("metrics/scripts/omv_stream_bridge.ps1", "-SelfTest", ("pwsh", "powershell")),
+    # C8 上板自检的**离线口径自检**（2026-10-01 新增）。为什么值得进回归：
+    # 上板脚本以前只能 py_compile，口径对不对要等板子到手才知道；而它的期望值全部来自
+    # regmap（档位化后会随 VIGILENS_TIER 变）。这条先把"帧尺寸/灰度尺寸/单帧字节数"三者
+    # 的自洽验掉，免得像 tb_rgb2gray.cpp Layer 1 那样**写死 3/5、看着自洽、其实错**。
+    ("board/bringup_check.py", "--selftest"),
+    # C10 软硬件比对的**离线数据自检**（2026-10-01 新增）：验"黄金参考与当前档位是否配套"。
+    # 为什么值得进回归：拿错档位的黄金参考会在板子上表现成"PL 算错了"，实际是数据配错 ——
+    # 本项目已经踩过三次同类（tb Layer1 写死 3/5、rgb2gray cosim 3/5 数据跑 3/8、
+    # fir_filter 45 Hz 数据跑 30 Hz 系数表）。本自检能**离线**把这种配错抓出来。
+    ("board/hw_sw_compare.py", "--selftest"),
 )
 
 

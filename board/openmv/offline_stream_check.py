@@ -20,12 +20,14 @@
   T4 JPEG 单帧压缩失败**不会让整条流退出**（BUG-027 的缓解措施，防止回退）
   T5 stats 模式：`TYPE_STATS`，ROI 传的是半开区间算出来的 (x, y, w, h)（契约 §0.1 第 2 条）
   T6 `payload` 传错时立刻 `ValueError`，且**不碰相机**（不许"静静地发错东西"）
+  T7 **v4/v5 相机 API 兼容层**（BUG-005，2026-09-30 新增）：csi 可用时走 `csi.CSI()` 并把它
+     包装成 v4 同名的模块级入口（下游 11 处 `sensor.*` 一行不用改）；csi 不可用时回落 `import sensor`
 
 用法（仓库根执行，无需硬件、无需第三方库）
 ------------------------------------------
     python board/openmv/offline_stream_check.py
 
-期望输出末行：`RESULT: PASS (n/n)`。
+期望输出末行：`RESULT: PASS (22/22)`。
 
 ⚠️ **诚实边界（必读）**
   · 帧尺寸/字节数/帧率/内存**全部来自假模块**，不得引用为实测（`AGENTS.md` 铁律 1）；
@@ -198,6 +200,100 @@ def _load_stream():
     return ns
 
 
+# ---------------------------------------------------------------------------
+# v4/v5 相机 API 兼容层（BUG-005）的离线回归
+# ---------------------------------------------------------------------------
+# 为什么必须有这一段：兼容层是"选哪套 API"的分支代码，而**假模块是按我们指定的那套装的** ——
+# 只跑 sensor 分支永远验不到 csi 分支。2026-09-26 真机只证明了"v5 上 import sensor 仍可用"，
+# 并没有证明 csi 分支能跑；而 csi 分支一旦写错，真机上表现为"相机活着、脚本秒退"。
+# 这两条检查都不需要硬件，也不产生任何硬件数字。
+_CAMAPI_BEGIN = "# ---------------------------------------------------------------------------\n# v4 / v5 相机 API 兼容层（BUG-005）"
+_CAMAPI_END = '    sensor = _CsiAsSensor(_CSI_SINGLETON[0], _csi_mod)   # type: ignore  # noqa: F811'
+
+
+def _exec_camapi(csi_mod=None, sensor_mod=None):
+    """只执行脚本里那段 API 选择代码（从假模块里挑 csi 或 sensor），返回其名字空间。"""
+    with open(SCRIPT, "r", encoding="utf-8") as f:
+        src = f.read()
+    i = src.find(_CAMAPI_BEGIN)
+    assert i >= 0, "找不到兼容层起始标记 —— 脚本被改动，本自检需同步"
+    j = src.find(_CAMAPI_END, i)
+    assert j >= 0, "找不到兼容层结束标记 —— 脚本被改动，本自检需同步"
+    block = src[i:j + len(_CAMAPI_END)]
+    for name in ("csi", "sensor"):
+        sys.modules.pop(name, None)
+    if csi_mod is not None:
+        sys.modules["csi"] = csi_mod
+    if sensor_mod is not None:
+        sys.modules["sensor"] = sensor_mod
+    ns = {}
+    exec(compile(block, SCRIPT, "exec"), ns)
+    return ns
+
+
+def _check_camapi():
+    """返回检查项列表：两条分支各验"选了哪套 + 该套的接口够不够本文件用"。"""
+    checks = []
+
+    # ---- ① csi 可用（v5）→ 必须走 csi，并把单例包装成 v4 同名函数 ----
+    csi_state = {"pf": None, "fs": None, "reset": 0, "snap": 0}
+    csi_mod = types.ModuleType("csi")
+    csi_mod.GRAYSCALE, csi_mod.RGB565, csi_mod.JPEG = 0, 1, 2
+    csi_mod.QVGA, csi_mod.VGA = 11, 12
+
+    class _FakeCSI(object):
+        def reset(self):
+            csi_state["reset"] += 1
+
+        def pixformat(self, v):
+            csi_state["pf"] = v
+
+        def framesize(self, v):
+            csi_state["fs"] = v
+
+        def set_framebuffers(self, n):
+            csi_state["fb"] = n
+
+        def snapshot(self, **kw):
+            csi_state["snap"] += 1
+            return "IMG"
+
+    csi_mod.CSI = _FakeCSI
+    ns = _exec_camapi(csi_mod=csi_mod, sensor_mod=None)
+    checks.append(("BUG-005: csi 可用时选中 csi 分支", ns.get("_CAM_API") == "csi"))
+    shim = ns.get("sensor")
+    checks.append(("BUG-005: csi 分支把单例包装成模块级 sensor 入口（下游 11 处调用不必改）",
+                   shim is not None and callable(getattr(shim, "reset", None))))
+    # 包装必须真的转发到单例上（否则"跑通了"是假的）
+    ok_fwd = True
+    try:
+        shim.reset()
+        shim.set_pixformat(csi_mod.GRAYSCALE)
+        shim.set_framesize(csi_mod.QVGA)
+        shim.set_framebuffers(2)
+        shim.skip_frames(time=10)          # CSI 上没有 skip_frames → 应退化成抓几帧
+        shim.snapshot()
+    except Exception as e:                 # noqa: BLE001
+        ok_fwd = False
+        checks.append(("BUG-005: 包装层转发到 csi 单例", False, repr(e)))
+    if ok_fwd:
+        checks.append(("BUG-005: 包装层转发到 csi 单例",
+                       csi_state["reset"] == 1 and csi_state["pf"] == csi_mod.GRAYSCALE
+                       and csi_state["fs"] == csi_mod.QVGA and csi_state["fb"] == 2))
+    # 常量必须能从 csi 透传（脚本用 sensor.GRAYSCALE / sensor.RGB565 / getattr(sensor, 帧尺寸)）
+    checks.append(("BUG-005: 常亮（GRAYSCALE/RGB565/帧尺寸名）能从 csi 透传",
+                   shim.GRAYSCALE == 0 and shim.RGB565 == 1 and getattr(shim, "QVGA") == 11))
+
+    # ---- ② csi 不可用（v4）→ 必须回落到 import sensor，且行为与改动前一致 ----
+    sen_mod = types.ModuleType("sensor")
+    sen_mod.GRAYSCALE, sen_mod.RGB565 = 0, 1
+    ns2 = _exec_camapi(csi_mod=None, sensor_mod=sen_mod)
+    checks.append(("BUG-005: csi 不可用时回落到 sensor 模块（v4 行为不变）",
+                   ns2.get("_CAM_API") == "sensor" and ns2.get("sensor") is sen_mod))
+
+    return checks
+
+
 def _run_stream(payload, max_frames=3, fail_compress=False):
     """跑一轮指定 payload 的 stream()，返回 (state, 已发出的原始帧, 逃出来的异常, 假模块)。"""
     state = {"calls": [], "compress_quality": [], "fail_compress": fail_compress,
@@ -339,6 +435,14 @@ def main():
     chk("T6 payload 传错时抛 ValueError，且完全没有碰相机（reset 都没调）",
         isinstance(raised, ValueError) and state["calls"] == [],
         "raised=%r calls=%s" % (raised, state["calls"]))
+
+    # ---- BUG-005：v4/v5 相机 API 兼容层（本次新增）----
+    try:
+        camapi = _check_camapi()
+    except BaseException as e:                # noqa: BLE001
+        camapi = [("BUG-005: 兼容层可离线执行", False, repr(e))]
+    for name, ok, *rest in camapi:
+        chk(name, ok, rest[0] if rest else "")
 
     failed = [c for c in checks if not c[1]]
     print("")

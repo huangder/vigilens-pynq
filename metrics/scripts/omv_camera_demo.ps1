@@ -17,13 +17,18 @@
 #   Quality only matters for the OLD path (-Mode usb_jpeg): measured on this camera, QVGA +
 #   quality=80 fails outright while quality=50 streams (9337 B/frame).  See docs/16 BUG-027.
 #
-# ASCII-ONLY ON PURPOSE (PowerShell 5.1 decodes BOM-less .ps1 as GBK).
+# ENCODING: this file contains Chinese comments, so it MUST be saved as UTF-8 WITH BOM.
+#   Windows PowerShell 5.1 decodes a BOM-less .ps1 as GBK; the Chinese then decodes into bytes
+#   that can break the parser ("Unexpected token" / "The assignment expression is not valid"),
+#   which looks like a code bug but is purely an encoding problem.  AGENTS.md 6.4 documents
+#   this trap.  Keep the file ASCII if you would rather not depend on the BOM.
 #
 # USAGE (one command: starts api.py + the camera stream; add -WithMetrics for numbers)
 #   powershell -NoProfile -ExecutionPolicy Bypass -File metrics\scripts\omv_camera_demo.ps1 -WithMetrics
 #   ... -ApiBase http://127.0.0.1:8031 -StaleSeconds 8 -TotalSeconds 3600
 #   ... -Mode usb_jpeg -Quality 50         # fall back to the old on-camera-JPEG path
 #   ... -NoApi                             # api.py is already running / started by hand
+#   ... -SelfTest                          # offline check of the BUG-031 drop detector only
 #
 # IGNORE THE PAGE'S DEFAULT WebSocket BOX: when api.py hosts the page, app.js fills it with
 # ws://<host>/ws automatically (it probes /api/status).  Just open the URL this script prints.
@@ -42,14 +47,24 @@ param(
     [switch]$NoApi,
     # Also run the A-line pipeline on the MJPEG bypass, so the page shows NUMBERS + curves,
     # not just the picture.  Uses real MediaPipe when it is installed (check the log line
-    # "[face_landmark] 使用 MediaPipe FaceMesh"); with --stub the metrics are meaningless.
+    # "[face_landmark] ... MediaPipe FaceMesh"); with --stub the metrics are meaningless.
     [switch]$WithMetrics,
-    [switch]$OpenBrowser
+    [switch]$OpenBrowser,
+    # BUG-031: run only the offline self-test of Get-OVMDropReason (no API, no camera).
+    [switch]$SelfTest
 )
 
 $ErrorActionPreference = 'Continue'
-. (Join-Path $PSScriptRoot 'omv_stream_bridge.ps1')
 
+# ⚠️ CAPTURE THIS BEFORE DOT-SOURCING THE BRIDGE (2026-10-01).
+# omv_stream_bridge.ps1 declares its own `param([switch]$SelfTest)`.  Dot-sourcing a script
+# runs its param block IN THIS SCOPE, so `$SelfTest` gets rebound to $false and our own
+# `-SelfTest` silently stops working -- the run then falls through and starts api.py plus a
+# full demo cycle.  That is exactly what happened on the first version of this self-test:
+# `-SelfTest` was ignored.  So snapshot the switch under a name the bridge cannot touch.
+$Script:RunSelfTest = [bool]$SelfTest
+
+. (Join-Path $PSScriptRoot 'omv_stream_bridge.ps1')
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $python = Join-Path $repoRoot '.venv\Scripts\python.exe'
 if (-not (Test-Path $python)) { $python = 'python' }
@@ -58,6 +73,92 @@ function Get-FrameAge {
     $r = $null
     try { $r = Invoke-RestMethod "$ApiBase/api/video_status" -TimeoutSec 5 } catch { return $null }
     return $r.age_s
+}
+
+# ---------------------------------------------------------------------------
+# BUG-031: separate "the camera is no longer on USB" from "this cycle just stalled"
+# ---------------------------------------------------------------------------
+# Why: the watchdog used to ask only "is there a fresh frame?".  So when the camera vanished
+# from USB mid-demo, the real cause (`The port 'COM10' does not exist.`) was buried in
+# %TEMP%\omv_cycle_N.log while the script spun 60+ rounds saying only `bridge process exited`
+# (real hardware, 2026-09-27, cycles 3..64).  That sends whoever is debugging in the wrong
+# direction: it looks like "the camera is alive, only the stream stalled".
+#
+# The decision is a PURE function so it can be regression-tested offline (no camera needed):
+#   input  = this cycle's log text + the COM ports that currently exist
+#   output = a conclusion string, or $null meaning "nothing special, keep going"
+# It does no IO; the IO lives in the preflight below.
+function Get-OVMDropReason {
+    param(
+        [string]$LogText = '',
+        [string[]]$Ports = @()
+    )
+    # (1) the port is gone from the system (unplugged / lost power / reset without re-enumeration)
+    if ($LogText -match 'does not exist' -or $LogText -match 'PORT_ERROR') {
+        if ($Ports.Count -eq 0) {
+            return 'camera is NOT on USB any more (no COM port present; log says "does not exist")'
+        }
+    }
+    # (2) not a single COM port -- stop even if this cycle's log has not named the cause yet
+    if ($Ports.Count -eq 0) {
+        return 'camera is NOT on USB any more (no COM port present at all)'
+    }
+    # (3) port present but held by someone else: a DIFFERENT fault, do not report it as unplugged
+    if ($LogText -match 'Access is denied' -or $LogText -match 'being used by another process') {
+        return 'COM port exists but is BUSY (another program holds it) -- not a cable problem'
+    }
+    return $null
+}
+
+# Preflight before every cycle: if there is no COM port at all, stop immediately instead of
+# spinning (BUG-031 acceptance item 1).  Deliberately does NOT guess which port: this script
+# does not own the port number (omv_stream_bridge.ps1's Get-OMVPort picks it).  On this machine
+# the COM ports are the camera, so "none at all" is a reliable unplug signal.
+function Test-OVMCameraPresent {
+    $ports = @([System.IO.Ports.SerialPort]::GetPortNames())
+    if ($ports.Count -gt 0) { return $true }
+    Write-Output "[demo] ------------------------------------------------------------------"
+    Write-Output "[demo] STOP: camera is NOT on USB any more (GetPortNames() returned EMPTY)"
+    Write-Output "[demo]       The cause is NOT a stalled stream; restarting it cannot help."
+    Write-Output "[demo]       Replug the camera (check cable/power) and run this script again."
+    Write-Output "[demo]       Cross-check: %TEMP%\omv_cycle_N.log should hold PORT_ERROR."
+    Write-Output "[demo] ------------------------------------------------------------------"
+    return $false
+}
+
+# ---------------------------------------------------------------------------
+# Offline self-test (BUG-031): only the decision logic; no camera, no API.
+#     powershell -NoProfile -ExecutionPolicy Bypass -File metrics\scripts\omv_camera_demo.ps1 -SelfTest
+# Worth keeping because this decision decides whether to STOP and call a human.  Both ways of
+# getting it wrong cost something:
+#   treating "unplugged" as "stalled"  -> 60+ wasted cycles (BUG-031 itself);
+#   treating "port busy" as "unplugged" -> someone needlessly replugs the cable.
+# Declared after the functions it calls, because PowerShell resolves names at call time.
+# ---------------------------------------------------------------------------
+if ($Script:RunSelfTest) {
+    $ok = 0
+    $bad = @()
+
+    $r = Get-OVMDropReason -LogText 'PORT_ERROR: The port COM10 does not exist.' -Ports @()
+    if ($null -ne $r -and $r -match 'NOT on USB') { $ok++ } else { $bad += 'unplug(with log)' }
+
+    $r = Get-OVMDropReason -LogText '' -Ports @()
+    if ($null -ne $r -and $r -match 'NOT on USB') { $ok++ } else { $bad += 'unplug(no log)' }
+
+    $r = Get-OVMDropReason -LogText 'streaming fine' -Ports @('COM10')
+    if ($null -eq $r) { $ok++ } else { $bad += 'stall-not-unplug' }
+
+    $r = Get-OVMDropReason -LogText 'Access is denied' -Ports @('COM10')
+    if ($null -ne $r -and $r -match 'BUSY' -and $r -notmatch 'NOT on USB') { $ok++ } else { $bad += 'port-busy' }
+
+    Write-Output ('[SelfTest] BUG-031 Get-OVMDropReason: {0} passed, {1} failed' -f $ok, $bad.Count)
+    foreach ($b in $bad) { Write-Output ('  FAIL: ' + $b) }
+    # NOTE: a bare `exit` is NOT enough here.  When the script is launched with -File, `exit`
+    # only sets the exit code and the remaining script body still runs -- which made
+    # `-SelfTest` also start api.py and run a full demo cycle (caught 2026-10-01 by reading
+    # the captured output).  Terminate the process for real.
+    if ($bad.Count -eq 0) { Write-Output 'RESULT: PASS'; [Environment]::Exit(0) }
+    Write-Output 'RESULT: FAIL'; [Environment]::Exit(1)
 }
 
 # ---- 0. web page (api.py) ------------------------------------------------------------------
@@ -82,11 +183,11 @@ if ($apiUp) {
 }
 
 # ---- 0b. metrics channel: started LATER, see Start-DemoMetrics -----------------------------
-# ⚠️ ORDER MATTERS: the A-line pipeline reads /video.mjpg.  Starting it before the camera has
-# posted its first frame makes that read time out ("[warn] MJPEG 流中断 ... timed out") and the
-# pipeline then never receives anything -- the page shows a picture but zero numbers.
-# So it is started from inside the cycle loop, right after the first fresh frame (measured
-# 2026-09-27: the wrong order produced published=0 for a whole 110 s run).
+# ORDER MATTERS: the A-line pipeline reads /video.mjpg.  Starting it before the camera has
+# posted its first frame makes that read time out ("[warn] MJPEG stream interrupted ...
+# timed out") and the pipeline then never receives anything -- the page shows a picture but
+# zero numbers.  So it is started from inside the cycle loop, right after the first fresh frame
+# (measured 2026-09-27: the wrong order produced published=0 for a whole 110 s run).
 $script:metricsProc = $null
 $metricsLog = Join-Path $env:TEMP 'omv_demo_metrics.log'
 
@@ -140,6 +241,16 @@ Write-Output ("[demo] api={0} mode={1} quality={2} burst={3}s stale>{4}s total={
 
 while ((Get-Date) -lt $deadline) {
     $cycle++
+
+    # BUG-031 acceptance item 1: after an unplug the script must say "camera is not on USB"
+    # and exit within <=2 cycles.  Probing before each cycle catches it on cycle 1.
+    if (-not (Test-OVMCameraPresent)) {
+        Write-Output ("[demo] done after {0} cycles (stopped: camera not on USB)" -f $cycle)
+        Stop-DemoMetrics
+        if ($apiProc) { Stop-Process -Id $apiProc.Id -Force -ErrorAction SilentlyContinue }
+        exit 2
+    }
+
     $log = Join-Path $env:TEMP ("omv_cycle_{0}.log" -f $cycle)
     $cmd = ". '" + (Join-Path $PSScriptRoot 'omv_stream_bridge.ps1') + "'; " +
            "Send-OMVStreamer -Mode $Mode -Quality $Quality; " +
@@ -175,10 +286,29 @@ while ((Get-Date) -lt $deadline) {
         Write-Output ("[demo] cycle {0}: {1} -> restarting" -f $cycle, $reason)
     }
 
+    # ---- BUG-031: decide "is the camera still on USB?" BEFORE restarting ----
+    # Order matters: read the log and the port list FIRST, kill the process second -- otherwise
+    # the evidence is gone.  Previously only "is there a fresh frame?" was asked, so an unplug
+    # produced 62 useless cycles (real hardware, 2026-09-27).
+    $cycleLog = if (Test-Path $log) { (Get-Content $log -Raw -ErrorAction SilentlyContinue) } else { '' }
+    $portsNow = @([System.IO.Ports.SerialPort]::GetPortNames())
+    $dropWhy = Get-OVMDropReason -LogText $cycleLog -Ports $portsNow
+
     Stop-Process -Id $b.Id -Force -ErrorAction SilentlyContinue
     # A sensor reset invalidates the pipeline's MJPEG reader, so restart both together and keep
     # the pair in sync instead of leaving a live-but-deaf pipeline behind.
     Stop-DemoMetrics
+
+    if ($dropWhy) {
+        Write-Output "[demo] ------------------------------------------------------------------"
+        Write-Output ("[demo] cycle {0}: {1}" -f $cycle, $dropWhy)
+        Write-Output "[demo] STOPPING: restarting the stream cannot fix 'camera not on USB' (BUG-031)."
+        Write-Output ("[demo]           this cycle's log: {0}" -f $log)
+        Write-Output "[demo]           replug the camera (or check power/cable), then run again."
+        Write-Output "[demo] ------------------------------------------------------------------"
+        break
+    }
+
     Start-Sleep -Seconds 2
 }
 

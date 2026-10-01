@@ -70,15 +70,20 @@ def stage2_write_back(handles):
     print("=" * 60)
     roi, rgb, mot, fir = handles["roi"], handles["rgb"], handles["mot"], handles["fir"]
 
+    # ⚠️ 期望值一律取自 regmap（= 契约 §0 的单一来源），**不写字面量**。
+    #    原来这里写死 640/480/384/288：档位化之后（v1.5：720p/1080p 两档的灰度是 480×270），
+    #    这些字面量会与真正下载的 bitstream 口径不一致，而且**看着仍然"自洽"**——
+    #    与 `tb_rgb2gray.cpp` Layer 1、`regmap.py` 旧自检是同一类缺陷。
+    #    现在改成推导值：档位由 `VIGILENS_TIER` 选（缺省 640×480，行为不变）。
     cases = [
-        ("roi.width", roi, R.RoiStatistic.width, 640),
-        ("roi.height", roi, R.RoiStatistic.height, 480),
+        ("roi.width", roi, R.RoiStatistic.width, R.FRAME_W),
+        ("roi.height", roi, R.RoiStatistic.height, R.FRAME_H),
         ("roi.roi_x0", roi, R.RoiStatistic.roi_x0, 0),
-        ("roi.roi_x1", roi, R.RoiStatistic.roi_x1, 640),
-        ("rgb.width", rgb, R.Rgb2Gray.width, 640),
-        ("rgb.height", rgb, R.Rgb2Gray.height, 480),
-        ("mot.width", mot, R.MotionQuality.width, 384),
-        ("mot.height", mot, R.MotionQuality.height, 288),
+        ("roi.roi_x1", roi, R.RoiStatistic.roi_x1, R.FRAME_W),
+        ("rgb.width", rgb, R.Rgb2Gray.width, R.FRAME_W),
+        ("rgb.height", rgb, R.Rgb2Gray.height, R.FRAME_H),
+        ("mot.width", mot, R.MotionQuality.width, R.GRAY_W),
+        ("mot.height", mot, R.MotionQuality.height, R.GRAY_H),
         ("mot.motion_thresh", mot, R.MotionQuality.motion_thresh, 16),
         ("fir.n_samples", fir, R.FirFilter.n_samples, 8),
         ("fir.reset", fir, R.FirFilter.reset, 1),
@@ -151,13 +156,70 @@ def _load_frame(path):
     return data[:R.RGB_BYTES]
 
 
+def selftest():
+    """离线自检（**不需要板卡/bitstream**）：把本脚本将用到的口径打印出来并断言其自洽。
+
+    为什么值得有：上板脚本以前只能 `py_compile`，口径对不对**要等到板子到手那天才知道**。
+    而它用的期望值全部来自 `regmap`（档位化之后会随 `VIGILENS_TIER` 变），
+    所以最该先验的就是"**口径自洽**"：帧尺寸/灰度尺寸/单帧字节数三者必须一致，
+    且 Stage 2 真的用的是这些值而不是字面量。
+    """
+    checks = []
+
+    def chk(name, ok, detail=""):
+        checks.append((name, bool(ok), detail))
+
+    print("=" * 60)
+    print("[离线自检] bringup_check 的口径（不需要板卡）")
+    print("=" * 60)
+    print(f"  档位 VIGILENS_TIER = {R.TIER}")
+    print(f"  帧尺寸   FRAME_W x FRAME_H = {R.FRAME_W} x {R.FRAME_H}  (RGB_BYTES={R.RGB_BYTES})")
+    print(f"  灰度尺寸 GRAY_W  x GRAY_H  = {R.GRAY_W} x {R.GRAY_H}  (GRAY_PIXELS={R.GRAY_PIXELS})")
+    print(f"  抽取比   {R.DECIM_NUM}/{R.DECIM_DEN}   帧率 FPS={R.FPS}")
+    print("-" * 60)
+
+    chk("RGB_BYTES == FRAME_W*FRAME_H*3", R.RGB_BYTES == R.FRAME_W * R.FRAME_H * 3)
+    chk("GRAY_PIXELS == GRAY_W*GRAY_H", R.GRAY_PIXELS == R.GRAY_W * R.GRAY_H)
+    chk("灰度尺寸 == 帧尺寸按抽取比推导",
+        (R.GRAY_W, R.GRAY_H) == (R.FRAME_W // R.DECIM_DEN * R.DECIM_NUM,
+                                 R.FRAME_H // R.DECIM_DEN * R.DECIM_NUM))
+    # 相位完备：输入宽高必须是抽取分母的整数倍，否则最后一组不满、相位错位
+    chk("输入宽高是抽取分母的整数倍（相位完备）",
+        R.FRAME_W % R.DECIM_DEN == 0 and R.FRAME_H % R.DECIM_DEN == 0,
+        f"{R.FRAME_W}%{R.DECIM_DEN}={R.FRAME_W % R.DECIM_DEN}, "
+        f"{R.FRAME_H}%{R.DECIM_DEN}={R.FRAME_H % R.DECIM_DEN}")
+    # v1.5 的关键约束：灰度像素数必须 ≤ 2^17，否则 motion_quality 的片内帧缓存跨 BRAM 台阶
+    p = 1
+    while p < R.GRAY_PIXELS:
+        p <<= 1
+    chk("灰度像素数 <= 2^17（BRAM 台阶不跨）", p <= 131072, f"next_pow2={p}")
+    # regmap 自身的一致性（偏移表）也要过
+    chk("regmap.selftest() 通过", R.selftest())
+
+    bad = [n for n, ok, _ in checks if not ok]
+    print("")
+    for n, ok, detail in checks:
+        line = f"  [{'PASS' if ok else 'FAIL'}] {n}"
+        if detail:
+            line += f"   ({detail})"
+        print(line)
+    print("-" * 60)
+    print("RESULT:", "PASS" if not bad else "FAIL")
+    return 0 if not bad else 1
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="C8 上板自检")
     ap.add_argument("--bit", default="system.bit", help="bitstream 路径（默认 system.bit）")
     ap.add_argument("--frame", default=None, help="单帧 RGB888 文件（默认全零帧）")
     ap.add_argument("--with-dma", action="store_true", help="追加 Stage 3 复位语义自检（需 DMA 已接好）")
     ap.add_argument("--motion-thresh", type=int, default=16)
+    ap.add_argument("--selftest", action="store_true",
+                    help="离线自检：只验口径自洽，不需要板卡/bitstream")
     args = ap.parse_args(argv)
+
+    if args.selftest:
+        return selftest()
 
     ol, handles = load(args.bit)
     results = {}

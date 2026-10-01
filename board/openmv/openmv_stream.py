@@ -49,9 +49,100 @@ import gc
 #    `reportMissingImports`（"无法解析导入"）。这**不是缺依赖**（`pip install sensor` 这种包
 #    不存在），**也不要**为了让告警消失就删掉它们 —— 删了相机上直接跑不起来。
 #    本仓库的统一处理：加 `# type: ignore`（与 `host_capture_test.py` 对 cv2/serial 的做法一致）。
-import sensor  # type: ignore
+#
+# ⚠️⚠️ `sensor` **不在这里 import** —— 它由下面的 v4/v5 兼容层决定取自哪里
+#     （v5 走 `csi.CSI()` 的包装，v4 走 `import sensor`）。这里若再写一行
+#     `import sensor`，在"只有 csi、没有 sensor"的固件上会直接 ImportError，
+#     兼容层就白做了。**这不是漏写，是刻意**。
 import image  # type: ignore  # noqa: F401  （部分固件需要显式 import 才有 img 方法）
 import pyb  # type: ignore
+
+# ---------------------------------------------------------------------------
+# v4 / v5 相机 API 兼容层（BUG-005）
+# ---------------------------------------------------------------------------
+# 背景：OpenMV v5.0.0 有一条 **major** 破坏性变更 —— 官方说要用 `import csi` + `csi.CSI()`
+# 取代 v4 的模块级 `sensor.*`。本文件原来**只写 v4 那一套**，于是"板上算、只传几十字节/帧"
+# 的 `MODE="stats"`（docs/10 §6 推荐的短期方案）**从未在真机上跑过**。
+#
+# 2026-09-26 真机实测澄清了两件事：
+#   ① 在 OpenMV v5.0.0 / MicroPython v1.28.0-49 上 **`import sensor` 仍然可用**
+#      （官方那个 qstr "仍接线以兼容旧构建"），所以 v4 写法在 v5 上不是必然失败；
+#   ② 但**不能依赖它** —— 它是兼容层，不是承诺。
+#
+# 本兼容层与 `openmv_capture_test.py` 的做法保持一致（那份已经真机验证过），
+# 并按 `offline_check.py` 的验收要求**两条分支都能离线验**：
+#   · 若 `csi` 可用 → 用 `csi.CSI()` 拿单例，并在本模块内提供与 v4 **同名**的模块级函数，
+#     于是下面所有 `sensor.xxx(...)` 调用**一行都不用改**；
+#   · 否则回落到原本的 `import sensor`（v4 行为，与改动前完全一致）。
+#
+# ⚠️ 为什么用 `sensor` 这个名字继续承载：本文件下游有 11 处 `sensor.*` 调用，
+#    改成 `_CAM.xxx` 会动到所有模式分支、把真机回归面放大 —— 而"两套 API 都能跑"
+#    这件事**只需要换绑一个名字**。故这里刻意保留 `sensor` 作为统一入口。
+_CAM_API = None            # "csi" | "sensor"，会随报告一起打印，便于真机定位
+_CSI_SINGLETON = [None]
+
+try:                                    # v5+
+    import csi as _csi_mod  # type: ignore
+    _CSI_SINGLETON[0] = _csi_mod.CSI()
+    _CAM_API = "csi"
+except Exception:                       # v4.x（或 v5 上 csi 不可用）
+    import sensor as sensor  # type: ignore
+    _CAM_API = "sensor"
+
+
+class _CsiAsSensor(object):
+    """把 `csi.CSI()` 的单例**包装成 v4 的模块级函数名**，供本文件的 `sensor.*` 调用。
+
+    只实现本文件真正用到的那些（reset / set_pixformat / set_framesize /
+    set_framebuffers / skip_frames / snapshot），**不实现的一律显式报错**而不是静默返回 None
+    —— 静默返回会让"其实没生效"看起来像"跑通了"（本项目已经栽过这类跟头）。
+    """
+
+    def __init__(self, csi_obj, csi_module):
+        self._c = csi_obj
+        self._m = csi_module
+
+    # ---- 常量：从 csi 模块透传（GRAYSCALE / RGB565 / QVGA / VGA …）----
+    def __getattr__(self, name):
+        # 常量（GRAYSCALE 等）在 csi 模块上；方法在下游由本类显式转发。
+        if hasattr(self._m, name):
+            return getattr(self._m, name)
+        if hasattr(self._c, name):
+            return getattr(self._c, name)
+        raise RuntimeError("本固件的 csi API 没有 %r —— 请在 IDE 里 dir(csi) 看可用名字" % name)
+
+    # ---- v4 模块级函数 -> v5 单例方法 ----
+    def reset(self):
+        return self._c.reset()
+
+    def set_pixformat(self, pf):
+        return self._c.pixformat(pf)
+
+    def set_framesize(self, fs):
+        return self._c.framesize(fs)
+
+    def set_framebuffers(self, n):
+        fn = getattr(self._c, "set_framebuffers", None)
+        if fn is None:
+            raise RuntimeError("本固件的 csi.CSI 没有 set_framebuffers —— 无法固定帧缓冲数")
+        return fn(n)
+
+    def snapshot(self, **kw):
+        return self._c.snapshot(**kw)
+
+    def skip_frames(self, time=0):
+        # v4 的 sensor.skip_frames(time=ms) 在 v5 由 CSI 上的同名/`skip_frames` 承担；
+        # 缺失时退化成"抓几帧丢掉"，效果等价且不会静默。
+        fn = getattr(self._c, "skip_frames", None)
+        if fn is not None:
+            return fn(time=time)
+        n = 3
+        for _ in range(n):
+            self._c.snapshot()
+
+
+if _CAM_API == "csi":
+    sensor = _CsiAsSensor(_CSI_SINGLETON[0], _csi_mod)   # type: ignore  # noqa: F811
 
 # ---------------------------------------------------------------------------
 # ↓↓↓ 改这里 ↓↓↓

@@ -58,6 +58,33 @@ if {$ip_name eq "fir_filter" && [info exists ::env(FIR_FS)] && $::env(FIR_FS) eq
     puts "INFO: fir_filter 60 Hz 档（N=127 系数表 + sim/data_fir_60hz 黄金参考）"
 }
 
+# ---- 测量口径档位（2026-09-30 新增）----------------------------------------
+#  契约依据：docs/interface.md §0 的 **v1.5 草案**（测量口径档位化，待 A/B 会签）
+#            + docs/20（720p60 落地）；拍板记录见 docs/24 §5.1。
+#
+#  用法（只影响 rgb2gray 的抽取比与默认黄金参考目录，**不设就一切照旧**）：
+#      set "VIGILENS_TIER=720p60"     -> 抽取 3/8，灰度 480x270，数据目录 sim/data_motion_720p60
+#      set "VIGILENS_TIER=1080p45"    -> 抽取 1/4，灰度 480x270，数据目录 sim/data_motion_1080p45
+#      （不设）                        -> 抽取 3/5，灰度 384x288，数据目录 sim/data_motion（既有档，不变）
+#
+#  为什么两档都要做成 480x270：129600 像素 ≤ 2^17 ⇒ BRAM 台阶不跨，
+#  motion_quality 的片内帧缓存仍是 64 个 BRAM18（23%）—— 见 fpga/sim/link_budget.py 实测表。
+set tier_num 3
+set tier_den 5
+if {[info exists ::env(VIGILENS_TIER)] && $::env(VIGILENS_TIER) ne ""} {
+    if {$::env(VIGILENS_TIER) eq "720p60"} {
+        set tier_num 3 ; set tier_den 8
+        set default_data "sim/data_motion_720p60"
+    } elseif {$::env(VIGILENS_TIER) eq "1080p45"} {
+        set tier_num 1 ; set tier_den 4
+        set default_data "sim/data_motion_1080p45"
+    } else {
+        puts "ERROR: unknown VIGILENS_TIER '$::env(VIGILENS_TIER)'. Known: 720p60 / 1080p45"
+        exit 1
+    }
+    puts "INFO: 档位 VIGILENS_TIER=$::env(VIGILENS_TIER) → 抽取 $tier_num/$tier_den，数据目录 $default_data"
+}
+
 set src_file "src/$ip_name.cpp"
 set tb_file  "sim/tb_$ip_name.cpp"
 if {![file exists $src_file] || ![file exists $tb_file]} {
@@ -70,10 +97,34 @@ puts "INFO: source    = $src_file"
 puts "INFO: testbench = $tb_file"
 
 # Create project / component
-open_component -reset component_$ip_name -flow_target vivado
+# -----------------------------------------------------------------------------
+# ⚠️ 组件目录名可用环境变量覆盖（2026-09-30 新增；**缺省行为与以前完全一致**）：
+#      set "HLS_COMPONENT=component_roi_statistic_run2"
+#      vitis-run --mode hls --tcl run_hls.tcl
+#   为什么要有这个后门：`open_component -reset` 需要**先删掉**旧组件目录，
+#   而某些环境里旧目录中的 `*.hlsrun_csim_summary` / `hls/.autopilot/db/a.g*`
+#   会因 NTFS 拒绝项而删不掉 —— 实测：
+#      error deleting "D:/Desktop/AMD/fpga/component_roi_statistic/hls/hls.aps": permission denied
+#   于是 csim 连启动都做不到。那是**环境问题**，不该逼人改共享脚本或删仓库文件；
+#   指定一个新目录名即可绕开。（`fpga/component_*/` 本就在 .gitignore 里，不入库。）
+# -----------------------------------------------------------------------------
+set comp_name "component_$ip_name"
+if {[info exists ::env(HLS_COMPONENT)] && $::env(HLS_COMPONENT) ne ""} {
+    set comp_name $::env(HLS_COMPONENT)
+    puts "INFO: HLS_COMPONENT override -> $comp_name"
+}
+open_component -reset $comp_name -flow_target vivado
 
 if {$fir_60} {
     add_files $src_file -cflags "-DFIR_FS_60HZ"
+} elseif {$ip_name eq "rgb2gray"} {
+    # 档位化的抽取比（缺省 3/5 = 既有档，与以前完全一致）。
+    # ⚠️ **同一组宏必须同时给测试台**：测试台的 Layer 1 断言与朴素参考都按抽取比推导，
+    #    只给 src 不给 tb 会让两边口径不一致（实测过：tb 按 3/5 断言、IP 按 3/8 输出，
+    #    csim 报 "read while empty" 并以退出码 3 失败）。
+    set decim_flags "-DRGB2GRAY_DECIM_NUM=$tier_num -DRGB2GRAY_DECIM_DEN=$tier_den"
+    add_files $src_file -cflags $decim_flags
+    add_files -tb $tb_file -cflags $decim_flags
 } else {
     add_files $src_file
 }

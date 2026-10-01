@@ -155,10 +155,15 @@ void bayer_demosaic(hls::stream<axis_pix16_t> &bayer_in,
                 }
 
                 axis_rgb_t q;
-                // ⚠️ 通道顺序 R-G-B（byte0=R），不是 OpenCV 默认的 BGR
-                q.data = ((ap_uint<24>)to8(R) << 16) |
+                // ⚠️ 通道顺序 R-G-B：**R=[7:0]、G=[15:8]、B=[23:16]**（byte0=R），不是 OpenCV 默认的 BGR。
+                //    2026-09-30 修正：原来写的是 (R<<16)|(G<<8)|B —— 那是**BGR**（R 跑到 bits[23:16]），
+                //    与本注释、（tb:97-99 的解码）、docs/19 §6 的"byte0=R"、
+                //    以及下游消费方 rgb2gray.cpp:100（R=[7:0]）/ roi_statistic.cpp:87（p.data(7,0)）
+                //    全都相反 ⇒ csim 的 corner clamp 实测 (64,128,255)，正是 (255,128,64) 的 R/B 互换。
+                //    这类错误**不会编译报错**，只会让灰度式 Y=(77R+150G+29B)>>8 悄悄按 77B+29R 算。
+                q.data = ((ap_uint<24>)to8(B) << 16) |
                          ((ap_uint<24>)to8(G) << 8)  |
-                         ((ap_uint<24>)to8(B));
+                         ((ap_uint<24>)to8(R));
                 q.keep = 0x7;
                 q.strb = 0x7;
                 q.user = (ym == 0 && x == 0) ? 1 : 0;      // 输出帧首像素

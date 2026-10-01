@@ -209,7 +209,15 @@ static int test_embedded(void)
         unsigned ow, oh, pc, fid; long hm = 0;
         run_ip(in.data(), 1280, 720, 160, 960, out, ow, oh, pc, fid, hm);
         bool ok = (ow == 640u) && (oh == 480u) && (pc == 640u * 480u) &&
-                  (960u * 3u == 640u * 2u * 2u) && (720u * 3u == 480u * 2u * 2u) && (hm == 0);
+                  // ⚠️ 这里原来写的是 (960*3 == 640*2*2) && (720*3 == 480*2*2) —— **恒假**：
+                  //    960*3 = 2880 ≠ 640*4 = 2560、720*3 = 2160 ≠ 480*4 = 1920，
+                  //    两个式子与上一行的 `ow == 640` 自相矛盾（960*3/4 = 720 ≠ 640）。
+                  //    它是**编译期常量**，与 DUT 无关 ⇒ 该断言**永远 FAIL**，
+                  //    于是"aspect check"从来没在测任何东西（2026-09-30 发现并修正）。
+                  //    正确的比例恒等式是 out*DEN == in*NUM（与 host_model_scale.cpp:204、
+                  //    gen_scale_vectors.py:164 用的同一式子）：960*2 == 640*3、720*2 == 480*3。
+                  (960u * SCALE_NUM == 640u * SCALE_DEN) &&
+                  (720u * SCALE_NUM == 480u * SCALE_DEN) && (hm == 0);
         printf("  %s aspect check 1280x720 crop(160,960) -> %ux%u (pc=%u) hdr=%ld\n",
                ok ? "OK  " : "FAIL", ow, oh, pc, hm);
         ok ? pass++ : fail++;

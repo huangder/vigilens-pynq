@@ -479,6 +479,35 @@ def _to_bytes(img):
             "请在 IDE 里 print(dir(img)) 看本固件提供哪个方法。原始错误: %s" % e)
 
 
+def _bytes_alert(pf_name, bpp, bytes_per_frame, theoretical, tol=0.05):
+    """判定"每帧字节数"是否可信。返回 None（正常）或 (kind, 中文说明)。
+
+    ⚠️ **为什么要写成独立纯函数**（[BUG-018](../../docs/16_测试问题台账.md#bug-018)）：
+    原来的告警条件是
+
+        if bpp and st["bytes_per_frame"] and theoretical and abs(...) > theoretical*0.05:
+
+    `bytes_per_frame == 0` 时**整个条件为假** ⇒ "字节数与 w*h*bpp 不符"这条告警**根本不会打印**
+    ⇒ 2026-09-26 真机跑出的 `RGB565/QVGA → B/帧 = 0` 被**静默当成合法值**接受，
+    而 A 线的旁路带宽预算正是靠这个数。
+    现在把判定抽出来，`0` 明确算"不可信"，并且**纯函数可以在 PC 上直接回归**（见 offline_check.py）。
+
+    三种 kind：
+      · `zero`     —— 未压缩格式拿到 0 字节：**不可能**，必须报警（压缩格式 bpp=0，不适用）
+      · `mismatch` —— 与 w*h*bpp 差超过 tol：说明实际生效的分辨率/格式与请求不同
+      · 其余返回 None（含压缩格式：那类只有名义值，不做这个判定）
+    """
+    if not bpp:
+        return None                      # JPEG 等压缩格式：w*h*bpp 无意义，不在这里判
+    if bytes_per_frame == 0:
+        return ("zero", "实得 0 字节（应为 %d）—— 该数字不可信，别拿它算带宽" % theoretical)
+    if theoretical and abs(bytes_per_frame - theoretical) > theoretical * tol:
+        return ("mismatch",
+                "实得字节数与 w*h*bpp 不符（%d vs %d）—— 说明实际分辨率或格式与设定不同"
+                % (bytes_per_frame, theoretical))
+    return None
+
+
 def _set_framebuffers(n):
     """设置帧缓冲数量。老固件可能没有这个 API，缺失时明确报告而不是静默忽略。
 
@@ -737,10 +766,10 @@ def run_matrix():
                  st["fps_min_inst"], st["bytes_per_frame"],
                  _fmt_theoretical(pf_name, theoretical),
                  st["mem_free_after"], note))
-            if bpp and st["bytes_per_frame"] and theoretical and \
-                    abs(st["bytes_per_frame"] - theoretical) > theoretical * 0.05:
-                log("            ⚠️ 实得字节数与 w*h*bpp 不符（%d vs %d）—— 说明实际分辨率或格式与设定不同"
-                    % (st["bytes_per_frame"], theoretical))
+            _al = _bytes_alert(pf_name, bpp, st["bytes_per_frame"], theoretical)
+            if _al is not None:
+                row["bytes_alert"] = _al[0]
+                log("            ⚠️ %s" % _al[1])
         except Exception as e:
             row["ok"] = False
             row["error"] = "%s: %s" % (type(e).__name__, e)
@@ -941,21 +970,55 @@ def run_dump():
 # ---------------------------------------------------------------------------
 
 
+def _dumps_json(report):
+    """把 report 变成一段**真正能被 CPython `json.load()` 读**的文本。
+
+    返回 `(text, is_json)`。
+
+    ⚠️ **为什么不能只写 `json.dumps(report, indent=1)`**（[BUG-019](../../docs/16_测试问题台账.md#bug-019)）：
+    MicroPython 的 `json.dumps` **只接受位置参数**，传 `indent=` / `ensure_ascii=` 会抛
+    `TypeError: extra keyword arguments given`；旧代码于是"优雅回退"成 `repr(report)`
+    （单引号、Python 字面量），**文件名却还叫 `.json`** ⇒ 下游任何 `json.load()` 直接炸。
+    2026-09-26 的真机上，同一个脚本还写出过**截断**的报告（1235 B，`'{' was never closed`）。
+
+    现在的顺序：
+      1. 先只传位置参数试一次（MicroPython 能过，且**输出就是合法 JSON**）；
+      2. 再试带 `indent`（CPython 好看一点）；
+      3. 都失败才退回 repr —— 并且**调用方会把扩展名改成 `.txt`**，绝不冒充 JSON。
+    """
+    try:
+        import json
+        try:
+            return json.dumps(report, indent=1), True      # CPython：带缩进
+        except TypeError:
+            return json.dumps(report), True                # MicroPython：只吃位置参数
+    except Exception as e:
+        log("⚠️ json 不可用（%s），改为写 Python repr（文件名会改成 .txt）" % e)
+        return repr(report), False
+
+
 def write_report(report):
     path = _first_writable(REPORT_PATH_CANDIDATES, False)
     if path is None:
         log("⚠️ 找不到可写路径写 report.json（试过 %s）" % (REPORT_PATH_CANDIDATES,))
         return None
-    try:
-        import json
-        text = json.dumps(report, ensure_ascii=False, indent=1)
-    except Exception as e:
-        log("⚠️ json 不可用（%s），改为写 Python repr" % e)
-        text = repr(report)
+    text, is_json = _dumps_json(report)
+    if not is_json and path.endswith(".json"):
+        path = path[:-len(".json")] + ".txt"      # 不冒充 JSON（BUG-019 的验收第 1 条）
     try:
         with open(path, "w") as f:
             f.write(text)
-        log("报告已写入：%s（%d B）" % (path, len(text)))
+            f.flush()                             # BUG-019 追加现象：必须先 flush
+        # 回读校验：写不完整（板载盘只有 0.11 MB、或写报告期间相机复位）必须**报错而不是静默**。
+        # 实测过同一脚本一次写全（2955 B）、一次截断（1235 B）—— 没有这一步就发现不了。
+        with open(path, "r") as f:
+            back = f.read()
+        if back != text:
+            log("⚠️ 报告回读不一致（写出 %d B / 读回 %d B）—— 该文件不可信：%s"
+                % (len(text), len(back), path))
+            return None
+        log("报告已写入：%s（%d B，%s，回读一致）"
+            % (path, len(text), "JSON" if is_json else "Python repr"))
         return path
     except Exception as e:
         log("⚠️ 写报告失败：%s" % e)
@@ -1034,7 +1097,12 @@ def main():
     log("      .venv\\Scripts\\python.exe board/openmv/raw_to_contract.py "
         "metrics\\logs\\openmv_dump --out metrics/logs/openmv_frames.bin")
     log("    （⚠️ 别把 <尖括号> 当命令照抄：PowerShell 里 < > 是保留运算符，无法执行）")
-    log("    得到契约 §4.1 布局的 RGB888，可直接喂 A 线 / C 线。")
+    # ⚠️ 这两句必须分开写（DOC-003）：本文件的**布局**符合契约 §4.1，
+    #    但"A 线能读"与"C 线能读"是两件事 —— A 线只认 合成 / 摄像头序号 / 视频文件这三类帧源
+    #    （见 backend/capture.py），裸 .bin 会被它交给 cv2.VideoCapture，必然打不开。
+    log("    · 喂 C 线：可以 —— 本文件是契约 §4.1 布局，可直接作为 DMA 回放输入（board/dma_test.py）。")
+    log("    · 喂 A 线：**不行** —— A 线只认 合成 / 摄像头序号 / 视频文件三类帧源；")
+    log("      要用这批真实帧跑 A 线，请先合成一段视频，或直接用 UVC 模式。")
 
 
 main()

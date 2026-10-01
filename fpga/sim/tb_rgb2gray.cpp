@@ -30,8 +30,24 @@
 typedef ap_axiu<24, 1, 1, 1> axis_pix_t;
 typedef ap_axiu<8,  1, 1, 1> axis_gray_t;
 
-#define DECIM_NUM 3
-#define DECIM_DEN 5
+// ---- 抽取比（**必须与 src/rgb2gray.cpp 的同一组宏一致**）--------------------
+//  2026-09-30：原来这里写死 3/5，于是"档位化之后再用 Layer 1 验"会**全线错位** ——
+//  实测证据：以 -DRGB2GRAY_DECIM_NUM=3 -DRGB2GRAY_DECIM_DEN=8 编译时，
+//  本文件仍按 10x5 -> 6x3 断言，直接把 6x3 的期望读进 15x15 的输出缓冲之外，
+//  csim 报 `an hls::stream ... is read while empty` 并以退出码 3 失败。
+//  现在改成**由同一组宏推导**，并加一条编译期断言，防止再次漂移。
+#ifndef RGB2GRAY_DECIM_NUM
+#define RGB2GRAY_DECIM_NUM 3
+#endif
+#ifndef RGB2GRAY_DECIM_DEN
+#define RGB2GRAY_DECIM_DEN 5
+#endif
+#ifndef DECIM_NUM
+#define DECIM_NUM RGB2GRAY_DECIM_NUM
+#endif
+#ifndef DECIM_DEN
+#define DECIM_DEN RGB2GRAY_DECIM_DEN
+#endif
 
 void rgb2gray(hls::stream<axis_pix_t> &rgb_in,
               hls::stream<axis_gray_t> &gray_out,
@@ -149,10 +165,15 @@ static bool file_exists(const std::string &p)
 // -----------------------------------------------------------------------------
 static int test_embedded(void)
 {
-    printf("---- [Layer 1] embedded cases (in 10x5 -> out 6x3) ----\n");
+    // ⚠️ 输入尺寸必须同时满足"是 DECIM_DEN 的整数倍"（相位完备）与"够大"，
+    //    输出尺寸由同一组宏推导 —— 不再写死 10x5/6x3（那会让档位化后断言整体错位）。
+    const int W = DECIM_DEN * 2;      // 3/5 -> 10x10 ... 3/8 -> 16x16 ... 1/4 -> 8x8
+    const int H = DECIM_DEN * 2;
+    const int OW = W / DECIM_DEN * DECIM_NUM;
+    const int OH = H / DECIM_DEN * DECIM_NUM;
+    printf("---- [Layer 1] embedded cases (in %dx%d -> out %dx%d, 抽取 %d/%d) ----\n",
+           W, H, OW, OH, DECIM_NUM, DECIM_DEN);
 
-    const int W = 10, H = 5;
-    const int OW = 6, OH = 3;
     int pass = 0, fail = 0;
     std::vector<unsigned char> rgb((size_t)W * H * 3);
 

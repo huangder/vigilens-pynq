@@ -72,40 +72,66 @@ void raw10_unpack(hls::stream<axis_raw10_t> &raw_in,
     const int wpl = (int)(width >> 2);          // 每行的 5 字节组数
     ap_uint<32> pcnt = 0;
 
-    for (int y = 0; y < (int)height; y++) {
-        for (int g = 0; g < wpl; g++) {
-// 一拍进、四拍出：4 个写都是非阻塞的，故 II 仍可保持 1
+    // -------------------------------------------------------------------------
+    //  流水线结构（2026-10-01 改）
+    // -------------------------------------------------------------------------
+    //  原来是**两层循环**：外层 y、内层 g，`#pragma HLS PIPELINE II=1` 写在内层。
+    //  HLS 于是把"内层循环体"当一个 pipeline：它读 1 组、吐 4 个像素。
+    //  实测 csynth 报 `Target II = 1, Final II = 4` —— 这里的 II 是**每组**的：
+    //  1 组 / 4 拍 ⇒ **每拍只有 1 个像素**（不是 II=1 应有的 1 组/拍 = 4 像素/拍）。
+    //  1280×720@60 = 55.3 M 像素/s；每拍 1 像素就要 55.3 MHz 才够，看似够，
+    //  但 1080p@45 = 93.3 M 像素/s 就**超了**，且这个数还没算行消隐与 CSI-2 开销 ——
+    //  所以它是 docs/20「720p60」与 v1.5 两档的**共同吞吐瓶颈**。
+    //
+    //  改法：把 y、g **合并成一条扁平循环**，一次迭代处理**一整组**（读 1 拍、吐 4 拍）。
+    //  这样 pipeline 的 II 单位变成"组"，II=1 即 **4 像素/拍**（快 4 倍），
+    //  与文件头注释里"一拍进、四拍出"的原意一致。
+    //
+    //  ⚠️ 像素顺序必须与既有黄金参考一致：Python 侧是行内按组顺序、组内 k=0..3，
+    //     故扁平化只能合并成 `idx = y*wpl + g`，**不能**改成按列或按 k 优先。
+    // -------------------------------------------------------------------------
+    const int total_groups = (int)height * wpl;
+    // 行内组号用**自由计数器**推进，不用 `idx / wpl` 这种运行时除法 ——
+    // 除法器会在流水线里占一拍甚至多拍，把刚拿回来的 II=1 又赔掉。
+    int g = 0;
+    for (int idx = 0; idx < total_groups; idx++) {
 #pragma HLS PIPELINE II=1
-            axis_raw10_t w = raw_in.read();
+        axis_raw10_t w = raw_in.read();
 
-            // 取 40 位（低 5 字节）；高位 3 字节按 tkeep 语义不应被使用
-            ap_uint<8> b0 = w.data(7, 0);
-            ap_uint<8> b1 = w.data(15, 8);
-            ap_uint<8> b2 = w.data(23, 16);
-            ap_uint<8> b3 = w.data(31, 24);
-            ap_uint<8> b4 = w.data(39, 32);
+        // 取 40 位（低 5 字节）；高位 3 字节按 tkeep 语义不应被使用
+        ap_uint<8> b0 = w.data(7, 0);
+        ap_uint<8> b1 = w.data(15, 8);
+        ap_uint<8> b2 = w.data(23, 16);
+        ap_uint<8> b3 = w.data(31, 24);
+        ap_uint<8> b4 = w.data(39, 32);
 
-            ap_uint<10> p[4];
+        ap_uint<10> p[4];
 #pragma HLS ARRAY_PARTITION variable=p complete
-            p[0] = ((ap_uint<10>)b0 << 2) | (ap_uint<10>)(b4 & 0x3);
-            p[1] = ((ap_uint<10>)b1 << 2) | (ap_uint<10>)((b4 >> 2) & 0x3);
-            p[2] = ((ap_uint<10>)b2 << 2) | (ap_uint<10>)((b4 >> 4) & 0x3);
-            p[3] = ((ap_uint<10>)b3 << 2) | (ap_uint<10>)((b4 >> 6) & 0x3);
+        p[0] = ((ap_uint<10>)b0 << 2) | (ap_uint<10>)(b4 & 0x3);
+        p[1] = ((ap_uint<10>)b1 << 2) | (ap_uint<10>)((b4 >> 2) & 0x3);
+        p[2] = ((ap_uint<10>)b2 << 2) | (ap_uint<10>)((b4 >> 4) & 0x3);
+        p[3] = ((ap_uint<10>)b3 << 2) | (ap_uint<10>)((b4 >> 6) & 0x3);
 
-            for (int k = 0; k < 4; k++) {
+        for (int k = 0; k < 4; k++) {
 #pragma HLS UNROLL
-                axis_pix10_t q;
-                q.data = (ap_uint<16>)p[k];           // 10 bit 有效，高 6 位为 0
-                q.keep = 0x3;                          // 16 bit -> 2 字节
-                q.strb = 0x3;
-                q.user = (y == 0 && g == 0 && k == 0) ? 1 : 0;      // 输出帧首像素
-                q.last = (g == wpl - 1 && k == 3) ? 1 : 0;          // 输出行末像素
-                q.id   = w.id;
-                q.dest = w.dest;
-                pix_out.write(q);
-            }
+            axis_pix10_t q;
+            q.data = (ap_uint<16>)p[k];           // 10 bit 有效，高 6 位为 0
+            q.keep = 0x3;                          // 16 bit -> 2 字节
+            q.strb = 0x3;
+            q.user = (idx == 0 && k == 0) ? 1 : 0;              // 输出帧首像素
+            q.last = (g == wpl - 1 && k == 3) ? 1 : 0;          // 输出行末像素
+            q.id   = w.id;
+            q.dest = w.dest;
+            pix_out.write(q);
+        }
 
-            pcnt += 4;
+        pcnt += 4;
+
+        // 行内组号推进：到行末回到 0（与原来内层 g 的语义一致）
+        if (g == wpl - 1) {
+            g = 0;
+        } else {
+            g++;
         }
     }
 
