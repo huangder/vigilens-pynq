@@ -124,6 +124,24 @@ metrics/evidence/_*
 # ⚠️ 注意：metrics/evidence/ 下**正式证据**（如 a_line_m1_run.json、js_frames.jsonl、
 #    页面截图 B8）是要入库的，不要在上面加更宽的通配把它一起忽略掉。
 
+# ---- C 线：档位 cosim 用的小帧数向量（生成物，可由 seed 重建）----------------
+# 生成：python fpga/sim/gen_frames.py --width 1280 --height 720 --frames 1 \
+#              --out-dir fpga/sim/data_roi_720p_cosim
+# 注意：fpga/sim/data_roi_*_cosim/golden_roi.csv 是黄金参考，**必须入库**。
+# 同理（由 gen_motion_vectors.py 重建、黄金参考入库）：
+fpga/sim/data_roi_720p_cosim/frames.bin
+fpga/sim/data_roi_1080p_cosim/frames.bin
+fpga/sim/data_motion_small_1080p45/rgb_frames.bin
+fpga/sim/data_motion_small_1080p45/gray.bin
+
+# ---- 仓库根的一次性临时产物（会话日志 / 临时黄金参考目录）--------------------
+# 🔍 为什么要有这条：C 线跑 HLS 时习惯先把日志与"从仓库外搬进来的黄金参考"落在仓库根
+#    （形如 `_cosim_*.log` / `_golden720/` / `_roi720/` / `_tier_*.log`）。
+#    **要留的证据**应当归档进 `fpga/report/logs/`（原始日志）或 `fpga/sim/data_*/`
+#    （黄金参考），根目录这一份一律不入库 —— 否则 `git status` 长期是脏的
+#    （与 BUG-003 同一类，2026-10-01 实测又踩到：根目录一次留下 40+ 个 `_*` 文件）。
+/_*
+
 # ---- 编辑器 / 自动生成 ------------------------------------------------------
 *.log.bak
 
