@@ -89,7 +89,22 @@ metrics/csv/*.csv
 metrics/logs/*.json
 metrics/logs/*.jsonl
 metrics/logs/*.log
+metrics/logs/*.tmp
+# metrics/logs/ 是**生成物**目录（`metrics/csv/*.csv` 已经这样处理了）：A 线管线/演示脚本
+# 在这里落的契约指标 CSV（如 demo_clip.csv / demo_face.csv）同理不入库。
+# ⚠️ 正式证据仍然走 metrics/evidence/（那一条不要加更宽的通配，见下面的注意事项）。
+metrics/logs/*.csv
 metrics/evidence/*.tmp
+# ⚠️ BUG-003：上面这条 `metrics/logs/*.tmp` 是补的（2026-10-01）。
+#    原来只有 `metrics/evidence/*.tmp`，而实际脏掉 git status 的临时文件**产生在 metrics/logs/**
+#    （`tempfile` 在 A 线管线/演示脚本运行期落到那里，形如 tmp_bz04xar.tmp）——
+#    于是"每次 git status 都是脏的"。台账 BUG-003 描述的现象与这里对得上。
+# 📌 BUG-003 的**根因**另有一条（本行修不了）：`tempfile.gettempdir()` 在本机解析到一个
+#    被写入拒绝的目录，才导致产物落到 metrics/logs/。真正该做的是修 TEMP 或让脚本显式指定
+#    产物目录；本行只保证"不再脏 git status"。
+
+# HLS 构建失败标记（vitis-run 会在 fpga/ 下留一个 .hls.failed）
+fpga/.hls.failed
 
 # 自检/临时脚本产物（下划线开头 = 本机临时，不是证据，不入库）
 metrics/logs/_*
