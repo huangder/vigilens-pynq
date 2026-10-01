@@ -211,7 +211,7 @@ INFO: [HLS 200-789] **** Estimated Fmax: 151.98 MHz
 
 1. **`fir_filter` 的系数取决于采样率档**：本轮跑的是仓库当前默认系数表。
    `docs/interface.md` 的 v1.1 是 **45 Hz**、v1.2 草案是 **30 Hz**、`docs/22`/`37bf473` 又加了
-   **60 Hz（N=127）**。**说 Fmax 必须同时说"哪一档系数"**，否则数字不可比。
+   **60 Hz（N=127）**。（`docs/22` 已于 2026-10-01 并入 `docs/20` §7 并删除）**说 Fmax 必须同时说"哪一档系数"**，否则数字不可比。
 2. **`raw10_unpack` / `bayer_demosaic` / `frame_scale` 的接口当前只在 `docs/19`/`docs/20` 里是"提案"**，
    **未进 `docs/interface.md`** ⇒ 按 `AGENTS.md` §4，它们**还不能被当作已冻结接口对接**。
    本报告只报"仿真结果"，不构成契约。

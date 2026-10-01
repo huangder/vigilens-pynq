@@ -43,7 +43,7 @@ cd /d D:\Desktop\AMD\fpga
 vitis-run --mode hls --tcl run_hls.tcl
 
 :: 3) 60 Hz 档的 fir_filter（系数表 N=127，黄金参考切到 sim/data_fir_60hz）
-::    ⚠️ 60 Hz **不能**沿用 63 抽头：停止带会从 -16 dB 退化到 -6 dB，理由见 docs/22 §2.1
+::    ⚠️ 60 Hz **不能**沿用 63 抽头：停止带会从 -16 dB 退化到 -6 dB，理由见 docs/20 §7.2.1（原 docs/22，2026-10-01 并入）
 set HLS_IP=fir_filter
 set FIR_FS=60
 vitis-run --mode hls --tcl run_hls.tcl
