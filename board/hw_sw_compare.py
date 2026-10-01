@@ -33,6 +33,25 @@ import regmap as R
 from overlay.load_overlay import load, run_pixel_chain, run_fir_segment
 
 
+def console_utf8():
+    """让本脚本的输出在 Windows 控制台上不崩（与 board/imx219_driver.console_utf8 同一做法）。
+
+    ⚠️ 2026-10-02 实测踩到：本脚本会打印 `⚠️`(U+26A0) 与中文，而 Windows 控制台默认代码页是
+    936(GBK) —— GBK 编不出就**直接 UnicodeEncodeError 崩掉**，且崩在**已经打印完「RESULT: PASS」
+    之后**，于是退出码变成 1：`check_all` 报 FAIL，而人眼看着是 PASS（`board/dma_test.py` 同病）。
+    `errors="replace"` 保证编不出的字符显示成 '?'，**而不是让程序崩**。
+    """
+    for name in ("stdout", "stderr"):
+        stream = getattr(sys, name, None)
+        rec = getattr(stream, "reconfigure", None)
+        if rec is None:
+            continue
+        try:
+            rec(encoding="utf-8", errors="replace")
+        except Exception:      # noqa: BLE001 —— 某些包装流不允许 reconfigure
+            pass
+
+
 def _s16(u):
     """把从 FIFO 读到的 16 bit 无符号还原为有符号 int16。"""
     u &= 0xFFFF
@@ -297,6 +316,7 @@ def compare_fir(ol, handles, series_bin, golden_fir_csv, golden_fir_out_csv):
 # ---------------------------------------------------------------------------
 
 def main(argv=None):
+    console_utf8()
     ap = argparse.ArgumentParser(description="C10 软硬件一致性比对")
     ap.add_argument("--bit", default="system.bit")
     ap.add_argument("--data-root", default="fpga/sim", help="黄金参考根目录")

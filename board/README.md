@@ -56,6 +56,7 @@
 | `bringup_check.py` | C8：寄存器读写 + 计数器复位语义自检（门限 3/4） | ⚠️ 上板跑 |
 | `dma_test.py` | C9：DMA 回环/缓存一致性 + 长跑不死锁 + 确定性（门限 5/6/7） | ⚠️ 上板跑 |
 | `hw_sw_compare.py` | C10：PL vs 黄金参考逐点比对（容差 0，门限 8） | ⚠️ 上板跑 |
+| `imx219_driver.py` + `imx219_sccb_check.py` | 🆕 **IMX219（Camera Module 2）SCCB 驱动与三档模式表**：外部证据台账 + 真机读出模式 + 三档口径 + SCCB 线上层 + **安全阀**（寄存器表为空或含未核实项即**拒绝下装**）。依据/未闭合项见 `docs/27` | ✅ 离线 `python board/imx219_sccb_check.py`（**79/79**，已纳入 `check_all.py`）；⚠️ **寄存器初始化序列表本身仍未填**——本机读不到任何 IMX219 注册表来源（`docs/27` §1.1 有逐条实测记录，§4 B1 是补法） |
 | `build_bd.tcl` | Block Design 构建脚本（Vivado batch；**板级 preset 已参数化 + 有停止守卫**） | ⚠️【未验证】需在 Vivado 2026.1 实跑迭代 |
 | `bitstream/` | 导出的 `.bit` / `.hwdef`（体积大，考虑 Releases/LFS） | ⏳ 空 |
 | `overlay/` | Overlay 封装（`.tcl`/`.xsa`、`*.py` 加载器） | ⏳ 见上 |
@@ -181,6 +182,14 @@ python board/hw_sw_compare.py --bit system.bit --data-root fpga/sim
 - `build_bd.tcl` 是**照做脚手架**，`[TODO-verify]` 处需按 Vivado 2026.1 实际 IP catalog 就地修正。
   **换到 Mizar 后新增两条硬约束**：① 板级 preset 由 `USE_BOARD_PRESET` 控制，**默认 0**；
   ② 未落实 PS7 配置时脚本会 `exit 1`（**这是刻意设计**，防止拿 PYNQ-Z2 的 DDR 预设生成一块起不来的板子）。
+- 🆕 `imx219_driver.py` **只**覆盖"离线能验的那一半"（几何 / 链路预算 / SCCB 线上字节序 / 安全阀）。
+  **它不含 IMX219 的寄存器初始化序列** —— 本机网络读不到任何注册表来源（`docs/27` §1.1），
+  而寄存器值写错**不会报错、只会让相机不出图**，所以刻意留空并让驱动**拒绝下装**。
+  引用本文件时**不得**表述成"IMX219 驱动已完成 / 相机能起来了"。
+- 🆕 `dma_test.py` 与 `hw_sw_compare.py` 在 **GBK 代码页的控制台**里，收尾打印 `⚠️` 会抛
+  `UnicodeEncodeError` —— 而它发生在**已经打印完 `RESULT: PASS` 之后**，
+  于是"人眼看着 PASS、退出码却是 1"。2026-10-02 已给两者加 `console_utf8()` 修掉
+  （与 `backend/console.py` 同一做法）。**判据：这两个脚本 `--selftest` 的退出码才是结论，别只看末行。**
 
 ## 环境备忘
 
