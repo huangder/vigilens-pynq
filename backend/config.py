@@ -93,7 +93,7 @@ FALLBACK: dict[str, Any] = {
     "couple_memory_alpha": 0.25,
     "couple_risk_medium": 0.45,
     "couple_risk_high": 0.70,
-    # ---- 年龄 × 指标耦合（依据见 config.yaml 同名键的注释与 docs/27）----
+    # ---- 年龄 × 指标耦合（依据见 config.yaml 同名键的注释与 docs/28）----
     "age_scenario": "reading",
     "couple_eye_sensitivity_default": 1.0,
     "couple_eye_sensitivity_older": 0.5,

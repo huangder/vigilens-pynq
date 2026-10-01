@@ -265,7 +265,7 @@ def main(argv: list[str] | None = None) -> int:
     rppg = GreenRppg.from_config(cfg, fps=fps)
 
     # ---- 年龄分层疲劳对照（旁路；缺省不加 --age 时这一整段都不存在）----------
-    # 设计要点见 docs/27：年龄档案件**不进**契约帧（那 9 个字段是冻结的），
+    # 设计要点见 docs/28：年龄档案件**不进**契约帧（那 9 个字段是冻结的），
     # 只能走 --age-jsonl / --age-json / POST /api/age / SQLite 这四条旁路。
     age_store: AgeProfileStore | None = None
     couple: CoupledRiskModel | None = None

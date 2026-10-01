@@ -40,7 +40,7 @@ risk      = sigmoid(S_t)                          # 0~1
 
 · **PERCLOS 定义**：Dinges & Grace 1998 的原始描述强调它反映 **slow eyelid closures
   （droops）而不是 blinks**；而本项目 `behavior_metrics.py` 的 PERCLOS 是"EAR 低于阈值的
-  时间占比"，**包含快速眨眼**。两者不完全等价 —— 见 `docs/27` 的未验证清单。
+  时间占比"，**包含快速眨眼**。两者不完全等价 —— 见 `docs/28` §9 的未验证清单。
 · **眨眼率的年龄分组**：文献**不支持**按年龄分眨眼率（Bentivoglio 1997、Sun 1997 均未发现
   年龄差异），但支持分**闭眼时长/PERCLOS**；且场景与性别的影响大于年龄
   （Doughty 2001：reading 1.4~14.4 vs conversation 10.5~32.5）。因此眨眼率用
@@ -367,7 +367,7 @@ class CoupledRiskModel:
         if skipped:
             parts.append("未参与（缺基线/样本不足）：" + "；".join(skipped))
         parts.append("口径提醒：本项目 PERCLOS 含快速眨眼的低 EAR 帧，"
-                     "与 Dinges & Grace 1998 强调的 slow closure 不完全等价（见 docs/27）")
+                     "与 Dinges & Grace 1998 强调的 slow closure 不完全等价（见 docs/28）")
         return "。".join(parts) + "。"
 
 

@@ -16,7 +16,7 @@
     "【本次的否定结论】公开数据集里**没有**「既带困倦标注、又带受试者年龄」的数据集：",
     "          MRL Eye 官方标注项逐条列出（含 gender）但**无 age**；CEW 无 age；",
     "          DMD 的年龄标注未核实且许可是 CC BY-NC-ND 4.0。",
-    "          ⇒ 年龄分层的疲劳基线**只能自建采集**（协议见 docs/27 §7），本文件因此只放",
+    "          ⇒ 年龄分层的疲劳基线**只能自建采集**（协议见 docs/28 §9 第 3/4 条（采集缺口，尚未成文）），本文件因此只放",
     "            经得起复核的少量数值，其余留空并写明缺口。",
     "【口径差异，必须一起说】Dinges & Grace 1998 描述 PERCLOS 时强调它反映 slow eyelid",
     "          closures（droops）**而不是 blinks**；本项目 behavior_metrics.py 的 PERCLOS 是",
@@ -57,7 +57,7 @@
         "low": null, "high": null, "typical": null, "scale": null,
         "source": null,
         "confidence": "不确定",
-        "notes": "无公开基线。用 config.yaml 的 fatigue_yawn_count（占位值）。哈欠的个体差异极大，且与说话/进食等行为混淆，标定需要带视频标注的素材（见 docs/27 §7 采集协议）。"
+        "notes": "无公开基线。用 config.yaml 的 fatigue_yawn_count（占位值）。哈欠的个体差异极大，且与说话/进食等行为混淆，标定需要带视频标注的素材（见 docs/28 §9 第 3/4 条（采集缺口，尚未成文））。"
       }
     },
 
@@ -157,14 +157,14 @@
     "perclos_definition_mismatch": {
       "claim": "本项目的 PERCLOS 与文献口径不等价。",
       "detail": "本项目 behavior_metrics.py 统计『EAR 低于 ear_close_threshold 的时间占比』，**包含快速眨眼**；文献口径针对慢速闭眼/微睡眠（droops）并采用 80% 闭合判据。",
-      "consequence_for_this_project": "所有引用 PERCLOS 数值的地方必须一并声明口径；是否排除快速眨眼是一个**显式的设计决定**，当前实现未排除（见 docs/27 §6 未验证清单）。",
+      "consequence_for_this_project": "所有引用 PERCLOS 数值的地方必须一并声明口径；是否排除快速眨眼是一个**显式的设计决定**，当前实现未排除（见 docs/28 §9（未验证清单））。",
       "source": "同上 FHWA-MCRT-98-006",
       "confidence": "已验证（口径差异部分）"
     },
 
     "no_public_age_labelled_fatigue_dataset": {
       "claim": "本次检索**没有找到**任何『既带困倦/疲劳标注、又带受试者年龄』的公开数据集 ⇒ 年龄分层疲劳基线只能自建。",
-      "confidence": "已验证（就本次检索范围而言；是**否定结论**，见 docs/27 的诚实边界）",
+      "confidence": "已验证（就本次检索范围而言；是**否定结论**，见 docs/28 §10（诚实边界））",
       "checked_datasets": [
         {"name": "MRL Eye Dataset", "url": "https://mrl.cs.vsb.cz/eyedataset.html", "age_labels": false, "note": "官方逐条列出 8 个标注项（含 gender），**无 age**；84,898 张红外眼图 / 37 人。"},
         {"name": "CEW (Closed Eyes in the Wild)", "url": "http://parnec.nuaa.edu.cn/xtan/data/ClosedEyeDatabases.html", "age_labels": false, "note": "2,423 张（1,192 闭眼 + 1,231 睁眼，取自 LFW）；无 age；许可禁止转发下载链接。"},
@@ -204,7 +204,7 @@
         {"name": "Chalder Fatigue Scale", "source": "Chalder T. et al., J Psychosom Res 1993;37(2):147-153", "confidence": "推测", "note": "题录已核，条目与计分未核实。"},
         {"name": "Fatigue Severity Scale (FSS)", "source": "Krupp LB et al., Arch Neurol 1989;46(10):1121-1123", "confidence": "推测", "note": "题录已核，锚点未核实。"}
       ],
-      "consequence_for_this_project": "docs/27 §7 的采集协议要求每段 session 记录 KSS 自评 + 场景 + 年龄，作为将来标定耦合模型权重的依据。"
+      "consequence_for_this_project": "docs/28 §9 第 3/4 条（采集缺口，尚未成文）要求每段 session 记录 KSS 自评 + 场景 + 年龄，作为将来标定耦合模型权重的依据。"
     }
   }
 }
