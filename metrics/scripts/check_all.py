@@ -174,6 +174,17 @@ TOOL_SELFTESTS = (
     # 本项目已经踩过三次同类（tb Layer1 写死 3/5、rgb2gray cosim 3/5 数据跑 3/8、
     # fir_filter 45 Hz 数据跑 30 Hz 系数表）。本自检能**离线**把这种配错抓出来。
     ("board/hw_sw_compare.py", "--selftest"),
+    # C9 DMA 测试的**离线自检**（2026-10-01 新增）：钉住确定性测试图的**具体字节** ——
+    # 门限 7 的"两次长跑逐位一致"用的就是这张图；图若悄悄变了，会变成"两次都一样地错"、
+    # **照样报 PASS**。另外验 --golden-gray 是否与当前档位 GRAY_PIXELS 配套。
+    ("board/dma_test.py", "--selftest"),
+    # IMX219 SCCB 驱动的**离线自检**（2026-10-02 新增）：验"相机侧"能离线验的那一半 ——
+    # 真机读出模式的裁剪窗口自洽（原点偶数 = RGGB 相位可保持）、三档口径与 regmap 逐项一致、
+    # 链路预算 vs IMX219 像素率上限、SCCB 线上字节序、以及**安全阀会不会真的拦人**。
+    # 为什么值得进回归：IMX219 的**注册表本机读不到**（网络全被 DNS/Cloudflare 挡掉），
+    # 所以"寄存器值对不对"现在无法验；能验的就必须天天验，否则这份驱动会退化成一份没人跑过的文档。
+    # 特别是安全阀那几条 —— 它守的是"寄存器表没核实就不许下装"，是**防止静默写错值**的唯一一道闸。
+    ("board/imx219_sccb_check.py", None),
 )
 
 
@@ -205,6 +216,7 @@ SYNTAX_TARGETS = (
     "board/openmv/openmv_stream.py", "board/openmv/openmv_capture_test.py",
     "board/bringup_check.py", "board/dma_test.py", "board/hw_sw_compare.py",
     "board/overlay/load_overlay.py",
+    "board/imx219_driver.py", "board/imx219_sccb_check.py",
 )
 
 

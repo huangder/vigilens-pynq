@@ -137,30 +137,61 @@ create_clock -period 10
 
 # ---- 定位黄金参考数据目录 ---------------------------------------------------
 # 测试台通过 argv[1] 收到该目录；找不到时测试台会硬失败（防止"假通过"）。
+set golden_files [list golden_roi.csv golden_motion.csv golden_fir.csv \
+                       golden_mipi.csv golden_scale.csv]
+
+proc has_golden {dir files} {
+    foreach f $files {
+        if {[file exists [file join $dir $f]]} { return 1 }
+    }
+    return 0
+}
+
 set data_dir ""
 set cand_list [list]
-if {[info exists ::env(ROI_DATA_DIR)] && $::env(ROI_DATA_DIR) ne ""} {
-    lappend cand_list [file normalize $::env(ROI_DATA_DIR)]
-}
-catch {
-    lappend cand_list [file normalize "[file dirname [file normalize [info script]]]/$default_data"]
-}
-lappend cand_list [file normalize "[pwd]/$default_data"]
-lappend cand_list [file normalize "[pwd]/fpga/$default_data"]
 
-foreach c $cand_list {
-    if {[file exists "$c/golden_roi.csv"] || [file exists "$c/golden_motion.csv"] || [file exists "$c/golden_fir.csv"] || [file exists "$c/golden_mipi.csv"] || [file exists "$c/golden_scale.csv"]} {
-        set data_dir $c
-        break
+# ① 显式指定（ROI_DATA_DIR）—— ⚠️ **指定了就必须可用**（2026-10-01 修）：
+#    原实现把它当"候选之一"：目录里没有黄金参考就**静默跳到下一个候选**，
+#    后果是"你以为在测 480x270 档，其实跑的是 384x288 档"，而日志只有一行
+#    `INFO: data dir = <另一个目录>` —— 正是本项目最忌讳的静默错
+#    （2026-10-01 实测踩到：-D 给了 720p60 的数据目录，却跑成了 640x480 档，
+#     并因此把一次 cosim 的结论张冠李戴）。故改为**硬失败**。
+if {[info exists ::env(ROI_DATA_DIR)] && $::env(ROI_DATA_DIR) ne ""} {
+    set forced [file normalize $::env(ROI_DATA_DIR)]
+    if {![has_golden $forced $golden_files]} {
+        puts "ERROR: ROI_DATA_DIR is set but unusable: '$::env(ROI_DATA_DIR)'"
+        puts "       expected one of: $golden_files"
+        puts "       Refusing to silently fall back to the default data dir --"
+        puts "       that would test a DIFFERENT measurement tier than requested."
+        exit 1
+    }
+    puts "INFO: ROI_DATA_DIR -> $forced  (explicit, verified)"
+    set data_dir $forced
+}
+
+# ② 否则按"默认档位目录"找（可用 VIGILENS_TIER 改档位，见上文）。
+if {$data_dir eq ""} {
+    catch {
+        lappend cand_list [file normalize "[file dirname [file normalize [info script]]]/$default_data"]
+    }
+    lappend cand_list [file normalize "[pwd]/$default_data"]
+    lappend cand_list [file normalize "[pwd]/fpga/$default_data"]
+
+    foreach c $cand_list {
+        if {[has_golden $c $golden_files]} {
+            set data_dir $c
+            break
+        }
+    }
+    if {$data_dir eq ""} {
+        puts "WARNING: golden reference not found. Candidates tried:"
+        foreach c $cand_list { puts "         $c" }
+        puts "WARNING: run the matching gen_*.py first."
+        set data_dir [lindex $cand_list 0]
+    } else {
+        puts "INFO: data dir  = $data_dir  (default for tier '$default_data')"
     }
 }
-if {$data_dir eq ""} {
-    puts "WARNING: golden reference not found. Candidates tried:"
-    foreach c $cand_list { puts "         $c" }
-    puts "WARNING: run the matching gen_*.py first."
-    set data_dir [lindex $cand_list 0]
-}
-puts "INFO: data dir  = $data_dir"
 
 # =============================================================================
 #  hls_exec: 1 = 仅 C 综合; 2 = 综合 + RTL 协同仿真(cosim); 3 = 再加导出

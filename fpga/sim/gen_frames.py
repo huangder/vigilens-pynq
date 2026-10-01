@@ -18,6 +18,12 @@
 #  用法：
 #    python fpga/sim/gen_frames.py
 #    python fpga/sim/gen_frames.py --width 640 --height 480 --seed 20260910
+#    # v1.5 档位（见 fpga/sim/data_roi_tiers_README.md）：
+#    python fpga/sim/gen_frames.py --width 1280 --height 720  --out-dir fpga/sim/data_roi_720p
+#    python fpga/sim/gen_frames.py --width 1920 --height 1080 --out-dir fpga/sim/data_roi_1080p
+#    # 档位 **cosim** 用的小帧数集（全尺寸事务、帧数少）：
+#    python fpga/sim/gen_frames.py --width 1280 --height 720 --frames 1 \
+#           --out-dir fpga/sim/data_roi_720p_cosim
 # =============================================================================
 
 import argparse
@@ -166,16 +172,27 @@ def main():
     ap.add_argument("--height", type=int, default=DEF_H)
     ap.add_argument("--seed", type=int, default=DEF_SEED)
     ap.add_argument("--seed2", type=int, default=DEF_SEED2)
+    # 🚧 2026-10-01 新增：控制帧数。用途见 fpga/sim/data_roi_tiers_README.md ——
+    #   **cosim 的开销与"帧数 × 用例数 × 像素数"成正比**，而 720p/1080p 的 cosim
+    #   需要覆盖的是"**单个事务就有一整帧那么多像素**"，不是"帧数多"。
+    #   所以档位 cosim 用小帧数（1~2 帧）、csim 用默认 5 帧。
+    ap.add_argument("--frames", type=int, default=5,
+                    help="生成前 N 帧（1..5，默认 5）。生成器只定义 5 帧："
+                         "random_a / all_zero / all_full / single_change / random_b")
     ap.add_argument("--out-dir", default=os.path.join(os.path.dirname(
         os.path.abspath(__file__)), "data"))
     args = ap.parse_args()
 
     w, h = args.width, args.height
+    if not (1 <= args.frames <= 5):
+        print("!! --frames 必须在 1..5 之间（本生成器只定义 5 帧）")
+        return 1
     os.makedirs(args.out_dir, exist_ok=True)
 
-    print("== gen_frames: %dx%d, seed=%d/%d ==" % (w, h, args.seed, args.seed2))
+    print("== gen_frames: %dx%d, seed=%d/%d, frames=%d =="
+          % (w, h, args.seed, args.seed2, args.frames))
 
-    frames = build_frames(w, h, args.seed, args.seed2)
+    frames = build_frames(w, h, args.seed, args.seed2)[:args.frames]
     cases = build_cases(w, h)
 
     # ---- 写 frames.bin -------------------------------------------------------

@@ -157,6 +157,80 @@ def long_run(ol, handles, frame, *, n=300, runs=2):
     return ok
 
 
+def selftest(golden_gray=None):
+    """离线自检（**不需要板卡**）：验"测试图生成 + 黄金参考档位"两件事。
+
+    为什么这两件值得离线验：
+      ① `make_frame()` 是**确定性**测试图（LCG，无 numpy），上板时"两次长跑逐位一致"
+         （门限 7）就靠它可复现。若它的字节序/取值悄悄变了，门限 7 会变成
+         "两次都一样地错"，**照样报 PASS** —— 所以必须钉住它的**具体字节**。
+      ② `--golden-gray` 的比对读 `R.GRAY_PIXELS` 字节。若给的 gray.bin 是**别的档位**的
+         （v1.5 后 720p/1080p 是 480×270，而 640×480 档是 384×288），
+         在板子上会表现成"PL 与黄金参考不一致"，**实际是数据配错**。
+         本项目已踩过三次同类（tb Layer1 写死 3/5、rgb2gray cosim 3/5 数据跑 3/8、
+         fir_filter 45 Hz 数据跑 30 Hz 系数表），所以先在这里拦。
+    """
+    checks = []
+
+    def chk(name, ok, detail=""):
+        checks.append((name, bool(ok), detail))
+
+    print("=" * 66)
+    print("[离线自检] dma_test 的测试图与黄金参考（不需要板卡）")
+    print("=" * 66)
+    print(f"  档位 VIGILENS_TIER = {R.TIER}  (帧 {R.FRAME_W}x{R.FRAME_H}, 灰度 {R.GRAY_W}x{R.GRAY_H})")
+    print("-" * 66)
+
+    # ---- ① 测试图：长度 + 确定性（同 seed 同字节）+ LCG 具体值 ----
+    f1 = make_frame(20260911)
+    f2 = make_frame(20260911)
+    chk("make_frame 长度 == RGB_BYTES", len(f1) == R.RGB_BYTES,
+        f"{len(f1)} vs {R.RGB_BYTES}")
+    chk("make_frame 同 seed 逐字节相同（门限 7 可复现的前提）", f1 == f2)
+    chk("make_frame 不同 seed 必须不同（防 seed 被忽略）", make_frame(1) != make_frame(2))
+
+    # LCG 具体值：`state = 1664525*state + 1013904223 (mod 2^32)`，取 (state>>24)&0xFF。
+    # 这里按同一条式子独立重算前 4 个字节，钉住"实现没被悄悄改过"。
+    st = 20260911 & 0xFFFFFFFF
+    expect = []
+    for _ in range(4):
+        st = (1664525 * st + 1013904223) & 0xFFFFFFFF
+        expect.append((st >> 24) & 0xFF)
+    chk("make_frame 前 4 字节 == 独立重算的 LCG 序列",
+        list(f1[:4]) == expect, f"got {list(f1[:4])} want {expect}")
+
+    # 值域必须铺满 0..255（否则测试图太"平"，缓存一致性检查会失去分辨力）
+    uniq = len(set(f1))
+    chk("测试图字节值域足够宽（>=200 种取值）", uniq >= 200, f"distinct={uniq}")
+
+    # ---- ② 黄金参考：必须与本档 GRAY_PIXELS 配套 ----
+    if golden_gray is not None:
+        import os
+        if not os.path.exists(golden_gray):
+            chk("golden_gray 文件存在", False, golden_gray)
+        else:
+            size = os.path.getsize(golden_gray)
+            chk("golden_gray 至少 1 帧（GRAY_PIXELS）", size >= R.GRAY_PIXELS,
+                f"{size} B vs need {R.GRAY_PIXELS} B")
+            chk("golden_gray 能被本档 GRAY_PIXELS 整除（否则是别的档的数据）",
+                size % R.GRAY_PIXELS == 0, f"{size} % {R.GRAY_PIXELS} = {size % R.GRAY_PIXELS}")
+    else:
+        print("  [info] 未给 --golden-gray：跳过黄金参考档位检查")
+        print("         （上板做容差 0 比对时应给，且必须与本档配套）")
+
+    bad = [n for n, ok, _ in checks if not ok]
+    print("")
+    for n, ok, detail in checks:
+        line = f"  [{'PASS' if ok else 'FAIL'}] {n}"
+        if detail:
+            line += f"   ({detail})"
+        print(line)
+    print("-" * 66)
+    print("RESULT:", "PASS" if not bad else "FAIL")
+    print("⚠️ 本自检只证明'测试图可复现 + 黄金参考配套'；DMA 回环/长跑本身必须上板跑。")
+    return 0 if not bad else 1
+
+
 # ---------------------------------------------------------------------------
 # 入口
 # ---------------------------------------------------------------------------
@@ -169,7 +243,12 @@ def main(argv=None):
     ap.add_argument("--frames", type=int, default=300, help="长跑帧数（门限 6，默认 300）")
     ap.add_argument("--runs", type=int, default=2, help="确定性重复次数（门限 7，默认 2）")
     ap.add_argument("--skip-long", action="store_true", help="只跑回环 smoke，不跑长跑")
+    ap.add_argument("--selftest", action="store_true",
+                    help="离线自检：只验测试图与黄金参考配套，不需要板卡")
     args = ap.parse_args(argv)
+
+    if args.selftest:
+        return selftest(golden_gray=args.golden_gray)
 
     ol, handles = load(args.bit)
     frame = _load_frame(args.frame)

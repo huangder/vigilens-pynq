@@ -118,3 +118,91 @@ tier_1080p45_width: 1920            # 备档：1920x1080 @45fps（链路含余�
 tier_1080p45_height: 1080
 tier_1080p45_fps: 45
 tier_1080p45_gray_decim: [1, 4]     # rgb2gray 抽取比 -> 灰度 480x270（与主档同一片内台阶）
+
+# ---- A 线：年龄分层疲劳对照（**旁路功能，不影响冻结的 9 字段契约帧**）----------
+# 为什么走旁路：`docs/interface.md` §1 把指标帧冻结为恰好 9 个顶层字段，
+#   多一个字段就是非法帧（`validate_frame` 会拒收）。年龄档案是"人群基线与个体推断"
+#   这类附加解释，与 `triggers`（证据链）、旁路画面（/api/frame）是同一个范式。
+#   因此本段所有键**都不是契约的一部分**，改它们不需要 A/B 会签，
+#   但**必须**同步 `backend/age_contract.py`（schema 唯一来源）与本注释。
+# ⚠️ 命名沿用扁平的 `age_*` / `couple_*`：`backend/config.py` 的内置 mini-YAML
+#    解析器只支持一层嵌套，写成多级嵌套会让没装 PyYAML 的机器读到空值（静默降级）。
+age_enabled: true                   # 是否启用年龄档案旁路（关掉 = 行为与从前逐字节一致）
+age_infer_hz: 1.0                   # 图像年龄推断的调用节奏（Hz）。
+                                    #   为什么不是每帧：年龄是慢变量，1 Hz 足够，
+                                    #   而每帧调 CNN 会让 PS 侧（Cortex-A9）白烧算力。
+age_engine_order: [opencv_caffe, heuristic]   # 引擎优先级：前面的可用就用前面的。
+                                    #   全都不可用时 engine=none（**不猜**，前端显示"未做推断"）
+age_model_dir: data/models/age      # OpenCV Caffe 年龄模型的目录（deploy_age.prototxt +
+                                    #   age_net.caffemodel）。权重在 .gitignore 里，需要时用
+                                    #   `python metrics/scripts/fetch_age_model.py` 取。
+                                    #   缺权重 ⇒ 自动降级到 heuristic，**不报错**（链路优先）
+age_bands_path: data/reference/age_bands.json   # 参照基线（每条都带出处与核实状态）
+age_db_path: data/fatigue_db/vigilens_fatigue.sqlite3   # 测量库（入库文件是 schema.sql，
+                                    #   数据库本体在 .gitignore 里 —— 它含个体数据）
+age_enroll_window_s: 20.0           # 【判断是否收录人脸】的观察窗口长度（s）。
+                                    #   依据：用户要求"给予年龄识别机制一个判断是否收录
+                                    #   人脸的时间"。20 s 是按 1 Hz 采样约 20 个样本、
+                                    #   足以让"同一张脸"的距离判决稳定；⚠️ 未标定，占位值。
+age_enroll_min_samples: 12          # 窗口内至少这么多个**有效**样本才允许收录（占位值）
+age_enroll_min_quality: 0.65        # 样本的 quality.overall 低于此值不计入观察（占位值）
+age_enroll_restart_frames: 3        # 观察期间连续这么多帧"不像同一个人"就重启观察（换人了）。
+                                    #   占位值：太小会被姿态抖动频繁打断，太大则会把两个人
+                                    #   的签名混进同一份档案（那正是最坏的数据污染）。
+age_signature_dim: 16               # 人脸签名边长：16x16 灰度 → 256 维 int8。
+                                    #   **不是照片**：降采样 + 去均值 + 量化，不可逆还原人脸。
+age_signature_match_max_distance: 0.35   # 两张脸判为"同一个人"的最大距离（占位值，待标定）
+age_stores_face_image: false        # 【隐私红线】默认不保存人脸裁剪图。
+                                    #   改 true 只允许在获得被采集者授权的本地场景，
+                                    #   且仍**不得**上传任何外部服务（《05》铁律 4）。
+age_confirm_locks_inference: true   # 一次正式确认年龄后是否停用图像推测。
+                                    #   用户明确要求的行为；改 false = 违反需求，别改。
+couple_prior_logit: -2.2            # 耦合模型的先验 logit（未疲劳的先验占优）。
+                                    #   依据：无任何证据时风险应低（≈0.10），
+                                    #   而不是从 0.5 起步乱报警。⚠️ 未标定，占位值。
+couple_gain_perclos: 1.6            # 各指标标准化偏离量 (z) → 证据强度的增益。
+couple_gain_long_close: 1.2         #   形式：logLR_i = gain_i * z_i（见 fatigue_coupling.py）。
+couple_gain_yawn: 1.0               #   ⚠️ 全部未标定：需真实标注 session 做逻辑回归拟合。
+couple_gain_blink_low: 0.9
+couple_gain_trend: 0.8              # 趋势项（PERCLOS 斜率）的增益
+couple_interaction_perclos_longclose: 0.7   # 显式**耦合项**：高 PERCLOS 且出现长闭眼时
+                                    #   额外增加证据 —— 单看任一指标都可能落在正常范围，
+                                    #   两者同时出现才是"闭眼-再闭合"的疲劳模式。
+couple_interaction_perclos_blinksupp: 0.5   # 高 PERCLOS 且眨眼率被抑制（< 同龄基线）时的耦合项
+couple_weight_floor: 0.15           # 质量收缩的下限：质量再差也不把权重压到 0，
+                                    #   而是让证据整体变弱 + 由门控决定是否 comparable
+couple_clip: 3.0                    # 单个证据项的截断（防止单一指标独大）
+couple_memory_alpha: 0.25           # 时序累积的指数记忆系数（0~1，越大越跟手）
+couple_risk_medium: 0.45            # 风险档位分界（占位值）
+couple_risk_high: 0.70              # 风险档位分界（占位值）
+
+# ---- 年龄 × 指标耦合的证据权重（**本功能最关键的一条科学依据**）--------------
+# 依据（真实可核实，见 report/research/age_fatigue_reference_sources.md §3）：
+#   Cai et al. 2021, Sci Rep 11:21561, DOI 10.1038/s41598-021-99133-y（CC BY，全文已读）：
+#     29 h 完全睡眠剥夺 + 实车，年轻组 16 人 vs 老年组 17 人。原文结论：
+#     "Ocular measures of drowsiness, including blink duration, number of long eye
+#      closures and PERCLOS increased following sleep loss **for younger adults only**
+#      (p < 0.05)." 老年组仍有驾驶损害（车道偏离 3.5×），但**眼部指标不升高**。
+#   独立佐证：Abe 2023, Sleep Advances 4(1):zpad006（CC BY，全文已读）把
+#     "in older adults" 明确列为 PERCLOS **不**随困倦变化的情形之一。
+# ⇒ 含义：**统一的 PERCLOS 阈值会对老年用户系统性漏报**（false negative），
+#    而漏报在安全方向上是更坏的错误。因此本模型对"眼部证据"按年龄**下调权重**，
+#    并相对提高非眼部证据（哈欠 / 姿态漂移）的权重。
+# ⚠️ 下面的具体数值是**占位值**：文献给的是"方向与显著性"，没有给可移植的权重。
+#    真正标定需要本设备上带年龄标注的 session（当前不存在，见 docs/27 的未验证清单）。
+age_scenario: reading               # 眨眼率的场景口径（reading / primary_gaze / conversation）。
+                                    #   依据 Doughty 2001（Optom Vis Sci 78(10):712-725，题录已核）：
+                                    #   95% 参考带 reading 1.4~14.4、primary gaze 8.0~21.0、
+                                    #   conversation 10.5~32.5 blinks/min —— **场景差 5.8 倍**，
+                                    #   比年龄差异大得多。本项目是"桌面专注"场景 → reading。
+                                    #   不写明场景就引用眨眼率 = 结论不可复现（原文明确反对笼统给值）。
+couple_eye_sensitivity_default: 1.0 # 眼部证据（PERCLOS / 长闭眼 / 眨眼率）的年龄权重基准
+couple_eye_sensitivity_older: 0.5   # 60+ 组的眼部证据权重（占位值；方向有文献依据，数值没有）
+couple_non_eye_sensitivity_older: 1.2   # 60+ 组的非眼部证据权重（哈欠/姿态），同上为占位值
+couple_gain_pose_drift: 0.5         # 姿态漂移项的增益：在阈值内的漂移也计入弱证据
+                                    #   （老年组的损害被作者归因于 inattention/distraction，
+                                    #    而姿态与可见率正是本项目里"非眼动"的可测代理）
+couple_trend_ref_per_min: 0.10      # 趋势项的基准：PERCLOS 每分钟上升多少算 1 个尺度。
+                                    #   ⚠️ 未标定，占位值。
+
+

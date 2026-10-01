@@ -30,6 +30,11 @@
 #include <ap_axi_sdata.h>
 #include <ap_int.h>
 
+// 片内"上一帧"缓存的**容量唯一来源**（与 IP 读同一份定义）——
+// 它是编译期常量，而工作尺寸是运行时给的，两者不匹配时两侧都**不会报错**，
+// 所以测试台必须在这里把它变成"响亮的失败"（见 test_golden 的容量硬校验）。
+#include "../src/motion_quality_cap.h"
+
 typedef ap_axiu<8, 1, 1, 1> axis_gray_t;
 
 void motion_quality(hls::stream<axis_gray_t> &gray_in,
@@ -225,6 +230,27 @@ static int test_golden(const std::string &dir)
     if (!read_meta(dir + "/meta.txt", m)) {
         printf("  ERROR: cannot read %s/meta.txt\n", dir.c_str());
         return -1;
+    }
+
+    // ---- 容量硬校验（2026-10-01 新增，BUG-033）--------------------------------
+    // prev_buf 是**编译期定长**的片内缓存；工作尺寸由 meta/PS 在运行时给。
+    // 若工作尺寸 > 容量：csim 的 C 数组不设边界 ⇒ 越界写相邻内存（实测表现是**挂死**）；
+    // RTL 里 ram 只有 MOTION_MAX_PIXELS 个地址 ⇒ 越界读回 X、越界写被丢弃。
+    // 两种情况的共同点是**都不报错**，所以判据必须写在这里。
+    {
+        const long need = (long)m.out_width * (long)m.out_height;
+        if (need > (long)MOTION_MAX_PIXELS) {
+            printf("  FATAL: work size %dx%d = %ld pixels EXCEEDS on-chip capacity %d (%dx%d)\n",
+                   m.out_width, m.out_height, need,
+                   (int)MOTION_MAX_PIXELS, MOTION_MAX_W, MOTION_MAX_H);
+            printf("         the prev-frame buffer is compile-time sized: enlarge\n");
+            printf("         fpga/src/motion_quality_cap.h AND re-check the BRAM step first.\n");
+            return -1;
+        }
+        if (need < (long)MOTION_MAX_PIXELS) {
+            printf("  note     : work %dx%d = %ld px uses %ld of %d on-chip slots\n",
+                   m.out_width, m.out_height, need, need, (int)MOTION_MAX_PIXELS);
+        }
     }
 
     // ---- 读 golden_motion.csv ----

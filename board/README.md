@@ -61,6 +61,55 @@
 | `overlay/` | Overlay 封装（`.tcl`/`.xsa`、`*.py` 加载器） | ⏳ 见上 |
 | `openmv/` | **OpenMV 首次测试包**：串口帧协议 / 上位机采集测试 / OpenMV 侧采集测试 / PL 最小回环 / 接线与分阶段测试方案 | ✅ 协议与上位机工具可离线自检（含 `offline_check.py` = 28/28，已纳入 `check_all.py`）；🧪 **OpenMV 已接入过 1 次**，但采集矩阵只回来 2 行 → `fpga/report/t6_openmv_capture_matrix_v1.md` |
 
+## ✅ 上板前检查单（**2026-10-01 新增，按序勾**）
+
+> 这一节是**动手前**的清单，来自 2026-09-30~10-01 那轮 C 线工作里**真实踩过的坑**。
+> 目的：别把"环境/口径问题"当成"板子坏了"或"IP 算错了"，浪费一整天。
+> 与之配套的**离线自检**（不需要板卡，先全跑绿再上板）：
+> ```bat
+> python metrics\scripts\check_all.py                 :: 期望 [工具自检] 13/13
+> python board\regmap.py --selftest                   :: 档位自洽
+> python board\bringup_check.py --selftest            :: 帧/灰度尺寸与单帧字节数自洽
+> python board\dma_test.py --selftest                 :: 确定性测试图 + 黄金参考配套
+> python board\hw_sw_compare.py --selftest            :: 黄金参考是否与当前档位配套
+> ```
+
+- [ ] **① 档位必须三处一致**（最容易错，且症状像"IP 算错"）
+      `VIGILENS_TIER` 决定帧尺寸/抽取比/灰度尺寸，它必须与**实际综合进 bitstream 的那一档**一致：
+      | 档位 | 测量口径 | 抽取比 | 灰度 | 用哪套黄金参考 |
+      |---|---|---|---|---|
+      | （不设） | 640×480 | 3/5 | 384×288 | `fpga/sim/data` + `data_motion` |
+      | `720p60` | 1280×720 | 3/8 | 480×270 | `data_roi_720p` + `data_motion_720p60` |
+      | `1080p45` | 1920×1080 | 1/4 | 480×270 | `data_roi_1080p` + `data_motion_1080p45` |
+- [ ] **② 黄金参考要在正式目录里、且与本档配套**
+      跑 `python board\hw_sw_compare.py --selftest` 确认（它会报出
+      "`gray.bin` 能被本档 GRAY_PIXELS 整除"这类配错）。若目录为空，先跑
+      `fpga\promote_tier_data.ps1` 把两档数据归位，或按各目录 `README.md` 里的命令重新生成。
+- [ ] **③ 上板脚本从 `board/` 目录调用**
+      它们 `import regmap`，必须在 `board/` 下运行（或在 `sys.path` 里放 `board/`）。
+      `hw_sw_compare.py --data-root` 现在会**锚到仓库根**解析，但脚本本身仍要在 `board/`。
+- [ ] **④ 跑 HLS 仿真（csim/csynth/cosim）时注意两件环境事**（2026-10-01 实测）
+      1. **`vitis-run` 长作业容易被外层超时连带杀掉** —— 改动/重跑时**直接写日志文件**
+         （`> x.log 2>&1`）再看文件增长；**不要**用 `| Select-Object -Last N` 看进度
+         （它要等命令结束才输出，会把"正在跑十几分钟"显示成"卡住"）。
+      2. **cosim 若报 `Simulation engine failed to start` / `shut down unexpectedly during
+         initialization`，先试 `-mt off`**：`xelab` 默认开 22 线程，在本机会以访问违例崩。
+         做法是在 `component_*/hls/sim/verilog` 下重建快照：
+         `xelab <...> -mt off -s <snapshot>` 再 `xsim <snapshot> -tclbatch <tb>.tcl`。
+         ⚠️ `-mt 1` 会报错，合法值是 `auto | off | >1`。
+      （另：`roi_statistic` 的 cosim 测试台含 **73 个事务**，是**长作业**，别当成死锁。）
+- [ ] **⑤ cosim 失败时先数 `hls/sim/tv/` 的文件数**
+      为 0 = C 测试台**还没写出 HDL 测试向量**（xsim 会用 `$fscanf` 读它们，读不到就
+      `File descriptor (0) passed to $fscanf is not valid`）。成功过的 IP 那里有 58~68 个文件。
+- [ ] **⑥ `fpga/` 子目录在受限沙箱里会拒绝进程写入**
+      症状：`Could not open file xsim.dir/.../xsim.type for writing`、
+      或 `gen_motion_vectors.py` 报 `PermissionError ... rgb_frames.bin`。
+      这不是代码问题 —— 需要完整权限终端，或把产物先落到可写目录再搬。
+- [ ] **⑦ 相机侧的掉线是"拔线"不是"流卡"**
+      跑长时间演示时若 `omv_camera_demo.ps1` 停止，先看它有没有打印
+      `camera is NOT on USB any more (GetPortNames() returned EMPTY)` ——
+      那是**相机从 USB 消失**，重启推流救不回来，需要重新插拔（BUG-031，已修成第 1 轮报清）。
+
 ## 上板执行顺序（M3 板卡到手后，按序做）
 
 ```bat
@@ -84,9 +133,14 @@ vivado -mode batch -source build_bd.tcl
 ::   产物 .bit/.hwh 拷到 board/bitstream/；真实资源/时序回填 m3_system_budget_v1.md 第 3 节
 
 :: 2) 上板自检（Mizar-Z7020；命令行，或 Jupyter —— 但 PYNQ 环境需先确认）
-python board/bringup_check.py --bit system.bit --with-dma --frame fpga/sim/data/frames.bin
-python board/dma_test.py --bit system.bit --frames 300
+::    ⚠️ 先把档位设成与 bitstream 一致的那一档（见上面检查单 ①）：
+::       不设 = 640x480/3,5；   set "VIGILENS_TIER=720p60" = 1280x720/3,8；   =1080p45 = 1920x1080/1,4
+set "VIGILENS_TIER=720p60"
+python board/bringup_check.py --bit system.bit --with-dma --frame fpga/sim/data_roi_720p/frames.bin
+python board/dma_test.py --bit system.bit --frames 300 --golden-gray fpga/sim/data_motion_720p60/gray.bin
 python board/hw_sw_compare.py --bit system.bit --data-root fpga/sim
+::    📌 hw_sw_compare 的 --data-root 现在锚到仓库根；但换成 720p/1080p 档时
+::       roi 与 motion 的目录名不是默认的 data/data_motion，需显式指到 data_roi_* / data_motion_*。
 ```
 
 **门限对照**（`fpga/report/m3_system_budget_v1.md` 第 5 节，9 条）：
