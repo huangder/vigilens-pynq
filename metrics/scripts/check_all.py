@@ -127,6 +127,9 @@ B_LINE_CHECKS = (
     ("check_b_line_thresholds.py", "B 线门控阈值一处定义 → /api/status → 前端兜底三处一致"),
     ("check_b_line_ws_disconnect.py", "B 线 /ws 断流兜底（发合法契约的 disconnected，序号不倒退）"),
     ("check_video_bypass.py", "旁路画面链路 + 契约未被污染（15 项）"),
+    # 年龄档案旁路：schema 铁律 + 基线纪律 + 数据库 provenance + 耦合模型方向 + 跨语言校验。
+    # 它与 check_frontend_contract 是同一个思路，只是对象换成了"年龄档案件"。
+    ("check_age_sidecar.py", "年龄档案旁路（年龄档案/收录/同龄基线比对 + Python↔JS 校验一致）"),
 )
 
 

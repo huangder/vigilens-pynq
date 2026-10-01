@@ -820,8 +820,8 @@
   function runSelftest() {
     var res = M.selfTest(20260910);
     if (res.ok) {
-      log("契约自检", "通过：检查 " + res.checked + " 项（六态各一帧 + 5 个坏帧必须被抓）", "#35d07f");
-      alert("契约自检通过 ✓\n\n检查 " + res.checked + " 项：\n· 六种状态的 mock 帧全部合法\n· 5 个故意构造的坏帧全部被校验器抓住\n\n（跨语言检查请跑：node frontend/mock.js --limit 6 | python metrics/scripts/check_frontend_contract.py -）");
+      log("契约自检", "通过：检查 " + res.checked + " 项（六态各一帧 + 5 个坏帧 + 年龄档案件 6 个生命周期态 + 5 个坏例必须被抓）", "#35d07f");
+      alert("契约自检通过 ✓\n\n检查 " + res.checked + " 项：\n· 六种状态的 mock 帧全部合法\n· 5 个故意构造的坏帧全部被校验器抓住\n· 年龄档案件（旁路载荷）：6 个生命周期态合法 + 5 个坏例被抓住\n\n（跨语言检查请跑：node frontend/mock.js --limit 6 | python metrics/scripts/check_frontend_contract.py -）");
     } else {
       log("契约自检", "失败：" + res.failures.join("；"), "#ff5d5d");
       alert("契约自检失败 ✗\n\n" + res.failures.join("\n"));

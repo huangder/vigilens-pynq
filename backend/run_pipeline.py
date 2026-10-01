@@ -44,28 +44,40 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from .age_contract import dumps as age_dumps
+    from .age_contract import validate_age_state
+    from .age_infer import AgeProfileStore
     from .behavior_metrics import BehaviorTracker
     from .capture import open_frame_source
     from .config import REPO_ROOT, load_config
     from .contract import new_frame
     from .decision import DecisionEngine
     from .face_landmark import make_landmarker
+    from .fatigue_coupling import CoupledRiskModel
+    from .fatigue_db import FatigueDB, load_reference
     from .quality import QualityScorer
-    from .publish import (FramePoster, PostError, PreviewPoster, VideoPusher,
-                          frame_url_from_ingest, full_url, preview_url)
+    from .publish import (FramePoster, PostError, PreviewPoster, SidecarPoster,
+                          VideoPusher, age_url_from_ingest, frame_url_from_ingest,
+                          full_url, preview_url)
     from .storage import MetricsStorage, write_snapshot
     from .vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 except ImportError:  # python backend/run_pipeline.py
     sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from age_contract import dumps as age_dumps
+    from age_contract import validate_age_state
+    from age_infer import AgeProfileStore
     from behavior_metrics import BehaviorTracker
     from capture import open_frame_source
     from config import REPO_ROOT, load_config
     from contract import new_frame
     from decision import DecisionEngine
     from face_landmark import make_landmarker
+    from fatigue_coupling import CoupledRiskModel
+    from fatigue_db import FatigueDB, load_reference
     from quality import QualityScorer
-    from publish import (FramePoster, PostError, PreviewPoster, VideoPusher,
-                         frame_url_from_ingest, full_url, preview_url)
+    from publish import (FramePoster, PostError, PreviewPoster, SidecarPoster,
+                         VideoPusher, age_url_from_ingest, frame_url_from_ingest,
+                         full_url, preview_url)
     from storage import MetricsStorage, write_snapshot
     from vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
 
@@ -187,6 +199,23 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--frame-id-offset", type=int, default=0,
                     help="帧号起点偏移（M2 连跑多段时必须用：契约要求 frame_id/ts 跨帧单调递增，"
                          "第二段从 0 重新开始会让 B 线趋势曲线的 frame_id 回退）")
+    # ---- 年龄分层疲劳对照（旁路功能：**不进冻结的 9 字段契约帧**）----------------
+    ap.add_argument("--age", action="store_true",
+                    help="启用年龄档案旁路：图像年龄推断（1 Hz 节流）+ 人脸收录判断 + "
+                         "同龄基线比对。产物写 --age-jsonl / --age-json，可选 --db 落库。"
+                         "缺省不加此开关时，本脚本行为与从前一致。")
+    ap.add_argument("--age-confirm", type=int, default=None, metavar="N",
+                    help="非交互地正式确认年龄（6~100）。确认后按用户要求**停用图像推测**。"
+                         "交互式确认走 B 线网页的 POST /api/age。"
+                         "命令行确认发生在逻辑时间 0 点，保证同一段回放可复现。")
+    ap.add_argument("--age-jsonl", default=None,
+                    help="年龄档案件逐帧追加（如 metrics/logs/age.jsonl）。"
+                         "**不是**契约帧，绝不写进 stream.jsonl")
+    ap.add_argument("--age-json", default=None,
+                    help="最新一份年龄档案件快照（如 metrics/logs/age.json）")
+    ap.add_argument("--db", dest="db_path", default=None,
+                    help="把本次测量写入年龄分层疲劳数据库（SQLite）。"
+                         "不给则只在内存里算比对、不落库")
     args = ap.parse_args(argv)
 
     cfg = load_config()
@@ -235,6 +264,72 @@ def main(argv: list[str] | None = None) -> int:
     # 带通复用冻结 FIR，滑窗填满后才可能出数（窗口长度 = config 的 window_seconds）。
     rppg = GreenRppg.from_config(cfg, fps=fps)
 
+    # ---- 年龄分层疲劳对照（旁路；缺省不加 --age 时这一整段都不存在）----------
+    # 设计要点见 docs/27：年龄档案件**不进**契约帧（那 9 个字段是冻结的），
+    # 只能走 --age-jsonl / --age-json / POST /api/age / SQLite 这四条旁路。
+    age_store: AgeProfileStore | None = None
+    couple: CoupledRiskModel | None = None
+    fatigue_db: FatigueDB | None = None
+    session_id: str | None = None
+    age_jsonl_fh = None
+    age_jsonl_path: Path | None = None
+    age_json_path: Path | None = None
+    age_posted = 0
+    age_compare_counts: Counter[str] = Counter()
+    sidecar_poster = None
+    if args.age:
+        norms = load_reference(cfg=cfg)
+        couple = CoupledRiskModel(cfg, norms)
+        # 会话号刻意**确定性**：同一段回放重复导入同一会话（INSERT OR REPLACE），
+        # 这样"再跑一次会不会多出一条脏数据"这个问题根本不会出现。
+        session_id = f"run-{Path(str(args.source)).stem or 'src'}-{fid_offset}"
+        if args.db_path:
+            fatigue_db = FatigueDB(REPO_ROOT / args.db_path if not Path(args.db_path).is_absolute()
+                                   else args.db_path, cfg=cfg)
+            fatigue_db.load_reference_into_db(norms)
+        age_store = AgeProfileStore(
+            cfg,
+            on_event=(lambda ev: fatigue_db.log_age_event(ev, session_id=session_id))
+            if fatigue_db is not None else None,
+            on_subject=(lambda su: fatigue_db.upsert_subject(su)) if fatigue_db is not None else None,
+        )
+        if args.age_jsonl:
+            age_jsonl_path = REPO_ROOT / args.age_jsonl
+            age_jsonl_path.parent.mkdir(parents=True, exist_ok=True)
+            age_jsonl_fh = age_jsonl_path.open("w", encoding="utf-8")
+        if args.age_json:
+            age_json_path = REPO_ROOT / args.age_json
+        say(f"年龄档案: {'启用' if age_store.enabled else '未启用（config.age_enabled=false）'}"
+            f"｜引擎 {age_store.engine.name if age_store.engine else 'none'}"
+            + ("（占位引擎，无精度证据）" if age_store.engine and age_store.engine.placeholder else "")
+            + f"｜参照基线 {norms.version}"
+            + (f"｜数据库 {args.db_path}" if fatigue_db is not None else "｜不落库"))
+        if age_store.engine is None:
+            say("[warn] 没有任何可用的年龄推断引擎（缺模型权重）—— 档案仍可用，"
+                "但 estimate 段会是 engine=none，前端显示『本次未做推断』。"
+                "缺权重时取权重：python metrics/scripts/fetch_age_model.py")
+        if args.age_confirm is not None:
+            # 命令行确认：发生在**逻辑时间 0 点**，因此同一段回放跑两次结果一致
+            # （交互式确认走 B 线网页，那条路径按墙上时钟记 confirmed_at，本就不可复现）。
+            age_store.set_manual(int(args.age_confirm), ts=0.0)
+            say(f"年龄确认: 命令行指定 {args.age_confirm} 岁 → 参照组 "
+                f"{age_store.profile['band']}，图像推测已停用（locked="
+                f"{age_store.profile['locked']}）")
+        if fatigue_db is not None:
+            fatigue_db.start_session(
+                session_id=session_id, started_at=0.0, fps=fps,
+                subject=age_store.profile.get("subject"),
+                age_years=age_store.profile.get("age_years"),
+                age_band=age_store.profile.get("band"),
+                age_source=age_store.profile.get("source"),
+                confirmed_by=age_store.profile.get("confirmed_by"),
+                engine=age_store.stats()["engine"],
+                engine_placeholder=age_store.stats()["engine_placeholder"],
+                landmark_source=lm_source, frame_source=desc,
+                provenance=("stub" if lm_source == "stub" else "live"),
+                reference_version=norms.version,
+                notes="run_pipeline --age 写入；provenance 由 landmark_source 判定")
+
     # M2（P5）：跨进程把真实帧推给 B 线。`auto` = 本机默认端口，省得记地址。
     poster: FramePoster | None = None
     if args.post:
@@ -278,6 +373,13 @@ def main(argv: list[str] | None = None) -> int:
     post_stopped = False     # 已停止后续推送（不做逐帧重试）
     preview_stopped = False
     preview_unavailable = False
+
+    # 年龄档案推送：地址从 --post 推导（同一台服务），失败**不改退出码**
+    # —— 理由与旁路画面一致：档案是给人看的解释，指标才是测量结果。
+    sidecar_poster: SidecarPoster | None = None
+    if args.age and poster is not None:
+        sidecar_poster = SidecarPoster(age_url_from_ingest(poster.url))
+        say(f"档案推送: {sidecar_poster.url}（失败只计数，不影响退出码）")
 
     def push(frame: dict, *, force: bool = False) -> None:
         """推一帧给 B 线。失败**不打断测量**（见文件头第 4 条）。
@@ -340,6 +442,47 @@ def main(argv: list[str] | None = None) -> int:
             store.write(clean)
             write_snapshot(json_out, clean)
             push(clean)
+
+            # ---- 年龄档案旁路（契约帧已经落盘/推送完毕，这里只动旁路产物）------
+            if age_store is not None and couple is not None:
+                # 顺序刻意如此：**先比对**（用本帧的指标）→ 再推进收录窗口 →
+                # 再（按 1 Hz 节流）做图像推断。这样 sidecar 里的 comparison 与
+                # 同一份契约帧严格同源，不会出现"档案比指标晚一帧"的错位。
+                cmp_block = couple.compare(
+                    behavior=clean["behavior"], quality=clean["quality"],
+                    face=clean["face"], band=age_store.effective_band(),
+                    status=clean["status"], frame_id=fid, ts=float(clean["ts"]))
+                age_compare_counts[cmp_block["risk_level"]] += 1
+                age_store.observe(frame_id=fid, ts=float(clean["ts"]), image=frame.image,
+                                  bbox=clean["face"]["bbox"],
+                                  quality_overall=float(clean["quality"]["overall"]),
+                                  face_visible=float(clean["face"]["visible"]))
+                # ⚠️ **必须先问 `inference_allowed()` 再调 `maybe_infer()`**：
+                # 年龄一经正式确认就停用图像推测（用户明确要求）。`maybe_infer` 在锁定后
+                # 若仍被调用，会**故意**把 inference_calls_after_lock 加一并让 schema 报错
+                # —— 那是给第三方调用方准备的绊线，不是给本文件的正常路径用的。
+                # （本文件首版就是没问就调，结果 --age-confirm 一开就整段红着结束。）
+                if age_store.inference_allowed():
+                    age_store.maybe_infer(frame_id=fid, logical_t=fid / fps, image=frame.image,
+                                          bbox=clean["face"]["bbox"], ts=float(clean["ts"]))
+                sidecar = age_store.sidecar(ts=float(clean["ts"]), frame_id=fid,
+                                           comparison=cmp_block)
+                errs = validate_age_state(sidecar)
+                if errs:
+                    # 不静默产出坏数据：直接抛，让这次运行红着结束（与 storage 同纪律）
+                    raise ValueError("年龄档案件不符合 age_contract：\n  - " + "\n  - ".join(errs))
+                if age_jsonl_fh is not None:
+                    age_jsonl_fh.write(age_dumps(sidecar) + "\n")
+                if age_json_path is not None:
+                    write_snapshot(age_json_path, sidecar)
+                if fatigue_db is not None:
+                    fatigue_db.add_frame(session_id, clean, commit=False)
+                    fatigue_db.add_comparison(session_id, fid, cmp_block)
+                    if n % 30 == 0:
+                        fatigue_db.conn.commit()
+                if sidecar_poster is not None and sidecar_poster.maybe_post(sidecar):
+                    age_posted += 1
+
             if preview_poster is not None and not preview_stopped:
                 jpeg = encode_preview_jpeg(frame.image, args.preview_jpeg_quality)
                 if jpeg is None:
@@ -405,6 +548,58 @@ def main(argv: list[str] | None = None) -> int:
     if vpusher is not None:
         vpusher.stop()
 
+    # ---- 年龄档案收尾：落库 + 关闭旁路文件 ------------------------------
+    age_summary: dict[str, Any] | None = None
+    if age_store is not None:
+        if age_jsonl_fh is not None:
+            age_jsonl_fh.close()
+            age_jsonl_fh = None
+        if fatigue_db is not None:
+            # 会话可能是在跑的过程中才完成收录 / 才被确认年龄的，因此收尾时把
+            # **最终**档案写回会话行（否则库里会留一个"当时没年龄"的会话，
+            # 而它其实是有年龄的 —— 那会让按年龄分组统计直接漏掉这一段）。
+            fatigue_db.update_session_age(
+                session_id, subject=age_store.profile.get("subject"),
+                age_years=age_store.profile.get("age_years"),
+                age_band=age_store.profile.get("band"),
+                age_source=age_store.profile.get("source"),
+                confirmed_by=age_store.profile.get("confirmed_by"),
+                engine=age_store.stats()["engine"],
+                engine_placeholder=age_store.stats()["engine_placeholder"])
+            fatigue_db.finish_session(
+                session_id, ended_at=float(last_frame["ts"]) if last_frame else 0.0,
+                summary={"status_counts": dict(status_counter),
+                         "logical_duration_s": round(n / fps, 2)})
+            # ⚠️ 取计数必须在 close() **之前**（关掉连接后再查会 ProgrammingError，
+            # 本文件首版就是踩了这个，摘要直接崩在最后一行）。
+            db_counts = fatigue_db.counts()
+            fatigue_db.close()
+        else:
+            db_counts = None
+        est = age_store.estimate
+        age_summary = {
+            "enabled": age_store.enabled,
+            "engine": age_store.stats()["engine"],
+            "engine_placeholder": age_store.stats()["engine_placeholder"],
+            "profile": dict(age_store.profile),
+            "enrollment_state": age_store.enrollment.get("state"),
+            "enrollment_samples": age_store.enrollment.get("samples"),
+            "enrollment_reason": age_store.enrollment.get("reason"),
+            "estimate": (est.to_estimate_block() if est is not None else None),
+            "inference_calls": age_store.inference_calls,
+            "inference_refused_locked": age_store.inference_refused_locked,
+            "risk_level_counts": dict(age_compare_counts),
+            "db": ({"path": str(args.db_path), "session_id": session_id,
+                    "counts": db_counts} if args.db_path else None),
+            "sidecar_post": sidecar_poster.stats() if sidecar_poster is not None else None,
+            "outputs": {"jsonl": str(age_jsonl_path) if age_jsonl_path else None,
+                        "json": str(age_json_path) if age_json_path else None},
+            "note": ("年龄推断只是建议，未经用户确认不得用于选择参照组；"
+                     "placeholder=true 的引擎（heuristic）无任何精度证据，不得引用其数值。"
+                     if age_store.engine and age_store.engine.placeholder else
+                     "年龄推断只是建议，未经用户确认不得用于选择参照组。"),
+        }
+
     elapsed = time.perf_counter() - t_start
     hist = last_frame["behavior"]
     summary = {
@@ -441,6 +636,8 @@ def main(argv: list[str] | None = None) -> int:
         # 旁路画面统计：刻意放在独立的键里，**不混进 post** ——
         # post 的 ok 参与退出码判定，画面不参与，两者混在一起会让人读错。
         "video": (vpusher.stats() if vpusher is not None else None),
+        # 年龄档案旁路（不进契约帧）：本次用了哪个引擎、档案到哪一步、风险档位分布
+        "age": age_summary,
         # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够）
         "rppg_window_samples": rppg.samples,
         "rppg_window_need": rppg.need,
@@ -480,6 +677,25 @@ def main(argv: list[str] | None = None) -> int:
               f"/ 丢弃 {v['dropped']}  → {v['url']}")
         if v["errors"]:
             print(f"            ⚠️ 画面有 {len(v['errors'])} 类错误（**不影响本次测量**）：{v['errors'][0]}")
+    if age_summary is not None:
+        prof = age_summary["profile"]
+        band_txt = prof.get("band") or "未定（按全人群兜底基线比对）"
+        print(f"年龄档案  : 引擎 {age_summary['engine'] or 'none'}"
+              + ("  ← 占位引擎，无精度证据" if age_summary["engine_placeholder"] else "")
+              + f"｜年龄 {prof.get('age_years')}（{band_txt}）｜已确认 {prof.get('confirmed')}"
+              + f"（by {prof.get('confirmed_by')}）｜锁定 {prof.get('locked')}")
+        print(f"人脸收录  : {age_summary['enrollment_state']}"
+              f"（样本 {age_summary['enrollment_samples']}）—— {age_summary['enrollment_reason']}")
+        print(f"同龄比对  : 风险档位分布 " + ("  ".join(f"{k}={v}" for k, v in
+              sorted(age_summary["risk_level_counts"].items())) or "（无）")
+              + "  ← unknown = 质量门控不过，**不报数字**（正确行为）")
+        if age_summary["db"]:
+            print(f"数据库    : {age_summary['db']['path']}（会话 {age_summary['db']['session_id']}，"
+                  f"{age_summary['db']['counts']}）")
+        if age_summary["sidecar_post"]:
+            sp = age_summary["sidecar_post"]
+            print(f"档案推送  : 成功 {sp['posted']} 次 / HTTP {sp['attempts']} 次 → {sp['url']}"
+                  + ("  ← **推送失败，已停止**" if sp["stopped_after_failure"] else ""))
 
     if args.summary:
         sp = REPO_ROOT / args.summary

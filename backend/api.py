@@ -10,6 +10,16 @@
     WS   /ws            1 帧/秒推送
     GET  /              直接托管 frontend/（省掉跨域与 file:// 的麻烦）
 
+**年龄档案旁路（不是契约的一部分，年龄分层疲劳功能用）**：
+    GET  /api/age               当前档案件（本地决定 + A 线观测）
+    POST /api/age               A 线推观测（body 含 schema=age-v1）或用户做决定（body 含 action）
+    GET  /api/age/events        档案事件审计轨迹（记录功能）
+    GET  /api/fatigue_db/summary 测量库汇总（库不存在时如实返回 exists=false）
+
+    为什么年龄也走旁路：契约 §1 把指标帧冻结为恰好 9 个顶层字段，加字段就是非法帧。
+    年龄档案与 `triggers`、旁路画面是同一个范式 —— **旁路不污染冻结契约**。
+    优先级刻意写死：**用户的决定 > 流水线的观测**（见 `age_sidecar()` 的注释）。
+
 **旁路视频（不是契约的一部分，C 线 OpenMV 链路用）**：
     POST /api/frame         A 线（或串口收帧桥）把当前画面 JPEG（原始字节）推进来
     GET  /api/video_status  画面源状态（带过期判定，前端据此决定是否显示真实画面）
@@ -319,6 +329,66 @@ def _mock_pump(hz: float) -> None:
             time.sleep(period)
 
 
+# ---------------------------------------------------------------------------
+# 年龄档案（旁路；与 triggers / 旁路画面同一范式，**不进 9 字段契约帧**）
+# ---------------------------------------------------------------------------
+# 两个数据来源在这里汇合，优先级刻意写死为：**用户的决定 > 流水线的观测**。
+#   · A 线（run_pipeline --age）把档案件 POST 到 /api/age（body 里带 schema=age-v1）→ 观测；
+#   · 用户在网页上输入/确认/点"接受推断" → POST /api/age（body 里带 action）→ 决定。
+# 为什么不是"以最后到达者为准"：那会让一个还在跑的测量进程把用户刚确认的年龄覆盖掉，
+# 而"一次正式确认后不再采用年龄推测"这条承诺会当场失效。
+_latest_age: dict[str, Any] | None = None
+_AGE_STORE: Any = None          # 懒建：AgeProfileStore（不需要 DB 也能工作）
+
+
+def age_store() -> Any:
+    """进程内单例。懒建的理由：没装 fastapi 的场景（离线 mock）不该 import 它。"""
+    global _AGE_STORE
+    if _AGE_STORE is None:
+        try:
+            from .age_infer import AgeProfileStore
+        except ImportError:
+            from age_infer import AgeProfileStore
+        _AGE_STORE = AgeProfileStore(load_config())
+    return _AGE_STORE
+
+
+def ingest_age_state(doc: dict, *, source: str = "ingest") -> dict:
+    """收下 A 线推来的年龄档案件（只保留最新一份，并把观测同步进本地 store）。"""
+    global _latest_age
+    with _lock:
+        _latest_age = doc
+    try:
+        age_store().apply_remote_state(doc)
+    except Exception:  # noqa: BLE001 —— 同步失败不许影响"收下这份档案件"
+        pass
+    return {"ok": True, "source": source, "frame_id": doc.get("frame_id")}
+
+
+def age_sidecar() -> dict:
+    """对外发布的档案件 = 本地决定 + 远端观测（字段级合并规则见上）。
+
+    没有收到任何 A 线档案件时，返回本地 store 的骨架 —— 这也让"B 线单独起服务"
+    的离线演示与"接了 A 线"的集成态走**同一条读取路径**，前端不需要两套逻辑。
+    """
+    store = age_store()
+    local = store.sidecar(ts=time.time(), frame_id=-1)
+    with _lock:
+        remote = _latest_age
+    if remote is None:
+        return local
+    merged = dict(remote)
+    # profile 是"用户的决定"：本地一旦有决定（已确认 / 已收录主体），就以本地为准。
+    if local["profile"]["confirmed"] or local["profile"].get("subject"):
+        merged["profile"] = local["profile"]
+    # 其余三段是"流水线的观测"：以远端为准（本地骨架没有真实观测）。
+    for key in ("enrollment", "estimate", "comparison"):
+        if remote.get(key) is not None:
+            merged[key] = remote[key]
+    merged["privacy"] = remote.get("privacy") or local["privacy"]
+    return merged
+
+
 def disconnect_frame(last: dict[str, Any] | None) -> dict[str, Any]:
     """断流兜底帧：**完整契约帧**，且序号不倒退。
 
@@ -389,6 +459,7 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
             "frame": latest,
             "triggers": triggers,
             "preview": preview,
+            "age": age_sidecar(),
             "thresholds": thresholds(),
             "server_time": round(time.time(), 3),
         }
@@ -537,6 +608,100 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
             return Response(status_code=304, headers=headers)
         return Response(content=packet["jpeg"], media_type="image/jpeg", headers=headers)
 
+    # ---- 年龄档案旁路（**不进契约帧**：契约帧永远只有那 9 个字段）------------
+    @app.get("/api/age")
+    def api_age() -> dict:
+        """当前档案件：本地决定 + A 线观测（合并规则见 `age_sidecar()`）。"""
+        return {"ok": True, "age": age_sidecar(), "server_time": round(time.time(), 3)}
+
+    @app.post("/api/age")
+    async def api_age_post(payload: dict) -> JSONResponse:
+        """两个用途共用一个端点（靠 body 形状区分，不靠 URL）：
+
+        · **A 线推观测**：body 是完整档案件（含 `schema: age-v1`）→ 校验后收下；
+        · **用户做决定**：body 是 `{"action": ..., ...}` → 改本地档案并留事件。
+
+        为什么共用一个端点：两者都是"年龄档案的写入"，分成两个 URL 只会让人
+        把观测推到决定端点上去（症状：用户的确认被静默忽略，极难查）。
+        """
+        try:
+            from .age_contract import AGE_SCHEMA_VERSION, validate_age_state
+        except ImportError:
+            from age_contract import AGE_SCHEMA_VERSION, validate_age_state
+
+        store = age_store()
+        if payload.get("schema") == AGE_SCHEMA_VERSION:
+            errs = validate_age_state(payload)
+            if errs:
+                return JSONResponse(status_code=422, content={"ok": False, "errors": errs})
+            return JSONResponse(content=ingest_age_state(payload, source="a_line"))
+
+        action = payload.get("action")
+        ts = time.time()
+        try:
+            if action == "set_manual":
+                age = payload.get("age_years")
+                if isinstance(age, bool) or not isinstance(age, (int, float)):
+                    raise ValueError("set_manual 需要整数 age_years")
+                age = int(age)
+                if not (0 <= age <= 120):
+                    raise ValueError(f"年龄必须在 0~120，收到 {age}")
+                store.set_manual(age, ts=ts)
+            elif action == "accept_estimate":
+                store.accept_estimate(ts=ts)
+            elif action == "reject_estimate":
+                store.reject_estimate(ts=ts)
+            elif action == "enroll_decision":
+                accept = payload.get("accept")
+                if not isinstance(accept, bool):
+                    raise ValueError("enroll_decision 需要布尔 accept")
+                store.enroll_decision(accept, ts=ts)
+            elif action == "reset":
+                store.reset(ts=ts)
+            else:
+                return JSONResponse(status_code=422, content={
+                    "ok": False,
+                    "errors": [f"未知 action：{action!r}（可用：set_manual / accept_estimate / "
+                               f"reject_estimate / enroll_decision / reset）"]})
+        except ValueError as e:
+            return JSONResponse(status_code=422, content={"ok": False, "errors": [str(e)]})
+        event = store.events[-1] if store.events else None
+        return JSONResponse(content={"ok": True, "age": age_sidecar(), "event": event})
+
+    @app.get("/api/age/events")
+    def api_age_events(limit: int = 50) -> dict:
+        """档案事件（记录功能）：本次服务进程内的审计轨迹。"""
+        store = age_store()
+        evs = store.events[-max(1, min(limit, 500)):]
+        return {"ok": True, "count": len(evs), "events": evs}
+
+    @app.get("/api/fatigue_db/summary")
+    def api_fatigue_db_summary() -> Any:
+        """测量库汇总。库不存在时**如实返回 exists=false**，而不是报 500。"""
+        try:
+            from .fatigue_db import FatigueDB
+        except ImportError:
+            from fatigue_db import FatigueDB
+        path = REPO_ROOT / str(cfg.get("age_db_path")
+                               or "data/fatigue_db/vigilens_fatigue.sqlite3")
+        if not path.exists():
+            return {"ok": True, "db": {
+                "path": str(path), "exists": False, "counts": {}, "by_band": {},
+                "by_provenance": {}, "reference_version": None, "reference_rows": 0,
+                "note": "数据库尚未创建。跑一次：python backend/run_pipeline.py "
+                        "--source synthetic --pattern blink --seconds 30 --stub "
+                        "--age --db data/fatigue_db/vigilens_fatigue.sqlite3"},
+                "recent": []}
+        try:
+            with FatigueDB(path, cfg=cfg) as db:
+                summary = db.summary()
+                summary["exists"] = True
+        except Exception as e:  # noqa: BLE001 —— 读库失败要让人看得见原因
+            return JSONResponse(status_code=500,
+                                content={"ok": False, "errors": [f"读取数据库失败：{e}"]})
+        recent = summary.pop("recent", [])
+        return {"ok": True, "db": summary, "recent": recent}
+
     @app.websocket("/ws")
     async def ws_endpoint(websocket: WebSocket) -> None:
         await websocket.accept()
@@ -590,6 +755,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[api] http://{args.host}:{args.port}/          ← 仪表盘（托管 frontend/）")
     print(f"[api] http://{args.host}:{args.port}/api/status")
     print(f"[api] http://{args.host}:{args.port}/api/preview ← 同源 JPEG 旁路")
+    print(f"[api] http://{args.host}:{args.port}/api/age     ← 年龄档案旁路（GET 读 / POST 决定）")
+    print(f"[api] http://{args.host}:{args.port}/api/fatigue_db/summary ← 测量库汇总")
     print(f"[api] http://{args.host}:{args.port}/video.mjpg ← 旁路画面（需 --push-video 或串口收帧桥）")
     print(f"[api] ws://{args.host}:{args.port}/ws           ← 1 帧/秒推送")
     print(f"[api] 数据源：{'mock（B 线独立开发）' if not args.no_mock else 'ingest（M2 集成）'}")

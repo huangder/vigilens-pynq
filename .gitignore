@@ -106,6 +106,17 @@ metrics/evidence/*.tmp
 # HLS 构建失败标记（vitis-run 会在 fpga/ 下留一个 .hls.failed）
 fpga/.hls.failed
 
+# ---- A 线：年龄分层疲劳功能的产物（docs/28）--------------------------------
+# **必须入库**（不要在上面加通配）：data/reference/age_bands.json（带出处的参照基线）、
+#   data/fatigue_db/schema.sql（库结构，供评审查表）。
+# **不入库**：
+#   · 年龄模型权重（体积大、许可见模型页，用 metrics/scripts/fetch_age_model.py 取）；
+#   · SQLite 库本体 —— 它含**个体测量数据与人脸签名**（虽是不可逆签名，仍属个人信息）。
+data/models/age/
+data/fatigue_db/*.sqlite3
+data/fatigue_db/*.sqlite3-wal
+data/fatigue_db/*.sqlite3-shm
+
 # 自检/临时脚本产物（下划线开头 = 本机临时，不是证据，不入库）
 metrics/logs/_*
 metrics/evidence/_pytest_tmp/

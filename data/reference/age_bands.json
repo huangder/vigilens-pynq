@@ -1,0 +1,210 @@
+{
+  "version": "age-bands-v1",
+  "checked_on": "2026-10-01",
+  "scenario_default": "reading",
+  "maintainer": "知倦 / VigiLens 共享（改动走 docs: 前缀；数值必须先有出处）",
+
+  "notes": [
+    "【这个文件是什么】年龄分层疲劳对照里「同龄人的典型范围」的唯一来源。",
+    "【纪律 1】每条数值必须带 source（URL / DOI / 文献）与 confidence（已验证 / 推测 / 不确定）。",
+    "【纪律 2】没核实到的一律**不填数字**（low/high/typical/scale 全为 null 或直接不写该指标），",
+    "          代码在找不到可用基线时会跳过该指标并如实输出「无可用基线」，绝不借用别组的数字。",
+    "【纪律 3】`bands` 段才是基线；`evidence` 段是**证据**（别的场景/别的口径下测到的数字），",
+    "          只用于解释权重与判据的来由，代码**不许**拿它当基线。",
+    "【纪律 4】引用本项目结论时必须同时说明场景（`scenario`）与测量口径 ——",
+    "          眨眼率的场景差异（阅读 vs 交谈）比年龄差异大得多（Doughty 2001）。",
+    "【本次的否定结论】公开数据集里**没有**「既带困倦标注、又带受试者年龄」的数据集：",
+    "          MRL Eye 官方标注项逐条列出（含 gender）但**无 age**；CEW 无 age；",
+    "          DMD 的年龄标注未核实且许可是 CC BY-NC-ND 4.0。",
+    "          ⇒ 年龄分层的疲劳基线**只能自建采集**（协议见 docs/27 §7），本文件因此只放",
+    "            经得起复核的少量数值，其余留空并写明缺口。",
+    "【口径差异，必须一起说】Dinges & Grace 1998 描述 PERCLOS 时强调它反映 slow eyelid",
+    "          closures（droops）**而不是 blinks**；本项目 behavior_metrics.py 的 PERCLOS 是",
+    "          「EAR 低于阈值的时间占比」，**包含快速眨眼**。两者不等价，引用时不得混用。"
+  ],
+
+  "bands": {
+    "global": {
+      "blink_rate_per_min": {
+        "unit": "1/min",
+        "low": 1.4,
+        "high": 14.4,
+        "typical": 7.9,
+        "scale": 6.5,
+        "source": "Doughty MJ, Optom Vis Sci 2001;78(10):712-725, DOI 10.1097/00006324-200110000-00011（题录已核：reading-SEBR 95% 参考带 1.4~14.4 eyeblinks/min）",
+        "confidence": "已验证",
+        "notes": "场景口径 = reading（桌面/阅读姿态）。typical 取区间中点、scale 取半宽 —— 这是**算术约定**，不是原文给出的标准差。原文明确反对脱离场景给单一眨眼率值。原文另有 primary gaze 8.0~21.0、conversation 10.5~32.5 两条参考带（改 age_scenario 时应换用对应带，本表暂只落 reading 一条）。"
+      },
+      "perclos": {
+        "unit": "ratio",
+        "low": null,
+        "high": null,
+        "typical": null,
+        "scale": null,
+        "source": null,
+        "confidence": "不确定",
+        "notes": "**没有可用的桌面场景 PERCLOS 基线**。可核实的只有：(a) Dinges & Grace 1998 (FHWA-MCRT-98-006) 把 PERCLOS 定义为『一分钟内眼睛至少闭合 80% 的时间占比』（Wierwille 1994 的驾驶模拟研究）；(b) 常被引用的 0.15/0.25/0.40 三级告警线**追不到一手出处**（多组检索只得到二手转述）。因此这里不填数字，代码退化为使用 config.yaml 的 perclos_warning 并在结果里标注『⚠️ 占位值』。补法见 evidence.perclos_threshold_provenance。"
+      },
+      "long_close_count": {
+        "unit": "1",
+        "low": null, "high": null, "typical": null, "scale": null,
+        "source": null,
+        "confidence": "不确定",
+        "notes": "无公开的同场景长闭眼次数基线。本项目用 config.yaml 的 fatigue_long_close_count 作为阈值（占位值）。Cai 2021 的 LEC rate 是**驾驶场景 + 眼动仪口径**，见 evidence.age_dependent_ocular_sensitivity，不得直接当基线。"
+      },
+      "yawn_count": {
+        "unit": "1",
+        "low": null, "high": null, "typical": null, "scale": null,
+        "source": null,
+        "confidence": "不确定",
+        "notes": "无公开基线。用 config.yaml 的 fatigue_yawn_count（占位值）。哈欠的个体差异极大，且与说话/进食等行为混淆，标定需要带视频标注的素材（见 docs/27 §7 采集协议）。"
+      }
+    },
+
+    "young_adult": {
+      "blink_rate_per_min": {
+        "unit": "1/min",
+        "low": null, "high": null, "typical": null, "scale": null,
+        "source": "Bentivoglio AR et al., Mov Disord 1997;12(6):1028-1034, DOI 10.1002/mds.870120629（原文：\"No age-related differences were found.\"）",
+        "confidence": "已验证",
+        "notes": "**刻意留空**：文献不支持按年龄分眨眼率。Bentivoglio 1997（n=150，5~87 岁）未发现年龄差异；Sun 1997 (IOVS 38(1):92-99) 亦报告 blink rate 无变化（但幅度/峰值速度随年龄下降）。本组因此回落到 global 基线。"
+      }
+    },
+
+    "teen": {
+      "blink_rate_per_min": {
+        "unit": "1/min",
+        "low": null, "high": null, "typical": null, "scale": null,
+        "source": null,
+        "confidence": "不确定",
+        "notes": "青少年段没有可核实的静息/阅读场景眨眼率基线（检索到的年龄分层研究以成人为主）。留空，回落 global。"
+      }
+    },
+
+    "older_adult": {
+      "perclos": {
+        "unit": "ratio",
+        "low": null, "high": null, "typical": null, "scale": null,
+        "source": "Cai AWT et al., Sci Rep 2021;11:21561, DOI 10.1038/s41598-021-99133-y（CC BY，已读全文 Table 3）",
+        "confidence": "已验证",
+        "notes": "**刻意留空，但这条是本次最重要的发现**：同一份研究里，睡眠剥夺后**只有年轻组的眼部指标升高**（PERCLOS 3.17%→5.48%, p=0.003；长闭眼率 4.43→14.63/15min, p=0.007），老年组（50~65 岁）的 PERCLOS 3.51%→3.85% **不显著**（p=0.437）。这意味着对老年用户套用统一 PERCLOS 阈值会**系统性漏报** —— 所以本组不给一个『老年 PERCLOS 基线』，而是通过 config.yaml 的 couple_eye_sensitivity_older **下调眼部证据权重**、并由非眼部证据补位。数值详情见 evidence.age_dependent_ocular_sensitivity。"
+      },
+      "blink_rate_per_min": {
+        "unit": "1/min",
+        "low": null, "high": null, "typical": null, "scale": null,
+        "source": "Sforza C et al., Ophthalmic Physiol Opt 2008;28(4):345-353",
+        "confidence": "推测",
+        "notes": "与『眨眼率无年龄差异』**存在不一致**：Sforza 2008 报告女性 19 vs 男性 11 blinks/min，且老年女性比年轻女性眨眼更频繁。按 AGENTS.md §3，此处**如实登记冲突、不自行拍板**；因结论冲突，本组不设数值。"
+      }
+    }
+  },
+
+  "evidence": {
+    "age_dependent_ocular_sensitivity": {
+      "claim": "睡眠剥夺后，眼部困倦指标（眨眼时长、长闭眼次数、PERCLOS）在**年轻成人**身上显著升高，而在**老年工作者**身上不升高；但老年人的驾驶损害仍然出现。因此统一的眼动阈值会对老年用户系统性漏报（false negative），且老年人的损害可能不是『睡着』而是 inattention/distraction。",
+      "applies_to_bands": ["older_adult", "middle_aged"],
+      "source": "Cai AWT, Manousakis JE, Singh B, et al. \"On-road driving impairment following sleep deprivation differs according to age.\" Sci Rep 2021;11:21561. DOI 10.1038/s41598-021-99133-y. PMC8566466（CC BY 4.0）",
+      "confidence": "已验证",
+      "verified_by": "本会话直接读取 PMC 全文（Abstract + Table 3），2026-10-01",
+      "design": "实车闭环赛道 + 29 h 完全睡眠剥夺；年轻组 16 人（24.26±3.15 岁，21~33）vs 老年组 17 人（57.31±5.17 岁，50~65）",
+      "numbers_table3_mean_sd": {
+        "perclos_pct_time_eyes_ge_80pct_closed_per_min": {
+          "younger_well_rested": 3.17, "younger_sleep_deprived": 5.48,
+          "older_well_rested": 3.51, "older_sleep_deprived": 3.85,
+          "significance": "condition p=0.003；age p=0.437；condition×age p=0.033（只有年轻组显著升高）"
+        },
+        "blink_duration_ms": {
+          "younger_well_rested": 163.21, "younger_sleep_deprived": 240.66,
+          "older_well_rested": 195.47, "older_sleep_deprived": 213.29,
+          "significance": "condition p=0.003；condition×age p=0.038"
+        },
+        "long_eye_closure_rate_per_15min": {
+          "younger_well_rested": 4.43, "younger_sleep_deprived": 14.63,
+          "older_well_rested": 5.05, "older_sleep_deprived": 7.20,
+          "significance": "condition p=0.007"
+        },
+        "blink_rate_per_min": {
+          "younger_well_rested": 15.19, "younger_sleep_deprived": 17.04,
+          "older_well_rested": 13.36, "older_sleep_deprived": 13.21,
+          "significance": "condition p=0.551；age p=0.268 —— **两组都不显著**，与『眨眼率不敏感』一致"
+        }
+      },
+      "driving_impairment_still_present": "睡眠剥夺后老年组车道偏离仍增加 3.5×（p=0.008），但近碰撞事件无显著增加（3/34）；年轻组 7.37× 车道偏离、11× 近碰撞风险。",
+      "why_not_used_as_baseline": "场景是**实车驾驶**、PERCLOS 口径是『眼睛闭合 ≥80% 的时间占比』，与本项目的**桌面专注场景 + EAR 阈值口径**都不同。把它当基线会引入系统性偏差，因此只作为**权重方向的依据**。",
+      "independent_corroboration": "Abe T. et al., Sleep Advances 2023;4(1):zpad006（CC BY）—— 把 \"in older adults\" 明确列为 PERCLOS 不随困倦操纵变化的情形之一。"
+    },
+
+    "blink_rate_pitfalls": {
+      "claim": "眨眼率的**场景**与**性别**差异大于年龄差异；引用眨眼率必须同时声明场景。",
+      "source": "Doughty MJ, Optom Vis Sci 2001;78(10):712-725（reading 1.4~14.4 / primary gaze 8.0~21.0 / conversation 10.5~32.5 blinks/min，原文结论：\"It is inappropriate to simply state a value for spontaneous eyeblink rate\"）",
+      "confidence": "已验证",
+      "verified_by": "本会话经 Europe PMC REST API 读取题录与摘要原文，2026-10-01",
+      "conflicts_registered": [
+        "Bentivoglio 1997（n=150，5~87 岁）：未发现年龄差异。",
+        "Sun 1997 (IOVS 38(1):92-99)：blink rate 无年龄变化，但幅度/峰值速度随年龄下降。",
+        "Sforza 2008：老年女性眨眼多于年轻女性（与上两条不一致）。"
+      ],
+      "consequence_for_this_project": "config.yaml 的 age_scenario 必须写明场景（本项目取 reading），且**不按年龄分眨眼率**。"
+    },
+
+    "perclos_threshold_provenance": {
+      "claim": "PERCLOS 的定义可溯源；但常被引用的 0.15 / 0.25 / 0.40 三级告警阈值**未能追到一手出处**。",
+      "confirmed_part": "Dinges DF, Grace R. \"PERCLOS: A valid psychophysiological measure of alertness as assessed by psychomotor vigilance.\" FHWA-MCRT-98-006 (1998)（ROSA P 官方落地页已读）：PERCLOS 源自 1994 年的驾驶模拟研究，定义为『一分钟内眼睛至少闭合 80% 的时间占比』，并指出它反映 slow eyelid closures (\"droops\") 而**不是** blinks。",
+      "unverified_part": "0.15 / 0.25 / 0.40 三级线只找到二手转述（Trejo 2007 的转述、综述中的表格）。待走线索：NHTSA DOT HS 808 640。",
+      "consequence_for_this_project": "config.yaml 的 perclos_warning=0.25 已标『⚠️ 占位值』，**不得**在任何报告中写成『国际标准阈值』。"
+    },
+
+    "perclos_definition_mismatch": {
+      "claim": "本项目的 PERCLOS 与文献口径不等价。",
+      "detail": "本项目 behavior_metrics.py 统计『EAR 低于 ear_close_threshold 的时间占比』，**包含快速眨眼**；文献口径针对慢速闭眼/微睡眠（droops）并采用 80% 闭合判据。",
+      "consequence_for_this_project": "所有引用 PERCLOS 数值的地方必须一并声明口径；是否排除快速眨眼是一个**显式的设计决定**，当前实现未排除（见 docs/27 §6 未验证清单）。",
+      "source": "同上 FHWA-MCRT-98-006",
+      "confidence": "已验证（口径差异部分）"
+    },
+
+    "no_public_age_labelled_fatigue_dataset": {
+      "claim": "本次检索**没有找到**任何『既带困倦/疲劳标注、又带受试者年龄』的公开数据集 ⇒ 年龄分层疲劳基线只能自建。",
+      "confidence": "已验证（就本次检索范围而言；是**否定结论**，见 docs/27 的诚实边界）",
+      "checked_datasets": [
+        {"name": "MRL Eye Dataset", "url": "https://mrl.cs.vsb.cz/eyedataset.html", "age_labels": false, "note": "官方逐条列出 8 个标注项（含 gender），**无 age**；84,898 张红外眼图 / 37 人。"},
+        {"name": "CEW (Closed Eyes in the Wild)", "url": "http://parnec.nuaa.edu.cn/xtan/data/ClosedEyeDatabases.html", "age_labels": false, "note": "2,423 张（1,192 闭眼 + 1,231 睁眼，取自 LFW）；无 age；许可禁止转发下载链接。"},
+        {"name": "DMD (Driver Monitoring Dataset)", "url": "https://dmd.vicomtech.org/", "age_labels": null, "note": "许可 CC BY-NC-ND 4.0、仅学术、18+；年龄标注未核实。ND+NC 双限制需进合规风险表。"},
+        {"name": "Adience", "url": "https://talhassner.github.io/home/projects/Adience/Adience-data.html", "age_labels": true, "note": "26,580 张 / 2,284 人 / 8 档；⚠️ 官方档位写作 8-13 与 60-，而 OpenCV/Levi-Hassner 模型输出写作 8-12 与 60-100 —— **两套口径不一致**，本项目以模型口径为准并已在 age_contract.CV_AGE_BANDS 注明。"},
+        {"name": "NTHU-DDD / UTA-RLDD / DROZY / ZJU / YawDD", "age_labels": null, "note": "本次**未核实**（检索配额中途耗尽，HTTP 429），不得引用其年龄标注情况。"}
+      ]
+    },
+
+    "age_estimation_models": {
+      "claim": "可在离线 ARM CPU 上跑的年龄估计里，本项目选定 Levi & Hassner 8 档 Caffe 模型为默认引擎。",
+      "chosen": {
+        "name": "Levi & Hassner 8-band Caffe (OpenCV DNN age_net)",
+        "source": "Gil Levi, Tal Hassner, \"Age and Gender Classification using Convolutional Neural Networks\", CVPR Workshops 2015；权重与 prototxt 由作者项目页提供，OpenCV DNN 原生支持 readNetFromCaffe。",
+        "why": "输出 8 档正好对齐分层需求；OpenCV 本机已装（4.11.0），无需新增推理框架；作者官方下载通道可用（GitHub 在本机 DNS 不可达，需注意取权重的途径）。",
+        "input": "227×227，均值 (78.4263377603, 87.7689143744, 114.895847746)（本项目 backend/age_infer.py 按此实现）",
+        "confidence": "已验证（模型口径与输入规格）；权重可获取性未在本机验证"
+      },
+      "alternatives": [
+        {"name": "SSR-Net", "source": "Niu Z. et al., IJCAI 2018（论文 PDF 已读）", "note": "模型 0.32 MB —— 本次唯一有一手数字支撑的嵌入式可行体积；**权重许可与可获取性未知**，未采用。", "confidence": "已验证（体积）/ 不确定（许可）"},
+        {"name": "InsightFace genderage", "note": "权重为非商业研究用途（MIT 仅覆盖代码）—— 本项目为竞赛原型，需谨慎。", "confidence": "推测"},
+        {"name": "DeepFace / MiVOLO / DEX", "note": "DeepFace 主干约 134M 参数；MiVOLO 依赖人脸+人体双输入（本项目只有脸）；DEX 未核实。均不采用。", "confidence": "推测"}
+      ],
+      "accuracy_reporting_discipline": [
+        "报告年龄精度必须同时给出：基准数据集 + 输入分辨率 + 指标定义。",
+        "可引用的正例：Jamo 2025（arXiv:2511.14689，CC BY，已读）在 IMDB-Clean 1000 张图、224×224 下 MAE = 10.83 岁（DeepFace）/ 7.46 岁（InsightFace）。",
+        "**禁止**的写法：DeepFace 官方宣称的『±4.65 岁』—— 未指明数据集，等于没有基准。",
+        "本项目的年龄推断**没有任何**在本机/本场景下的精度数字，因此 estimate 段一律标 placeholder/未标定，只作建议。"
+      ]
+    },
+
+    "self_report_scales": {
+      "claim": "疲劳/困倦的地面真值（ground truth）建议用标准化量表采集，便于后续标定。",
+      "scales": [
+        {"name": "Karolinska Sleepiness Scale (KSS)", "range": "1~9", "source": "Åkerstedt & Gillberg；锚点原文见宾州州立大学公开章节 PDF（本次已读）", "confidence": "推测", "note": "锚点措辞请以原文为准；本次未逐字复核，故标『推测』。"},
+        {"name": "Stanford Sleepiness Scale (SSS)", "source": "Hoddes E. et al., Psychophysiology 1973;10(4):431-436", "confidence": "推测", "note": "题录已核，**锚点措辞未核实**。"},
+        {"name": "Chalder Fatigue Scale", "source": "Chalder T. et al., J Psychosom Res 1993;37(2):147-153", "confidence": "推测", "note": "题录已核，条目与计分未核实。"},
+        {"name": "Fatigue Severity Scale (FSS)", "source": "Krupp LB et al., Arch Neurol 1989;46(10):1121-1123", "confidence": "推测", "note": "题录已核，锚点未核实。"}
+      ],
+      "consequence_for_this_project": "docs/27 §7 的采集协议要求每段 session 记录 KSS 自评 + 场景 + 年龄，作为将来标定耦合模型权重的依据。"
+    }
+  }
+}

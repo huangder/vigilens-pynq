@@ -42,7 +42,13 @@ FALLBACK: dict[str, Any] = {
     "light_score_min": 0.5,
     "motion_score_max": 0.35,
     "light_target": 0.5,
-    "motion_thresh_gray": 25,
+    "motion_thresh_gray": 16,   # ⚠️ 2026-10-01 修正：此处原为 25（占位残留），
+                                #   与 config.yaml 的 16 不一致 —— 而契约 §3.3 冻结值、
+                                #   HLS `motion_quality` 寄存器默认值、以及
+                                #   metrics/scripts/check_motion_golden.py 的黄金参考
+                                #   全都是 16。后果是"没装 PyYAML 的机器"会按 25 算运动分，
+                                #   与黄金参考对不上却看不出原因（正是本文件头部警告的静默降级）。
+                                #   依据：config.yaml 第 43~48 行 + docs/interface.md §5.4。
     "motion_score_gain": 4.0,
     "quality_weights": {"light": 0.5, "motion": 0.3, "face": 0.2},
     "fatigue_yawn_count": 2,
@@ -57,6 +63,43 @@ FALLBACK: dict[str, Any] = {
     "video_push_hz": 8.0,
     "video_jpeg_quality": 80,
     "video_max_width": 640,
+    # ---- 年龄档案旁路（config.yaml 同名键；不是契约的一部分）----
+    # 与上面 fpga/motion_thresh_gray 同一纪律：这里是 config.yaml 的**副本**，
+    # 改 config.yaml 必须同步改这里，否则没装 PyYAML 的机器会静默按旧值跑。
+    "age_enabled": True,
+    "age_infer_hz": 1.0,
+    "age_engine_order": ["opencv_caffe", "heuristic"],
+    "age_model_dir": "data/models/age",
+    "age_bands_path": "data/reference/age_bands.json",
+    "age_db_path": "data/fatigue_db/vigilens_fatigue.sqlite3",
+    "age_enroll_window_s": 20.0,
+    "age_enroll_min_samples": 12,
+    "age_enroll_min_quality": 0.65,
+    "age_enroll_restart_frames": 3,
+    "age_signature_dim": 16,
+    "age_signature_match_max_distance": 0.35,
+    "age_stores_face_image": False,
+    "age_confirm_locks_inference": True,
+    "couple_prior_logit": -2.2,
+    "couple_gain_perclos": 1.6,
+    "couple_gain_long_close": 1.2,
+    "couple_gain_yawn": 1.0,
+    "couple_gain_blink_low": 0.9,
+    "couple_gain_trend": 0.8,
+    "couple_interaction_perclos_longclose": 0.7,
+    "couple_interaction_perclos_blinksupp": 0.5,
+    "couple_weight_floor": 0.15,
+    "couple_clip": 3.0,
+    "couple_memory_alpha": 0.25,
+    "couple_risk_medium": 0.45,
+    "couple_risk_high": 0.70,
+    # ---- 年龄 × 指标耦合（依据见 config.yaml 同名键的注释与 docs/27）----
+    "age_scenario": "reading",
+    "couple_eye_sensitivity_default": 1.0,
+    "couple_eye_sensitivity_older": 0.5,
+    "couple_non_eye_sensitivity_older": 1.2,
+    "couple_gain_pose_drift": 0.5,
+    "couple_trend_ref_per_min": 0.10,
     "fpga": {
         "device": "xc7z020clg400-1",
         "clock_ns": 10,

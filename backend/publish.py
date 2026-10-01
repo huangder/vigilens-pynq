@@ -47,14 +47,17 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from .age_contract import validate_age_state
     from .contract import validate_frame
 except ImportError:  # python backend/publish.py
     sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from age_contract import validate_age_state
     from contract import validate_frame
 
 DEFAULT_INGEST_PATH = "/api/ingest"
 DEFAULT_PREVIEW_PATH = "/api/preview"
 DEFAULT_FRAME_PATH = "/api/frame"
+DEFAULT_AGE_PATH = "/api/age"
 _EPS = 1e-9
 
 
@@ -340,6 +343,80 @@ def frame_url_from_ingest(ingest_url: str) -> str:
     if "/" in tail:
         base = base.rsplit("/", 1)[0]
     return base.rstrip("/") + DEFAULT_FRAME_PATH
+
+
+def age_url_from_ingest(ingest_url: str) -> str:
+    """从 `/api/ingest` 推出年龄档案的 `/api/age` 地址（理由同 `frame_url_from_ingest`）。"""
+    base = ingest_url.rstrip("/")
+    if base.endswith(DEFAULT_INGEST_PATH):
+        return base[: -len(DEFAULT_INGEST_PATH)] + DEFAULT_AGE_PATH
+    tail = base[len("https://"):] if base.startswith("https://") else base[len("http://"):]
+    if "/" in tail:
+        base = base.rsplit("/", 1)[0]
+    return base.rstrip("/") + DEFAULT_AGE_PATH
+
+
+class SidecarPoster:
+    """年龄档案旁路推送：把**年龄档案件**推到 B 线 `/api/age`。
+
+    与 `VideoPusher`（旁路画面）同一条纪律，与 `FramePoster`（契约帧）刻意不同：
+
+    | | FramePoster（契约帧） | SidecarPoster（年龄档案） |
+    |---|---|---|
+    | 丢了会怎样 | 测量结果缺失 → 必须报错、退出码 3 | 界面上的档案卡片停更 → 计数并可见，**不改退出码** |
+    | 本地校验 | `contract.validate_frame` | `age_contract.validate_age_state` |
+    | 发送节奏 | 按 `ws_push_hz` 节流 | A 线本来就只按 `age_infer_hz` 产出，不再节流 |
+
+    为什么允许失败：档案是"给人看的解释"（谁、哪个年龄段、与同龄基线比如何），
+    不是测量结果本身。让 B 线没起就把 A 线的整段测量判成失败，是主次颠倒。
+    """
+
+    def __init__(self, url: str, *, timeout: float = 2.0, retries: int = 0) -> None:
+        if not url:
+            raise ValueError("SidecarPoster 需要一个 URL")
+        self.url = url
+        self.timeout = float(timeout)
+        self.retries = max(0, int(retries))
+        self.posted = 0
+        self.attempts = 0
+        self.errors: list[str] = []
+        self._stopped = False
+
+    def maybe_post(self, sidecar: dict) -> bool:
+        """尽力推送：失败只记账（第一次失败后停止重试，避免刷爆日志）。"""
+        if self._stopped:
+            return False
+        errs = validate_age_state(sidecar)
+        if errs:
+            self._stopped = True
+            self.errors.append("年龄档案件不符合 age_contract，已拒绝发送：\n  - "
+                               + "\n  - ".join(errs))
+            return False
+        for attempt in range(1, self.retries + 2):
+            self.attempts += 1
+            try:
+                status, body = _http_post_json(self.url, sidecar, self.timeout)
+            except (urllib.error.URLError, OSError, TimeoutError) as e:
+                self.errors.append(f"第 {attempt} 次连接 {self.url} 失败：{e}")
+                continue
+            if 200 <= status < 300:
+                self.posted += 1
+                return True
+            self.errors.append(f"对面返回 HTTP {status}：{body[:200]}")
+            if status in (400, 404, 405, 415, 422):
+                break       # 对面不认识这个端点 / 拒收 → 重试没有意义
+        self._stopped = True
+        return False
+
+    def stats(self) -> dict[str, Any]:
+        return {
+            "url": self.url,
+            "posted": self.posted,
+            "attempts": self.attempts,
+            "ok": self.posted > 0 and not self.errors,
+            "stopped_after_failure": self._stopped,
+            "errors": list(self.errors),
+        }
 
 
 class VideoPusher:

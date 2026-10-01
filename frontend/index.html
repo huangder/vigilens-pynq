@@ -129,6 +129,42 @@
   #log { height: 210px; overflow: auto; font-size: 12.5px; } #log .row { display: flex; gap: 8px; padding: 4px 2px; border-bottom: 1px dashed #202b3e; }
   #log time { flex: 0 0 auto; color: var(--dim); font-family: ui-monospace, Consolas, monospace; } #log .tag { flex: 0 0 auto; font-weight: 600; }
 
+  /* ---- 年龄档案 · 同龄基线比对（旁路载荷，不属于冻结的 9 字段契约帧）---- */
+  .age-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .age-state { font-size: 19px; font-weight: 680; }
+  .age-line2 { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; margin-top: 6px; }
+  #ageGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 11px; }
+  .age-card .k { color: var(--muted); font-size: 11.5px; }
+  .age-value { margin-top: 5px; font-size: 18px; font-weight: 640; font-variant-numeric: tabular-nums; }
+  .age-value.none { color: var(--dim); font-size: 14px; }
+  .age-sub { margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+  .age-sub.warnline { color: var(--warn); }
+  .age-src { margin-top: 5px; color: var(--dim); font-size: 11.5px; line-height: 1.45; }
+  .age-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 9px; }
+  .age-actions button { padding: 6px 11px; font-size: 12.5px; }
+  .age-enroll-row { margin-top: 8px; }
+  .gate-row .fill.rejected { background: var(--danger); }
+  .gate-row .fill.low { background: var(--ok); }
+  .gate-row .fill.medium { background: var(--warn); }
+  .gate-row .fill.high { background: var(--danger); }
+  #ageCompareContrib .contrib { margin-top: 5px; padding: 5px 8px; border-radius: 7px; background: var(--panel); }
+  #ageCompareContrib .m { color: var(--accent); font: 11.5px ui-monospace, Consolas, monospace; }
+  #ageCompareContrib .n { display: block; margin-top: 2px; color: var(--muted); font: 11.5px ui-monospace, Consolas, monospace; }
+  #ageCompareContrib .cbar { display: block; height: 4px; margin-top: 4px; overflow: hidden; border-radius: 2px; background: #090e16; }
+  #ageCompareContrib .cbar i { display: block; height: 100%; background: var(--info); }
+  .age-events-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin: 13px 0 6px; color: var(--muted); font-size: 12.5px; }
+  #ageEventList { max-height: 168px; overflow: auto; margin: 0; padding: 0; list-style: none; font-size: 12.5px; }
+  #ageEventList li { display: flex; gap: 8px; padding: 4px 2px; border-bottom: 1px dashed #202b3e; }
+  #ageEventList time { flex: 0 0 auto; color: var(--dim); font-family: ui-monospace, Consolas, monospace; }
+  #ageEventList .kind { flex: 0 0 auto; color: var(--accent); }
+  #ageEventList .detail { color: var(--muted); }
+  input[type=number] { width: 104px; border: 1px solid var(--line); border-radius: 8px; background: #090f18; color: var(--text); padding: 7px 9px; font: 13px inherit; }
+  .age-error { flex: 1 1 100%; color: var(--danger); font-size: 12.5px; }
+  .age-error:empty { display: none; }
+  .age-msg { flex: 1 1 100%; color: var(--info); font-size: 12.5px; }
+  .age-msg:empty { display: none; }
+  .age-msg.bad { color: var(--danger); }
+
   @media (hover: hover) and (pointer: fine) { button:hover { border-color: var(--accent); color: var(--accent); } .developer-tools summary:hover { color: var(--text); } }
   @media (max-width: 1000px) { main { grid-template-columns: 1fr; } .span-2 { grid-column: auto; } .dev-grid { grid-template-columns: 1fr; } }
   @media (max-width: 700px) { header { padding: 14px 16px; } main { padding: 14px 12px 36px; } .gate-bars { grid-template-columns: 1fr; } .cards { grid-template-columns: repeat(2, 1fr); } .developer-tools summary small { display: none; } }
@@ -197,6 +233,114 @@
     </div>
   </section>
 
+  <!-- 年龄档案 · 同龄基线比对 —— 旁路载荷：**不属于**冻结的 9 字段契约帧 -->
+  <section class="panel span-2" id="agePanel">
+    <h2>年龄档案 · 同龄基线比对</h2>
+
+    <div class="age-head">
+      <span class="age-state" id="ageStateText">未确定</span>
+      <span class="badge" id="ageSourceBadge">来源：未定</span>
+      <span class="badge warn" id="ageLockBadge" hidden>已确认年龄，年龄推测已停用</span>
+      <span class="spacer"></span>
+      <span class="badge warn" id="ageDemoBadge" hidden>离线演示</span>
+      <span class="pill" id="ageSourcePill"><span class="dot"></span>数据源：<b id="ageSourceText">探测中…</b></span>
+    </div>
+    <div class="age-sub" id="ageSubjectText">匿名主体 ——（尚未收录）</div>
+    <div class="age-src" id="agePrivacyNote">隐私：—</div>
+
+    <div id="ageGrid">
+      <!-- 图像年龄推断（仅建议） -->
+      <div class="card age-card" id="ageEstimateCard">
+        <div class="k">图像年龄推断 · 仅作<b>建议</b>，不是结论</div>
+        <div class="age-value" id="ageEstimateValue">—</div>
+        <div class="age-sub" id="ageEstimateMeta">—</div>
+        <div style="margin-top:6px">
+          <span class="badge warn" id="ageEstimateWarnBadge" hidden>占位引擎 · 无精度证据，不得作为结论</span>
+        </div>
+        <div class="age-src" id="ageEstimateNote"></div>
+      </div>
+
+      <!-- 收录人脸判断 -->
+      <div class="card age-card" id="ageEnrollCard">
+        <div class="k">收录人脸判断 · 观察窗口</div>
+        <div class="age-line2"><span class="badge" id="ageEnrollBadge">未开始</span></div>
+        <div class="age-sub" id="ageEnrollText">—</div>
+        <div class="gate-row age-enroll-row">
+          <div class="bar"><div class="fill" id="ageEnrollFill"></div></div>
+        </div>
+        <div class="age-src" id="ageEnrollReason">—</div>
+        <div class="age-actions">
+          <button class="primary" id="ageBtnEnrollAccept">收录这张脸</button>
+          <button id="ageBtnEnrollReject">不收录</button>
+        </div>
+      </div>
+
+      <!-- 同龄基线 · 耦合风险比对 -->
+      <div class="card age-card" id="ageCompareCard">
+        <div class="k">同龄基线 · 耦合风险比对</div>
+        <div class="age-sub" id="ageCompareVerdict">—</div>
+        <div id="ageCompareNumbers" hidden>
+          <div class="age-line2">
+            <span class="badge" id="ageCompareLevel">等级：—</span>
+            <span class="age-sub" id="ageCompareValue">—</span>
+          </div>
+          <div class="gate-row">
+            <div class="bar"><div class="fill" id="ageCompareFill"></div></div>
+          </div>
+          <div class="age-sub" id="ageCompareBand">—</div>
+          <div id="ageCompareContrib"></div>
+          <div class="age-sub" id="ageCompareInteractions">—</div>
+          <div class="age-sub" id="ageCompareReason">—</div>
+          <div class="age-src" id="ageCompareSources">—</div>
+          <div class="age-src">z 为标准化偏离量，方向已归一到「越疲劳越大」（例如眨眼率低于基线记为正的抑制量）；
+            逐项条长只表示 |log_odds| 的相对大小，不改变数值口径。</div>
+        </div>
+        <div id="ageCompareIncomparable" hidden>
+          <div class="age-sub" id="ageCompareIncomparableText">不可比：—</div>
+          <div class="age-src"><b>这里一个数字都不显示</b> —— 条件不满足时给数字等于编造结论，
+            这正是本产品的承诺（先判断能不能测，再决定测出什么）。</div>
+        </div>
+      </div>
+
+      <!-- 数据库 -->
+      <div class="card age-card" id="ageDbCard">
+        <div class="k">测量库 / 参照基线</div>
+        <div class="age-sub" id="ageDbText">—</div>
+        <div class="age-src" id="ageDbBands">—</div>
+      </div>
+    </div>
+
+    <!-- 用户确认年龄 + 四个动作 -->
+    <div class="age-head" style="margin-top:12px">
+      <label class="pill">手动确认年龄
+        <input type="number" id="ageManualInput" min="6" max="100" step="1" placeholder="6~100"
+               aria-label="手动确认年龄，取值 6~100">
+      </label>
+      <button class="primary" id="ageBtnManual">确认年龄</button>
+      <button id="ageBtnAcceptEstimate">接受推断</button>
+      <button id="ageBtnRejectEstimate">忽略推断</button>
+      <button id="ageBtnReset">重置档案</button>
+      <span class="age-error" id="ageManualError"></span>
+      <span class="age-msg" id="ageActionMsg"></span>
+    </div>
+
+    <div class="age-events-head">
+      <b>年龄档案事件</b>
+      <span id="ageEventCount">—</span>
+      <span class="badge warn" id="ageEventDemoBadge" hidden>离线演示 · 非真实事件</span>
+    </div>
+    <ul id="ageEventList"></ul>
+
+    <div class="hint" style="margin-top:10px">
+      本面板是<b>旁路载荷</b>：年龄档案件走 <code>GET /api/age</code>，<b>不进</b>冻结的 9 字段契约帧
+      （唯一 schema 见 <code>backend/age_contract.py</code>）。三条产品承诺：
+      <b>不可比时不报数字</b>、<b>占位引擎的推断不得作为结论</b>、<b>一次正式确认后停用图像推测</b>。
+      离线演示的数值由 <code>frontend/mock.js</code> 的确定性演示器产生，<b>不是真实推断或测量结果</b>；
+      参照基线与耦合增益仍是 <code>config.yaml</code> 里标注的<b>占位值（未标定）</b>；
+      数据库统计在离线时明确写"不可用"，不编造 session 数。
+    </div>
+  </section>
+
   <!-- 指标卡 -->
   <section class="panel span-2">
     <h2>实时指标</h2>
@@ -253,6 +397,7 @@
 
 <script src="mock.js"></script>
 <script src="preview.js"></script>
+<script src="age.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
