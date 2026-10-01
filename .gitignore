@@ -54,6 +54,27 @@ fpga/sim/data_mipi/golden_rgb.bin
 fpga/sim/data_scale/rgb_in.bin
 fpga/sim/data_scale/golden_scale.bin
 
+# ---- C 线：v1.5 档位化（720p60 / 1080p45）的生成向量 -------------------------
+# 与上面每一条同一纪律：**大 .bin 不入库**（可由 seed 确定性重建），
+# **meta.txt 与 golden_*.csv 必须入库**（它们是黄金参考，人要能评审）。
+# ⚠️ 2026-10-01 补：这四个目录是那轮新加的，当时**没有任何规则**，
+#    于是 1080p45 的 62 MB rgb_frames.bin 被提交进了 git —— 推送时 GitHub 直接告警
+#    （"larger than GitHub's recommended maximum file size of 50.00 MB"），
+#    而 AGENTS.md §10.2 早就写明这类 .bin 不能提交。这条就是补那个漏。
+#    重建命令见各目录的 README.md。
+fpga/sim/data_motion_720p60/rgb_frames.bin
+fpga/sim/data_motion_720p60/gray.bin
+fpga/sim/data_motion_1080p45/rgb_frames.bin
+fpga/sim/data_motion_1080p45/gray.bin
+fpga/sim/data_roi_720p/frames.bin
+fpga/sim/data_roi_1080p/frames.bin
+# 档位的缩小尺寸集（cosim 用）与 30 Hz 小尺寸 FIR 序列：同样只留 meta/golden
+fpga/sim/data_motion_small_720p60/rgb_frames.bin
+fpga/sim/data_motion_small_720p60/gray.bin
+fpga/sim/data_motion_small_3_8/rgb_frames.bin
+fpga/sim/data_motion_small_3_8/gray.bin
+fpga/sim/data_fir_small_30hz/series.bin
+
 # ---- Vitis HLS 构建产物 ----------------------------------------------------
 fpga/component_*/
 fpga/logs/
