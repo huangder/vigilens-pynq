@@ -1,0 +1,118 @@
+
+****** vitis-run v2026.1 (64-bit)
+  **** SW Build 6511674 on 2026-06-16-13:14:00
+  **** Start of session at: Thu Oct  1 11:35:16 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+  **** HLS Build v2026.1 6493734
+Sourcing Tcl script 'D:/Desktop/AMD/fpga/run_hls.tcl'
+INFO: 妗ｄ綅 VIGILENS_TIER=720p60 鈫 鎶藉彇 3/8锛屾暟鎹®鐩®褰 sim/data_motion_720p60
+INFO: HLS_IP    = rgb2gray
+INFO: source    = src/rgb2gray.cpp
+INFO: testbench = sim/tb_rgb2gray.cpp
+INFO: HLS_COMPONENT override -> component_cosim_rgb2gray
+INFO: [HLS 200-1510] Running: open_component -reset component_cosim_rgb2gray -flow_target vivado 
+INFO: [HLS 200-10] Creating and opening component 'D:/Desktop/AMD/fpga/component_cosim_rgb2gray'.
+INFO: [HLS 200-10] Cleaning up the component database.
+INFO: [HLS 200-1505] Using flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+WARNING: [HLS 200-2149] The 'flow_target' option is deprecated and will be removed in a future release. For 'vivado' value you may simply remove the option for equivalent behavior.
+INFO: [HLS 200-2176] Writing Vitis IDE component file D:/Desktop/AMD/fpga/component_cosim_rgb2gray/vitis-comp.json
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_cosim_rgb2gray/hls_config.cfg
+WARNING: [HLS 200-484] The 'open_component -flow_target' command is deprecated and will be removed in a future release.
+INFO: [HLS 200-1510] Running: add_files src/rgb2gray.cpp -cflags -DRGB2GRAY_DECIM_NUM=3 -DRGB2GRAY_DECIM_DEN=8 
+INFO: [HLS 200-10] Adding design file 'src/rgb2gray.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb sim/tb_rgb2gray.cpp -cflags -DRGB2GRAY_DECIM_NUM=3 -DRGB2GRAY_DECIM_DEN=8 
+INFO: [HLS 200-10] Adding test bench file 'sim/tb_rgb2gray.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb sim/tb_rgb2gray.cpp 
+INFO: [HLS 200-10] Adding test bench file 'sim/tb_rgb2gray.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top rgb2gray 
+INFO: [HLS 200-1510] Running: set_part xc7z020clg400-1 
+INFO: [HLS 200-1611] Setting target device to 'xc7z020-clg400-1'
+INFO: [HLS 200-1510] Running: create_clock -period 10 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: data dir  = D:/Desktop/AMD/fpga/sim/data_motion_small
+INFO: hls_exec  = 2  (1=csim+csynth, 2=+cosim, 3=+export)
+INFO: [HLS 200-1510] Running: csim_design -argv D:/Desktop/AMD/fpga/sim/data_motion_small 
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_cosim_rgb2gray/hls_config.cfg
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [HLS 200-2191] C-Simulation will use clang-16 as the compiler
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../sim/tb_rgb2gray.cpp in debug mode
+   Compiling ../../../../src/rgb2gray.cpp in debug mode
+   Generating csim.exe
+In file included from ../../../../sim/tb_rgb2gray.cpp:27:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../src/rgb2gray.cpp:42:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+==== tb_rgb2gray: contract docs/interface.md (tolerance = 0) ====
+---- [Layer 1] embedded cases (in 16x16 -> out 6x6, 抽取 3/8) ----
+  Layer 1: 8 passed, 0 failed
+---- [Layer 2] cross-language golden reference (per-pixel) ----
+  meta     : in 80x60 -> out 48x36, 10 frames, rgb_bytes=14400, gray_bytes=1728
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>8' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=0 bad_px=1719 hdr=0 out=30x21 pc=720 (exp 1728) sum=90251 (exp 220709)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>9' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=1 bad_px=540 hdr=0 out=30x21 pc=720 (exp 1728) sum=0 (exp 0)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>10' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=2 bad_px=540 hdr=0 out=30x21 pc=720 (exp 1728) sum=0 (exp 0)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>11' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=3 bad_px=1026 hdr=0 out=30x21 pc=720 (exp 1728) sum=183600 (exp 440640)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>12' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=4 bad_px=1026 hdr=0 out=30x21 pc=720 (exp 1728) sum=183600 (exp 440640)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>13' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=5 bad_px=541 hdr=0 out=30x21 pc=720 (exp 1728) sum=0 (exp 255)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>14' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=6 bad_px=541 hdr=0 out=30x21 pc=720 (exp 1728) sum=0 (exp 0)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>15' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=7 bad_px=1094 hdr=0 out=30x21 pc=720 (exp 1728) sum=55440 (exp 133056)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>16' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=8 bad_px=1098 hdr=0 out=30x21 pc=720 (exp 1728) sum=107280 (exp 257472)
+WARNING [HLS SIM]: hls::stream 'hls::stream<hls::axis<ap_uint<8>, 1ull, 1ull, 1ull, (unsigned char)56, false>, 0>17' contains leftover data, which may result in RTL simulation hanging.
+  FAIL frame=9 bad_px=1098 hdr=0 out=30x21 pc=720 (exp 1728) sum=20880 (exp 50112)
+  Layer 2: 0 passed, 10 failed  (mismatched pixels: 9223, header errors: 0)
+
+==== RESULT: FAIL ====
+INFO [HLS SIM]: The maximum depth reached by any hls::stream() instance in the design is 4800
+@E Simulation failed: Function 'main' returns nonzero value '1'.
+ERROR: [SIM 211-100] 'csim_design' failed: nonzero return value.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-2161] Finished Command csim_design Elapsed time: 00:00:06; Allocated memory: 3.238 MB.
+CSIM Failed
+    while executing
+"source D:/Desktop/AMD/fpga/run_hls.tcl"
+    ("uplevel" body line 1)
+    invoked from within
+"uplevel \#0 [list source $tclfile] "
+
+INFO: [HLS 200-112] Total CPU user time: 1 seconds. Total CPU system time: 1 seconds. Total elapsed time: 7.792 seconds; peak allocated memory: 154.707 MB.
+INFO: [vitis-run 60-1662] Stopping dispatch session having empty uuid.

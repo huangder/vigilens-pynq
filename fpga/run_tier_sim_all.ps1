@@ -50,6 +50,7 @@ Set-Location $fpga
 $plan = @(
     @{ name = 'mq_640';            ip = 'motion_quality'; data = 'sim\data_motion';          tier = $null;      exec = 2; cosim = $true  },
     @{ name = 'mq_1080p45';        ip = 'motion_quality'; data = $null;                      tier = '1080p45';  exec = 1; cosim = $false },
+    @{ name = 'mq_1080p45_cosim';  ip = 'motion_quality'; data = $null;                      tier = '1080p45';  exec = 2; cosim = $true  },
     @{ name = 'roi_720p';          ip = 'roi_statistic';  data = 'sim\data_roi_720p';        tier = $null;      exec = 1; cosim = $false },
     @{ name = 'roi_1080p';         ip = 'roi_statistic';  data = 'sim\data_roi_1080p';       tier = $null;      exec = 1; cosim = $false },
     @{ name = 'roi_720p_cosim';    ip = 'roi_statistic';  data = 'sim\data_roi_720p_cosim';  tier = $null;      exec = 2; cosim = $true  },

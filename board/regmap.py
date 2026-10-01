@@ -144,6 +144,32 @@ def _next_pow2(n):
     return p
 
 
+def _motion_capacity_pixels():
+    """读 `fpga/src/motion_quality_cap.h` 里 motion_quality 片内"上一帧"缓存的容量。
+
+    ⚠️ **为什么不在这里写死 129600**：那正是 BUG-004 / BUG-033 的老路 ——
+    "常量对常量"的自检在任何档位下都自洽，**档位一改就自洽地错**。
+    容量只有一个来源（C 头文件），这里只是把它读出来用。
+
+    读不到/解析不出时返回 None —— 自检会因此 **FAIL**，不会静默通过。
+    """
+    cap_h = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                          "..", "fpga", "src", "motion_quality_cap.h")
+    try:
+        vals = {}
+        with open(cap_h, "r", encoding="utf-8") as f:
+            for line in f:
+                parts = line.strip().split()
+                if (len(parts) == 3 and parts[0] == "#define"
+                        and parts[1] in ("MOTION_MAX_W", "MOTION_MAX_H")):
+                    vals[parts[1]] = int(parts[2])
+        if len(vals) != 2:
+            return None
+        return vals["MOTION_MAX_W"] * vals["MOTION_MAX_H"]
+    except (OSError, ValueError):
+        return None
+
+
 def selftest():
     checks = [
         ("CTRL/GIER/IP_IER/IP_ISR", [CTRL, GIER, IP_IER, IP_ISR], [0x00, 0x04, 0x08, 0x0C]),
@@ -164,6 +190,12 @@ def selftest():
         #   motion_quality 的片内帧缓存就从 64 个 BRAM18 跳到 128/256（器件只有 280）。
         ("档位自洽：灰度像素数 ≤ 2^17（BRAM 台阶不跨）",
          [_next_pow2(GRAY_PIXELS) <= 131072], [True]),
+        #   motion_quality 的片内"上一帧"缓存是**编译期定长**的，而工作尺寸由 PS 在运行时给：
+        #   某档的灰度像素数一旦超过容量，csim 越界（实测表现是"编译完成后挂死"，极易
+        #   误判成算力问题）、RTL 越界（地址越出 ram，读回 X）。台账 **BUG-033**。
+        #   ⚠️ 容量**只从 C 头文件读**，这里不写死第二份。
+        ("档位自洽：灰度像素数 ≤ motion_quality 片内容量（读 fpga/src/motion_quality_cap.h）",
+         [GRAY_PIXELS <= (_motion_capacity_pixels() or 0)], [True]),
         #   相位完备：输入宽高必须是抽取分母的整数倍，否则最后一组不满、相位错位。
         ("档位自洽：输入宽高是抽取分母的整数倍（相位完备）",
          [FRAME_W % DECIM_DEN, FRAME_H % DECIM_DEN], [0, 0]),

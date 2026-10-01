@@ -1,0 +1,162 @@
+
+****** vitis-run v2026.1 (64-bit)
+  **** SW Build 6511674 on 2026-06-16-13:14:00
+  **** Start of session at: Thu Oct  1 11:36:51 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+  **** HLS Build v2026.1 6493734
+Sourcing Tcl script 'D:/Desktop/AMD/fpga/run_hls.tcl'
+INFO: HLS_IP    = fir_filter
+INFO: source    = src/fir_filter.cpp
+INFO: testbench = sim/tb_fir_filter.cpp
+INFO: HLS_COMPONENT override -> component_cosim_fir_filter
+INFO: [HLS 200-1510] Running: open_component -reset component_cosim_fir_filter -flow_target vivado 
+INFO: [HLS 200-10] Creating and opening component 'D:/Desktop/AMD/fpga/component_cosim_fir_filter'.
+INFO: [HLS 200-10] Cleaning up the component database.
+INFO: [HLS 200-1505] Using flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+WARNING: [HLS 200-2149] The 'flow_target' option is deprecated and will be removed in a future release. For 'vivado' value you may simply remove the option for equivalent behavior.
+INFO: [HLS 200-2176] Writing Vitis IDE component file D:/Desktop/AMD/fpga/component_cosim_fir_filter/vitis-comp.json
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_cosim_fir_filter/hls_config.cfg
+WARNING: [HLS 200-484] The 'open_component -flow_target' command is deprecated and will be removed in a future release.
+INFO: [HLS 200-1510] Running: add_files src/fir_filter.cpp 
+INFO: [HLS 200-10] Adding design file 'src/fir_filter.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb sim/tb_fir_filter.cpp 
+INFO: [HLS 200-10] Adding test bench file 'sim/tb_fir_filter.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top fir_filter 
+INFO: [HLS 200-1510] Running: set_part xc7z020clg400-1 
+INFO: [HLS 200-1611] Setting target device to 'xc7z020-clg400-1'
+INFO: [HLS 200-1510] Running: create_clock -period 10 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: data dir  = D:/Desktop/AMD/fpga/sim/data_fir_small
+INFO: hls_exec  = 2  (1=csim+csynth, 2=+cosim, 3=+export)
+INFO: [HLS 200-1510] Running: csim_design -argv D:/Desktop/AMD/fpga/sim/data_fir_small 
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_cosim_fir_filter/hls_config.cfg
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [HLS 200-2191] C-Simulation will use clang-16 as the compiler
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../sim/tb_fir_filter.cpp in debug mode
+   Compiling ../../../../src/fir_filter.cpp in debug mode
+   Generating csim.exe
+In file included from ../../../../sim/tb_fir_filter.cpp:36:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../src/fir_filter.cpp:48:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+==== tb_fir_filter: contract docs/interface.md (tolerance = 0) ====
+NOTE: 延迟线是 static（上电初始化、复位不清零）-> 每段序列的第一次调用必须 reset=1。
+---- [Layer 1] embedded boundary cases (N=63, shift=15) ----
+  Layer 1: 8 passed, 0 failed
+---- [Layer 2] cross-language golden reference ----
+  meta     : fs=45 Hz, N=63, shift=15, 16 segments, 1087 samples
+     seg impulse          i=0     got=     8 exp=    10
+     seg impulse          i=1     got=    26 exp=    18
+     seg impulse          i=2     got=    49 exp=    21
+  FAIL impulse          样本不一致 63 个
+     seg dc_pos           i=0     got=     8 exp=    10
+     seg dc_pos           i=1     got=    35 exp=    29
+     seg dc_pos           i=2     got=    85 exp=    51
+  FAIL dc_pos           样本不一致 60 个
+     seg dc_neg           i=0     got=    -9 exp=   -11
+     seg dc_neg           i=1     got=   -36 exp=   -30
+     seg dc_neg           i=2     got=   -86 exp=   -52
+  FAIL dc_neg           样本不一致 60 个
+     seg nyquist_alt      i=0     got=     8 exp=    10
+     seg nyquist_alt      i=1     got=    17 exp=     7
+     seg nyquist_alt      i=2     got=    31 exp=    13
+  FAIL nyquist_alt      样本不一致 59 个
+     seg sine_1p5hz       i=3     got=    16 exp=    11
+     seg sine_1p5hz       i=4     got=    34 exp=    19
+     seg sine_1p5hz       i=5     got=    60 exp=    27
+  FAIL sine_1p5hz       样本不一致 71 个
+     seg sine_0p8hz       i=2     got=     3 exp=     2
+     seg sine_0p8hz       i=3     got=     8 exp=     6
+     seg sine_0p8hz       i=4     got=    19 exp=    10
+  FAIL sine_0p8hz       样本不一致 73 个
+     seg sine_3p2hz       i=2     got=    11 exp=    10
+     seg sine_3p2hz       i=3     got=    31 exp=    21
+     seg sine_3p2hz       i=4     got=    63 exp=    33
+  FAIL sine_3p2hz       样本不一致 73 个
+     seg sine_0p2hz       i=3     got=     2 exp=     1
+     seg sine_0p2hz       i=4     got=     4 exp=     2
+     seg sine_0p2hz       i=5     got=     8 exp=     4
+  FAIL sine_0p2hz       样本不一致 72 个
+     seg sine_8hz         i=1     got=     4 exp=     6
+     seg sine_8hz         i=2     got=    19 exp=    15
+     seg sine_8hz         i=3     got=    39 exp=    19
+  FAIL sine_8hz         样本不一致 74 个
+     seg square_1hz_full  i=0     got=     8 exp=    10
+     seg square_1hz_full  i=1     got=    35 exp=    29
+     seg square_1hz_full  i=2     got=    85 exp=    51
+  FAIL square_1hz_full  样本不一致 75 个
+     seg saturate_matched i=0     got=     8 exp=    10
+     seg saturate_matched i=1     got=    35 exp=    29
+     seg saturate_matched i=2     got=    85 exp=    51
+  FAIL saturate_matched out_count=63/63 sat=5/3 seg_id=24(期望 24) hdr=0
+  FAIL saturate_matched 样本不一致 60 个
+     seg sine_small_amp   i=9     got=     0 exp=    -1
+     seg sine_small_amp   i=10    got=     0 exp=    -1
+     seg sine_small_amp   i=11    got=     0 exp=    -2
+  FAIL sine_small_amp   样本不一致 61 个
+     seg random_full      i=1     got=    -5 exp=    -4
+     seg random_full      i=2     got=    -9 exp=    -5
+     seg random_full      i=3     got=   -20 exp=   -12
+  FAIL random_full      样本不一致 127 个
+     seg split_part1      i=1     got=    -5 exp=    -4
+     seg split_part1      i=2     got=    -9 exp=    -5
+     seg split_part1      i=3     got=   -20 exp=   -12
+  FAIL split_part1      样本不一致 49 个
+     seg split_part2      i=0     got=  7910 exp=  7204
+     seg split_part2      i=1     got=  3771 exp=  4594
+     seg split_part2      i=2     got=   120 exp=  1743
+  FAIL split_part2      样本不一致 50 个
+     seg split_part3      i=0     got= -7864 exp= -5395
+     seg split_part3      i=1     got= -9070 exp= -4755
+     seg split_part3      i=2     got= -7912 exp= -3179
+  FAIL split_part3      样本不一致 28 个
+  [跨段一致性] 分段(reset=1,0,0) == 一次调用 ✅ (128 样本)
+  Layer 2: 1 passed, 16 failed  (样本不一致 1055, 流头错误 0)
+
+==== RESULT: FAIL ====
+INFO [HLS SIM]: The maximum depth reached by any hls::stream() instance in the design is 300
+@E Simulation failed: Function 'main' returns nonzero value '1'.
+ERROR: [SIM 211-100] 'csim_design' failed: nonzero return value.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-2161] Finished Command csim_design Elapsed time: 00:00:07; Allocated memory: 3.371 MB.
+CSIM Failed
+    while executing
+"source D:/Desktop/AMD/fpga/run_hls.tcl"
+    ("uplevel" body line 1)
+    invoked from within
+"uplevel \#0 [list source $tclfile] "
+
+INFO: [HLS 200-112] Total CPU user time: 1 seconds. Total CPU system time: 1 seconds. Total elapsed time: 9.45 seconds; peak allocated memory: 156.219 MB.
+INFO: [vitis-run 60-1662] Stopping dispatch session having empty uuid.

@@ -37,7 +37,12 @@ vitis-run --mode hls --tcl run_hls.tcl
 | 项 | 状态 |
 |---|---|
 | `rgb2gray` @1080p45 | ✅ **480×270 全尺寸** csim+csynth PASS（`Layer 1 8/8`、`Layer 2 10/10`、0 不符、II=1、Fmax 140.81 MHz，54 s） |
-| `motion_quality` @1080p45 | ✅ csim+csynth PASS，**比对尺寸缩小**（20×16，1/4 抽取）；480×270 全尺寸 csim 未跑 |
+| `motion_quality` @1080p45 | ✅ **480×270 全尺寸** csim+csynth PASS（2026-10-01：`Layer 1 6/6`、`Layer 2 9/9`、0 不符、II=1、Fmax 140.05 MHz，40 s）。⚠️ **cosim 未单独跑** —— 本档与 720p60 的**工作尺寸同为 480×270、RTL 完全相同**，cosim 见 `data_motion_720p60/README.md` |
 | `roi_statistic` @1920×1080 | ✅ 28/28 + 45/45、0 不符、II=1、Fmax 138.99 MHz（**资源与 640×480/720p 逐项相同**）；黄金参考另见 `data_roi_1080p/` |
 
-完整证据：`fpga/report/c6_seven_ips_csim_csynth_20260930.md`。
+> ⚠️ 上面 `motion_quality` 那行在 2026-10-01 之前写的是"480×270 全尺寸 csim 未跑（算不完）"——
+> **那是误判**：真因是片内"上一帧"缓存只有 110592 格 < 129600 像素（越界），已修，
+> 见台账 **BUG-033** 与 `fpga/report/c7_sim_closed_loop_20261001.md` §2。
+
+完整证据：`fpga/report/c6_seven_ips_csim_csynth_20260930.md`、
+`fpga/report/c7_sim_closed_loop_20261001.md`。

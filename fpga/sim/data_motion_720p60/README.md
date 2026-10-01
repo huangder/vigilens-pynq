@@ -40,7 +40,18 @@ vitis-run --mode hls --tcl run_hls.tcl
 | 项 | 状态 |
 |---|---|
 | `rgb2gray` @720p60 | ✅ **480×270 全尺寸** csim+csynth PASS（`Layer 1 8/8`、`Layer 2 10/10`、0 不符、II=1、Fmax 140.81 MHz） |
-| `motion_quality` @720p60 | ✅ csim+csynth PASS，但**比对尺寸是缩小的**（60×33）。⚠️ **480×270 全尺寸的 csim 在本会话算不完**（该 IP 要建模整帧缓存，C 仿真代价高）—— 需在完整权限终端给足时间 |
+| `motion_quality` @720p60 | ✅ **480×270 全尺寸** csim+csynth+**cosim** PASS（2026-10-01：`Layer 1 6/6`、`Layer 2 9/9`、0 不符、II=1、**BRAM 64（22%）**、Fmax 140.05 MHz、`C/RTL co-simulation finished: PASS`） |
 | 两档 cosim | ✅ 7 个 IP 全部 PASS、无死锁（见 `fpga/report/c6_*` §5） |
 
-完整证据与命令：`fpga/report/c6_seven_ips_csim_csynth_20260930.md`。
+> ⚠️ **2026-10-01 之前那行"480×270 全尺寸 csim 算不完"是误判，已作废**：
+> 真因是 `motion_quality` 的**片内"上一帧"缓存只有 110592 格**（384×288），
+> 而本档位要 480×270 = **129600** 像素 ⇒ **越界 19008 格**。csim 表现为"编译完成后空转不退出"，
+> 看上去像算力问题。修法：容量抽到 `fpga/src/motion_quality_cap.h` 并取 129600
+> （**仍在 2¹⁷ 台阶内 ⇒ BRAM 仍 64、Fmax 不变**）。见台账 **BUG-033**。
+>
+> ⚠️ 同时记一条"怎么被坑的"：那次"看起来 PASS 的全尺寸 cosim"其实跑的是 **640×480 档** ——
+> 因为本目录当时**还没有** `golden_motion.csv`，而旧版 `run_hls.tcl` 会**静默回退**到默认档位
+> （台账 **BUG-034**，已改为硬失败）。**看到 `INFO: ROI_DATA_DIR -> ... (explicit, verified)` 才算数。**
+
+完整证据与命令：`fpga/report/c6_seven_ips_csim_csynth_20260930.md`、
+`fpga/report/c7_sim_closed_loop_20261001.md`。
