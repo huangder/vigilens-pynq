@@ -174,7 +174,7 @@ python -m pytest -q                            # 基线只增不减；2026-10-01
 #      沿革：78 → 88（+旁路 MJPEG 帧源 10 项）→ 98（合并分支）→ **141**（+2026-10-01 年龄分层 43 项）。
 #      另有单项：`python -m pytest backend/tests/test_age_fatigue.py -q` → **43 passed**）
 #    （工具自检沿革：10/10 → 12/12（bringup/hw_sw/dma 三条）→ 13/13 → **14/14**（+board/imx219_sccb_check.py，79/79）；
-#      其中 2 项是 OpenMV 侧的"假模块跑真脚本"——`offline_check.py` **44/44**（采集矩阵）
+#      其中 2 项是 OpenMV 侧的"假模块跑真脚本"——`offline_check.py` **54/54**（采集矩阵）
 #      与 `offline_stream_check.py` **22/22**（推流三分支，docs/18 路线②的离线证据））
 node frontend/mock.js --selftest               # 期望：ok: true
 python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查：通过
@@ -208,7 +208,7 @@ git status --short                             # 只应出现你本线的改动
 | `check_frontend_wiring` | `通过` | `app.js` 引用了不存在的 DOM id（症状：**页面不报错、区域空白**） |
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
 | `check_video_bypass` | 当前 **11/14**（T11 环境 + T13/T14 = BUG-032）；其余项全绿 | 旁路画面链路坏了，或**有人把图像塞进了契约帧**（T9/T10 会红）；或画面停推后仍显示冻结旧帧（T6 会红） |
-| `board/openmv/offline_check.py` | `RESULT: PASS (44/44)` | 只能在**相机上**跑的 `openmv_capture_test.py` 被改坏了（假模块跑 v5 `csi` / v4 `sensor` 两条分支）。它已真抓到过一个真机也会犯的作用域 bug，所以纳入回归 |
+| `board/openmv/offline_check.py` | `RESULT: PASS (54/54)` | 只能在**相机上**跑的 `openmv_capture_test.py` 被改坏了（假模块跑 v5 `csi` / v4 `sensor` 两条分支）。它已真抓到过一个真机也会犯的作用域 bug，所以纳入回归 |
 | `board/openmv/offline_stream_check.py` | `RESULT: PASS (22/22)` | 推流脚本 `openmv_stream.py` 的三种 payload 分支被改坏了；**最关键的一条是"灰度模式下 `img.compress()` 一次都没被调用"** —— 那是 `docs/18` 路线②（BUG-027 的修法）的全部意义，没有硬件时只有它能钉住 |
 | `metrics/scripts/omv_stream_bridge.ps1 -SelfTest` | `RESULT: PASS` | 串口收帧器/PC 侧编码器坏了：CRC 检查值、CPython 造帧→本脚本解帧的逐字节比对、**GRAY→JPEG 逐像素比对**、畸形 GRAY 必须返回 `$null`、以及 `Send-OMVStreamer` 的字符串锚点（锚点被改名 = **静默**改错模式） |
 | `board/imx219_sccb_check.py` | `总计：79 项，PASS 79，FAIL 0` | **IMX219 的"离线能验的那一半"坏了**：真机读出模式表与 libcamera 列表不符、三档几何与 `regmap.py` 不一致、链路预算越了 IMX219 像素率/2-lane 带宽、SCCB 线上字节序错、或**安全阀失效**（寄存器表未核实时竟允许下装）。⚠️ 它**不证明相机能用** —— 寄存器初始化序列本机读不到来源，见 `docs/27` §1.1/§4 |
@@ -288,7 +288,7 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
 快速语法自检（秒级，不执行仿真）：`g++ -std=c++17 -fsyntax-only -I D:\Xilinx\2026.1\Vitis\include fpga/src/*.cpp`。
 
 > ⚠️ 本机 MinGW 是 `win32` 线程模型，**只能 `-fsyntax-only`**；链接运行会以 `0xC0000139` 退出。
-> ⚠️ **受限沙箱跑不了 csim**（需命名管道 → `Win32 error 5`），这不是代码问题，请在完整权限终端跑。
+> ⚠️ **受限沙箱跑不了 csim**（需命名管道 → `Win32 error 5`），这不是代码问题：**提权/完整权限终端里重试一次即可跑通**（实测 `roi_statistic` csim+csynth 只要 **86 s**，不是"数十分钟"）。
 
 ### 6.4 环境坑（不是代码问题，别浪费时间）
 
@@ -376,7 +376,7 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
   （会签完成时按第 4 节第 5 步「会签升级版本号」升级）。
 - 🚧 **v1.2 草案（2026-09-20，C 线发起，待 A/B 会签）**：§0 帧率 + §3.5 FIR 采样率 **45→30 Hz**
   （为前期适配低帧率采集源）。系数与黄金参考已按 30 Hz 重生成，并通过主机端模型 / A↔C 逐样本 /
-  `pytest 78 passed` 三重对拍；**但 csim/csynth/cosim 未重跑**（受限沙箱跑不了 HLS）。
+  `pytest 78 passed` 三重对拍；csim+csynth 已于 2026-09-26 重跑（4/4 PASS，见 `fpga/report/t7_hls_four_ips_rerun_20260926.md`）；**cosim 仍未重跑**（受限沙箱跑不了 HLS，需完整权限终端）。
 - 🚧 **v1.3 草案（2026-09-23，C 线发起，待 A/B 会签）**：§0 目标板卡 **PYNQ-Z2 → Mizar-Z7020**。
   **器件字符串不变**，四个 HLS IP 与所有黄金参考**无需重做**；要重做的只有 PS 配置 / 引脚约束 / bitstream。
   未闭合项：MicroPhase 是否为 Mizar-Z7 提供 Vivado board file **未确认**（若无，PS7 DDR 参数必须取自厂商资料，**不得猜**）。
@@ -420,7 +420,7 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
   相机侧 ≈ **13.4 fps**、PC 侧投递 **9.95 fps**、`MAXAGE 0.29s / VISIBLE_PCT 100%`。
   详见 `docs/16` BUG-027（**已改判"已解决"**）。⚠️ 同轮还修掉一个 PC 侧瓶颈：纯 PowerShell 逐位 CRC
   **93.5 ms/帧 → 0.91 ms/帧**（不修就比来帧间隔 77 ms 还慢，画面会成串更新）。
-- 【已验证】本机离线自检 `board/openmv/offline_check.py` = **44/44**（假模块跑真脚本，v5/v4 两条分支），
+- 【已验证】本机离线自检 `board/openmv/offline_check.py` = **54/54**（假模块跑真脚本，v5/v4 两条分支），
   已纳入 `check_all.py` 回归（2026-10-01 复跑；同期 `offline_stream_check.py` 为 **22/22**）。
 
 ---
