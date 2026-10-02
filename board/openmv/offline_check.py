@@ -33,10 +33,11 @@
     python board/openmv/offline_check.py csi        # 只跑 v5 的 csi.CSI 分支
     python board/openmv/offline_check.py sensor     # 只跑 v4 的 sensor 模块分支
 
-期望输出末行：`RESULT: PASS (44/44)`（两条分支各 14 项 + 纯函数回归 8 项）。
-新增的 8 项纯函数回归是为 [BUG-018](../../docs/16_测试问题台账.md#bug-018)（`B/帧 = 0` 被静默接受）
-与 [BUG-019](../../docs/16_测试问题台账.md#bug-019)（回退写 Python repr 却仍叫 `.json`）——
-这两条**假模块永远碰不到**，只能直接喂输入才验得到。
+期望输出末行：`RESULT: PASS (54/54)`（两条分支各 14 项 + 纯函数回归 13 项）。
+纯函数回归覆盖 [BUG-018](../../docs/16_测试问题台账.md#bug-018)（`B/帧 = 0` 被静默接受）、
+[BUG-019](../../docs/16_测试问题台账.md#bug-019)（回退写 Python repr 却仍叫 `.json`）、
+[BUG-020](../../docs/16_测试问题台账.md#bug-020)（装不下的组合必须跳过、不去请求帧缓冲）、
+[BUG-021](../../docs/16_测试问题台账.md#bug-021)（帧率计时先丢稳定期、不计首帧捕获耗时）。
 """
 
 import gc
@@ -185,6 +186,7 @@ def _run_one(api):
     ns = {"__name__": "__main__", "__file__": SCRIPT}
     exec(compile(src, SCRIPT, "exec"), ns)
     ns["MATRIX_SECONDS"] = 0.05           # 把 2s/组压到 50ms，本自检只验逻辑不验性能
+    ns["WARMUP_MS"] = 0                   # 稳定期丢弃在真机上是 1000ms；自检压到 0 只验逻辑
     ns["_cam_warmup"] = lambda ms: None   # 省掉每组 800ms 的等曝光
 
     out = []
@@ -214,8 +216,11 @@ def _run_one(api):
         ("打印了组合顺序", "本轮 MATRIX_STAGE=auto" in text),
         ("每组开跑前有归属行（崩了能定位到是哪一组）", "[1/%d] JPEG" % n_rows in text),
         ("大组合排在最后（RGB565/VGA 是第 %d 组）" % n_rows, "[%d/%d] RGB565" % (n_rows, n_rows) in text),
-        ("VGA/RGB565 失败行带上了内存算术",
-         "Frame buffer overflow" in text and "614400" in text),
+        ("溢出组（RGB565/VGA）被跳过、不再真去请求帧缓冲（BUG-020）",
+         ("Frame buffer overflow" not in text)
+         and ("614400" in text)
+         and any(r["pixformat"] == "RGB565" and r["framesize"] == "VGA" and not r.get("ok")
+                 for r in results)),
         ("失败行也记了 mem_free", ("308944" in text) or ("307136" in text)),
         ("边界组（GRAYSCALE/VGA）打印了内存余量预警，且该组结果被报出来（脚本没被带崩）",
          ("⚠️ 内存余量" in text)
@@ -273,6 +278,14 @@ def _run_pure_functions(ns):
                    'path[:-len(".json")] + ".txt"' in src_now))
     checks.append(("BUG-019: 写后回读校验存在（截断文件不会被当成成功）",
                    "报告回读不一致" in src_now))
+
+    skip = ns["_overflow_skip"]
+    checks.append(("BUG-020: 未压缩且 est>free 必须跳过", skip("RGB565", 614400, 307136) is True))
+    checks.append(("BUG-020: 未压缩但 est<=free 不跳过", skip("RGB565", 153600, 307136) is False))
+    checks.append(("BUG-020: JPEG（名义值）不参与跳过判定", skip("JPEG", 51200, 307136) is False))
+    checks.append(("BUG-021: _measure 不再把首帧捕获耗时计入帧间隔（去掉 `or True`）",
+                   "if n > 0 or True" not in src_now and "if n > 0:" in src_now))
+    checks.append(("BUG-021: 计时前有稳定期丢弃（WARMUP_MS）", "WARMUP_MS" in src_now))
     bad = [n for n, ok in checks if not ok]
     return len(checks) - len(bad), len(checks), bad
 

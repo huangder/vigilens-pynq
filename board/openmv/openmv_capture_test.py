@@ -309,6 +309,12 @@ MATRIX_STAGE = "auto"
 # 每个组合测多久（秒）。太短会被启动瞬态污染；2 秒是"够稳又不太慢"的折中。
 MATRIX_SECONDS = 2.0
 
+# 计时前先丢 WARMUP_MS 毫秒的帧（稳定期），再开始统计帧率。
+# 自动曝光收敛 + 首帧缓冲分配会让开头几帧明显偏慢；2 秒窗口若把它们一起平均，
+# 帧率会被系统性拉低（BUG-021：同一组合矩阵 2s 测 ~40 fps、长跑 10s 测 ~77 fps）。
+# 长跑窗口大、瞬态被稀释所以更接近真实值；这里统一在两条路径都先丢稳定期，才可比。
+WARMUP_MS = 1000
+
 # sustained / dump 用的参数（**以 matrix 的实测结果为准来填**）
 CHOSEN_PIXFORMAT = "JPEG"
 CHOSEN_FRAMESIZE = "VGA"
@@ -387,14 +393,28 @@ def _mem_risk(pf_name, est, free_now):
         return None
     headroom = free_now - est
     if headroom < 0:
-        return ("这一组**装不下**（需 %d B / 此刻可用 %d B，差 %d B）→ 预期抛 "
-                "Frame buffer overflow；**若相机在此之后失联，拔掉 micro-USB 再插上复位**"
+        return ("这一组**装不下**（需 %d B / 此刻可用 %d B，差 %d B）→ "
+                "**已跳过，不去请求帧缓冲（避免相机复位，见台账 BUG-020）**"
                 % (est, free_now, -headroom))
     if headroom < max(8192, int(est * 0.02)):
         return ("**擦边**（需 %d B / 此刻可用 %d B，余量只有 %d B）→ "
                 "**有可能把相机卡死**（卡死需拔插 USB）；建议用 MATRIX_STAGE=\"big\" 单独跑"
                 % (est, free_now, headroom))
     return None
+
+
+def _overflow_skip(pf_name, est, free_now):
+    """未压缩格式且估算整帧 > 当前可用内存时返回 True —— 调用方应**跳过**该组，
+    而不是真的去 `_apply()` 请求帧缓冲。
+
+    为什么必须拦（BUG-020）：真机上"内存擦边/超额的帧缓冲请求"会把相机直接搞**复位**，
+    复位后 `/flash/main.py` 又立即占住 REPL，整轮数据作废、看起来像"相机坏了"。
+    所以"装不下"的组合在动手前就记为失败并跳过，别去触发那个复位。
+    压缩格式（JPEG）的 est 是名义值（`_JPEG_NOMINAL_DIV` 折出来的），不能用来判断，故不拦。
+    """
+    if not _BPP.get(pf_name, 0) or not est:
+        return False
+    return est > free_now
 
 
 def log(*a):
@@ -594,8 +614,16 @@ def _std(xs, mean):
 
 
 def _measure(seconds):
-    """在当前传感器配置下连续 snapshot，测帧率 + 单帧字节 + 内存占用。"""
+    """在当前传感器配置下连续 snapshot，测帧率 + 单帧字节 + 内存占用。
+
+    测帧率前先丢 WARMUP_MS 毫秒的帧（稳定期），并且**不计入首帧**的捕获耗时 ——
+    前者让自动曝光/首帧分配瞬态过去，后者避免"从 loop 外到首帧"这段非帧间隔的时间
+    混进均值。两者都会在短窗口里把帧率系统性拉低（BUG-021）。
+    """
     mem_before = _mem_free()
+    warm_end = time.ticks_add(time.ticks_ms(), WARMUP_MS)
+    while time.ticks_diff(warm_end, time.ticks_ms()) > 0:
+        _cam_snapshot()
     t_end = time.ticks_add(time.ticks_ms(), int(seconds * 1000))
     deltas = []
     n = 0
@@ -605,7 +633,7 @@ def _measure(seconds):
     while time.ticks_diff(t_end, time.ticks_ms()) > 0:
         img = _cam_snapshot()
         now = time.ticks_us()
-        if n > 0 or True:
+        if n > 0:
             dt = time.ticks_diff(now, last_t)
             if dt > 0:
                 deltas.append(dt)
@@ -736,6 +764,16 @@ def run_matrix():
         risk = _mem_risk(pf_name, est, free_now)
         if risk:
             log("     ⚠️ 内存余量：%s" % risk)
+        if _overflow_skip(pf_name, est, free_now):
+            row["ok"] = False
+            row["error"] = ("预计整帧 %d B > 此刻可用 %d B，已跳过（不实际请求帧缓冲，"
+                            "避免相机复位 —— 见台账 BUG-020）" % (est, free_now))
+            row["mem_free_after"] = free_now
+            log("%-10s %-8s %2d %8s %8s %8s %10s %10s %9d  %s" %
+                (pf_name, fs_name, fb, "-", "-", "-", "-",
+                 _fmt_theoretical(pf_name, est), free_now, row["error"]))
+            results.append(row)
+            continue
         log("     提示：**如果这行之后就没有输出了，是这一组把相机搞死了**（内存耗尽/卡死），")
         log("           不是脚本逻辑问题 —— 请把最后一行原样报回，并用 MATRIX_STAGE 分段排查。")
         log("           **卡死的恢复办法：拔掉 micro-USB 再插上**（整机断电复位）；")
