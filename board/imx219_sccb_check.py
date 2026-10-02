@@ -14,7 +14,7 @@ imx219_sccb_check.py —— IMX219 SCCB 驱动的**离线自检**（无需相机
     ④ SCCB 线上层是否逐字节正确（地址/值编码、写事务、读事务、越界拒绝）；
     ⑤ **安全阀是否真的会拦人**：寄存器表未核实时驱动必须拒绝下装，而不是静默写错值。
 
-⚠️ 它**不是**「相机能用」的证据：没有真机、没有寄存器表，出图与否无法验证（见 docs/27 §4）。
+⚠️ 它**不是**「相机能用」的证据：没有真机，出图与否无法验证（寄存器表已按 linux imx219.c 补齐，但出图仍需硬件，见 docs/27 §4）。
    `bayer_demosaic` 相位那一条，本脚本只能做掉「裁剪原点奇偶」这一半，另一半仍需真机 test pattern。
 
 用法：
@@ -223,6 +223,10 @@ def section_sccb(r):
     r.check("地址编码：0x30EB -> b'\\x30\\xeb'",
             Imx219Sccb._addr_bytes(0x30EB), b"\x30\xeb")
     r.check("值编码：0xAA -> b'\\xaa'", Imx219Sccb._value_bytes(0xAA), b"\xaa")
+    r.check("值编码（16bit，big-endian）：0x1800 -> b'\\x18\\x00'",
+            Imx219Sccb._value_bytes(0x1800, 2), b"\x18\x00")
+    r.check("值编码（16bit，big-endian）：57 -> b'\\x00\\x39'",
+            Imx219Sccb._value_bytes(57, 2), b"\x00\x39")
 
     #  写事务：线上恰好是 3 字节 [addr_hi, addr_lo, value]
     bus = FakeSccbTransport()
@@ -230,6 +234,9 @@ def section_sccb(r):
     dev.write_reg(0x0100, 0x00)
     r.check("写事务线上字节 = [0x01, 0x00, 0x00]（3 字节：地址 2B + 值 1B）",
             bus.log[-1][2], b"\x01\x00\x00")
+    dev.write_reg(0x012a, 0x1800, width=2)
+    r.check("16bit 值写事务线上字节 = [0x01, 0x2a, 0x18, 0x00]（4 字节：地址 2B + 值 2B）",
+            bus.log[-1][2], b"\x01\x2a\x18\x00")
 
     #  读事务：线上先发 2 字节地址，再取 1 字节
     bus2 = FakeSccbTransport(regs={0x0100: 0x37})
@@ -256,7 +263,10 @@ def section_sccb(r):
             return True
 
     r.check("寄存器地址 > 0xFFFF 被拒绝", _raises(lambda: dev3.write_reg(0x10000, 0x00)), True)
-    r.check("寄存器值 > 0xFF 被拒绝", _raises(lambda: dev3.write_reg(0x0100, 0x100)), True)
+    r.check("寄存器值 > 0xFF 被拒绝（8bit 默认宽度）", _raises(lambda: dev3.write_reg(0x0100, 0x100)), True)
+    r.check("16bit 值越界（0x10000 > 0xFFFF）被拒绝",
+            _raises(lambda: dev3.write_reg(0x012a, 0x10000, width=2)), True)
+    r.check("非法值宽度 3 被拒绝", _raises(lambda: dev3.write_reg(0x012a, 0x00, width=3)), True)
 
     #  读回长度不符必须报错（假 transport 返回 2 字节）
     class _BadLen(FakeSccbTransport):
@@ -271,15 +281,16 @@ def section_sccb(r):
 # 6. 安全阀：未核实时必须拒绝下装
 # ---------------------------------------------------------------------------
 def section_safety_valve(r):
-    r.section("6. 安全阀（寄存器表未核实时，驱动必须拒绝下装）")
+    r.section("6. 安全阀（空表 / 未核实项 / 值宽度越界都要拒绝下装）")
     v = verification()
-    r.check("当前 REGISTER_TABLE 为空（本机没有可引用的 IMX219 注册表来源）",
-            len(REGISTER_TABLE), 0)
-    r.check("空表时 n_unverified == 0（空表**不是**「全部通过」）", v.n_unverified, 0)
-    r.check("空表时 programmable == False（表为空 ⇒ 无权下装）", v.programmable, False)
-    r.check("阻塞项恰好 %d 条，且 REG_TABLE 在其中" % len(BLOCKERS),
+    r.check("REGISTER_TABLE 非空（B1 已按 linux imx219.c 补齐）", len(REGISTER_TABLE), 50)
+    r.check("寄存器表全核实：n_verified=50 且 n_unverified=0",
+            (v.n_verified, v.n_unverified), (50, 0))
+    r.check("programmable 仍 == False（还有 2 个未闭合阻塞项，不是表的问题）",
+            v.programmable, False)
+    r.check("阻塞项恰好 2 条，且不含 REG_TABLE",
             [b.key for b in BLOCKERS],
-            ["REG_TABLE", "TIER_720P60_READOUT", "SCCB_ADDR"])
+            ["TIER_720P60_READOUT", "SCCB_ADDR"])
 
     bus = FakeSccbTransport()
     dev = Imx219Sccb(bus)
@@ -306,9 +317,16 @@ def section_safety_valve(r):
     r.check("形状不认识的表项直接抛 TypeError（不许被静默跳过）",
             _raises_type(lambda: dev.write_table((object(),))), True)
 
-    #  三档模式表的"下装冒烟"：表为空时**三档都应拒绝**，这样"驱动写完没有"就不会被误读。
-    r.check("三档模式下装都因空表被拒绝（表空 ⇒ 三档都不可下装）",
-            [_refuses(REGISTER_TABLE) for _ in TIERS], [True, True, True])
+    #  完整启动序列的"下装冒烟"：REGISTER_TABLE 现在是 640x480 的完整序列（50 项），
+    #  应能成功下装且写入字节数与表项一致 —— 这钉住"16bit 值也真写下去了"。
+    _bus2 = FakeSccbTransport()
+    _dev2 = Imx219Sccb(_bus2)
+    r.check("640x480 完整启动序列可下装（不再被空表/未核实拒绝）",
+            _dev2.write_table(REGISTER_TABLE), len(REGISTER_TABLE))
+    r.check("下装后总线日志条数 == 表项数（每一项都真写下去了）",
+            len(_bus2.log), len(REGISTER_TABLE))
+    r.check("16bit 值 EXCK_FREQ 落盘为 0x1800（不是被截断成 8bit）",
+            _bus2.regs.get(0x012a), 0x1800)
 
 
 # ---------------------------------------------------------------------------
@@ -332,6 +350,43 @@ def section_evidence(r):
 
 
 # ---------------------------------------------------------------------------
+# 8. 寄存器表与 linux 驱动一致性（B1）
+# ---------------------------------------------------------------------------
+def section_register_table(r):
+    r.section("8. 寄存器表（来源 = linux imx219.c，逐模式裁剪与 rpicam 真机交叉核对）")
+    from imx219_driver import (      # noqa: E402
+        IMX219_2LANE_REGS, IMX219_COMMON_REGS, IMX219_STREAM_ON,
+        imx219_mode_regs, imx219_startup_sequence,
+    )
+    r.check("common regs 恰好 23 项（imx219_common_regs）", len(IMX219_COMMON_REGS), 23)
+    r.check("2lane regs 恰好 8 项（imx219_2lane_regs）", len(IMX219_2LANE_REGS), 8)
+    r.check("stream-on 恰好 1 项", len(IMX219_STREAM_ON), 1)
+    c = {e.addr: e for e in IMX219_COMMON_REGS}
+    r.check("EXCK_FREQ = 24MHz*256 = 0x1800，且是 16bit 寄存器",
+            (c[0x012a].value, c[0x012a].width), (6144, 2))
+    r.check("MODE_SELECT 首项 = standby（0x00，8bit）",
+            (c[0x0100].value, c[0x0100].width), (0x00, 1))
+    l = {e.addr: e for e in IMX219_2LANE_REGS}
+    r.check("2-lane PLL：VT_MPY=57 / OP_MPY=114 / LANE_MODE=1",
+            (l[0x0306].value, l[0x030c].value, l[0x0114].value), (57, 114, 1))
+    r.check("PLL_VT_MPY / PLL_OP_MPY 是 16bit 寄存器（CCI_REG16）",
+            (l[0x0306].width, l[0x030c].width), (2, 2))
+    #  逐模式裁剪交叉核对：imx219_mode_regs 算出的 X/Y_ADD_STA 必须 == rpicam 真机的 crop 原点。
+    for m in READOUT_MODES:
+        regs = {e.addr: e for e in imx219_mode_regs(m)}
+        r.check("%s：X_ADD_STA_A == crop_x(%d)" % (m.name, m.crop_x),
+                regs[0x0164].value, m.crop_x)
+        r.check("%s：Y_ADD_STA_A == crop_y(%d)" % (m.name, m.crop_y),
+                regs[0x0168].value, m.crop_y)
+        r.check("%s：X_OUTPUT_SIZE == out_w(%d)" % (m.name, m.out_w),
+                regs[0x016c].value, m.out_w)
+        r.check("%s：Y_OUTPUT_SIZE == out_h(%d)" % (m.name, m.out_h),
+                regs[0x016e].value, m.out_h)
+    r.check("完整启动序列项数 = 23 + 8 + 18 + 1 = 50",
+            len(imx219_startup_sequence(READOUT_MODES[0])), 50)
+
+
+# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 def main(argv=None):
@@ -350,6 +405,7 @@ def main(argv=None):
     section_link_budget(r)
     section_sccb(r)
     section_safety_valve(r)
+    section_register_table(r)
     section_evidence(r)
 
     total = r.n_pass + r.n_fail

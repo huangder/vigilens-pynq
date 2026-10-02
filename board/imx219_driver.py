@@ -20,7 +20,7 @@ imx219_driver.py —— IMX219（树莓派 Camera Module 2）SCCB 驱动与三�
     与 `docs/26` §1 那 4 个"静默错"是同一类危险。所以"缺"必须是显式的、可统计的。
 
 离线自检（无需相机、无需板卡、无第三方依赖）：
-    python board/imx219_sccb_check.py            # 33 项，含 SCCB 线上字节序与整档推导
+    python board/imx219_sccb_check.py            # 110 项，含 SCCB 线上字节序、16bit 值编码、寄存器表一致性
 """
 
 import sys
@@ -95,6 +95,14 @@ EVIDENCE_REJECTED = Evidence(
 SENSOR_ARRAY_W = 3280
 SENSOR_ARRAY_H = 2464
 
+#  物理（native）阵列与有效区偏移 —— 来自 linux imx219.c 的 IMX219_NATIVE_* / IMX219_ACTIVE_AREA_*。
+#  逐模式裁剪窗口的寄存器值（X/Y_ADD_STA_A 等）以 native 坐标计算、再减掉有效区偏移，
+#  与 rpicam --list-cameras 报出的 crop 原点在**寄存器坐标空间**上对齐（见 docs/27 §2.3 与 §4 B1）。
+SENSOR_NATIVE_W = 3296
+SENSOR_NATIVE_H = 2480
+SENSOR_ACTIVE_LEFT = 8
+SENSOR_ACTIVE_TOP = 8
+
 #  SCCB / 硬件 I2C 从地址。IMX219 的 7 bit 地址是 0x10（8 bit 读 0x21 / 写 0x20）。
 #  ⚠️ 出处见 docs/27 §1.3：这条来自 IMX219 设备树/官方模块的通行做法，
 #     **本机同样没有读到规格书原文** ⇒ 标 UNVERIFIED，上板前用 i2cdetect 实扫一次即可闭环。
@@ -128,6 +136,7 @@ class ReadoutMode:
     crop_h: int
     max_fps: float          # 真机 `--list-cameras` 报出的上限（含 binning）
     binned: bool            # 是否 2x2 analog binning（见 docs/27 §2.3 的相位影响）
+    fll_def: int = 0        # 该模式默认帧长（linux imx219.c supported_modes[] 的 fll_def）
     src: str = "EVIDENCE_SENSOR_MODES"
 
     # ---- 派生属性（全部可由上面几个整数复算）----
@@ -173,10 +182,10 @@ class ReadoutMode:
 
 #  真机列表的四行，**逐字落地**。顺序与列表一致。
 READOUT_MODES = (
-    ReadoutMode("640x480_binned",  640,  480, 1000,  752, 1280,  960, 206.65, True),
-    ReadoutMode("1640x1232_binned", 1640, 1232,    0,    0, 3280, 2464,  41.85, True),
-    ReadoutMode("1920x1080",       1920, 1080,  680,  692, 1920, 1080,  47.57, False),
-    ReadoutMode("3280x2464",       3280, 2464,    0,    0, 3280, 2464,  21.19, False),
+    ReadoutMode("640x480_binned",  640,  480, 1000,  752, 1280,  960, 206.65, True, 1707),
+    ReadoutMode("1640x1232_binned", 1640, 1232,    0,    0, 3280, 2464,  41.85, True, 1707),
+    ReadoutMode("1920x1080",       1920, 1080,  680,  692, 1920, 1080,  47.57, False, 1763),
+    ReadoutMode("3280x2464",       3280, 2464,    0,    0, 3280, 2464,  21.19, False, 3526),
 )
 
 #  规格书侧的两个上限（**docx/20 已归档，出自 Sony《IMX219PQH5-C》规格书**）。
@@ -325,27 +334,15 @@ class Blocker:
 
 BLOCKERS = (
     Blocker(
-        key="REG_TABLE",
-        what="IMX219 的寄存器初始化序列（模式选择 0x0100、PLL 分频、曝光/增益、时序寄存器）",
-        why=("本机读不到任何 IMX219 注册表一手来源：GitHub / raw.githubusercontent / "
-             "jsdelivr / fastly.jsdelivr / ghproxy / gitee 镜像全部被本机 DNS 或网络策略挡掉，"
-             "raspberrypi.com 与 arducam.com 返回 403（实测记录见 docs/27 §1.1）。"),
-        how=("三选一：① 在能访问 GitHub 的网络里取 linux 驱动的 imx219 模式表（最权威）；"
-             "② 读 Sony《IMX219PQH5-C》规格书 §6/§7 的寄存器表；"
-             "③ 在树莓派上用 i2c 抓一次 autodetect 后的寄存器快照（最省事，且是**真机证据**）。"
-             "拿到之后把值填进 `REGISTER_TABLE`，`verification()` 的计数会自动从 0 变正。"),
-    ),
-    Blocker(
         key="TIER_720P60_READOUT",
-        what="720p60 档**用哪个传感器读出模式**（真机模式列表里没有 1280x720）",
-        why=("libcamera 真机列表只给出 640x480 / 1640x1232 / 1920x1080 / 3280x2464 四个模式；"
-             "没有任何一档直接输出 1280x720。而 `docs/19` §1.2 的带宽结论只证明了"
-             "\"2-lane 上装得下 720p60\"，**没有**证明\"传感器有 720p60 模式\"——这是两件事。"),
-        how=("① 读规格书 §5-2 的 mode example 表，看有没有 1280x720 的读出/裁切组合；"
-             "② 或退一步：用**已核实的 1640x1232 binned 模式**（41.85 fps，RGGB，无相位风险）"
-             "供像素，档位帧率按 41.85 而非 60（**这要改契约 §0，属会签项**）；"
-             "③ 或在 PL 侧用 frame_scale 把 1640x1232 缩到 1280x720（`frame_scale.cpp` 现是 1280x720→640x480，"
-             "比例不同，需新增一档）。"),
+        what="720p60 档的读出模式**待转录**（传感器已确认支持 720p，见 docs/27 §2.2）",
+        why=("传感器**支持** 720p：规格书 Features 明确「180 fps @720p with 2x2 analog (special) binning」、"
+             "NVIDIA Jetson 驱动有 imx219_mode_1280x720_60fps[] 模式表；但树莓派 libcamera 驱动只暴露"
+             "4 个模式（640x480 / 1640x1232 / 1920x1080 / 3280x2464）**没有 720p** ⇒ 本驱动也还没有 720p 模式表。"
+             "所以缺的不是\"传感器有没有这个模式\"，而是\"把 720p 模式表转录进来\"。"),
+        how=("① 把 NVIDIA imx219_mode_1280x720_60fps[] 转录进 REGISTER_TABLE（⚠️ 注意 8bit↔16bit 地址口径、"
+             "special-binning 的 Bayer 相位待核实）；② 或退一步用**已核实的 1640x1232 binned 模式**"
+             "（41.85 fps，要改契约 §0，属会签项）；③ 或 PL 侧 frame_scale 把 1640x1232 缩到 1280x720。"),
     ),
     Blocker(
         key="SCCB_ADDR",
@@ -394,6 +391,9 @@ class FakeSccbTransport:
         if len(payload) == 3:                                    # 16bit 地址 + 8bit 值
             addr = (payload[0] << 8) | payload[1]
             self.regs[addr] = payload[2]
+        elif len(payload) == 4:                                  # 16bit 地址 + 16bit 值
+            addr = (payload[0] << 8) | payload[1]
+            self.regs[addr] = (payload[2] << 8) | payload[3]
         elif len(payload) == 2:                                  # 8bit 地址 + 8bit 值
             self.regs[payload[0]] = payload[1]
 
@@ -428,18 +428,29 @@ class Imx219Sccb:
         return bytes([(addr >> 8) & 0xFF, addr & 0xFF])
 
     @staticmethod
-    def _value_bytes(value):
-        if not (0 <= value <= 0xFF):
-            raise SccbError("寄存器值越界（本驱动只按 8bit 值处理）：0x%X" % value)
-        return bytes([value & 0xFF])
+    def _value_bytes(value, width=1):
+        """寄存器值编码为 width 字节、big-endian（16bit 地址同为 big-endian）。
+
+        width=1 → 8bit 值（1 字节）；width=2 → 16bit 值（2 字节，高字节先）。
+        越界一律拒绝，绝不截断 —— 截断就是"静默写错值"的一种。
+        """
+        if width not in (1, 2):
+            raise SccbError("不支持的寄存器值宽度：%d（只支持 1/2 字节）" % width)
+        hi = (1 << (8 * width)) - 1
+        if not (0 <= value <= hi):
+            raise SccbError("寄存器值越界（%d 字节最大 0x%X）：0x%X" % (width, hi, value))
+        return value.to_bytes(width, "big")
 
     @property
     def addr_7bit(self):
         return getattr(self._t, "addr_7bit", SCCB_ADDR_7BIT)
 
-    def write_reg(self, addr, value):
-        """写一个寄存器：address(2B, 高字节先) + value(1B)。"""
-        self._t.wr(self._addr_bytes(addr) + self._value_bytes(value))
+    def write_reg(self, addr, value, width=1):
+        """写一个寄存器：address(2B, 高字节先) + value(width 字节, 高字节先)。
+
+        width=1 → 8bit 值（线上 3 字节）；width=2 → 16bit 值（线上 4 字节）。
+        """
+        self._t.wr(self._addr_bytes(addr) + self._value_bytes(value, width))
 
     def read_reg(self, addr):
         """读一个寄存器：先发地址，再读 1 字节。"""
@@ -473,7 +484,7 @@ class Imx219Sccb:
                 "请先按 docs/27 §4 补来源，或用 allow_unverified=True 显式承担风险。"
                 % (len(bad), ", ".join("0x%04X" % a for a, _ in bad)))
         for e in table:
-            self.write_reg(e.addr, e.value)
+            self.write_reg(e.addr, e.value, getattr(e, "width", 1))
         return len(table)
 
 
@@ -488,17 +499,140 @@ class RegEntry:
     verified: bool
     source: str = ""
     what: str = ""
+    width: int = 1        # 寄存器值字节数：1 = 8bit，2 = 16bit（big-endian）
 
 
-#  ⚠️⚠️ 这里**故意是空表**，不是"还没写完"，而是"没有来源就不许填"。
-#
-#     为什么这么设计：寄存器值写错**不会报错、不会崩**，只会让相机不出图，或者出一张
-#     相位平移了一格的马赛克 —— 那就是 `docs/26` §1 那 4 个"静默错"的同一类，
-#     而且更难查（没有 csim 可以对拍）。所以本文件宁可在 import 层面就"没有东西可写"，
-#     并把缺口统计出来（verification().n_blockers），也不填任何未核实的值。
-#
-#     补完之后唯一要改的就是这个元组；`write_table` 的安全阀与自检会自动跟着变。
-REGISTER_TABLE = ()          # 形如 (RegEntry(0x0100, 0x00, True, "规格书 §7 p.xx", "streaming"), ...)
+#  寄存器值来源（唯一、可引用）：Linux 内核主线驱动 `drivers/media/i2c/imx219.c`
+#  （torvalds/linux master，Raspberry Pi (Trading) Ltd 2019 起维护；kernel.org 实读）。
+#  这正是 rpicam/libcamera 在树莓派上驱动 IMX219 所用的同一份寄存器序列。
+_REG_SRC = ("linux kernel imx219.c（torvalds/linux master, "
+            "drivers/media/i2c/imx219.c；"
+            "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/"
+            "plain/drivers/media/i2c/imx219.c，2026-10 实读）")
+
+
+def reg8(addr, value, what=""):
+    """构造一个 8bit 值寄存器项（VERIFIED）。"""
+    return RegEntry(addr, value, True, _REG_SRC, what, 1)
+
+
+def reg16(addr, value, what=""):
+    """构造一个 16bit 值寄存器项（VERIFIED）。"""
+    return RegEntry(addr, value, True, _REG_SRC, what, 2)
+
+
+# --- 通用初始化序列（imx219_common_regs，23 项）--------------------------------
+IMX219_COMMON_REGS = (
+    reg8(0x0100, 0x00, "MODE_SELECT = standby"),
+    # To Access Addresses 3000-5fff, send the following commands
+    reg8(0x30eb, 0x05, "解锁 3000-5fff 地址区"),
+    reg8(0x30eb, 0x0c, "解锁 3000-5fff 地址区"),
+    reg8(0x300a, 0xff, "解锁 3000-5fff 地址区"),
+    reg8(0x300b, 0xff, "解锁 3000-5fff 地址区"),
+    reg8(0x30eb, 0x05, "解锁 3000-5fff 地址区"),
+    reg8(0x30eb, 0x09, "解锁 3000-5fff 地址区"),
+    # Undocumented registers（驱动原文如此标注）
+    reg8(0x455e, 0x00, "undocumented"),
+    reg8(0x471e, 0x4b, "undocumented"),
+    reg8(0x4767, 0x0f, "undocumented"),
+    reg8(0x4750, 0x14, "undocumented"),
+    reg8(0x4540, 0x00, "undocumented"),
+    reg8(0x47b4, 0x14, "undocumented"),
+    reg8(0x4713, 0x30, "undocumented"),
+    reg8(0x478b, 0x10, "undocumented"),
+    reg8(0x478f, 0x10, "undocumented"),
+    reg8(0x4793, 0x10, "undocumented"),
+    reg8(0x4797, 0x0e, "undocumented"),
+    reg8(0x479b, 0x0e, "undocumented"),
+    # Frame Bank Register Group "A"
+    reg8(0x0170, 0x01, "X_ODD_INC_A"),
+    reg8(0x0171, 0x01, "Y_ODD_INC_A"),
+    # Output setup registers
+    reg8(0x0128, 0x00, "DPHY_CTRL = timing auto"),
+    reg16(0x012a, 24 * 256, "EXCK_FREQ = 24MHz * 256 = 0x1800"),
+)
+
+
+# --- 2-lane PLL 时钟表 + lane 模式（imx219_2lane_regs，8 项）---------------------
+IMX219_2LANE_REGS = (
+    reg8(0x0301, 0x05, "VTPXCK_DIV"),
+    reg8(0x0303, 0x01, "VTSYCK_DIV"),
+    reg8(0x0304, 0x03, "PREPLLCK_VT_DIV = AUTO"),
+    reg8(0x0305, 0x03, "PREPLLCK_OP_DIV = AUTO"),
+    reg16(0x0306, 57, "PLL_VT_MPY = 57"),
+    reg8(0x030b, 0x01, "OPSYCK_DIV"),
+    reg16(0x030c, 114, "PLL_OP_MPY = 114"),
+    reg8(0x0114, 0x01, "CSI_LANE_MODE = 2-lane"),
+)
+
+
+# --- 流开关（MODE_SELECT）------------------------------------------------------
+IMX219_STREAM_ON = (reg8(0x0100, 0x01, "MODE_SELECT = streaming"),)
+IMX219_STREAM_OFF = (reg8(0x0100, 0x00, "MODE_SELECT = standby"),)
+
+
+def imx219_mode_regs(mode):
+    """逐模式的裁剪/输出/时序/曝光增益寄存器（18 项）。
+
+    复刻 linux imx219.c 的 `imx219_set_pad_format()`（算裁剪窗口与 binning）+
+    `imx219_set_framefmt()`（写裁剪/输出/时序寄存器）+
+    `imx219_init_controls()` 的默认曝光/增益路径。
+
+    关键不变量（也是自检交叉核对的那条）：
+      X_ADD_STA_A == mode.crop_x、Y_ADD_STA_A == mode.crop_y ——
+    即本函数算出的寄存器坐标与 rpicam --list-cameras 报出的 crop 原点一致。
+    """
+    w, h = mode.out_w, mode.out_h
+    # binning：2x2 模拟合并，取 2 以最大化裁剪窗口并居中（imx219_set_pad_format）
+    bin_h = min(SENSOR_ARRAY_W // w, 2)
+    bin_v = min(SENSOR_ARRAY_H // h, 2)
+    binning = min(bin_h, bin_v)
+    bin_code = 0x03 if (bin_h == 2 and bin_v == 2) else 0x00
+    crop_w = w * binning
+    crop_h = h * binning
+    crop_left = (SENSOR_NATIVE_W - crop_w) // 2
+    crop_top = (SENSOR_NATIVE_H - crop_h) // 2
+    # 时序默认值：line length 取决于是否 binning；frame length 来自该模式的 fll_def
+    llp = 0x0de8 if bin_code == 0x03 else 0x0d78     # BINNED_LLP_MIN : LLP_MIN
+    fll = mode.fll_def
+    exposure = min(fll - 4, 0x640)                    # EXPOSURE_DEFAULT = 0x640
+    bpp = 10                                          # RAW10（SRGGB10）
+    return (
+        reg16(0x0164, crop_left - SENSOR_ACTIVE_LEFT, "X_ADD_STA_A"),
+        reg16(0x0166, crop_left - SENSOR_ACTIVE_LEFT + crop_w - 1, "X_ADD_END_A"),
+        reg16(0x0168, crop_top - SENSOR_ACTIVE_TOP, "Y_ADD_STA_A"),
+        reg16(0x016a, crop_top - SENSOR_ACTIVE_TOP + crop_h - 1, "Y_ADD_END_A"),
+        reg8(0x0174, bin_code, "BINNING_MODE_H"),
+        reg8(0x0175, bin_code, "BINNING_MODE_V"),
+        reg16(0x016c, w, "X_OUTPUT_SIZE"),
+        reg16(0x016e, h, "Y_OUTPUT_SIZE"),
+        reg16(0x0624, w, "TP_WINDOW_WIDTH"),
+        reg16(0x0626, h, "TP_WINDOW_HEIGHT"),
+        reg16(0x018c, (bpp << 8) | bpp, "CSI_DATA_FORMAT_A = RAW10"),
+        reg8(0x0309, bpp, "OPPXCK_DIV = 10"),
+        reg16(0x0160, fll, "FRM_LENGTH_A"),
+        reg16(0x0162, llp, "LINE_LENGTH_A"),
+        reg16(0x015a, exposure, "EXPOSURE"),
+        reg8(0x0157, 0x00, "ANALOG_GAIN = 0"),
+        reg16(0x0158, 0x0100, "DIGITAL_GAIN = 1.0x"),
+        reg8(0x0172, 0x00, "ORIENTATION = no flip"),
+    )
+
+
+def imx219_startup_sequence(mode, lanes=2):
+    """一个模式的完整启动写入序列（common + lane + mode + stream-on）。
+
+    `mode` 必须是 `ReadoutMode` 实例（不是名字），这样本函数不依赖 mode_by_name，
+    可以在 READOUT_MODES 定义之后立刻被 REGISTER_TABLE 使用。
+    """
+    if lanes != 2:
+        raise ValueError("本项目只有 2-lane（Mizar 板 MIPI 2-lane），lanes 必须为 2")
+    return IMX219_COMMON_REGS + IMX219_2LANE_REGS + imx219_mode_regs(mode) + IMX219_STREAM_ON
+
+
+#  默认启动序列 = 640x480（v1.1 冻结档，且是唯一读出源完全确定的档）。
+#  ⚠️ 720p60 仍无读出源（TIER_720P60_READOUT），1080p45 用 1920x1080 模式。
+REGISTER_TABLE = imx219_startup_sequence(READOUT_MODES[0])
 
 
 def normalize_table(table):

@@ -188,6 +188,10 @@ TOOL_SELFTESTS = (
     # 所以"寄存器值对不对"现在无法验；能验的就必须天天验，否则这份驱动会退化成一份没人跑过的文档。
     # 特别是安全阀那几条 —— 它守的是"寄存器表没核实就不许下装"，是**防止静默写错值**的唯一一道闸。
     ("board/imx219_sccb_check.py", None),
+    # 无 PYNQ 环境的 /dev/mem mmap 加载器的**离线自检**（2026-10 新增）：用匿名 mmap 模拟 /dev/mem，
+    # 验 MmapMMIO 32bit 读写、页内偏移、越界拒绝、地址映射校验（缺项/重叠/范围/对齐）、
+    # load_mmap 与 load_overlay 的 read_reg/write_reg 复用、以及 .hwh 解析与 instance→logical 映射。
+    ("board/overlay/mmap_overlay.py", "--selftest"),
 )
 
 
@@ -219,6 +223,7 @@ SYNTAX_TARGETS = (
     "board/openmv/openmv_stream.py", "board/openmv/openmv_capture_test.py",
     "board/bringup_check.py", "board/dma_test.py", "board/hw_sw_compare.py",
     "board/overlay/load_overlay.py",
+    "board/overlay/mmap_overlay.py",
     "board/imx219_driver.py", "board/imx219_sccb_check.py",
 )
 

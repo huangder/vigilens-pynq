@@ -15,8 +15,8 @@ load_overlay.py —— 板级加载器 + 驱动 SDK（C 线 M3 上板用）
   （开发环境写的是 Vivado 2018.3）。所以上板第一件事是在板子的 Linux 里跑：
       python3 -c "import pynq; print(pynq.__version__)"
   · 有 → 本文件的 `Overlay()` 路线可用。
-  · 无 → **走 `mmio` 回退路线**：普通 Linux + `/dev/mem` mmap（或 UIO）读写 AXI-Lite，
-          DMA 缓冲用 `mmap` 的物理连续内存。这条路线**本文件尚未实现**，是 M3 的待补工作。
+  · 无 → **走 mmap 回退路线**：普通 Linux + `/dev/mem` mmap 读写 AXI-Lite，见
+          `overlay/mmap_overlay.py`（已实现，含 16 项离线自检；DMA 数据通路仍需 UIO+CMA，另行补）。
 
 ⚠️ 纪律提示（AGENTS.md / docs/interface.md §5.3）：
    - 所有寄存器偏移来自 `board/regmap.py`（PS 侧镜像），不要在本文件里写死魔法数字。

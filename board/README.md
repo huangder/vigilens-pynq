@@ -39,8 +39,9 @@
      脚本会在 PS7 之后**主动 `exit 1`** 并打印该做什么，这是刻意设计。
 2. **板子上有没有 PYNQ 环境？** 官方手册没有 Mizar 的 PYNQ 镜像记载。
    - 板上跑 `python3 -c "import pynq; print(pynq.__version__)"` 判定。
-   - **没有** → `overlay/load_overlay.py` 的 `Overlay()` 路线不可用，要改走普通 Linux + `/dev/mem` mmap（或 UIO）。
-     **这条路本目录尚未实现，是 M3 的待补工作。**
+   - **没有** → `overlay/load_overlay.py` 的 `Overlay()` 路线不可用，改走 `overlay/mmap_overlay.py`
+     （普通 Linux + `/dev/mem` mmap 读 AXI-Lite 寄存器，**已实现**，含 16 项离线自检）。
+     ⚠️ DMA 数据通路（`run_pixel_chain` / `run_fir_segment`）仍需 UIO + CMA，另行补。
 
 > 📌 另注：**§3.5 的 100 MHz 目标时钟不受影响** —— 它来自 PS **FCLK0**（`build_bd.tcl` 的 `PCW_FPGA0_PERIPHERAL_FREQMHZ`），
 > 由 PS 33.333 MHz 经 PLL 产生，与 PL 侧那颗 50 MHz 晶振无关。
@@ -53,11 +54,13 @@
 |---|---|---|
 | `regmap.py` | 四个 IP 的 AXI-Lite 寄存器偏移（PS 侧单一来源，镜像 `docs/interface.md` §3） | ✅ 离线 `python board/regmap.py --selftest` |
 | `overlay/load_overlay.py` | 板级加载器 + HLS 控制/像素链/FIR 驱动 SDK（**PYNQ 路线**，见上方 ⚠️ 第 2 条） | ⚠️ 仅 PC 上 py_compile；运行时依赖板卡 |
+| `overlay/mmap_overlay.py` | 🆕 **无 PYNQ 回退路线**：`/dev/mem` mmap 读 AXI-Lite（`load_mmap`/`MmapMMIO`/`.hwh` 解析 + 地址校验） | ✅ 离线 `python board/overlay/mmap_overlay.py --selftest`（**16/16**）；⚠️ `/dev/mem` 与真实地址需上板验 |
 | `bringup_check.py` | C8：寄存器读写 + 计数器复位语义自检（门限 3/4） | ⚠️ 上板跑 |
 | `dma_test.py` | C9：DMA 回环/缓存一致性 + 长跑不死锁 + 确定性（门限 5/6/7） | ⚠️ 上板跑 |
 | `hw_sw_compare.py` | C10：PL vs 黄金参考逐点比对（容差 0，门限 8） | ⚠️ 上板跑 |
-| `imx219_driver.py` + `imx219_sccb_check.py` | 🆕 **IMX219（Camera Module 2）SCCB 驱动与三档模式表**：外部证据台账 + 真机读出模式 + 三档口径 + SCCB 线上层 + **安全阀**（寄存器表为空或含未核实项即**拒绝下装**）。依据/未闭合项见 `docs/27` | ✅ 离线 `python board/imx219_sccb_check.py`（**79/79**，已纳入 `check_all.py`）；⚠️ **寄存器初始化序列表本身仍未填**——本机读不到任何 IMX219 注册表来源（`docs/27` §1.1 有逐条实测记录，§4 B1 是补法） |
+| `imx219_driver.py` + `imx219_sccb_check.py` | 🆕 **IMX219（Camera Module 2）SCCB 驱动与三档模式表**：外部证据台账 + 真机读出模式 + 三档口径 + SCCB 线上层 + **安全阀**（寄存器表含未核实项即**拒绝下装**）。依据/未闭合项见 `docs/27` | ✅ 离线 `python board/imx219_sccb_check.py`（**110/110**，已纳入 `check_all.py`）；✅ 寄存器初始化序列已按 linux imx219.c 补齐（`docs/27` §1.4），但出图仍需硬件（B3~B6） |
 | `build_bd.tcl` | Block Design 构建脚本（Vivado batch；**板级 preset 已参数化 + 有停止守卫**） | ⚠️【未验证】需在 Vivado 2026.1 实跑迭代 |
+| `mipi_csi2_rx_bd.tcl` | 🆕 **MIPI CSI-2 RX 接入 system BD 的脚手架**（实例化 + 参数 + 数据通路 + 200 MHz 时钟；**未验证**） | ❌ 需 Vivado + IP 授权 + DDR 参数 + D-PHY XDC，本机验不了 |
 | `bitstream/` | 导出的 `.bit` / `.hwdef`（体积大，考虑 Releases/LFS） | ⏳ 空 |
 | `overlay/` | Overlay 封装（`.tcl`/`.xsa`、`*.py` 加载器） | ⏳ 见上 |
 | `openmv/` | **OpenMV 首次测试包**：串口帧协议 / 上位机采集测试 / OpenMV 侧采集测试 / PL 最小回环 / 接线与分阶段测试方案 | ✅ 协议与上位机工具可离线自检（含 `offline_check.py` = 54/54，已纳入 `check_all.py`）；🧪 **OpenMV 已接入过 1 次**，但采集矩阵只回来 2 行 → `fpga/report/t6_openmv_capture_matrix_v1.md` |
@@ -182,10 +185,9 @@ python board/hw_sw_compare.py --bit system.bit --data-root fpga/sim
 - `build_bd.tcl` 是**照做脚手架**，`[TODO-verify]` 处需按 Vivado 2026.1 实际 IP catalog 就地修正。
   **换到 Mizar 后新增两条硬约束**：① 板级 preset 由 `USE_BOARD_PRESET` 控制，**默认 0**；
   ② 未落实 PS7 配置时脚本会 `exit 1`（**这是刻意设计**，防止拿 PYNQ-Z2 的 DDR 预设生成一块起不来的板子）。
-- 🆕 `imx219_driver.py` **只**覆盖"离线能验的那一半"（几何 / 链路预算 / SCCB 线上字节序 / 安全阀）。
-  **它不含 IMX219 的寄存器初始化序列** —— 本机网络读不到任何注册表来源（`docs/27` §1.1），
-  而寄存器值写错**不会报错、只会让相机不出图**，所以刻意留空并让驱动**拒绝下装**。
-  引用本文件时**不得**表述成"IMX219 驱动已完成 / 相机能起来了"。
+- 🆕 `imx219_driver.py` 现覆盖**离线能验的那一半 + 寄存器表**（几何 / 链路预算 / SCCB 线上字节序 / 安全阀 / 寄存器初始化序列）。
+  寄存器初始化序列**已按 linux imx219.c 补齐**（`docs/27` §1.4）；写错不报错的风险仍在，故保留安全阀。
+  引用本文件时**仍不得**表述成"IMX219 驱动已完成 / 相机能起来了"—— 出图还需硬件（B3~B6）。
 - 🆕 `dma_test.py` 与 `hw_sw_compare.py` 在 **GBK 代码页的控制台**里，收尾打印 `⚠️` 会抛
   `UnicodeEncodeError` —— 而它发生在**已经打印完 `RESULT: PASS` 之后**，
   于是"人眼看着 PASS、退出码却是 1"。2026-10-02 已给两者加 `console_utf8()` 修掉
@@ -211,4 +213,4 @@ python board/hw_sw_compare.py --bit system.bit --data-root fpga/sim
 ---
 
 *本目录由 C 线维护；上板相关的踩坑请沉淀到 `skill/pynq_overlay_loader.md` 与 `skill/dma_buffer_debug.md`（见 `skill/README.md` 的待沉淀清单）。
-换到 Mizar 后新增一条**待沉淀**：`skill/zynq_mmap_overlay.md` —— 无 PYNQ 环境下用 `/dev/mem` mmap 驱动 AXI-Lite/DMA 的通用做法。*
+换到 Mizar 后新增一条**已落地**：`overlay/mmap_overlay.py`（无 PYNQ 环境 `/dev/mem` mmap 驱动 AXI-Lite 的通用做法；待沉淀成 `skill/zynq_mmap_overlay.md`）。*
