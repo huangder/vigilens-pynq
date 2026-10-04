@@ -1,0 +1,7 @@
+# video=still.mp4 fps=45 duration_s=23.422 annotator=Codex-assisted visual review date=2026-10-04
+# 说明：逐帧复核转换后视频；确认 4 次明显眨眼，未见 long_close、yawn、turn 或 occluded。
+start_frame,end_frame,event,note
+247,252,blink,第一次明显闭眼
+572,577,blink,第二次明显闭眼
+582,592,blink,第三次明显闭眼
+918,932,blink,第四次明显闭眼
