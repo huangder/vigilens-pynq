@@ -320,15 +320,24 @@ class MediaPipeLandmarker:
         scale = float(np.linalg.norm(img_pts[2] - img_pts[3])) if len(img_pts) > 3 else 0.0
         if scale <= 0.0:
             return None
+        # The planar face model can make EPNP and ITERATIVE converge to different
+        # positive-Z solutions. Keep every valid candidate and choose the one
+        # with the smallest per-point reprojection residual; returning the first
+        # solver result can turn a frontal face into a false ~40 degree yaw.
+        best: tuple[float, Any, Any] | None = None
         for flags in (cv2.SOLVEPNP_EPNP, cv2.SOLVEPNP_ITERATIVE):
             ok, rvec, tvec = cv2.solvePnP(model, img_pts, cam, np.zeros((4, 1)), flags=flags)
             if not ok or float(tvec[2][0]) <= 0:
                 continue
             proj, _ = cv2.projectPoints(model, rvec, tvec, cam, np.zeros((4, 1)))
-            err = float(np.abs(proj.reshape(-1, 2) - img_pts).mean())
-            if err / scale <= limit:
-                return rvec, tvec
-        return None
+            residual = proj.reshape(-1, 2) - img_pts
+            err = float(np.linalg.norm(residual, axis=1).mean())
+            err_frac = err / scale
+            if err_frac <= limit and (best is None or err_frac < best[0]):
+                best = (err_frac, rvec, tvec)
+        if best is None:
+            return None
+        return best[1], best[2]
 
     @classmethod
     def _pose_from_landmarks(cls, lm: Any, w: int, h: int) -> dict[str, float]:

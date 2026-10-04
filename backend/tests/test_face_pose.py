@@ -152,6 +152,33 @@ def test_reproj_guard_is_resolution_independent() -> None:
     assert abs(base["yaw"]) > 5.0, "这个姿态本该测出明显角度，全 0 说明被护栏清掉了"
 
 
+def test_pose_solver_selects_the_candidate_with_lower_reprojection_error(monkeypatch) -> None:
+    """EPNP 和 ITERATIVE 都过护栏时，不能因 EPNP 先返回就接受较差解。"""
+    img_pts = np.array([
+        [320.0, 240.0], [320.0, 360.0], [260.0, 200.0],
+        [380.0, 200.0], [280.0, 300.0], [360.0, 300.0],
+    ], dtype="double")
+    cam = np.array([[640.0, 0.0, 320.0], [0.0, 640.0, 240.0], [0.0, 0.0, 1.0]])
+    worse_rvec = np.array([[1.0], [0.0], [0.0]])
+    better_rvec = np.array([[2.0], [0.0], [0.0]])
+    tvec = np.array([[0.0], [0.0], [600.0]])
+
+    def fake_solve_pnp(_model, _points, _cam, _dist, *, flags):
+        rvec = worse_rvec if flags == cv2.SOLVEPNP_EPNP else better_rvec
+        return True, rvec.copy(), tvec.copy()
+
+    def fake_project_points(_model, rvec, _tvec, _cam, _dist):
+        offset = 2.0 if float(rvec[0, 0]) == 1.0 else 0.5
+        return (img_pts + offset).reshape(-1, 1, 2), None
+
+    monkeypatch.setattr(cv2, "solvePnP", fake_solve_pnp)
+    monkeypatch.setattr(cv2, "projectPoints", fake_project_points)
+
+    solved = MediaPipeLandmarker._solve_head_pose(img_pts, cam, reproj_max_frac=0.25)
+    assert solved is not None
+    assert np.array_equal(solved[0], better_rvec)
+
+
 def test_reference_model_uses_the_real_chin_and_camera_axes() -> None:
     """模型本身的护栏：下巴必须是 152（不是 199），且 Y 轴朝下（相机系）。"""
     assert MediaPipeLandmarker._POSE_IDX[1] == 152, "下巴索引必须是 152（199 只是内部点）"
