@@ -28,12 +28,12 @@
 
   /* 六态配色：与 panel 顶部状态灯、日志 tag 共用一套 */
   var STATUS_COLOR = {
-    normal: "#35d07f",
-    fatigue_risk: "#ffb020",
-    adjust_posture: "#4da3ff",
-    unreliable: "#8b7cff",
-    disconnected: "#ff5d5d",
-    done: "#5d6b85"
+    normal: "#248a3d",
+    fatigue_risk: "#c93400",
+    adjust_posture: "#007aff",
+    unreliable: "#8944ab",
+    disconnected: "#d70015",
+    done: "#6e6e73"
   };
 
   /* --------------------------------------------------------------------------
@@ -94,7 +94,7 @@
   /* 眨眼状态机（契约 behavior.blink_state 的 4 个取值） */
   var BLINK_ORDER = ["OPEN", "CLOSING", "CLOSED", "OPENING"];
   var BLINK_ZH = { OPEN: "睁眼", CLOSING: "正在闭眼", CLOSED: "闭眼", OPENING: "正在睁眼" };
-  var BLINK_COLOR = { OPEN: "#35d07f", CLOSING: "#4da3ff", CLOSED: "#ffb020", OPENING: "#4da3ff" };
+  var BLINK_COLOR = { OPEN: "#248a3d", CLOSING: "#007aff", CLOSED: "#c93400", OPENING: "#007aff" };
 
   var el = {};                       // DOM 引用
   var state = {
@@ -151,7 +151,7 @@
     var row = document.createElement("div");
     row.className = "row";
     row.innerHTML = '<time>' + nowStr() + '</time><span class="tag" style="color:' +
-      (color || "#8d9bb5") + '">' + tag + '</span><span>' + text + "</span>";
+      (color || "#8e8e93") + '">' + tag + '</span><span>' + text + "</span>";
     el.log.insertBefore(row, el.log.firstChild);
     while (el.log.childNodes.length > 200) el.log.removeChild(el.log.lastChild);
   }
@@ -200,7 +200,7 @@
       return;
     }
     var bx = mapped.x, by = mapped.y, bw = mapped.width, bh = mapped.height;
-    var color = STATUS_COLOR[meta.status] || "#55a8ff";
+    var color = STATUS_COLOR[meta.status] || "#007aff";
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.strokeRect(bx, by, bw, bh);
@@ -220,13 +220,13 @@
 
   /* ---------------------------------------------------------------- 状态区 */
   function renderState(frame) {
-    var st = frame ? frame.status : "disconnected";
-    var color = STATUS_COLOR[st] || "#5d6b85";
+    var st = frame ? frame.status : "waiting";
+    var color = STATUS_COLOR[st] || "#8e8e93";
     el.stateLamp.style.background = color;
     el.stateLamp.style.color = color;
-    el.stateName.textContent = M.STATUS_ZH[st] || st;
+    el.stateName.textContent = frame ? (M.STATUS_ZH[st] || st) : "等待数据";
     el.stateName.style.color = color;
-    el.stateEn.textContent = st;
+    el.stateEn.textContent = frame ? st : "waiting";
 
     el.advice.textContent = frame ? frame.advice : "等待数据…";
     el.reason.textContent = frame ? frame.reason : "—";
@@ -308,15 +308,15 @@
       el.gateVerdictSub.textContent = "—";
     } else if (st === "disconnected") {
       el.gateVerdictText.textContent = "无数据";
-      el.gateVerdictText.style.color = "#ff5d5d";
+      el.gateVerdictText.style.color = STATUS_COLOR.disconnected;
       el.gateVerdictSub.textContent = "视频源或连接中断，门控不适用";
     } else if (failed.length === 0) {
       el.gateVerdictText.textContent = "可以测量";
-      el.gateVerdictText.style.color = "#35d07f";
+      el.gateVerdictText.style.color = STATUS_COLOR.normal;
       el.gateVerdictSub.textContent = "四项门控全部通过，下方指标可信";
     } else {
       el.gateVerdictText.textContent = "测不准，别采信";
-      el.gateVerdictText.style.color = "#ff5d5d";
+      el.gateVerdictText.style.color = STATUS_COLOR.disconnected;
       el.gateVerdictSub.textContent = "未通过：" + failed.join("、");
     }
   }
@@ -339,7 +339,7 @@
       var d = $("blink_" + s);
       if (!d) return;
       var on = (s === cur);
-      var col = BLINK_COLOR[s] || "#8d9bb5";
+      var col = BLINK_COLOR[s] || "#8e8e93";
       d.classList.toggle("on", on);
       d.style.background = on ? col : "";
       d.style.borderColor = on ? col : "";
@@ -355,7 +355,10 @@
       var div = document.createElement("div");
       div.className = "card";
       div.id = "card_" + d.key;
-      div.innerHTML = '<div class="k">' + d.label + '</div><div class="v"><span class="num">—</span><span class="u">' +
+      div.dataset.group = d.gate ? "vital" : (["quality", "light", "motion"].indexOf(d.key) >= 0 ? "quality" :
+        (["visible", "yaw"].indexOf(d.key) >= 0 ? "face" : "behavior"));
+      div.innerHTML = '<div class="card-top"><span class="k">' + d.label + '</span><span class="card-meta">当前</span></div>' +
+        '<div class="v"><span class="num">—</span><span class="u">' +
         (d.unit || "") + '</span></div><div class="note"></div>';
       el.cards.appendChild(div);
     });
@@ -421,8 +424,8 @@
       if (isMsg && d.staticNote) parts.push(d.staticNote);
       if (noteText) parts.push(noteText);
       if (note) note.textContent = parts.join(" · ");
-      card.style.borderColor = isWarn ? "#4d3c14" : "#24304a";
-      num.style.color = isWarn ? "#ffb020" : "";
+      card.classList.toggle("warning", isWarn);
+      num.style.color = isWarn ? STATUS_COLOR.fatigue_risk : "";
     });
   }
 
@@ -432,12 +435,12 @@
     var ctx = c.ctx, w = c.w, h = c.h;
     var padL = 34, padR = 8, padT = 10, padB = 18;
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#0f1621";
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
     // 网格 + y 轴刻度（0 / 50 / 100，按各自量纲归一化到 0~1 后绘制）
-    ctx.strokeStyle = "#1d2740";
-    ctx.fillStyle = "#5d6b85";
+    ctx.strokeStyle = "#e6ebee";
+    ctx.fillStyle = "#89949e";
     ctx.font = "11px ui-monospace, Consolas, monospace";
     ctx.lineWidth = 1;
     for (var i = 0; i <= 4; i++) {
@@ -449,7 +452,7 @@
 
     var pts = state.points;
     if (pts.length < 2) {
-      ctx.fillStyle = "#5d6b85";
+      ctx.fillStyle = "#89949e";
       ctx.textAlign = "center";
       ctx.font = "12px 'Segoe UI', 'Microsoft YaHei', sans-serif";
       ctx.fillText("等待数据…", w / 2, h / 2);
@@ -471,10 +474,10 @@
     }
 
     var defs = [
-      { color: "#4da3ff", get: function (p) { return p.behavior.blink_rate_per_min; }, scale: 40 },
-      { color: "#ffb020", get: function (p) { return p.behavior.perclos; }, scale: 1 },
-      { color: "#35d07f", get: function (p) { return p.vital.hr_bpm; }, scale: 140 },
-      { color: "#8b7cff", get: function (p) { return p.quality.overall; }, scale: 1 }
+      { color: "#007aff", get: function (p) { return p.behavior.blink_rate_per_min; }, scale: 40 },
+      { color: "#ff9500", get: function (p) { return p.behavior.perclos; }, scale: 1 },
+      { color: "#34c759", get: function (p) { return p.vital.hr_bpm; }, scale: 140 },
+      { color: "#af52de", get: function (p) { return p.quality.overall; }, scale: 1 }
     ];
     defs.forEach(function (d) {
       ctx.strokeStyle = d.color;
@@ -484,7 +487,7 @@
     });
 
     // 时间轴两端标注
-    ctx.fillStyle = "#5d6b85";
+    ctx.fillStyle = "#89949e";
     ctx.font = "11px ui-monospace, Consolas, monospace";
     ctx.textAlign = "left";
     ctx.fillText(nowStr(pts[0].ts) || "", padL, h - 5);
@@ -500,24 +503,24 @@
     if (errs.length) {
       state.invalid++;
       el.validName.textContent = "✗ " + state.invalid;
-      el.validPill.style.color = "#ff5d5d";
-      el.validPill.style.borderColor = "#4d2020";
-      log("契约✗", "frame_id=" + frame.frame_id + " 不合契约：" + errs[0] + "（共 " + errs.length + " 项）", "#ff5d5d");
+      el.validPill.style.color = STATUS_COLOR.disconnected;
+      el.validPill.style.borderColor = "#f0d9dc";
+      log("契约✗", "frame_id=" + frame.frame_id + " 不合契约：" + errs[0] + "（共 " + errs.length + " 项）", STATUS_COLOR.disconnected);
       return;
     }
     state.valid++;
     el.validName.textContent = "✓ " + state.valid;
-    el.validPill.style.color = "#35d07f";
-    el.validPill.style.borderColor = "#1d4d35";
+    el.validPill.style.color = STATUS_COLOR.normal;
+    el.validPill.style.borderColor = "#cce8dd";
 
     state.lastFrame = frame;
     state.frameId = frame.frame_id;
 
     if (frame.status !== state.lastStatus) {
       var from = state.lastStatus === null ? "（首帧）" : (M.STATUS_ZH[state.lastStatus] || state.lastStatus);
-      log("状态迁移", from + " → <b style='color:" + (STATUS_COLOR[frame.status] || "#8d9bb5") + "'>" +
+      log("状态迁移", from + " → <b style='color:" + (STATUS_COLOR[frame.status] || "#8e8e93") + "'>" +
           (M.STATUS_ZH[frame.status] || frame.status) + "</b> · " + frame.reason,
-          STATUS_COLOR[frame.status] || "#8d9bb5");
+          STATUS_COLOR[frame.status] || "#8e8e93");
       state.lastStatus = frame.status;
     }
 
@@ -569,7 +572,7 @@
                    location.host + "/ws";
         if (el.wsUrl.value.trim() !== want) {
           el.wsUrl.value = want;
-          log("系统", "检测到本页由 api.py 托管，地址已自动填为 " + want, "#4da3ff");
+          log("系统", "检测到本页由 api.py 托管，地址已自动填为 " + want, "#007aff");
         }
         applyServerThresholds(j.thresholds);
       })
@@ -594,7 +597,7 @@
     }
     if (changed.length) {
       // 只有真的与内置副本不同才说话，避免每次打开页面都刷一行噪音
-      log("系统", "阈值已按 config.yaml 更新：" + changed.join("、"), "#8b7cff");
+      log("系统", "阈值已按 config.yaml 更新：" + changed.join("、"), "#8944ab");
       renderGate(state.lastFrame);
       renderCards(state.lastFrame);
     }
@@ -750,11 +753,11 @@
     stopAll(true);
     clearPreviewImage("等待同源预览");
     var url = el.wsUrl.value.trim();
-    if (!url) { log("错误", "请填写 WebSocket 地址", "#ff5d5d"); return; }
+    if (!url) { log("错误", "请填写 WebSocket 地址", STATUS_COLOR.disconnected); return; }
 
     state.mode = "ws";
     setConn("", "连接中…");
-    log("系统", "连接 " + url, "#4da3ff");
+    log("系统", "连接 " + url, "#007aff");
     pollTriggers();
     startPreviewPolling();
 
@@ -762,7 +765,7 @@
     try {
       ws = new WebSocket(url);
     } catch (e) {
-      log("错误", "地址不合法：" + e.message + "（形如 ws://127.0.0.1:8765）", "#ff5d5d");
+      log("错误", "地址不合法：" + e.message + "（形如 ws://127.0.0.1:8765）", STATUS_COLOR.disconnected);
       setConn("down", "地址错误");
       return;
     }
@@ -771,23 +774,23 @@
     state.lastRxAt = Date.now();
     ws.onopen = function () {
       setConn("live", "已连接");
-      log("系统", "WebSocket 已连接", "#35d07f");
+      log("系统", "WebSocket 已连接", STATUS_COLOR.normal);
     };
     ws.onmessage = function (ev) {
       state.lastRxAt = Date.now();
       var frame;
       try { frame = JSON.parse(ev.data); }
-      catch (e) { log("错误", "收到非 JSON 消息，已丢弃：" + String(ev.data).slice(0, 60), "#ff5d5d"); return; }
+      catch (e) { log("错误", "收到非 JSON 消息，已丢弃：" + String(ev.data).slice(0, 60), STATUS_COLOR.disconnected); return; }
       // api.py 的 /api/status 包了一层 frame；/ws 直接推裸帧，这里两种都吃
       onFrame(frame.frame && frame.frame.status ? frame.frame : frame, "WebSocket");
     };
     ws.onerror = function () {
-      log("错误", "WebSocket 出错（服务是否已启动？地址与端口是否正确？）", "#ff5d5d");
+      log("错误", "WebSocket 出错（服务是否已启动？地址与端口是否正确？）", STATUS_COLOR.disconnected);
     };
     ws.onclose = function () {
       if (state.mode !== "ws") return;
       setConn("down", "连接中断");
-      log("系统", "WebSocket 已断开", "#ff5d5d");
+      log("系统", "WebSocket 已断开", STATUS_COLOR.disconnected);
       onFrame(synthesizeDisconnected(), "连接中断");
     };
 
@@ -797,11 +800,20 @@
       if (Date.now() - state.lastRxAt > WS_TIMEOUT_MS) {
         setConn("down", "无数据");
         if (!state.lastFrame || state.lastFrame.status !== "disconnected") {
-          log("系统", "超过 " + (WS_TIMEOUT_MS / 1000) + "s 未收到帧 → 显示连接中断", "#ffb020");
+          log("系统", "超过 " + (WS_TIMEOUT_MS / 1000) + "s 未收到帧 → 显示连接中断", STATUS_COLOR.fatigue_risk);
           onFrame(synthesizeDisconnected(), "连接中断");
         }
       }
     }, 500);
+  }
+
+  function startMonitoring() {
+    if (location.protocol === "file:" || location.protocol === "") {
+      startOffline();
+      return;
+    }
+    el.wsUrl.value = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws";
+    connectWs();
   }
 
   /* ------------------------------------------------------- 离线 mock（无后端） */
@@ -811,7 +823,7 @@
     state.mode = "offline";
     state.lastRxAt = Date.now();
     setConn("mock", "离线模式");
-    log("系统", "离线 Mock 演示：不依赖后端、不依赖摄像头（契约与后端 mock 同一套语义）", "#ffb020");
+    log("系统", "离线 Mock 演示：不依赖后端、不依赖摄像头（契约与后端 mock 同一套语义）", STATUS_COLOR.fatigue_risk);
 
     function tick() {
       var statuses = M.DEMO_SEQUENCE;
@@ -827,10 +839,10 @@
   function runSelftest() {
     var res = M.selfTest(20260910);
     if (res.ok) {
-      log("契约自检", "通过：检查 " + res.checked + " 项（六态各一帧 + 5 个坏帧必须被抓）", "#35d07f");
+      log("契约自检", "通过：检查 " + res.checked + " 项（六态各一帧 + 5 个坏帧必须被抓）", STATUS_COLOR.normal);
       alert("契约自检通过 ✓\n\n检查 " + res.checked + " 项：\n· 六种状态的 mock 帧全部合法\n· 5 个故意构造的坏帧全部被校验器抓住\n\n（跨语言检查请跑：node frontend/mock.js --limit 6 | python metrics/scripts/check_frontend_contract.py -）");
     } else {
-      log("契约自检", "失败：" + res.failures.join("；"), "#ff5d5d");
+      log("契约自检", "失败：" + res.failures.join("；"), STATUS_COLOR.disconnected);
       alert("契约自检失败 ✗\n\n" + res.failures.join("\n"));
     }
   }
@@ -863,13 +875,14 @@
     });
 
     $("btnConnect").onclick = connectWs;
+    $("btnStart").onclick = startMonitoring;
     $("btnOffline").onclick = startOffline;
     $("btnStop").onclick = function () { stopAll(false); clearPreviewImage("已停止数据源"); setConn("down", "未连接"); };
     $("btnSelftest").onclick = runSelftest;
     $("btnClear").onclick = function () { el.log.innerHTML = ""; };
     el.forceStatus.onchange = function () {
       state.forcedStatus = el.forceStatus.value;
-      log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8b7cff");
+      log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8944ab");
     };
 
     window.addEventListener("resize", function () { drawVideo(); renderChart(); });
@@ -883,18 +896,19 @@
     renderBlink(null);
     drawVideo();
     renderChart();
-    log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");
+    log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#007aff");
 
     syncWithServer();
 
     // file:// 离线打开时自动演示；由 api.py 托管时必须等待用户主动连接，
     // 避免把 Mock 六态误认为摄像头/后端的实时数据。
     if (location.protocol === "file:" || location.protocol === "") {
+      $("btnStartLabel").textContent = "重新演示";
       startOffline();
     } else {
       state.mode = "stopped";
       setConn("down", "未连接");
-      log("系统", "实时页面已就绪：请点击“连接 WebSocket”；当前不自动播放 Mock", "#4da3ff");
+      log("系统", "实时页面已就绪：请点击“连接 WebSocket”；当前不自动播放 Mock", "#007aff");
     }
   }
 

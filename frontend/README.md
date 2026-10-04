@@ -7,10 +7,13 @@
 
 | 文件 | 说明 |
 |---|---|
-| `index.html` | 页面骨架 + 深色主题样式（内联 CSS，无外部依赖） |
+| `index.html` | 页面骨架：当前判断、质量门控、实时指标、趋势和底部开发者工具 |
+| `style.css` | iOS 语义色参考的浅色主题、响应式排版和本地字体声明 |
 | `app.js` | 仪表盘逻辑：数据源切换、渲染、曲线、日志、契约校验 |
 | `mock.js` | 离线 mock 数据源 + **契约校验器**；同时是 node 可执行脚本（跨语言契约检查用） |
 | `preview.js` | 同源预览坐标换算 + 响应头解析；浏览器和 Node 共用 |
+| `icons/` | Microsoft Fluent UI System Icons 的本地 Regular SVG 与 MIT `LICENSE` |
+| `font/` | 可选的本地 MiSans 字体目录（不入库）；缺失时自动回退到系统中文字体 |
 
 ## 三种打开方式（都试一遍，它们验证的是不同的事）
 
@@ -58,7 +61,9 @@ python backend/run_pipeline.py --source <本地视频> --post auto \
   引 CDN 的页面断网后会静默变空白，这是最致命的演示事故。曲线用原生 canvas 手绘。
 - **不用 `<script type="module">`**：`file://` 下浏览器按 CORS 拦截 ES module，
   双击打开会白屏。所以全部用传统 script 标签 + 全局对象 `window.VigiLensMock`。
-- 图表自己画还有个副作用：**没有任何第三方许可证问题**，报告里的"第三方依赖"一栏更干净。
+- 图表继续使用原生 canvas；界面图标来自 Microsoft Fluent UI System Icons，随 `frontend/icons/LICENSE`
+  保留 MIT 许可。MiSans 仅从项目方本机的 `frontend/font/` 加载；其官方许可禁止进一步分发字体软件，
+  因此字体文件不入公开仓库，缺失时页面自动使用系统中文字体。
 
 ## 契约怎么保证不跑偏
 
@@ -91,8 +96,8 @@ python metrics/scripts/check_frontend_wiring.py                   # app.js 引�
 - [x] B5 趋势曲线（眨眼率 / PERCLOS / 心率 / 质量，原生 canvas，保留 120 秒）
 - [x] B6 事件日志 + 六态状态机展示，样式区分清晰
 - [x] B7 软硬件模式切换**占位**（顶部"模式：软件模式"标签；M3 接 C 线后切"硬件模式"）
-- [x] B8 深色仪表盘 UI 打磨 + **产出可直接进报告的截图** → `metrics/evidence/2026-09-15_b8_*.jpg`
-      （说明与复现命令见同目录 `2026-09-15_b8_ui_screenshots.md`；**图中无真人数据，均为 Mock / stub 合成**）
+- [x] B8 历史深色仪表盘截图 → `metrics/evidence/2026-09-15_b8_*.jpg`；当前界面已改为浅色信息工作台，
+      历史截图仅用于追溯当时版本（图中无真人数据，均为 Mock / stub 合成）
 - [x] 新增「**信号质量门控 · 能不能测**」面板：4 条门控条 + 总判定，不通过时列出未通过项
       —— 这是产品承诺"先判断能不能测"在界面上的落点
 - [x] 新增**眨眼状态机指示**（`behavior.blink_state` 四态高亮）与**长闭眼次数卡**（`behavior.long_close_count`）
@@ -117,16 +122,15 @@ python metrics/scripts/check_frontend_wiring.py                   # app.js 引�
       前端优先用它；**离线兜底**才用 `app.js` 的内置副本（双击 `index.html` 走这条）。
       随阈值一起下发的还有 `ws_disconnect_timeout_s` —— 客户端看门狗按 `服务端值 + 1 s` 计算，
       保证它始终比服务端晚触发。
-- [ ] **判定证据链（`_triggers`）：B 侧已就绪，等 A 线推送。**
-      走**旁路**而不是改契约（帧一个字节不动）：`api.py` 的 `/api/ingest` 已接受与 `frame`
-      平级的可选字段 `triggers`，`/api/status` 已回传 `{frame_id, items}`，前端在 WebSocket
-      模式下按 1 Hz 取用，并做两道防呆（`frame_id` 必须与当前帧一致；断流帧不显示证据链）。
-      **A 线需要做的只有一处一行**，见 [`docs/08_B线给A线的接口请求.md`](../docs/08_B线给A线的接口请求.md)。
-      在 A 线改之前，界面显示"暂无判定证据链"——**无副作用，不阻塞任何事**。
+- [x] **判定证据链（`_triggers`）旁路已接通。** `api.py` 的 `/api/ingest` 接受与 `frame`
+      平级的可选字段 `triggers`，`/api/status` 回传 `{frame_id, items}`；前端在 WebSocket 模式下
+      按 1 Hz 取用，并校验 `frame_id`、在断流时清空过期链条。A 线已于 2026-09-28 在
+      `backend/publish.py` 完成发送并补测试，过程见
+      [`docs/08_B线给A线的接口请求.md`](../docs/08_B线给A线的接口请求.md)。
 
 ## 依赖
 
-前端**零依赖**（唯一"依赖"是 `frontend/mock.js`，自己写的）。
+前端运行时**零网络依赖**，脚本不依赖框架或 CDN；本地视觉资产见上方文件表。
 后端服务依赖见根目录 `requirements.txt`；未安装时 `websocket.py` / `api.py`
 会打印可操作提示而不是抛 traceback，且**不影响双击 index.html 看界面**。
 
