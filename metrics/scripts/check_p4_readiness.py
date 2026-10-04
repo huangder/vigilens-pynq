@@ -47,12 +47,38 @@ def find_ffprobe() -> str | None:
     return str(local) if local.exists() else None
 
 
-def probe(path: Path, ffprobe: str) -> dict | None:
+def probe_with_opencv(path: Path) -> dict | None:
+    """ffprobe 不可用时，用项目现有 OpenCV 回读基础视频参数。"""
+    try:
+        import cv2  # type: ignore
+    except ImportError:
+        return None
+
+    cap = cv2.VideoCapture(str(path))
+    try:
+        if not cap.isOpened():
+            return None
+        width = int(round(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
+        height = int(round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        fps = float(cap.get(cv2.CAP_PROP_FPS))
+        frames = int(round(cap.get(cv2.CAP_PROP_FRAME_COUNT)))
+        if width <= 0 or height <= 0 or fps <= 0 or frames <= 0:
+            return None
+        return {"width": width, "height": height, "fps": round(fps, 3),
+                "duration": frames / fps, "frames": frames}
+    finally:
+        cap.release()
+
+
+def probe(path: Path, ffprobe: str | None) -> dict | None:
     """读视频的宽/高/帧率/时长；读不出来返回 None。
 
     ⚠️ 时长要**两段都查**：mp4 的时长在 stream 段，而 webm/mkv 常常只在 format 段
     （stream 段直接给 `N/A`）。只查 stream 会把合法视频误判成"时长 0 秒"。
     """
+    if not ffprobe:
+        return probe_with_opencv(path)
+
     cmd = [ffprobe, "-v", "error", "-select_streams", "v:0",
            "-show_entries", "stream=width,height,r_frame_rate,duration",
            "-of", "default=noprint_wrappers=1", str(path)]
@@ -139,7 +165,7 @@ def main() -> int:
     print("=== P4 数据就绪检查（视频到位后的标定与锁定）===")
     print(f"视频目录: {raw.relative_to(REPO_ROOT)}")
     print(f"标注目录: {ann.relative_to(REPO_ROOT)}")
-    print(f"ffprobe : {ffprobe or '未找到（无法校验分辨率/帧率/时长）'}")
+    print(f"视频探测: {ffprobe or 'OpenCV 回退（ffprobe 未找到）'}")
     print()
 
     problems: list[str] = []
@@ -155,7 +181,7 @@ def main() -> int:
         else:
             size_mb = vpath.stat().st_size / 1048576
             digest = sha256(vpath)
-            info = probe(vpath, ffprobe) if ffprobe else None
+            info = probe(vpath, ffprobe)
             if info is None:
                 marks.append(f"视频 ⚠️ {size_mb:.1f} MB（未能解析参数）")
                 problems.append(f"{name}.mp4 无法解析（文件损坏？或 ffprobe 不可用）")
