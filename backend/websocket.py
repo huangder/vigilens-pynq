@@ -5,7 +5,7 @@
 
     --mode mock   内置 mock（B 线默认，不依赖 A）
     --mode file   回放 jsonl（A 线跑出来的 metrics/logs/stream.jsonl）
-    --mode bus    转发 hub.HUB 里的实时帧（A 线在进程内 publish，M2 主用）
+    --mode bus    转发 hub.HUB 里的实时帧（进程内兼容/调试；M2 正式通道为 POST /api/ingest）
 
 单独跑（不依赖 FastAPI）：
     python backend/websocket.py                 # ws://127.0.0.1:8765
