@@ -36,10 +36,12 @@ class _LM:
         self.x, self.y = x, y
 
 
-def _landmarks(*, yaw_deg: float = 0.0, pitch_deg: float = 0.0, roll_deg: float = 0.0) -> list[_LM]:
+def _landmarks(*, yaw_deg: float = 0.0, pitch_deg: float = 0.0, roll_deg: float = 0.0,
+               scale: int = 1) -> list[_LM]:
     """按 R = Rz(roll)·Ry(yaw)·Rx(pitch) 造一个"已知姿态"的脸，投影成关键点。"""
     model = np.array(MediaPipeLandmarker._POSE_MODEL, dtype="double")
-    cam = np.array([[float(W), 0, W / 2.0], [0, float(W), H / 2.0], [0, 0, 1]], dtype="double")
+    w, h = W * scale, H * scale
+    cam = np.array([[float(w), 0, w / 2.0], [0, float(w), h / 2.0], [0, 0, 1]], dtype="double")
     rz = cv2.Rodrigues(np.array([[0.0, 0.0, math.radians(roll_deg)]]))[0]
     ry = cv2.Rodrigues(np.array([[0.0, math.radians(yaw_deg), 0.0]]))[0]
     rx = cv2.Rodrigues(np.array([[math.radians(pitch_deg), 0.0, 0.0]]))[0]
@@ -47,7 +49,7 @@ def _landmarks(*, yaw_deg: float = 0.0, pitch_deg: float = 0.0, roll_deg: float 
                                np.array([[0.0], [0.0], [600.0]]), cam, np.zeros((4, 1)))
     out = [_LM() for _ in range(478)]
     for k, idx in enumerate(MediaPipeLandmarker._POSE_IDX):
-        out[idx] = _LM(float(pts[k][0][0]) / W, float(pts[k][0][1]) / H)
+        out[idx] = _LM(float(pts[k][0][0]) / w, float(pts[k][0][1]) / h)
     return out
 
 
@@ -131,6 +133,23 @@ def test_degenerate_landmarks_return_zeros_instead_of_garbage() -> None:
     for idx in MediaPipeLandmarker._POSE_IDX:
         lms[idx] = _LM(0.5, 0.5)
     assert MediaPipeLandmarker._pose_from_landmarks(lms, W, H) == {"yaw": 0.0, "pitch": 0.0, "roll": 0.0}
+
+
+def test_reproj_guard_is_resolution_independent() -> None:
+    """同一个姿态在**不同分辨率**下都必须被接受（护栏不能把姿态清成 0）。
+
+    背景（实测踩到的坑）：护栏原来用**像素**阈值 `pose_reproj_max_px = 8.0`，
+    而真人素材（720×1280）的平均重投影误差中位是 **10.4 px** ⇒ 94.4% 的帧被拦下、
+    姿态全变成 (0,0,0) —— 表面看"姿态很完美"，实际是没在测。
+    改成"误差 / 双眼外角间距"的**比值**后与分辨率无关。
+    """
+    base = _pose(yaw_deg=12.0, roll_deg=6.0)
+    for scale in (1, 2, 4):
+        scaled = MediaPipeLandmarker._pose_from_landmarks(
+            _landmarks(yaw_deg=12.0, roll_deg=6.0, scale=scale), W * scale, H * scale)
+        assert scaled["yaw"] == pytest.approx(base["yaw"], abs=0.5), f"scale={scale} 时被护栏误杀"
+        assert scaled["roll"] == pytest.approx(base["roll"], abs=0.5), f"scale={scale} 时被护栏误杀"
+    assert abs(base["yaw"]) > 5.0, "这个姿态本该测出明显角度，全 0 说明被护栏清掉了"
 
 
 def test_reference_model_uses_the_real_chin_and_camera_axes() -> None:

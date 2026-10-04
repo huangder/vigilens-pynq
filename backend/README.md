@@ -69,7 +69,7 @@ python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 -
 python backend/mock.py --frames 6           # 六态各一帧契约 JSON
 python backend/config.py                    # 确认阈值读到了什么
 python backend/decision.py                  # 四条判定规则的自检
-python -m pytest                            # 110 项测试（契约/可复现性 + rPPG + M2 交接面 + 姿态回归）
+python -m pytest                            # 128 项测试（契约/可复现性 + rPPG + M2 交接面 + 姿态/方向回归）
 
 # 4) 【P4】真实视频到位后要做的标定（现在就能跑第一个）
 python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？分辨率帧率合规吗？
@@ -108,8 +108,8 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 
 ## 测试覆盖了什么
 
-`python -m pytest`（**110 项** = 契约/可复现性 50 项 + rPPG 链路 16 项 + M2 交接面 18 项 +
-姿态回归 19 项 + B 线预览/断流 7 项）刻意覆盖的是
+`python -m pytest`（**128 项** = 契约/可复现性 50 项 + rPPG 链路 16 项 + M2 交接面 18 项 +
+姿态回归 20 项 + 方向归一化 15 项 + ROI 坐标 2 项 + B 线预览/断流 7 项）刻意覆盖的是
 **契约、可复现性与算法正确性**，不是"函数能跑"：
 
 **契约与可复现性**（`tests/test_contract.py` 29 项 + `tests/test_pipeline.py` 20 项 = 49 项）
@@ -168,7 +168,31 @@ python metrics/scripts/check_p4_readiness.py   # 我缺哪段视频 / 标注？�
 
 > ⚠️ 仍缺真实素材验证：`data/raw/` 目前只有 `.gitkeep`，
 > "真实视频上 `status` 不再误报 `adjust_posture`"这条验收要等 P4 素材；
-> `pose_reproj_max_px`（平均重投影误差上限）也是**占位值**。
+> `pose_reproj_max_frac`（姿态平均重投影误差 / 双眼间距 的上限）也是**占位值** ——
+> 它原来是像素阈值（8 px），在真人素材（720×1280）上会拦掉 94.4% 的帧、把姿态清成 0，
+> 已改成与分辨率无关的比值（实测中位 0.036、最大 0.073 → 取 0.25）。
+
+**方向归一化**（`tests/test_orientation.py`，15 项，不需要人脸素材）
+
+相机装反 / 手机倒着拿 / 竖屏素材被读成横屏时，mediapipe 的检出率会掉到 0（台账 BUG-013 实测 180° 倒置 = 0%）。
+`capture.py` 现在提供 `rotate_frame()` / `choose_rotation()` / `OrientingSource`：用开头
+`orientation_probe_frames`（config，默认 8）帧试 0/90/180/270，挑**检出帧数最多**的角度，
+之后整条流统一旋正（不是逐帧探测）；`run_pipeline.py --rotate {auto,0,90,180,270}` 可强制指定。
+
+回归用"假检测器 + 带标记的小图"，把这几件事钉死：转 180° 后能探出 180、全黑图保持 0（宁可不动也不瞎转）、
+探测并列时选 0、检测器抛异常不算命中、探测用的帧**不丢**（12 帧原样补回、frame_id 顺序不变）、
+强制角度跳过探测、**CLI 传进来的字符串 `"180"` 必须生效**（这个静默失效是实测踩到的）、
+以及探测代价上限 = 帧数 × 4。
+
+> ⚠️ 实测避坑：`run_pipeline.py` 传的是 `--rotate` 的**字符串**；`OrientingSource` 内部必须先归一化，
+> 否则 `--rotate 180` 会被当成"不认识的值"而静默不生效。
+
+**ROI 坐标**（`tests/test_pipeline.py`，2 项）
+
+额头 ROI 必须按**当帧真实尺寸**裁剪。用 config 的契约尺寸（640×480）去裁 720×1280 的素材，
+908 帧里 **861 帧 ROI 被裁成空** → rPPG 只拿到 45/900 个样本、心率永远出不来，
+而日志上看起来一切正常。`backend/capture.py::image_size()` 负责取真实宽高，
+回归用例 `test_roi_must_use_the_real_frame_size` 用实测的一帧真值钉死这条。
 
 ## 已知环境问题（不是代码问题，别浪费时间）
 

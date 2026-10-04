@@ -552,7 +552,7 @@ python backend/quality.py                                                       
 ```text
 python metrics/scripts/check_a_line_p5_m2.py   → 17 项全绿（11.2s）
 python metrics/scripts/check_a_line_all.py     → A 线自检全部通过：17 项（28.4s）
-python -m pytest -q                            → 78 passed（65 → 78，只增不减）
+python -m pytest -q                            → 125 passed（65 → 125，只增不减）
 ```
 
 端到端六态覆盖（B 线侧实测拿到）：`['adjust_posture', 'disconnected', 'done', 'fatigue_risk', 'normal', 'unreliable']`；
@@ -637,6 +637,9 @@ python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 -
 |---|---|---|---|
 | **BUG-006**（P1） | 正立正面脸被解出 `roll ≈ ±180°`，98% 的帧被判"头姿异常" | 姿态模型改成**相机坐标系**（Y 朝下）；分解改成 `yaw=atan2(-R20,hypot(R00,R10)) / pitch=atan2(R21,R22) / roll=atan2(R10,R00)` | 本机用真实函数复现：修前 `roll=180.00`、转头 15° 显示在 `pitch` 上；修后正立→`(0,0,0)`、转头 15°→`yaw=15`、歪头 ±10°→`roll=±10` |
 | **BUG-007**（P1） | PnP 解出负 Z 镜像解、逐帧在 176°/−2° 间跳 | 下巴索引 `199 → 152`（本机核对：`152 ∈ FACEMESH_FACE_OVAL`、`199 ∉`，199 只是内部点）；新增 `_solve_head_pose()`：先 EPNP 再 ITERATIVE，**拒绝 `tvec[2]<=0`**；加两道护栏（6 点完全重合按退化拒绝；平均重投影误差超 `pose_reproj_max_px` 拒绝） | 新增 `backend/tests/test_face_pose.py` **19 项**：已知答案三轴、连续扫描无 >5° 跳变、角度不越 ±90°、解恒在相机前方、退化输入返回 0、模型护栏。`pytest` 78 → **110 passed** |
+| **BUG-013**（P2） | 无图像方向适配：180° 倒置时 mediapipe 检出率 0% | `capture.py` 新增 `rotate_frame()` / `choose_rotation()` / `OrientingSource`：用开头 `orientation_probe_frames`（config，默认 8）帧试 0/90/180/270，挑检出帧数最多的角度，再让整条流旋正；`run_pipeline.py` 新增 `--rotate {auto,0,90,180,270}`，摘要里记 `rotation_*` 三个字段。**探测并列或全检不出时保持 0**（宁可不动也不瞎转） | 新增 `backend/tests/test_orientation.py` **15 项**（假检测器，不需要真人脸）：180° 探出 180、全黑保持 0、并列选 0、检测器抛异常不崩、探测帧不丢（12 帧原样补回）、frame_id 顺序不变、强制角度跳过探测、**CLI 字符串 `"180"` 必须生效**（实测踩到过这个静默失效）、探测代价上限 = 帧数×4。`pytest` 110 → **125 passed** |
+| **实测新发现 ①**（不是台账里的条目） | **rPPG 拿不到样本**：908 帧只喂进 45 个样本（需 900），心率永远出不来，而日志看起来一切正常 | 根因：`run_pipeline` 用 **config 的契约尺寸 640×480** 去裁 ROI，而素材是 **720×1280** → ROI 被裁空（**861/908 帧**）。新增 `capture.image_size()` 取**当帧真实尺寸**，ROI 一律按它裁 | `backend/tests/test_pipeline.py` 新增 2 项（`image_size` 取值 + `test_roi_must_use_the_real_frame_size`，用实测真值）。修后 **900/900 样本填满**；见证 `metrics/evidence/2026-10-04_a_line_real_face_acceptance.md` §3 |
+| **实测新发现 ②**（我自己的阈值设错了） | 姿态护栏用**像素**阈值（`pose_reproj_max_px = 8.0`），真人素材平均误差中位 **10.4 px** → **拦掉 94.4% 的帧**、姿态被清成 `(0,0,0)`（"看起来完美"其实没在测） | 改成与分辨率无关的比值 `pose_reproj_max_frac`（误差 / 双眼外角间距）；实测比值中位 0.036、p95 0.052、max 0.073 → 取 **0.25** 只拦明显垃圾 | 新增 `test_reproj_guard_is_resolution_independent`（同一姿态 1×/2×/4× 分辨率都必须被接受）。改后重跑真人素材：`adjust_posture` 从"假 1%"回到真实 **23.5%**、`yaw` 中位 21°（见证据 §4） |
 | B 线 `docs/08` | 请求把 `decision.py` 的 `triggers` 传给前端 | `publish.py::FramePoster.post()` 改成 `{"frame": clean, "triggers": [...]}`（**旁路**：帧里仍不带 `_triggers`，契约不动） | 新增 2 项单测 + `check_a_line_p5_m2.py` 第 [9] 步实测：`/api/status` 取回 `triggers.frame_id` 与帧一致、帧里无 `_triggers`；M2 检查 17 → **18 项全绿** |
 
 **A 线还欠的（按台账，逐条待办）**
@@ -648,13 +651,19 @@ python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 -
 | **BUG-010** | P2 | `bbox` 只覆盖"眼角→嘴角"，高度只框住脸的 63% | 待拍板：人脸框的语义是"整张脸"还是"眼部到嘴部" |
 | **BUG-009** | P2 | 网页"测量一直在跳变"（三个独立成因叠加） | 成因 B/C 属 A 线（姿态已修，见 BUG-006/007）；成因 A（`--loop` 每轮重启导致计数器归零）在 `metrics/scripts/run_demo.py`，属 shared |
 | **BUG-012** | P2 | 录制规范 20~30s 与 rPPG 窗口（`window_seconds: 30` → 需 900 样本）冲突 → **心率必然出不来** | 待定：放宽录制规范到 ≥35s，或给 rPPG 定义"部分窗口"口径 |
-| **BUG-013** | P2 | 无图像方向适配：180° 倒置时 mediapipe 检出率 0% | 待做：`capture.py` 加方向归一化 |
 | **BUG-015** | P2 | "实时性"口径未定义（PC 侧 54.3 fps vs 网页 1 Hz） | 待三方定义口径 |
-| **TBD-003** | P3 | 正面帧左右眼 EAR 差 2 倍（0.56 vs 0.27），归因未定 | 需要真实素材逐帧导出 EAR 曲线才能定性 |
+| ~~**TBD-003**~~ ✅ | P3 | 正面帧左右眼 EAR 差 2 倍（0.56 vs 0.27） | **2026-10-04 已定性**：是**眨眼瞬态**，不是索引/公式错误 —— 大差异(>50%)帧的 EAR 中位 **0.030**（几乎闭眼），其余帧 **0.231**；正常帧左右差中位仅 10.2%。见证据 §5。**不需要改 EAR 计算** |
 | **DAT-001** | P2 | P4 标定素材缺 8 项 | 等录制（这是 A 线所有"数值有没有算法含义"的前提） |
 
 > ⚠️ 本阶段修的两条都是**纯数值可复现**的缺陷（不需要相机/人脸），所以先修它们性价比最高；
 > 其余各条要么等素材、要么等拍板、要么碰契约 —— 都不适合 A 线单方面决定。
+>
+> ✅ **2026-10-04 真人素材到位**（用户拷入 `data/raw/测试视频.mp4`：720×1280、30 fps、908 帧）：
+> 完成了 BUG-006/007 的**真实素材验收**（±180° 基准、359° 跳变、负 Z 镜像解全部消失；0 次 >90° 跳变），
+> 并借这段素材查出/修掉上面两条"实测新发现"，以及把 TBD-003 定性为眨眼瞬态。
+> 完整证据：**`metrics/evidence/2026-10-04_a_line_real_face_acceptance.md`**。
+> ⚠️ 该素材**不符合录制规范**（竖屏 720×1280、30 fps），所以：**不能锁黄金结果、不能用来标定阈值**；
+> `data/golden/` 仍为空、`ear_close_threshold` 等仍是占位值。
 
 ---
 
@@ -675,7 +684,7 @@ python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 -
 
 ```powershell
 . .\env.ps1                                              # 载入本机工具链
-.venv\Scripts\python.exe -m pytest -q                    # 期望 77 passed（只增不减）
+.venv\Scripts\python.exe -m pytest -q                    # 期望 125 passed（只增不减）
 python metrics/scripts/check_a_line_all.py               # A 线全量自检（17 项，约 30 秒，退出码即结论）
 python backend/run_pipeline.py --source metrics/logs/_smoke.mp4 --summary metrics/logs/_smoke_summary.json
 python backend/run_pipeline.py --source synthetic --seconds 30 --stub --post auto   # M2：推给 B 线

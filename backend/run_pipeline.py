@@ -45,7 +45,7 @@ from typing import Any
 
 try:
     from .behavior_metrics import BehaviorTracker
-    from .capture import open_frame_source
+    from .capture import OrientingSource, image_size, open_frame_source
     from .config import REPO_ROOT, load_config
     from .contract import new_frame
     from .decision import DecisionEngine
@@ -57,7 +57,7 @@ try:
 except ImportError:  # python backend/run_pipeline.py
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from behavior_metrics import BehaviorTracker
-    from capture import open_frame_source
+    from capture import OrientingSource, image_size, open_frame_source
     from config import REPO_ROOT, load_config
     from contract import new_frame
     from decision import DecisionEngine
@@ -146,6 +146,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--height", type=int, default=None)
     ap.add_argument("--wall-clock", action="store_true",
                     help="用墙上时钟做时间戳（真实实时采集用；会牺牲可复现性）")
+    ap.add_argument("--rotate", default="auto", choices=["auto", "0", "90", "180", "270"],
+                    help="图像方向归一化：auto=用开头几帧探测朝向（默认）；0=原样；"
+                         "90/180/270=强制顺时针旋转。相机装反/竖屏素材必用（BUG-013）")
     ap.add_argument("--json", dest="json_out", default="metrics/logs/last.json", help="最新一帧快照路径")
     ap.add_argument("--jsonl", default=None, help="逐帧追加输出（如 metrics/logs/stream.jsonl）")
     ap.add_argument("--csv", default=None, help="展平 CSV 输出（如 metrics/csv/metrics.csv）")
@@ -212,6 +215,26 @@ def main(argv: list[str] | None = None) -> int:
     if lm_source == "stub":
         say("[warn] 本次人脸关键点来自 StubLandmarker —— EAR/MAR 的数值是**占位几何量**，")
         say("       下游状态机与规则是真实代码。报告引用数字时必须标注这一点。")
+
+    # 方向归一化（BUG-013）：相机装反 / 手机倒着拿 / 竖屏素材被读成横屏时，
+    # mediapipe 的检出率会掉到 0（台账实测 180° 倒置 = 0%）。
+    # 做法：只用开头 `orientation_probe_frames` 帧试 0/90/180/270，挑检出帧数最多的那个角度，
+    # 之后整条流统一旋正 —— **不是逐帧探测**（那样要慢 4 倍）。
+    # stub 关键点没有真实检测能力，所以不探测（detect=None），保持原样。
+    orient = OrientingSource(
+        frames_iter,
+        detect=(lambda img: landmarker.detect(img, 0).visible > 0.0) if lm_source == "mediapipe" else None,
+        rotate=args.rotate,
+        probe_frames=int(cfg.get("orientation_probe_frames", 8)),
+    )
+    orient.prime()
+    frames_iter = orient
+    if orient.degrees:
+        say(f"方向   : 顺时针旋转 {orient.degrees}°（探测 {orient.probed_frames} 帧，"
+            f"各角度检出帧数 {orient.scores or '强制指定'}）")
+    else:
+        say(f"方向   : 原样（探测 {orient.probed_frames} 帧，"
+            f"各角度检出帧数 {orient.scores or '未探测'}）")
 
     tracker = BehaviorTracker(cfg)
     scorer = QualityScorer(cfg)
@@ -288,7 +311,10 @@ def main(argv: list[str] | None = None) -> int:
 
             # rPPG 的输入样本：额头 ROI 的**绿通道**累加 → Q1.15（契约 §4.6 的唯一口径）。
             # 空 ROI / 非图像帧 → count==0 → 按契约**丢弃该帧**（不喂样本、不补值）。
-            _roi = forehead_roi(obs.bbox, width, height)
+            # ⚠️ ROI 必须按**当帧真实尺寸**裁剪：视频不一定是 640×480（实测 720×1280 的素材
+            # 用契约尺寸算 ROI，908 帧里有 861 帧被裁成空 → rPPG 永远填不满窗口）。
+            _fw, _fh = image_size(frame.image, fallback=(width, height))
+            _roi = forehead_roi(obs.bbox, _fw, _fh)
             _sum_g, _cnt = roi_channel_sum(frame.image, _roi, channel=1)
             rppg.push(q15_from_roi_sum(_sum_g, _cnt) if _cnt > 0 else None, fid)
 
@@ -365,6 +391,10 @@ def main(argv: list[str] | None = None) -> int:
         "pattern": args.pattern,
         "frames_processed": n,
         "frame_id_offset": fid_offset,
+        # 方向归一化（BUG-013）：探测到多少度、试了几帧、各角度命中多少
+        "rotation_degrees": orient.degrees,
+        "rotation_probed_frames": orient.probed_frames,
+        "rotation_probe_scores": orient.scores,
         "logical_fps": fps,
         "logical_duration_s": round(n / fps, 2),
         "wall_elapsed_s": round(elapsed, 2),

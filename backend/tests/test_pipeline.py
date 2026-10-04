@@ -256,3 +256,42 @@ def test_make_landmarker_falls_back_without_mediapipe() -> None:
     """没有 mediapipe 也必须能开工（B/C 线同理：谁都不许卡住别人）。"""
     mk = make_landmarker(force_stub=True)
     assert isinstance(mk, StubLandmarker)
+
+
+# ---------------------------------------------------------------------------
+# ROI 必须按**当帧真实尺寸**算（实测踩到的坑：861/908 帧 ROI 被裁成空）
+# ---------------------------------------------------------------------------
+
+def test_image_size_prefers_the_real_frame_over_the_fallback() -> None:
+    import numpy as np
+
+    from backend.capture import image_size
+
+    assert image_size(np.zeros((1280, 720, 3), dtype=np.uint8), fallback=(640, 480)) == (720, 1280)
+    # 合成帧源（SyntheticImage）也有 shape，同样读得到
+    from backend.capture import SyntheticImage
+
+    assert image_size(SyntheticImage(640, 480, 0), fallback=(1, 1)) == (640, 480)
+    # 完全拿不到 shape 时才退回 fallback
+    assert image_size(object(), fallback=(640, 480)) == (640, 480)
+
+
+def test_roi_must_use_the_real_frame_size() -> None:
+    """用契约尺寸算 ROI 会让非 640×480 素材的 ROI 整片被裁掉（rPPG 直接没样本）。
+
+    真值取自 2026-10-04 的真人素材（720×1280，一帧 bbox=(158,570,365,350)）：
+    用契约 640×480 → ROI 高度被裁成 0；用当帧 720×1280 → ROI 有 2.6 万像素。
+    """
+    import numpy as np
+
+    from backend.capture import image_size
+    from backend.vital import forehead_roi, roi_channel_sum
+
+    img = np.full((1280, 720, 3), 120, dtype=np.uint8)
+    bbox = (158, 570, 365, 350)
+
+    fw, fh = image_size(img, fallback=(640, 480))
+    assert (fw, fh) == (720, 1280)
+    assert roi_channel_sum(img, forehead_roi(bbox, fw, fh), 1)[1] > 0, "真实尺寸下 ROI 必须非空"
+    assert roi_channel_sum(img, forehead_roi(bbox, 640, 480), 1)[1] == 0, \
+        "用契约尺寸会被裁成空 —— 这正是 run_pipeline 里必须避免的写法"

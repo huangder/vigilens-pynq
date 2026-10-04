@@ -38,7 +38,8 @@ FALLBACK: dict[str, Any] = {
     "face_visible_min": 0.7,
     "pose_yaw_max_deg": 30.0,
     "pose_pitch_max_deg": 25.0,
-    "pose_reproj_max_px": 8.0,        # 头部姿态求解的平均重投影误差上限（占位值，见 config.yaml）
+    "pose_reproj_max_frac": 0.25,     # 姿态平均重投影误差 / 双眼间距 的上限（占位值，见 config.yaml）
+    "orientation_probe_frames": 8,    # 方向归一化：用前 N 帧探测朝向（见 config.yaml）
     "quality_min_score": 0.60,
     "light_score_min": 0.5,
     "motion_score_max": 0.35,

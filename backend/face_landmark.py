@@ -38,11 +38,16 @@ MP_MOUTH = (61, 291, 13, 14)
 _CFG_CACHE: dict[str, float] = {}
 
 
-def _pose_reproj_max_px() -> float:
-    """头部姿态的平均重投影误差上限（px）。阈值只来自 config.yaml。"""
-    if "pose_reproj_max_px" not in _CFG_CACHE:
-        _CFG_CACHE["pose_reproj_max_px"] = float(load_config()["pose_reproj_max_px"])
-    return _CFG_CACHE["pose_reproj_max_px"]
+def _pose_reproj_max_frac() -> float:
+    """姿态平均重投影误差的上限，用**误差 / 双眼外角间距**表示（无量纲）。阈值只来自 config.yaml。
+
+    为什么不是像素：像素阈值随分辨率失效。实测同一段 720×1280 真人素材平均误差中位 10.4 px，
+    按 8 px 设闸会拦掉 94.4% 的帧（姿态被清成 0，等于没在测）；而"误差/双眼间距"的比值
+    中位只有 0.036，跨分辨率可比。
+    """
+    if "pose_reproj_max_frac" not in _CFG_CACHE:
+        _CFG_CACHE["pose_reproj_max_frac"] = float(load_config()["pose_reproj_max_frac"])
+    return _CFG_CACHE["pose_reproj_max_frac"]
 
 
 @dataclass
@@ -289,7 +294,7 @@ class MediaPipeLandmarker:
     _POSE_IDX = (1, 152, 33, 263, 61, 291)
 
     @classmethod
-    def _solve_head_pose(cls, img_pts: Any, cam: Any, *, reproj_max_px: float | None = None) -> Any:
+    def _solve_head_pose(cls, img_pts: Any, cam: Any, *, reproj_max_frac: float | None = None) -> Any:
         """解 PnP 并**拒绝镜像解**：返回 `(rvec, tvec)`，解不出来返回 None。
 
         为什么两条路都走：模型点近似共面（Z 跨度远小于 XY），平面 PnP 存在"真实解 / 镜像解"
@@ -297,18 +302,23 @@ class MediaPipeLandmarker:
         （人脸在相机背后）。EPNP 对共面点更稳，所以先 EPNP；不管哪条路，
         **`tvec[2] <= 0` 一律当失败**，绝不把"脸在相机背后"当成结果。
 
-        再加一道**平均重投影误差**护栏（阈值 `pose_reproj_max_px` 在 config.yaml）：
+        再加一道**平均重投影误差**护栏（阈值 `pose_reproj_max_frac` 在 config.yaml）：
         关键点塌成一团时 solvePnP 仍会"成功"返回一组垃圾角度，只有重投影误差能把它认出来。
+        阈值用**比值**（误差 / 双眼外角间距）而不是像素 —— 像素会随分辨率失效（实测按 8 px 会
+        拦掉 720×1280 素材 94.4% 的帧，而实测比值中位才 0.036）。
         """
         import cv2  # type: ignore
         import numpy as np  # type: ignore
 
         model = np.array(cls._POSE_MODEL, dtype="double")
-        limit = float(reproj_max_px if reproj_max_px is not None else _pose_reproj_max_px())
+        limit = float(reproj_max_frac if reproj_max_frac is not None else _pose_reproj_max_frac())
         # 6 个点完全重合 = 检测塌陷：solvePnP 会给出"脸在很远处"这种重投影误差同样很小的伪解，
-        # 所以要在求解前就按退化输入拒掉。⚠️ 只挡住"完全重合"，"几乎重合"仍可能解出伪解 ——
-        # 这条要等真实视频（P4）把 `pose_reproj_max_px` 标定出来才能真正收紧。
+        # 所以要在求解前就按退化输入拒掉（此时"双眼间距"≈0，比值护栏会除零，必须先挡）。
         if float(np.ptp(img_pts, axis=0).max()) <= 0.0:
+            return None
+        # 尺度：双眼外角间距（像素）。_POSE_IDX 里第 2、3 项就是左右眼外角。
+        scale = float(np.linalg.norm(img_pts[2] - img_pts[3])) if len(img_pts) > 3 else 0.0
+        if scale <= 0.0:
             return None
         for flags in (cv2.SOLVEPNP_EPNP, cv2.SOLVEPNP_ITERATIVE):
             ok, rvec, tvec = cv2.solvePnP(model, img_pts, cam, np.zeros((4, 1)), flags=flags)
@@ -316,7 +326,7 @@ class MediaPipeLandmarker:
                 continue
             proj, _ = cv2.projectPoints(model, rvec, tvec, cam, np.zeros((4, 1)))
             err = float(np.abs(proj.reshape(-1, 2) - img_pts).mean())
-            if err <= limit:
+            if err / scale <= limit:
                 return rvec, tvec
         return None
 
