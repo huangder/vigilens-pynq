@@ -44,6 +44,7 @@
 from __future__ import annotations
 
 import csv
+import statistics
 import sys
 from pathlib import Path
 
@@ -171,34 +172,42 @@ def _prf(tp: int, fp: int, fn: int) -> tuple[float, float, float]:
     return p, r, f
 
 
-def frame_prf(flagged: list[bool], intervals: list[tuple[int, int]]) -> tuple[float, float, float]:
+def frame_prf(flagged: list[bool], intervals: list[tuple[int, int]],
+              valid: list[bool] | None = None) -> tuple[float, float, float]:
     truth = [False] * len(flagged)
     for a0, a1 in intervals:
         for k in range(max(0, a0), min(len(truth) - 1, a1) + 1):
             truth[k] = True
-    tp = sum(1 for f, t in zip(flagged, truth) if f and t)
-    fp = sum(1 for f, t in zip(flagged, truth) if f and not t)
-    fn = sum(1 for f, t in zip(flagged, truth) if (not f) and t)
+    mask = valid if valid is not None else [True] * len(flagged)
+    tp = sum(1 for f, t, ok in zip(flagged, truth, mask) if ok and f and t)
+    fp = sum(1 for f, t, ok in zip(flagged, truth, mask) if ok and f and not t)
+    fn = sum(1 for f, t, ok in zip(flagged, truth, mask) if ok and (not f) and t)
     return _prf(tp, fp, fn)
 
 
 def separation_margin(values: list[float], intervals: list[tuple[int, int]],
-                      direction: str) -> float | None:
-    """标注区间内外的**可分性裕度**：>0 表示存在能把两者分开的阈值，≤0 表示完全分不开。
+                      direction: str, valid: list[bool] | None = None) -> float | None:
+    """标注区间内外的**方向性裕度**：>0 表示两组中位数方向符合预期。
 
-    这条判据**不需要任何阈值参数**，纯粹是"数据里有没有可分的信号"：
-      · 方向"低于"：需要 `min(区间外) > max(区间内)`，裕度 = 两者之差；
-      · 方向"高于"：需要 `min(区间内) > max(区间外)`。
+    真实事件含有过渡帧（例如眨眼的半闭/半开），区间内外允许重叠，不能要求
+    `min(区间外) > max(区间内)` 这种完全线性可分。这里比较稳健的中位数：
+      · 方向"低于"：区间外中位数 - 区间内中位数；
+      · 方向"高于"：区间内中位数 - 区间外中位数。
 
-    为什么必须有它：若两边取值完全重叠，**任何阈值都一样没用**，
-    此时工具若还煞有介事地给一个"最佳值"，就是在骗人（实测见文件头那条警告）。
+    恒定数据或方向相反时裕度仍 ≤0，工具会拒绝给建议值；有方向信号时再让
+    帧级 F1 负责选择具体阈值。
     """
     inside, outside = [], []
-    for i, v in enumerate(values):
+    mask = valid if valid is not None else [True] * len(values)
+    for i, (v, ok) in enumerate(zip(values, mask)):
+        if not ok:
+            continue
         (inside if any(a <= i <= b for a, b in intervals) else outside).append(v)
     if not inside or not outside:
         return None
-    return (min(outside) - max(inside)) if direction == "below" else (min(inside) - max(outside))
+    inside_mid = statistics.median(inside)
+    outside_mid = statistics.median(outside)
+    return (outside_mid - inside_mid) if direction == "below" else (inside_mid - outside_mid)
 
 
 def sweep(rows: list[dict], intervals: list[tuple[int, int]], param: str,
@@ -206,12 +215,15 @@ def sweep(rows: list[dict], intervals: list[tuple[int, int]], param: str,
     """对候选值逐个评估，返回 (全部结果, 最佳结果)。"""
     spec = PARAMS[param]
     vals = [float(r[spec["metric"]]) for r in rows]
+    valid = ([True] * len(rows) if param == "face_visible_min" else
+             [float(r.get("face_visible", 0.0)) > 0.0 for r in rows])
     results: list[dict] = []
     for th in spec["values"]:
         flagged = flag_series(vals, th, spec["direction"], min_run)
+        flagged = [f and ok for f, ok in zip(flagged, valid)]
         tp, fp, fn = match(flagged, intervals)
         ep, er, ef = _prf(tp, fp, fn)
-        fp_, fr_, ff_ = frame_prf(flagged, intervals)
+        fp_, fr_, ff_ = frame_prf(flagged, intervals, valid)
         results.append(dict(th=th, tp=tp, fp=fp, fn=fn, ep=ep, er=er, ef=ef, ff=ff_,
                             flag_frac=(sum(flagged) / len(flagged)) if flagged else 0.0))
 
@@ -268,6 +280,15 @@ def self_test() -> int:
     print(f"  正常数据可分性裕度 = {m_ok:.4f}（应 > 0 -> 可以扫描）")
     ok = ok and m_ok > 0
 
+    # 人脸未检出时 EAR=0 不是“闭眼”，也不是“睁眼负样本”；必须排除，
+    # 否则只要视频首帧漏检，可分性就会被一个 0 强制判成失败。
+    rows[0]["face_visible"] = 0.0
+    rows[0]["ear_mean"] = 0.0
+    valid = [float(r["face_visible"]) > 0.0 for r in rows]
+    m_missing = separation_margin([float(r["ear_mean"]) for r in rows], intervals, "below", valid)
+    print(f"  首帧漏检后的有效帧裕度 = {m_missing:.4f}（应仍 > 0）")
+    ok = ok and m_missing > 0
+
     print("\n" + ("[PASS] 扫描器自检通过" if ok else "[FAIL] 扫描器自检未通过") )
     return 0 if ok else 1
 
@@ -320,16 +341,18 @@ def main() -> int:
         return 1
 
     vals = [float(r[PARAMS[args.param]["metric"]]) for r in rows]
-    margin = separation_margin(vals, intervals, PARAMS[args.param]["direction"])
+    valid = ([True] * len(rows) if args.param == "face_visible_min" else
+             [float(r.get("face_visible", 0.0)) > 0.0 for r in rows])
+    margin = separation_margin(vals, intervals, PARAMS[args.param]["direction"], valid)
     if margin is not None and margin <= 0:
-        print(f"[FAIL] 标注区间内外的取值完全重叠（可分性裕度 {margin:.4f} ≤ 0）——")
-        print("       这意味着**任何阈值都分不开**这两组帧，扫描结果没有意义。")
+        print(f"[FAIL] 标注区间内外的中位数方向不符合预期（方向性裕度 {margin:.4f} ≤ 0）——")
+        print("       这意味着观测量没有呈现预期方向，扫描结果没有意义。")
         print("       常见原因：① 这段视频里其实没有该事件（标注写错/写错视频）；")
         print("                 ② 上游指标没跑对（例如人脸根本没检出、EAR 恒为 0）。")
         print("       先核对素材与标注，再回来扫。**这里不给建议值。**")
         return 1
     if margin is not None:
-        print(f"可分性裕度 = {margin:.4f}（>0 才说明存在可分开两者的阈值）")
+        print(f"方向性裕度 = {margin:.4f}（>0 表示两组中位数方向符合预期）")
     print()
 
     _results, best = sweep(rows, intervals, args.param, min_run)
