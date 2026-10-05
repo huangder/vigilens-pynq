@@ -90,7 +90,7 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
 | `board/` | C 线（M3 后） | `bitstream/`（**空**）、`overlay/`、上板自检脚本、`openmv/` 首次测试包 |
 | `data/` | A 线 | `raw/` 测试视频（**不入库**）、`annotations/` 人工标注、`golden/` 黄金结果、`fatigue_db/`（库本体不入库） |
 | `metrics/` | 三方共享 | `csv/`、`logs/`（生成物，不入库）、`scripts/`（可复现检查脚本，入库）、`evidence/`（**正式证据入库**） |
-| `docs/` | 三方共享 | **先看 [`docs/README.md`](docs/README.md)（文档索引）**；**`interface.md`（接口契约，改它先发公告）** + `00`~`29` 方案/测试/记录文档；历史快照在 `docs/archive/`。**"下一步做什么"看 [`docs/29_后续任务清单_20261001.md`](docs/29_后续任务清单_20261001.md)** |
+| `docs/` | 三方共享 | **先看 [`docs/README.md`](docs/README.md)（文档索引）**；**`interface.md`（接口契约，改它先发公告）** + `00`~`30` 方案/测试/记录文档；历史快照在 `docs/archive/`。**"下一步做什么"看 [`docs/29_后续任务清单_20261001.md`](docs/29_后续任务清单_20261001.md)** |
 | `skill/` | 三方共享 | 沉淀的 Skill 包（赛制加分项） |
 | `report/` | 三方共享 | 设计报告素材 + `research/` 文献侦察 + `llm_log/` 大模型协作记录（**必交项，人类亲手写**） |
 | `AGENTS.md` | 三方共享 | **AI 协作规范（第一份必读）**：五条铁律、权威顺序、契约变更流程、验证命令与权威事实表 |
@@ -111,7 +111,7 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
 | **M0** 冻结 | 主场景 / 项目名 / 指标范围 / 接口契约 / 目录结构 / 仓库与协议 | ✅ **完成**（`docs/00`、`docs/interface.md` 🔒 **v1.1 已会签**、仓库 `vigilens-pynq`、MIT）<br>🚧 v1.2（帧率 45→30）/ v1.3（板卡改 Mizar）/ v1.5（测量口径档位化）**均仍是草案，未会签** |
 | **M1** 基础框架 | A：回放→JSON；B：Mock→网页；C：HLS 仿真+综合 | 🔄 **进行中**（A/B 骨架就位；C 线跑到计划前面） |
 | **M2** 软件合体 | A 的 JSON 接入 B 的网页，形成完整软件 Demo | 🟡 **链路已具备**：`metrics/scripts/run_demo.py` 一键（含**真实画面旁路**），`check_a_line_p5_m2.py` 真起两个进程验 17 项。⚠️ **本次文档整理未复跑** |
-| **M3** 硬件接入 | Overlay 上板 + DMA 跑通（**首次需要板卡**） | ⏳ **未开始** —— `board/bitstream/` 为空、`build_bd.tcl` **从未跑通**、**Mizar-Z7020 从未上电** |
+| **M3** 硬件接入 | Overlay 上板 + DMA 跑通（**首次需要板卡**） | ⏳ **未开始** —— `board/bitstream/` 为空、`build_bd.tcl` **从未跑通**、**Mizar-Z7020 从未上电**<br>📋 **上板前要做的一切 + 上板执行顺序**见 [`docs/30_上板测试前准备与执行手册_20261005.md`](docs/30_上板测试前准备与执行手册_20261005.md) |
 | **M4** 完整闭环 | 软硬件同屏对比 + 黄金结果回归 + 可复现脚本 | ⏳ 未开始 |
 
 - **C 线（FPGA）跑在计划前面**：**7 个 IP**（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter` /
@@ -135,6 +135,35 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
   `pytest` **141 项收集**（⚠️ 这是**收集数**，不等于"全部通过"）。判断标准是"**只增不减**"。
 
 > 每个目录另有自己的 `README.md` 说明该线的入口、验收口径与当前欠账；`fpga/README.md` 是 C 线的详细工作记录。
+
+---
+
+## 上板测试（M3）：前置工作与执行手册
+
+**一句话**：上板**不**等软件 —— 离线工作已经有脚本、有自检，要做的是**把它们跑绿并留证据**。
+真正卡住上板的只有三件事：**① 板子通电所需的配件**（+5V DC 电源、micro-USB 数据线 ×2、micro SD）、
+**② 厂商的 PS7 1 GB DDR3 参数**（**不许猜**，猜错会生成一块起不来的板子）、
+**③ 真像素才需要的 IMX219 + MIPI**（S1~S4 不需要相机）。
+
+> 📋 **完整过程（逐阶段命令 + 判据 + 失败排查）见
+> [`docs/30_上板测试前准备与执行手册_20261005.md`](docs/30_上板测试前准备与执行手册_20261005.md)**；
+> 交接清单见 [`board/README.md`](board/README.md)「上板前检查单」与「上板执行顺序」；
+> 验收门限（9 条）见 [`fpga/report/m3_system_budget_v1.md`](fpga/report/m3_system_budget_v1.md) §5；
+> 硬件与引脚见 [`docs/12_硬件清单与接线文档.md`](docs/12_硬件清单与接线文档.md)。
+
+| 阶段 | 做什么 | 需要什么 | 现在能否做 |
+|---|---|---|---|
+| **S0** 上板前离线自检 | `check_all` / `pytest` / 前端与契约自检 / 七 IP 三件套 / `board/* --selftest` / 黄金参考归位 | 只要笔记本 | ✅ **可以，且必须先跑绿** |
+| **S1** 最小 PL 上板（字节回环 + 1 kHz 测频） | **不启 PS、不用 DDR**，单独验证 JTAG / 时钟 / 引脚 / IO 电平 | 板卡 + +5V 电源 + USB-JTAG | ⏳ 等硬件（`pl_uart_echo.v` 从未综合过） |
+| **S2** PS bring-up | 串口 console（CH340 @ MIO14/15，**115200 8N1**）、JTAG 链、网口、`import pynq` 判定 | 同上 + micro-USB 数据线 | ⏳ 等硬件 |
+| **S3** Block Design → bitstream | `build_bd.tcl`；**PS7 配置未落实时脚本刻意 `exit 1`** | + MicroPhase 的 board file / 参考设计 | ⏳ 等厂商资料（**参数不许猜**） |
+| **S4** 上板自检三脚本 | `bringup_check.py` → `dma_test.py` → `hw_sw_compare.py`（门限 3/4/5/6/7/8） | S3 的 `.bit` | ⏳ 等 S3 |
+| **S5** IMX219 + MIPI 真像素 | SCCB `i2cdetect`、出图、Bayer 相位、B6 beat 打包（上板 ILA） | 相机 + 排线 + IP 授权核实 | ⏳ 等 S2 之后 |
+
+> ⚠️ **诚实边界**：`board/bitstream/` 仍为空、`build_bd.tcl` 从未跑通、**Mizar-Z7020 从未上电**、
+> **Cortex-A9 上一个耗时数字都没有**。任何"已上板验证"的表述目前都不成立（`AGENTS.md` 铁律 1）。
+> 换板卡**不需要重做** HLS IP 与黄金参考（器件与 PYNQ-Z2 相同，都是 `xc7z020clg400-1`）——
+> 要重做的只有 PS 配置（DDR 1 GB）、引脚约束（PL 晶振 50 MHz @ H16）与 bitstream。
 
 ---
 
