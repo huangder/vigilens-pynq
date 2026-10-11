@@ -140,10 +140,10 @@
 | `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、**年龄分层旁路**（`age_*` / `fatigue_*`）、FastAPI/WebSocket/Mock；`pytest` 现有 **141 项收集** |
 | `frontend/` | 零依赖仪表盘（`index.html` / `app.js` / `age.js` / `mock.js`），**不用 CDN、不用 ES module**（`file://` 会白屏），曲线为原生 canvas |
 | `fpga/` | `src/` HLS 源码（**7 个 IP**）、`sim/` 测试台 + Python 黄金参考、`report/` 综合/cosim 报告与**归档日志** |
-| `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包 + 🆕 `imx219_driver.py` / `imx219_sccb_check.py`；**`bitstream/` 仍为空**，上板结论不存在 |
+| `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包 + `imx219_driver.py` / `imx219_sccb_check.py` + 🆕 `imx219_probe/`（相机存活实验：纯 PL SCCB 探针 + **原始 ILA 证据**）；**`bitstream/` 仍为空**，上板结论目前只有 `docs/31` 的负面读数（IMX219 未应答） |
 | `data/` | `raw/` 视频（不入库）、`annotations/`、`golden/`、`reference/age_bands.json`（基线）、`fatigue_db/`（`schema.sql` 入库、库本体不入库） |
 | `metrics/` | `csv/`、`logs/`（生成物，不入库）、`scripts/`（可复现检查脚本，入库）、`evidence/`（**正式证据入库**） |
-| `docs/` | **先看 `docs/README.md`（统一文档索引）**；契约 = `interface.md`；方案/流程 = `00`~`29`。重点：**测试总方案 = `11`、阶段二方案 = `14`、判定基准 = `15`、问题台账 = `16`、阶段二手册 = `17`、C 线成果与遗留 = `26`、IMX219 = `27`、年龄分层 = `28`、🆕 后续任务清单 = `29`**；`20` 的 **§7** 是原 `22`（帧率选型）并入的附录。历史快照在 `docs/archive/` |
+| `docs/` | **先看 `docs/README.md`（统一文档索引）**；契约 = `interface.md`；方案/流程 = `00`~`31`。重点：**测试总方案 = `11`、阶段二方案 = `14`、判定基准 = `15`、问题台账 = `16`、阶段二手册 = `17`、C 线成果与遗留 = `26`、IMX219 = `27`、年龄分层 = `28`、后续任务清单 = `29`、上板手册 = `30`、🆕 相机存活实验上板记录 = `31`**；`20` 的 **§7** 是原 `22`（帧率选型）并入的附录。历史快照在 `docs/archive/` |
 | `skill/` | 沉淀的技能包（赛制加分项） |
 | `report/` | 设计报告素材 + `research/` 文献侦察 + `llm_log/` 大模型协作记录（**必交项**） |
 

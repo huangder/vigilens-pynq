@@ -90,7 +90,7 @@ python -m pytest backend/tests -v       # 契约一致性测试：字段/schema/
 | `board/` | C 线（M3 后） | `bitstream/`（**空**）、`overlay/`、上板自检脚本、`openmv/` 首次测试包 |
 | `data/` | A 线 | `raw/` 测试视频（**不入库**）、`annotations/` 人工标注、`golden/` 黄金结果、`fatigue_db/`（库本体不入库） |
 | `metrics/` | 三方共享 | `csv/`、`logs/`（生成物，不入库）、`scripts/`（可复现检查脚本，入库）、`evidence/`（**正式证据入库**） |
-| `docs/` | 三方共享 | **先看 [`docs/README.md`](docs/README.md)（文档索引）**；**`interface.md`（接口契约，改它先发公告）** + `00`~`30` 方案/测试/记录文档；历史快照在 `docs/archive/`。**"下一步做什么"看 [`docs/29_后续任务清单_20261001.md`](docs/29_后续任务清单_20261001.md)** |
+| `docs/` | 三方共享 | **先看 [`docs/README.md`](docs/README.md)（文档索引）**；**`interface.md`（接口契约，改它先发公告）** + `00`~`31` 方案/测试/记录文档；历史快照在 `docs/archive/`。**"下一步做什么"看 [`docs/29_后续任务清单_20261001.md`](docs/29_后续任务清单_20261001.md)**；**相机首次上板实测看 [`docs/31_相机存活实验上板记录_20261011.md`](docs/31_相机存活实验上板记录_20261011.md)** |
 | `skill/` | 三方共享 | 沉淀的 Skill 包（赛制加分项） |
 | `report/` | 三方共享 | 设计报告素材 + `research/` 文献侦察 + `llm_log/` 大模型协作记录（**必交项，人类亲手写**） |
 | `AGENTS.md` | 三方共享 | **AI 协作规范（第一份必读）**：五条铁律、权威顺序、契约变更流程、验证命令与权威事实表 |
