@@ -279,12 +279,14 @@ INFO: [HLS 200-789] **** Estimated Fmax: 151.98 MHz
 
 ```powershell
 # 1) 生成向量 + 黄金参考（numpy 独立对拍 PASS，45 项）
-python fpga/sim/gen_frames.py --width 1280 --height 720  --out-dir D:\Desktop\AMD\_roi720
-python fpga/sim/gen_frames.py --width 1920 --height 1080 --out-dir D:\Desktop\AMD\_roi1080
+#    ⚠️ 2026-10-01 更新：这两套数据**已经搬进仓库正式目录**（原先落在仓库根 `_roi720`/`_roi1080`，
+#       搬完逐文件 SHA256 校验一致，临时目录已删除）。命令改指仓库内路径，可直接复制执行：
+python fpga/sim/gen_frames.py --width 1280 --height 720  --out-dir fpga/sim/data_roi_720p
+python fpga/sim/gen_frames.py --width 1920 --height 1080 --out-dir fpga/sim/data_roi_1080p
 
 # 2) csim + csynth（逐档）
 cd fpga
-$env:HLS_IP='roi_statistic'; $env:ROI_DATA_DIR='D:\Desktop\AMD\_roi720'   # 或 _roi1080
+$env:HLS_IP='roi_statistic'; $env:ROI_DATA_DIR='D:\Desktop\AMD\fpga\sim\data_roi_720p'   # 或 data_roi_1080p
 vitis-run --mode hls --tcl run_hls.tcl
 ```
 
@@ -369,9 +371,12 @@ xsim 再用 `$fscanf` 读；而在 `fpga/` 下生成这些文件时撞上**该�
       **`roi_statistic` 在 1280×720 与 1920×1080 下都 PASS**（两档均 28/28 + 45/45、0 不符、
       II=1、138.99 MHz，且**资源三种口径逐项相同**，见 §5.4）；
       `motion_quality` 两档 PASS（缩小尺寸）；`config.yaml` 档位键、`regmap.py` 按档推导均已验。
-- [ ] ⚠️ **仍未做**：`roi_statistic` 720p 下的 **cosim**（测试台 73 个事务，本身是长作业，
-      见 §5.4.1 —— 请在完整权限终端跑，数据 `_roi720` 已备好）；
-      **480×270 全尺寸**的 `motion_quality` csim（本会话算不动，见 `docs/24` §8.2）
+- [x] ✅ **2026-10-01 已补齐（本文写完之后做的，证据在 `c7_sim_closed_loop_20261001.md`）**：
+      ① `roi_statistic` 两档 **cosim** —— @720p **PASS**（1585 s）、@1080p **PASS**（1745 s），**均无死锁**；
+      ② `motion_quality` **480×270 全尺寸** csim —— **已跑通**（原来"算不动"是**误判**：
+      真因是片内缓存放不下 480×270，见台账 **BUG-033**）。
+      ⚠️ 数据目录也已从仓库根 `_roi720` / `_golden720` 等**搬进 `fpga/sim/`**
+      （映射见 `fpga/promote_tier_data.ps1`，搬完逐文件 SHA256 校验一致，临时目录已删除）。
 - [x] ⚠️ **需要拍板的那条已拍**：用户 2026-09-30 选 **(c) 两条都留、按档位切换** ——
       主/备两档走 `rgb2gray` 直抽（3/8、1/4），640×480 现行档保留 `docs/20` 的 `frame_scale` 路线。
       该决定已写入 `docs/interface.md` 头部 v1.5 补充块与 §6 的 2026-10-01 行（**草案，待 A/B 会签**）。
