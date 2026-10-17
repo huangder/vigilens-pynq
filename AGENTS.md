@@ -137,7 +137,7 @@
 
 | 目录 | 内容 |
 |---|---|
-| `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、**年龄分层旁路**（`age_*` / `fatigue_*`）、FastAPI/WebSocket/Mock；`pytest` 现有 **141 项收集** |
+| `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、**年龄分层旁路**（`age_*` / `fatigue_*`）、FastAPI/WebSocket/Mock；`pytest` 现有 **182 项收集** |
 | `frontend/` | 零依赖仪表盘（`index.html` / `app.js` / `age.js` / `mock.js`），**不用 CDN、不用 ES module**（`file://` 会白屏），曲线为原生 canvas |
 | `fpga/` | `src/` HLS 源码（**7 个 IP**）、`sim/` 测试台 + Python 黄金参考、`report/` 综合/cosim 报告与**归档日志** |
 | `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包 + `imx219_driver.py` / `imx219_sccb_check.py` + 🆕 `imx219_probe/`（相机存活实验：纯 PL SCCB 探针 + **原始 ILA 证据**）；**`bitstream/` 仍为空**，上板结论目前只有 `docs/31` 的负面读数（IMX219 未应答） |
@@ -169,9 +169,9 @@ python metrics/scripts/check_all.py            # 期望：工具自检 14/14；�
 #      ② check_video_bypass 的 **T11 + T13/T14**：T13/T14 断言的是 B 线旧的 MJPEG UI（台账 BUG-032），
 #        T11 是本机 OpenCV 4.11 创建不了 MJPG .avi（环境限制）。都不是"跑不起来"，而是**已知的、非本线的**红。）
 # ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
-python -m pytest -q                            # 基线只增不减；2026-10-01 实测 **141 项收集**
-#    （⚠️ 141 是 `--collect-only` 的**收集数**，不等于"全部通过"；完整套件在受限环境跑不完。
-#      沿革：78 → 88（+旁路 MJPEG 帧源 10 项）→ 98（合并分支）→ **141**（+2026-10-01 年龄分层 43 项）。
+python -m pytest -q                            # 基线只增不减；2026-10-12 合并 origin/main 后实测 **182 项收集**
+#    （⚠️ 182 是 `--collect-only` 的**收集数**，不等于"全部通过"；完整套件在受限环境跑不完。
+#      沿革：78 → 88（+旁路 MJPEG 帧源 10 项）→ 98（合并分支）→ 141（+2026-10-01 年龄分层 43 项）→ **182**（2026-10-12 并入 origin/main 的 B 线新版式与 A 线方向归一化用例）。
 #      另有单项：`python -m pytest backend/tests/test_age_fatigue.py -q` → **43 passed**）
 #    （工具自检沿革：10/10 → 12/12（bringup/hw_sw/dma 三条）→ 13/13 → **14/14**（+board/imx219_sccb_check.py，79/79）；
 #      其中 2 项是 OpenMV 侧的"假模块跑真脚本"——`offline_check.py` **54/54**（采集矩阵）
@@ -203,7 +203,7 @@ git status --short                             # 只应出现你本线的改动
 
 | 命令 | 期望 | 失败说明什么 |
 |---|---|---|
-| `pytest` | 基线只增不减；2026-10-01 实测 **141 项收集**（⚠️ 收集数≠全部通过） | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
+| `pytest` | 基线只增不减；2026-10-01 实测 **182 项收集**（⚠️ 收集数≠全部通过） | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
 | `--selftest` | `"ok": true` | JS 的 mock 与校验器不自洽 |
 | `check_frontend_wiring` | `通过` | `app.js` 引用了不存在的 DOM id（症状：**页面不报错、区域空白**） |
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
@@ -438,7 +438,7 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 | 1 | `contract.py` 的 `CONTRACT_VERSION` 落后于 `docs/interface.md` | `backend/contract.py` vs `docs/interface.md` | ✅ **2026-09-16 已解决**：v1.1 会签完成时按第 4 节第 5 步升级，两侧现同为 **v1.1** |
 | 2 | `fpga/README.md` 部分小节滞后（如末节"M0 欠账"仍列已完成的 `git init` / `README` / `config.yaml`） | `fpga/README.md` 末尾 | ⏳ **2026-09-16 未当场复核**（C 线文件）；正文结论可信，**引用末尾清单前先核对 `fpga/report/` 实际文件** |
 | 3 | `docs/07` / `fpga/README.md` 中的版本号曾滞后于 `docs/interface.md` | `docs/07` §7、`fpga/README.md` | ✅ **2026-09-16 已同步**（两处均改为 v1.1 会签完成）；**始终以 `docs/interface.md` 头部为准** |
-| 4 | 文档里的回归基线数字多处滞后（check_all、pytest、offline_check 等） | 本次逐条复核，见 `docs/29` §1.2 | ✅ **2026-10-01 已统一**：现行基线 = 工具自检 14/14、回归 PASS 27 / FAIL 2、pytest 141 项收集；**引用基线一律以 `docs/29` §1 为准** |
+| 4 | 文档里的回归基线数字多处滞后（check_all、pytest、offline_check 等） | 本次逐条复核，见 `docs/29` §1.2 | ✅ **2026-10-01 已统一**：现行基线 = 工具自检 14/14、回归 PASS 27 / FAIL 2、pytest 182 项收集；**引用基线一律以 `docs/29` §1 为准** |
 
 > **代码是否真的"实现"某功能，只以三样为准**：源码可读到的实现 + 测试是否覆盖 + 真实运行输出。
 > 文档里的"✅ 完成"是**人类维护者的声明**，可能滞后一天到几周 —— 关键判断请自己跑第 6 节的命令。
