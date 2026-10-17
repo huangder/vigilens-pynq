@@ -217,6 +217,9 @@ git status --short                             # 只应出现你本线的改动
 > **基线沿革**：2026-09-10 起始基线 `49 passed in 0.51s`；2026-09-15 A 线补上 rPPG 链路的
 > 16 项测试（`backend/tests/test_vital.py`）后为 **`65 passed`**；2026-09-16 A 线补上 M2 交接面的
 > 13 项测试（`backend/tests/test_publish.py`，含复验后补的"推送可复现"）后为 **`78 passed`**。
+> 2026-09-28 A 线补姿态回归 19 项（`test_face_pose.py`，修 BUG-006/007）、
+> B 线补预览接口 7 项与 M2 旁路 5 项后为 **`110 passed`**；2026-10-04 A 线修 BUG-013（方向归一化，
+> 15 项）与 ROI 坐标 bug（2 项）、并把姿态护栏阈值改成比值（1 项）后为 **`128 passed`**。
 > 以上都是**当时的本机真实运行**，不是永久承诺；若你跑出不同结果，先报告事实，不要改期望值去凑绿。
 > 判断标准是"**只增不减**"：新增功能要带测试，但**不许为了让基线好看而删测试或放宽断言**。
 
@@ -457,8 +460,11 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 - **A 线**：`run_pipeline.py` 端到端链路**部分为 stub** —— EAR/眨眼/PERCLOS/MAR 已是**真实现**；
   但 `face_landmark.py` 在没装 mediapipe 时走 `StubLandmarker`，此刻 EAR/MAR 是**没有算法意义的占位几何量**。
 - **必须看 `landmark_source` 字段**：为 `"stub"` 时该次运行的指标**不得作为算法结果引用**（《05》铁律 1 / 《07》§10）。
-- **rPPG 尚未实现**：`vital.*` 大面积为 `null` 是**正确行为**（质量门控不通过时系统承诺不输出心率数值），
-  不是 bug，也不要"顺手补一个数字上去"。
+- **rPPG 链路已实现，但**还没有真实视频验证：`backend/vital.py` + `backend/tests/test_vital.py`
+  （16 项，**合成信号驱动**）已就位（P3，2026-09-15）。真实素材上 `vital.*` 仍大面积为 `null` 是
+  **正确行为**（质量门控不通过、或帧源是合成帧没有真人时不输出数值 —— 这是产品承诺），
+  不是 bug，也不要"顺手补一个数字上去"；真实视频到位后按 P4 标定，才允许引用具体数值。
+  （本条为台账 DOC-001 的修正：旧文写"rPPG 尚未实现"，与代码/测试不符。）
 - **未标定阈值**：`ear_close_threshold` / `mar_threshold` / `pose_yaw_max_deg` / `pose_pitch_max_deg` /
   `light_score_min` / `motion_score_max` / `quality_weights` 均为**占位值**，待真实视频/场景标定。
   `config.yaml` 里已用 `⚠️ 占位值` 标注，**改它们要写依据**。

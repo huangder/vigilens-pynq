@@ -68,6 +68,7 @@ def _headers(frame_id: int = 7, *, bbox: tuple[int, int, int, int] = (10, 20, 10
         "X-VigiLens-Source-Height": "480",
         "X-VigiLens-Face-Visible": "0.91",
         "X-VigiLens-Status": "normal",
+        "X-VigiLens-Detector": "mediapipe",
     }
 
 
@@ -92,6 +93,7 @@ def test_preview_endpoint_roundtrip_etag_and_latest_only(preview_api: str) -> No
     code, response_headers, body = _request(f"{preview_api}/api/preview/latest")
     assert code == 200 and body == first
     assert response_headers["x-vigilens-frame-id"] == "7"
+    assert response_headers["x-vigilens-detector"] == "mediapipe"
     etag = response_headers["etag"]
 
     code, _, body = _request(f"{preview_api}/api/preview/latest", headers={"If-None-Match": etag})
@@ -129,3 +131,9 @@ def test_preview_size_limit_is_checked_without_allocating_server_history() -> No
     with pytest.raises(ValueError, match="超过上限"):
         validate_preview(b"\xff\xd8" + b"x" * PREVIEW_MAX_BYTES + b"\xff\xd9",
                          "image/jpeg", _headers())
+
+
+def test_preview_detector_header_is_validated(preview_api: str) -> None:
+    headers = {**_headers(), "X-VigiLens-Detector": "not-a-detector"}
+    code, _, body = _request(f"{preview_api}/api/preview", data=b"\xff\xd8x\xff\xd9", headers=headers)
+    assert code == 422 and "detector" in json.loads(body)["errors"][0]

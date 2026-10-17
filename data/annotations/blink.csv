@@ -1,0 +1,14 @@
+# video=blink.mp4 fps=45 duration_s=27.711 annotator=Codex-assisted visual review date=2026-10-04
+# 说明：逐段目视复核转换后视频；确认 11 次明显眨眼，未见 long_close。
+start_frame,end_frame,event,note
+18,25,blink,明显眨眼
+139,143,blink,明显眨眼
+176,182,blink,明显眨眼
+349,353,blink,明显眨眼
+428,438,blink,明显眨眼
+516,522,blink,明显眨眼
+569,574,blink,明显眨眼
+602,609,blink,明显眨眼
+808,817,blink,明显眨眼
+1075,1082,blink,明显眨眼
+1145,1152,blink,明显眨眼

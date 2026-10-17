@@ -15,6 +15,7 @@
 
   var M = window.VigiLensMock;
   var P = window.VigiLensPreview;
+  var U = window.VigiLensUIState;
   // 客户端看门狗：**故意比服务端的 ws_disconnect_timeout_s（3.0 s）慢 1 秒**。
   // 断流的权威来源是服务端 —— api.py 的 /ws 在超时后会下发一帧契约合法的 `disconnected`
   // （见 backend/api.py 的 disconnect_frame 与 backend/A_LINE_DEV_STEPS.md §9 第 8 条）。
@@ -28,12 +29,12 @@
 
   /* 六态配色：与 panel 顶部状态灯、日志 tag 共用一套 */
   var STATUS_COLOR = {
-    normal: "#35d07f",
-    fatigue_risk: "#ffb020",
-    adjust_posture: "#4da3ff",
-    unreliable: "#8b7cff",
-    disconnected: "#ff5d5d",
-    done: "#5d6b85"
+    normal: "#248a3d",
+    fatigue_risk: "#c93400",
+    adjust_posture: "#007aff",
+    unreliable: "#8944ab",
+    disconnected: "#d70015",
+    done: "#6e6e73"
   };
 
   /* --------------------------------------------------------------------------
@@ -94,7 +95,7 @@
   /* 眨眼状态机（契约 behavior.blink_state 的 4 个取值） */
   var BLINK_ORDER = ["OPEN", "CLOSING", "CLOSED", "OPENING"];
   var BLINK_ZH = { OPEN: "睁眼", CLOSING: "正在闭眼", CLOSED: "闭眼", OPENING: "正在睁眼" };
-  var BLINK_COLOR = { OPEN: "#35d07f", CLOSING: "#4da3ff", CLOSED: "#ffb020", OPENING: "#4da3ff" };
+  var BLINK_COLOR = { OPEN: "#248a3d", CLOSING: "#007aff", CLOSED: "#c93400", OPENING: "#007aff" };
 
   var el = {};                       // DOM 引用
   var state = {
@@ -117,7 +118,10 @@
     previewObjectUrl: "",
     previewLastRxAt: 0,
     triggers: null,        // 旁路通道来的判定证据链 {frame_id, items}
-    pollTimer: null
+    pollTimer: null,
+    serverSource: "",      // 当前连接的 /api/status.source；独立 WS 时为空
+    hostedServerSource: "",// 托管本页的 api.py 来源，供同源 /ws 连接时使用
+    usesApiStatus: false    // 当前 WS 是否就是托管页面的同源 /ws
   };
 
   /* ---------------------------------------------------------------- 工具 */
@@ -151,7 +155,7 @@
     var row = document.createElement("div");
     row.className = "row";
     row.innerHTML = '<time>' + nowStr() + '</time><span class="tag" style="color:' +
-      (color || "#8d9bb5") + '">' + tag + '</span><span>' + text + "</span>";
+      (color || "#8e8e93") + '">' + tag + '</span><span>' + text + "</span>";
     el.log.insertBefore(row, el.log.firstChild);
     while (el.log.childNodes.length > 200) el.log.removeChild(el.log.lastChild);
   }
@@ -194,13 +198,13 @@
         return;
       }
     }
-    if (meta.status === "disconnected") return;
+    if (!U.shouldDrawBbox(state.lastFrame, meta)) return;
     var mapped = P.mapBbox(meta.bbox, w, h, meta.sourceWidth, meta.sourceHeight);
     if (!mapped) {
       return;
     }
     var bx = mapped.x, by = mapped.y, bw = mapped.width, bh = mapped.height;
-    var color = STATUS_COLOR[meta.status] || "#55a8ff";
+    var color = STATUS_COLOR[meta.status] || "#007aff";
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.strokeRect(bx, by, bw, bh);
@@ -220,13 +224,13 @@
 
   /* ---------------------------------------------------------------- 状态区 */
   function renderState(frame) {
-    var st = frame ? frame.status : "disconnected";
-    var color = STATUS_COLOR[st] || "#5d6b85";
+    var st = frame ? frame.status : "waiting";
+    var color = STATUS_COLOR[st] || "#8e8e93";
     el.stateLamp.style.background = color;
     el.stateLamp.style.color = color;
-    el.stateName.textContent = M.STATUS_ZH[st] || st;
+    el.stateName.textContent = frame ? (M.STATUS_ZH[st] || st) : "等待数据";
     el.stateName.style.color = color;
-    el.stateEn.textContent = st;
+    el.stateEn.textContent = frame ? st : "waiting";
 
     el.advice.textContent = frame ? frame.advice : "等待数据…";
     el.reason.textContent = frame ? frame.reason : "—";
@@ -281,10 +285,12 @@
 
   function renderGate(frame) {
     var failed = [];
+    var measurement = U.measurementState(frame);
+    var measured = measurement === U.MEASUREMENT.MEASURED;
     GATE_DEFS.forEach(function (g) {
       var row = $("gate_" + g.key);
       if (!row) return;
-      var v = frame ? g.get(frame) : null;
+      var v = measured ? g.get(frame) : null;
       var ok = gatePass(g, v);
       var has = !(v === null || v === undefined || !isFinite(v));
       var limit = THRESHOLDS[g.limitKey];
@@ -297,8 +303,8 @@
       row.querySelector(".val").textContent = has
         ? v.toFixed(3) + (g.dir === "min" ? " ≥ " : " ≤ ") + limit
         : "—";
-      row.classList.toggle("fail", !!frame && !ok);
-      if (frame && !ok && !g.extra) failed.push(g.label);
+      row.classList.toggle("fail", measured && !ok);
+      if (measured && !ok && !g.extra) failed.push(g.label);
     });
 
     var st = frame ? frame.status : null;
@@ -308,15 +314,19 @@
       el.gateVerdictSub.textContent = "—";
     } else if (st === "disconnected") {
       el.gateVerdictText.textContent = "无数据";
-      el.gateVerdictText.style.color = "#ff5d5d";
+      el.gateVerdictText.style.color = STATUS_COLOR.disconnected;
       el.gateVerdictSub.textContent = "视频源或连接中断，门控不适用";
+    } else if (measurement === U.MEASUREMENT.NO_FACE) {
+      el.gateVerdictText.textContent = "无测量";
+      el.gateVerdictText.style.color = STATUS_COLOR.unreliable;
+      el.gateVerdictSub.textContent = "未检测到人脸";
     } else if (failed.length === 0) {
       el.gateVerdictText.textContent = "可以测量";
-      el.gateVerdictText.style.color = "#35d07f";
+      el.gateVerdictText.style.color = STATUS_COLOR.normal;
       el.gateVerdictSub.textContent = "四项门控全部通过，下方指标可信";
     } else {
       el.gateVerdictText.textContent = "测不准，别采信";
-      el.gateVerdictText.style.color = "#ff5d5d";
+      el.gateVerdictText.style.color = STATUS_COLOR.disconnected;
       el.gateVerdictSub.textContent = "未通过：" + failed.join("、");
     }
   }
@@ -334,12 +344,12 @@
   }
 
   function renderBlink(frame) {
-    var cur = frame ? frame.behavior.blink_state : null;
+    var cur = U.measurementState(frame) === U.MEASUREMENT.MEASURED ? frame.behavior.blink_state : null;
     BLINK_ORDER.forEach(function (s) {
       var d = $("blink_" + s);
       if (!d) return;
       var on = (s === cur);
-      var col = BLINK_COLOR[s] || "#8d9bb5";
+      var col = BLINK_COLOR[s] || "#8e8e93";
       d.classList.toggle("on", on);
       d.style.background = on ? col : "";
       d.style.borderColor = on ? col : "";
@@ -355,7 +365,10 @@
       var div = document.createElement("div");
       div.className = "card";
       div.id = "card_" + d.key;
-      div.innerHTML = '<div class="k">' + d.label + '</div><div class="v"><span class="num">—</span><span class="u">' +
+      div.dataset.group = d.gate ? "vital" : (["quality", "light", "motion"].indexOf(d.key) >= 0 ? "quality" :
+        (["visible", "yaw"].indexOf(d.key) >= 0 ? "face" : "behavior"));
+      div.innerHTML = '<div class="card-top"><span class="k">' + d.label + '</span><span class="card-meta">当前</span></div>' +
+        '<div class="v"><span class="num">—</span><span class="u">' +
         (d.unit || "") + '</span></div><div class="note"></div>';
       el.cards.appendChild(div);
     });
@@ -387,16 +400,20 @@
   }
 
   function renderCards(frame) {
+    var measurement = U.measurementState(frame);
     CARD_DEFS.forEach(function (d) {
       var card = $("card_" + d.key);
       if (!card) return;
       var num = card.querySelector(".num");
       var unit = card.querySelector(".u");
       var note = card.querySelector(".note");
-      var v = frame ? d.get(frame) : null;
+      var v = U.measurementValue(frame, d.get);
       var text, isMsg = false, isWarn = false, noteText = "";
 
-      if (d.gate && frame) {
+      if (measurement !== U.MEASUREMENT.MEASURED) {
+        text = U.placeholder(frame);
+        isMsg = true;
+      } else if (d.gate && frame) {
         var g = vitalDisplay(frame, v, d.confKey ? frame.vital[d.confKey] : null);
         text = g.text;
         isMsg = !!g.msg;
@@ -418,11 +435,11 @@
       // 静态说明只在"没有数值"时拼进去：否则会出现"卡上有数字、备注却说这个指标出不来"
       // 这种自相矛盾（Mock 数据下呼吸率是有值的）。
       var parts = [];
-      if (isMsg && d.staticNote) parts.push(d.staticNote);
+      if (measurement === U.MEASUREMENT.MEASURED && isMsg && d.staticNote) parts.push(d.staticNote);
       if (noteText) parts.push(noteText);
       if (note) note.textContent = parts.join(" · ");
-      card.style.borderColor = isWarn ? "#4d3c14" : "#24304a";
-      num.style.color = isWarn ? "#ffb020" : "";
+      card.classList.toggle("warning", isWarn);
+      num.style.color = isWarn ? STATUS_COLOR.fatigue_risk : "";
     });
   }
 
@@ -432,12 +449,12 @@
     var ctx = c.ctx, w = c.w, h = c.h;
     var padL = 34, padR = 8, padT = 10, padB = 18;
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#0f1621";
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
     // 网格 + y 轴刻度（0 / 50 / 100，按各自量纲归一化到 0~1 后绘制）
-    ctx.strokeStyle = "#1d2740";
-    ctx.fillStyle = "#5d6b85";
+    ctx.strokeStyle = "#e6ebee";
+    ctx.fillStyle = "#89949e";
     ctx.font = "11px ui-monospace, Consolas, monospace";
     ctx.lineWidth = 1;
     for (var i = 0; i <= 4; i++) {
@@ -449,7 +466,7 @@
 
     var pts = state.points;
     if (pts.length < 2) {
-      ctx.fillStyle = "#5d6b85";
+      ctx.fillStyle = "#89949e";
       ctx.textAlign = "center";
       ctx.font = "12px 'Segoe UI', 'Microsoft YaHei', sans-serif";
       ctx.fillText("等待数据…", w / 2, h / 2);
@@ -460,7 +477,7 @@
       ctx.beginPath();
       var started = false;
       for (var i = 0; i < pts.length; i++) {
-        var v = getter(pts[i]);
+        var v = U.shouldPlot(pts[i]) ? getter(pts[i]) : null;
         if (v === null || v === undefined || !isFinite(v)) { started = false; continue; }
         var x = padL + (w - padL - padR) * (pts.length === 1 ? 0 : i / (MAX_POINTS - 1));
         var nv = Math.max(0, Math.min(1, max ? v / scale : v));
@@ -471,10 +488,10 @@
     }
 
     var defs = [
-      { color: "#4da3ff", get: function (p) { return p.behavior.blink_rate_per_min; }, scale: 40 },
-      { color: "#ffb020", get: function (p) { return p.behavior.perclos; }, scale: 1 },
-      { color: "#35d07f", get: function (p) { return p.vital.hr_bpm; }, scale: 140 },
-      { color: "#8b7cff", get: function (p) { return p.quality.overall; }, scale: 1 }
+      { color: "#007aff", get: function (p) { return p.behavior.blink_rate_per_min; }, scale: 40 },
+      { color: "#ff9500", get: function (p) { return p.behavior.perclos; }, scale: 1 },
+      { color: "#34c759", get: function (p) { return p.vital.hr_bpm; }, scale: 140 },
+      { color: "#af52de", get: function (p) { return p.quality.overall; }, scale: 1 }
     ];
     defs.forEach(function (d) {
       ctx.strokeStyle = d.color;
@@ -484,7 +501,7 @@
     });
 
     // 时间轴两端标注
-    ctx.fillStyle = "#5d6b85";
+    ctx.fillStyle = "#89949e";
     ctx.font = "11px ui-monospace, Consolas, monospace";
     ctx.textAlign = "left";
     ctx.fillText(nowStr(pts[0].ts) || "", padL, h - 5);
@@ -493,31 +510,31 @@
   }
 
   /* ------------------------------------------------------- 收帧 / 校验 / 渲染 */
-  function onFrame(frame, source) {
+  function onFrame(frame) {
     if (frame && frame._synthetic_disconnect) frame = synthesizeDisconnected();
 
     var errs = M.validateFrame(frame);
     if (errs.length) {
       state.invalid++;
       el.validName.textContent = "✗ " + state.invalid;
-      el.validPill.style.color = "#ff5d5d";
-      el.validPill.style.borderColor = "#4d2020";
-      log("契约✗", "frame_id=" + frame.frame_id + " 不合契约：" + errs[0] + "（共 " + errs.length + " 项）", "#ff5d5d");
+      el.validPill.style.color = STATUS_COLOR.disconnected;
+      el.validPill.style.borderColor = "#f0d9dc";
+      log("契约✗", "frame_id=" + frame.frame_id + " 不合契约：" + errs[0] + "（共 " + errs.length + " 项）", STATUS_COLOR.disconnected);
       return;
     }
     state.valid++;
     el.validName.textContent = "✓ " + state.valid;
-    el.validPill.style.color = "#35d07f";
-    el.validPill.style.borderColor = "#1d4d35";
+    el.validPill.style.color = STATUS_COLOR.normal;
+    el.validPill.style.borderColor = "#cce8dd";
 
     state.lastFrame = frame;
     state.frameId = frame.frame_id;
 
     if (frame.status !== state.lastStatus) {
       var from = state.lastStatus === null ? "（首帧）" : (M.STATUS_ZH[state.lastStatus] || state.lastStatus);
-      log("状态迁移", from + " → <b style='color:" + (STATUS_COLOR[frame.status] || "#8d9bb5") + "'>" +
+      log("状态迁移", from + " → <b style='color:" + (STATUS_COLOR[frame.status] || "#8e8e93") + "'>" +
           (M.STATUS_ZH[frame.status] || frame.status) + "</b> · " + frame.reason,
-          STATUS_COLOR[frame.status] || "#8d9bb5");
+          STATUS_COLOR[frame.status] || "#8e8e93");
       state.lastStatus = frame.status;
     }
 
@@ -529,10 +546,9 @@
       while (state.points.length > MAX_POINTS) state.points.shift();
     }
 
-    el.srcName.textContent = source;
-    el.srcPill.className = "pill " + (source === "WebSocket" ? "live" : "mock");
+    renderSource();
     el.modeName.textContent = "软件模式";
-    if (source !== "WebSocket") {
+    if (state.mode !== "ws") {
       setPreviewBadge("warn", "模拟定位框 · 非真实视频");
       el.previewFreshness.textContent = "离线 Mock";
       el.previewSync.textContent = "同一 Mock 帧";
@@ -554,6 +570,37 @@
   }
 
   /* ------------------------------------------- 与后端同步（地址 + 阈值） */
+  function renderSource() {
+    if (!el.srcName || !el.srcPill) return;
+    var view = U.sourceView(state.mode, state.serverSource);
+    el.srcName.textContent = view.label;
+    el.srcPill.className = "pill" + (view.kind ? " " + view.kind : "");
+  }
+
+  function setServerSource(source) {
+    state.serverSource = source === "mock" || source === "ingest" ? source : "";
+    state.hostedServerSource = state.serverSource;
+    renderSource();
+  }
+
+  function rememberHostedServerSource(source) {
+    state.hostedServerSource = source === "mock" || source === "ingest" ? source : "";
+    if (state.mode === "stopped" || state.usesApiStatus) {
+      state.serverSource = state.hostedServerSource;
+      renderSource();
+    }
+  }
+
+  function isSameSourceApiWs(url) {
+    if (location.protocol !== "http:" && location.protocol !== "https:") return false;
+    try {
+      var parsed = new URL(url, location.href);
+      return parsed.host === location.host && parsed.pathname === "/ws";
+    } catch (e) {
+      return false;
+    }
+  }
+
   function syncWithServer() {
     // 由 api.py 托管时，一次 /api/status 解决两件事：
     //   ① WS 与页面**同源** → 自动填好地址，省掉"记得手填 :8000/ws"这个演示出错点；
@@ -569,8 +616,9 @@
                    location.host + "/ws";
         if (el.wsUrl.value.trim() !== want) {
           el.wsUrl.value = want;
-          log("系统", "检测到本页由 api.py 托管，地址已自动填为 " + want, "#4da3ff");
+          log("系统", "检测到本页由 api.py 托管，地址已自动填为 " + want, "#007aff");
         }
+        rememberHostedServerSource(j.source);
         applyServerThresholds(j.thresholds);
       })
       .catch(function () { /* 不是 api.py 托管的：保持默认，不发日志避免误导 */ });
@@ -594,7 +642,7 @@
     }
     if (changed.length) {
       // 只有真的与内置副本不同才说话，避免每次打开页面都刷一行噪音
-      log("系统", "阈值已按 config.yaml 更新：" + changed.join("、"), "#8b7cff");
+      log("系统", "阈值已按 config.yaml 更新：" + changed.join("、"), "#8944ab");
       renderGate(state.lastFrame);
       renderCards(state.lastFrame);
     }
@@ -615,6 +663,9 @@
       el.previewSync.textContent = "已清除过期框";
       el.previewSync.className = "badge danger";
       state.previewMeta = null;
+      el.previewImage.classList.remove("ready");
+      el.videoPlaceholder.hidden = false;
+      el.videoPlaceholderText.textContent = "预览已停止更新";
       drawVideo();
     }
   }
@@ -626,7 +677,8 @@
     }
     el.previewDebug.textContent = "preview: frame_id=" + meta.frameId +
       " · " + meta.sourceWidth + "×" + meta.sourceHeight +
-      " · bbox=[" + meta.bbox.join(",") + "] · etag=" + etag;
+      " · bbox=[" + meta.bbox.join(",") + "]" +
+      " · detector=" + (meta.detector || "unknown") + " · etag=" + etag;
   }
 
   function replacePreviewImage(blob, meta, etag) {
@@ -645,6 +697,9 @@
       setPreviewBadge("ok", "同源预览");
       el.previewSync.textContent = "frame " + meta.frameId + " 同帧框";
       el.previewSync.className = "badge ok";
+      if (meta.detector === "stub") {
+        setPreviewBadge("warn", "预览帧 · stub 框（非人脸检测）");
+      }
       renderPreviewDebug(meta, state.previewEtag);
       updatePreviewFreshness();
       drawVideo();
@@ -657,7 +712,7 @@
   }
 
   function fetchPreviewOnce() {
-    if (!previewEndpointAvailable() || state.previewBusy || state.mode !== "ws") return;
+    if (!previewEndpointAvailable() || !state.usesApiStatus || state.previewBusy || state.mode !== "ws") return;
     state.previewBusy = true;
     var headers = state.previewEtag ? { "If-None-Match": state.previewEtag } : {};
     fetch("/api/preview/latest", { cache: "no-store", headers: headers })
@@ -686,7 +741,7 @@
   }
 
   function startPreviewPolling() {
-    if (!previewEndpointAvailable()) return;
+    if (!previewEndpointAvailable() || !state.usesApiStatus) return;
     if (!state.previewTimer) state.previewTimer = setInterval(fetchPreviewOnce, PREVIEW_POLL_MS);
     if (!state.previewWatchdog) state.previewWatchdog = setInterval(updatePreviewFreshness, 250);
     fetchPreviewOnce();
@@ -709,7 +764,7 @@
   function pollTriggers() {
     // 证据链**不塞进契约帧**（契约 §1 的帧只允许那 9 个顶层字段），走 /api/status
     // 的旁路字段。只在 http(s) 托管下轮询 —— file:// 没有同源后端，轮询只会白报错。
-    if (location.protocol !== "http:" && location.protocol !== "https:") return;
+    if ((location.protocol !== "http:" && location.protocol !== "https:") || !state.usesApiStatus) return;
     if (state.pollTimer) return;
     state.pollTimer = setInterval(function () {
       if (state.mode !== "ws") return;
@@ -717,6 +772,7 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           if (!j || !j.ok) return;
+          setServerSource(j.source);
           var t = j.triggers || null;
           var changed = JSON.stringify(t) !== JSON.stringify(state.triggers);
           state.triggers = t;
@@ -735,7 +791,9 @@
     if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; }
     stopPreviewPolling(false);
     state.triggers = null;
+    state.usesApiStatus = false;
     state.mode = "stopped";
+    renderSource();
     if (!silent) log("系统", "已停止数据源", "#5d6b85");
   }
 
@@ -743,19 +801,26 @@
     stopAll(true);
     clearPreviewImage("等待同源预览");
     var url = el.wsUrl.value.trim();
-    if (!url) { log("错误", "请填写 WebSocket 地址", "#ff5d5d"); return; }
+    if (!url) { log("错误", "请填写 WebSocket 地址", STATUS_COLOR.disconnected); return; }
 
     state.mode = "ws";
+    state.usesApiStatus = isSameSourceApiWs(url);
+    state.serverSource = state.usesApiStatus ? state.hostedServerSource : "";
+    renderSource();
     setConn("", "连接中…");
-    log("系统", "连接 " + url, "#4da3ff");
+    log("系统", "连接 " + url, "#007aff");
     pollTriggers();
     startPreviewPolling();
+    if (!state.usesApiStatus) {
+      setPreviewBadge("warn", "独立 WebSocket · 无同源预览");
+      el.videoPlaceholderText.textContent = "当前连接未声明同源预览";
+    }
 
     var ws;
     try {
       ws = new WebSocket(url);
     } catch (e) {
-      log("错误", "地址不合法：" + e.message + "（形如 ws://127.0.0.1:8765）", "#ff5d5d");
+      log("错误", "地址不合法：" + e.message + "（形如 ws://127.0.0.1:8765）", STATUS_COLOR.disconnected);
       setConn("down", "地址错误");
       return;
     }
@@ -764,24 +829,24 @@
     state.lastRxAt = Date.now();
     ws.onopen = function () {
       setConn("live", "已连接");
-      log("系统", "WebSocket 已连接", "#35d07f");
+      log("系统", "WebSocket 已连接", STATUS_COLOR.normal);
     };
     ws.onmessage = function (ev) {
       state.lastRxAt = Date.now();
       var frame;
       try { frame = JSON.parse(ev.data); }
-      catch (e) { log("错误", "收到非 JSON 消息，已丢弃：" + String(ev.data).slice(0, 60), "#ff5d5d"); return; }
+      catch (e) { log("错误", "收到非 JSON 消息，已丢弃：" + String(ev.data).slice(0, 60), STATUS_COLOR.disconnected); return; }
       // api.py 的 /api/status 包了一层 frame；/ws 直接推裸帧，这里两种都吃
-      onFrame(frame.frame && frame.frame.status ? frame.frame : frame, "WebSocket");
+      onFrame(frame.frame && frame.frame.status ? frame.frame : frame);
     };
     ws.onerror = function () {
-      log("错误", "WebSocket 出错（服务是否已启动？地址与端口是否正确？）", "#ff5d5d");
+      log("错误", "WebSocket 出错（服务是否已启动？地址与端口是否正确？）", STATUS_COLOR.disconnected);
     };
     ws.onclose = function () {
       if (state.mode !== "ws") return;
       setConn("down", "连接中断");
-      log("系统", "WebSocket 已断开", "#ff5d5d");
-      onFrame(synthesizeDisconnected(), "连接中断");
+      log("系统", "WebSocket 已断开", STATUS_COLOR.disconnected);
+      onFrame(synthesizeDisconnected());
     };
 
     // 超时兜底：超过 WS_TIMEOUT_MS 没收到帧 → 界面上明确显示"信号不可靠/连接中断"
@@ -790,11 +855,20 @@
       if (Date.now() - state.lastRxAt > WS_TIMEOUT_MS) {
         setConn("down", "无数据");
         if (!state.lastFrame || state.lastFrame.status !== "disconnected") {
-          log("系统", "超过 " + (WS_TIMEOUT_MS / 1000) + "s 未收到帧 → 显示连接中断", "#ffb020");
-          onFrame(synthesizeDisconnected(), "连接中断");
+          log("系统", "超过 " + (WS_TIMEOUT_MS / 1000) + "s 未收到帧 → 显示连接中断", STATUS_COLOR.fatigue_risk);
+          onFrame(synthesizeDisconnected());
         }
       }
     }, 500);
+  }
+
+  function startMonitoring() {
+    if (location.protocol === "file:" || location.protocol === "") {
+      startOffline();
+      return;
+    }
+    el.wsUrl.value = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws";
+    connectWs();
   }
 
   /* ------------------------------------------------------- 离线 mock（无后端） */
@@ -802,14 +876,17 @@
     stopAll(true);
     clearPreviewImage("离线 Mock · 非真实视频");
     state.mode = "offline";
+    state.serverSource = "";
+    state.usesApiStatus = false;
+    renderSource();
     state.lastRxAt = Date.now();
     setConn("mock", "离线模式");
-    log("系统", "离线 Mock 演示：不依赖后端、不依赖摄像头（契约与后端 mock 同一套语义）", "#ffb020");
+    log("系统", "离线 Mock 演示：不依赖后端、不依赖摄像头（契约与后端 mock 同一套语义）", STATUS_COLOR.fatigue_risk);
 
     function tick() {
       var statuses = M.DEMO_SEQUENCE;
       var st = state.forcedStatus || statuses[state.frameId % statuses.length];
-      onFrame(M.mockFrame(state.frameId, { status: st }), "离线 Mock");
+      onFrame(M.mockFrame(state.frameId, { status: st }));
       state.frameId++;
     }
     tick();
@@ -819,12 +896,14 @@
   /* ---------------------------------------------------------------- 契约自检 */
   function runSelftest() {
     var res = M.selfTest(20260910);
-    if (res.ok) {
-      log("契约自检", "通过：检查 " + res.checked + " 项（六态各一帧 + 5 个坏帧 + 年龄档案件 6 个生命周期态 + 5 个坏例必须被抓）", "#35d07f");
-      alert("契约自检通过 ✓\n\n检查 " + res.checked + " 项：\n· 六种状态的 mock 帧全部合法\n· 5 个故意构造的坏帧全部被校验器抓住\n· 年龄档案件（旁路载荷）：6 个生命周期态合法 + 5 个坏例被抓住\n\n（跨语言检查请跑：node frontend/mock.js --limit 6 | python metrics/scripts/check_frontend_contract.py -）");
+    var uiRes = U.selfTest();
+    if (res.ok && uiRes.ok) {
+      log("前端自检", "通过：契约 " + res.checked + " 项，UI 语义 " + uiRes.checked + " 项", STATUS_COLOR.normal);
+      alert("前端自检通过 ✓\n\n· 契约检查 " + res.checked + " 项\n· UI 语义检查 " + uiRes.checked + " 项\n\n（跨语言检查请跑：node frontend/mock.js --limit 6 | python metrics/scripts/check_frontend_contract.py -）");
     } else {
-      log("契约自检", "失败：" + res.failures.join("；"), "#ff5d5d");
-      alert("契约自检失败 ✗\n\n" + res.failures.join("\n"));
+      var failures = res.failures.concat(uiRes.failures);
+      log("前端自检", "失败：" + failures.join("；"), STATUS_COLOR.disconnected);
+      alert("前端自检失败 ✗\n\n" + failures.join("\n"));
     }
   }
 
@@ -856,13 +935,14 @@
     });
 
     $("btnConnect").onclick = connectWs;
+    $("btnStart").onclick = startMonitoring;
     $("btnOffline").onclick = startOffline;
     $("btnStop").onclick = function () { stopAll(false); clearPreviewImage("已停止数据源"); setConn("down", "未连接"); };
     $("btnSelftest").onclick = runSelftest;
     $("btnClear").onclick = function () { el.log.innerHTML = ""; };
     el.forceStatus.onchange = function () {
       state.forcedStatus = el.forceStatus.value;
-      log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8b7cff");
+      log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8944ab");
     };
 
     window.addEventListener("resize", function () { drawVideo(); renderChart(); });
@@ -875,19 +955,21 @@
     renderGate(null);
     renderBlink(null);
     drawVideo();
+    renderSource();
     renderChart();
-    log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#4da3ff");
+    log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#007aff");
 
     syncWithServer();
 
     // file:// 离线打开时自动演示；由 api.py 托管时必须等待用户主动连接，
     // 避免把 Mock 六态误认为摄像头/后端的实时数据。
     if (location.protocol === "file:" || location.protocol === "") {
+      $("btnStartLabel").textContent = "重新演示";
       startOffline();
     } else {
       state.mode = "stopped";
       setConn("down", "未连接");
-      log("系统", "实时页面已就绪：请点击“连接 WebSocket”；当前不自动播放 Mock", "#4da3ff");
+      log("系统", "实时页面已就绪：请点击“连接 WebSocket”；当前不自动播放 Mock", "#007aff");
     }
   }
 
