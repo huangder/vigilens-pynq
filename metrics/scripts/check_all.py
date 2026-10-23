@@ -192,6 +192,13 @@ TOOL_SELFTESTS = (
     # 验 MmapMMIO 32bit 读写、页内偏移、越界拒绝、地址映射校验（缺项/重叠/范围/对齐）、
     # load_mmap 与 load_overlay 的 read_reg/write_reg 复用、以及 .hwh 解析与 instance→logical 映射。
     ("board/overlay/mmap_overlay.py", "--selftest"),
+    # USB(UVC) 相机验收工具的**离线自检**（2026-10-23 新增，docs/37 §5 W1）：用假设备注入跑
+    # MJPEG 切帧、帧间隔分位、`v4l2-ctl --list-formats-ext` 解析、720p60 判定、亮度频谱峰检测
+    # 与 JPEG 解码基准的真逻辑。
+    # 为什么值得进回归：这段解析的结论会直接写成"这颗相机支不支持 720p60"，
+    # 解析器写错 = **采购判据错**，而且错得很安静（少认一档 fps 就把合格相机判成不合格）。
+    # 它不需要相机、不需要板卡，本机天天能跑。
+    ("metrics/scripts/check_uvc_camera.py", "--selftest"),
 )
 
 
