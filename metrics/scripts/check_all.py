@@ -205,6 +205,12 @@ TOOL_SELFTESTS = (
     # 为什么值得进回归：这条口径错的时候**不会报错，只会报出一个看起来正常的错数**
     # （13 fps 下 72 → 166 bpm、conf 0.9998），没有任何日志会提醒你。
     ("metrics/scripts/probe_rppg_timebase.py", None),
+    # MIPI/CM2 相机与 EEPROM 的两条**离线判读**（2026-10-23 纳入回归）：两者都是"读一份 ILA
+    # 导出的 CSV，再判相机认没认出来 / 是不是同一颗芯片"，所以不需要板卡和相机就能跑。
+    # 为什么值得进回归：判据写在脚本里（应答值 → CONNECTED_OK / 时钟 24 MHz、全 0xFF 无区分力），
+    # 这类"看波形下结论"的口径最容易在改一次位序后静默反转，而反转后人眼看不出来。
+    ("board/check_camera.py", "--selftest"),
+    ("board/check_eeprom.py", "--selftest"),
 )
 
 

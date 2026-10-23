@@ -163,8 +163,8 @@
 #       python -m venv .venv && .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
-python metrics/scripts/check_all.py            # 期望：工具自检 17/17；回归结论 PASS 31 / FAIL 0
-#    （2026-10-23 本机实测：工具自检 **17/17**；回归 **PASS 31 / FAIL 0**，用时 65.3 s。
+python metrics/scripts/check_all.py            # 期望：工具自检 19/19；回归结论 PASS 34 / FAIL 0
+#    （2026-10-23 本机实测：工具自检 **19/19**；回归 **PASS 34 / FAIL 0**，用时 59.6 s。
 #      沿革：2026-10-01 曾是 14/14 + PASS 27 / FAIL 2（① pytest 段在受限环境 300 s 超时；
 #      ② check_video_bypass 的 T13/T14 断言 B 线旧 MJPEG UI = 台账 BUG-032）。
 #      BUG-032 已于 2026-10-23 关闭：T13/T14 改成断言**新的同源预览**（`frontend/preview.js` +
@@ -177,7 +177,8 @@ python -m pytest -q                            # 基线只增不减；2026-10-23
 #      另有单项：`python -m pytest backend/tests/test_age_fatigue.py -q` → **43 passed**）
 #    （工具自检沿革：10/10 → 12/12（bringup/hw_sw/dma 三条）→ 13/13 → 14/14（+board/imx219_sccb_check.py，79/79）
 #      → 15/15（+board/overlay/mmap_overlay.py，16/16）→ 16/16（+metrics/scripts/check_uvc_camera.py，21/21）
-#      → **17/17**（+metrics/scripts/probe_rppg_timebase.py，自带验收断言）；
+#      → 17/17（+metrics/scripts/probe_rppg_timebase.py，自带验收断言）
+#      → **19/19**（+board/check_camera.py 10/10、board/check_eeprom.py 6/6，两条都是"ILA CSV 判读"的离线口径）；
 #      其中 2 项是 OpenMV 侧的"假模块跑真脚本"——`offline_check.py` **54/54**（采集矩阵）
 #      与 `offline_stream_check.py` **22/22**（推流三分支，docs/18 路线②的离线证据））
 node frontend/mock.js --selftest               # 期望：ok: true
