@@ -248,18 +248,34 @@ def main() -> int:
             ck.add("T11 端到端 --push-video：run_pipeline 真的把画面推到了 B 线", ok, detail)
 
         # ---- 8. 页面真的带上了画面元素（前端改动已生效，不是只改了后端） --------
+        # 2026-10-23（台账 BUG-032）：B 线 2026-09-15 起把网页画面从"旁路 MJPEG 面板"
+        # 换成"同源预览"（GET /api/preview/latest + frontend/preview.js 坐标换算），
+        # 旧的 T13/T14 断言的是**已经不存在的 DOM id 与端点**。
+        # 现在断言的是**同一意图的新实现**：
+        #   · 旁路 API 侧仍然存在（T5 的 /video.mjpg、T6 的 /api/video_status 过期语义都没动）；
+        #   · 前端换了消费方式，但"旧画面不许一直显示"这条语义必须仍在（PREVIEW_STALE_MS）。
         code, body = http(f"{base}/")
         html = body.decode("utf-8", "replace")
-        ck.add("T13 网页 HTML 含旁路画面元素 #videostream 且引用 /video.mjpg",
-               code == 200 and 'id="videostream"' in html and "video.mjpg" in html,
-               f"HTTP {code} {len(body)} B；含 id={('id=\"videostream\"' in html)} "
-               f"含 video.mjpg={('video.mjpg' in html)}")
+        need_ids = ("previewImage", "videoBadge", "previewFreshness", "previewSync")
+        missing = [i for i in need_ids if f'id="{i}"' not in html]
+        ck.add("T13 网页带同源预览面板（#previewImage/#videoBadge/#previewFreshness/#previewSync）"
+               "并加载 preview.js",
+               code == 200 and not missing and "preview.js" in html,
+               f"HTTP {code} {len(body)} B；缺 id={missing} "
+               f"含 preview.js={'preview.js' in html}")
 
         code, js = http(f"{base}/app.js")
         jstext = js.decode("utf-8", "replace")
-        ck.add("T14 app.js 会用 /api/video_status 的过期判定（不是'收到过就显示'）",
-               code == 200 and "/api/video_status" in jstext and "has_video" in jstext,
-               f"HTTP {code} {len(js)} B")
+        stale_bits = {
+            "PREVIEW_STALE_MS": "PREVIEW_STALE_MS" in jstext,
+            "updatePreviewFreshness": "updatePreviewFreshness" in jstext,
+            "已清除过期框": "已清除过期框" in jstext,
+            "/api/preview/latest": "/api/preview/latest" in jstext,
+        }
+        ck.add("T14 app.js 用 PREVIEW_STALE_MS 清掉过期画面（停推不显示冻结旧帧），"
+               "且画面走 /api/preview/latest",
+               code == 200 and all(stale_bits.values()),
+               f"HTTP {code} {len(js)} B；{stale_bits}")
 
         return ck.report()
     finally:

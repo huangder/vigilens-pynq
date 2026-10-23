@@ -163,17 +163,21 @@
 #       python -m venv .venv && .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
-python metrics/scripts/check_all.py            # 期望：工具自检 14/14；回归结论 PASS 27 / FAIL 2（**那 2 项与本线无关**，见下注）
-#    （2026-10-01 本机实测：工具自检 **14/14**；回归 **PASS 27 / FAIL 2**，用时 316.5 s。2 项红 =
-#      ① A 段 pytest 在受限环境 300 s 超时（本机 `metrics/logs/` 不可写，见 `docs/29` §1.4 —— 环境问题）
-#      ② check_video_bypass 的 **T11 + T13/T14**：T13/T14 断言的是 B 线旧的 MJPEG UI（台账 BUG-032），
-#        T11 是本机 OpenCV 4.11 创建不了 MJPG .avi（环境限制）。都不是"跑不起来"，而是**已知的、非本线的**红。）
+python metrics/scripts/check_all.py            # 期望：工具自检 17/17；回归结论 PASS 31 / FAIL 0
+#    （2026-10-23 本机实测：工具自检 **17/17**；回归 **PASS 31 / FAIL 0**，用时 65.3 s。
+#      沿革：2026-10-01 曾是 14/14 + PASS 27 / FAIL 2（① pytest 段在受限环境 300 s 超时；
+#      ② check_video_bypass 的 T13/T14 断言 B 线旧 MJPEG UI = 台账 BUG-032）。
+#      BUG-032 已于 2026-10-23 关闭：T13/T14 改成断言**新的同源预览**（`frontend/preview.js` +
+#      `#previewImage` + `PREVIEW_STALE_MS`），并在同一轮把 T11（OpenCV 造 MJPG）也跑绿。）
 # ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
-python -m pytest -q                            # 基线只增不减；2026-10-12 合并 origin/main 后实测 **182 项收集**
-#    （⚠️ 182 是 `--collect-only` 的**收集数**，不等于"全部通过"；完整套件在受限环境跑不完。
-#      沿革：78 → 88（+旁路 MJPEG 帧源 10 项）→ 98（合并分支）→ 141（+2026-10-01 年龄分层 43 项）→ **182**（2026-10-12 并入 origin/main 的 B 线新版式与 A 线方向归一化用例）。
+python -m pytest -q                            # 基线只增不减；2026-10-23 本机实测 **234 passed**
+#    （⚠️ 234 是**实际通过数**，不是收集数；受限环境跑不完整套时要看报告里到底跑了多少。
+#      沿革：78 → 88（+旁路 MJPEG 帧源 10 项）→ 98（合并分支）→ 141（+2026-10-01 年龄分层 43 项）→ 182（2026-10-12 并入 origin/main）
+#      → 184（+朝向误检 2 项）→ 199（+uvc: 帧源 15 项）→ 204（+灰度按档位 5 项）→ 215（+闭眼时间口径 11 项）→ **234**（+rPPG 时间基准 19 项）。
 #      另有单项：`python -m pytest backend/tests/test_age_fatigue.py -q` → **43 passed**）
-#    （工具自检沿革：10/10 → 12/12（bringup/hw_sw/dma 三条）→ 13/13 → **14/14**（+board/imx219_sccb_check.py，79/79）；
+#    （工具自检沿革：10/10 → 12/12（bringup/hw_sw/dma 三条）→ 13/13 → 14/14（+board/imx219_sccb_check.py，79/79）
+#      → 15/15（+board/overlay/mmap_overlay.py，16/16）→ 16/16（+metrics/scripts/check_uvc_camera.py，21/21）
+#      → **17/17**（+metrics/scripts/probe_rppg_timebase.py，自带验收断言）；
 #      其中 2 项是 OpenMV 侧的"假模块跑真脚本"——`offline_check.py` **54/54**（采集矩阵）
 #      与 `offline_stream_check.py` **22/22**（推流三分支，docs/18 路线②的离线证据））
 node frontend/mock.js --selftest               # 期望：ok: true
@@ -183,7 +187,7 @@ python metrics/scripts/check_frontend_wiring.py    # 期望：前端接线检查
 #    而且在 Windows PowerShell 5.1 下 `>` 默认写 UTF-16，字节必然与入库的 UTF-8 版本不同。
 node frontend/mock.js --limit 6 > metrics/logs/_js_frames.jsonl
 python metrics/scripts/check_frontend_contract.py metrics/logs/_js_frames.jsonl      # 期望：通过
-python metrics/scripts/check_video_bypass.py   # 当前 11/14（T13/T14 = BUG-032；T11 = 本机 OpenCV 造不出 MJPG .avi 的环境限制）
+python metrics/scripts/check_video_bypass.py   # 期望：15/15（2026-10-23 起；T13/T14 已改测同源预览，BUG-032 关闭）
 git status --short                             # 只应出现你本线的改动
 ```
 
@@ -203,11 +207,11 @@ git status --short                             # 只应出现你本线的改动
 
 | 命令 | 期望 | 失败说明什么 |
 |---|---|---|
-| `pytest` | 基线只增不减；2026-10-01 实测 **182 项收集**（⚠️ 收集数≠全部通过） | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
+| `pytest` | 基线只增不减；2026-10-23 实测 **234 passed** | 契约被改坏、引入了非确定性（时间戳/随机数泄漏进指标），或新增功能没带测试 |
 | `--selftest` | `"ok": true` | JS 的 mock 与校验器不自洽 |
 | `check_frontend_wiring` | `通过` | `app.js` 引用了不存在的 DOM id（症状：**页面不报错、区域空白**） |
 | `check_frontend_contract` | `通过` | **A 的 Python 与 B 的 JS 对同一份契约判断不一致** —— M2 集成必炸 |
-| `check_video_bypass` | 当前 **11/14**（T11 环境 + T13/T14 = BUG-032）；其余项全绿 | 旁路画面链路坏了，或**有人把图像塞进了契约帧**（T9/T10 会红）；或画面停推后仍显示冻结旧帧（T6 会红） |
+| `check_video_bypass` | 当前 **15/15**（2026-10-23 起；T13/T14 已改测同源预览，BUG-032 关闭） | 旁路画面链路坏了，或**有人把图像塞进了契约帧**（T9/T10 会红）；或画面停推后仍显示冻结旧帧（T6 会红） |
 | `board/openmv/offline_check.py` | `RESULT: PASS (54/54)` | 只能在**相机上**跑的 `openmv_capture_test.py` 被改坏了（假模块跑 v5 `csi` / v4 `sensor` 两条分支）。它已真抓到过一个真机也会犯的作用域 bug，所以纳入回归 |
 | `board/openmv/offline_stream_check.py` | `RESULT: PASS (22/22)` | 推流脚本 `openmv_stream.py` 的三种 payload 分支被改坏了；**最关键的一条是"灰度模式下 `img.compress()` 一次都没被调用"** —— 那是 `docs/18` 路线②（BUG-027 的修法）的全部意义，没有硬件时只有它能钉住 |
 | `metrics/scripts/omv_stream_bridge.ps1 -SelfTest` | `RESULT: PASS` | 串口收帧器/PC 侧编码器坏了：CRC 检查值、CPython 造帧→本脚本解帧的逐字节比对、**GRAY→JPEG 逐像素比对**、畸形 GRAY 必须返回 `$null`、以及 `Send-OMVStreamer` 的字符串锚点（锚点被改名 = **静默**改错模式） |
