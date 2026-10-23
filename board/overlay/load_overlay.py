@@ -149,6 +149,23 @@ def read_valid(ip, data_offset: int):
     return val, valid
 
 
+def stop_channel(ch) -> None:
+    """写 DMA CR.RS=0 主动停一个通道（PYNQ 的 `_SDMAChannel.stop()` 就是这个动作）。
+
+    见台账 BUG-037：链尾是 DMA 的流水线必须"余量 + 软件停"，不能用精确长度等 IOC。
+    """
+    stop = getattr(ch, "stop", None)
+    if stop is None:
+        raise RuntimeError("DMA 通道句柄缺少 stop()，无法按 BUG-037 的配方收尾")
+    stop()
+
+
+# S2MM 目标长度的余量（字节）。见台账 BUG-037 与 `docs/30` §7 门限 5：
+# 收满即 halt 会让下游 TREADY 撤掉 ⇒ ROI/rgb2gray 的收尾写拿不到应答（CTRL 停在 0x1、结果全 0），
+# 所以留 ≥ 一拍 burst 的余量，帧末由软件停通道。384 B = 一拍 64bit×16 的 SmartConnect burst 的 3 倍。
+GRAY_SINK_MARGIN = 384
+
+
 # ===========================================================================
 # 像素链：DMA 喂一帧 RGB → roi_statistic → rgb2gray → motion_quality
 # ===========================================================================
@@ -189,10 +206,13 @@ def run_pixel_chain(ol, handles, frame_rgb, *, roi=(0, 0, R.FRAME_W, R.FRAME_H),
     ap_start(mot_ip)
 
     # ---- 3) DMA：先武装 S2MM 回读（收灰度流），再武装 MM2S（发 RGB 帧）----
-    # 【未验证】arm 顺序 / 是否需要在 start IP 之后再 arm DMA，需上板按门限 6 调通。
+    # ⚠️ 链尾接法（台账 BUG-037，2026-10-19 板上实测）：S2MM 的目标长度**不能**正好等于一帧字节数。
+    #    收满即 halt 会让 axis_tlast_suppress 的下游 TREADY 撤掉，ROI/rgb2gray 的收尾写再也拿不到应答，
+    #    表现为 CTRL=0x1（ap_start=1、ap_done=0）、结果寄存器全 0 —— 而灰度数据其实是对的。
+    #    正确做法 = 长度留 GRAY_SINK_MARGIN 余量，等三个 IP 都 ap_done 后由软件停 S2MM。
     from pynq import allocate
     in_buf = allocate(shape=(R.RGB_BYTES,), dtype="u1")
-    out_buf = allocate(shape=(R.GRAY_PIXELS,), dtype="u1")
+    out_buf = allocate(shape=(R.GRAY_PIXELS + GRAY_SINK_MARGIN,), dtype="u1")
     in_buf[:] = frame_rgb
 
     recv = getattr(dma, "recvchannel", None)
@@ -202,16 +222,16 @@ def run_pixel_chain(ol, handles, frame_rgb, *, roi=(0, 0, R.FRAME_W, R.FRAME_H),
 
     recv.transfer(out_buf)
     send.transfer(in_buf)
-    send.wait()
-    recv.wait()
+    send.wait()   # MM2S 送完一帧（IOC）；S2MM 因为有余量不会自己收满，不能 recv.wait()
 
-    # ---- 4) 等三个 IP 的 ap_done，然后读结果 ----
+    # ---- 4) 等三个 IP 的 ap_done，然后停 S2MM、读结果 ----
     ok = all(ap_wait_done(ip, timeout_s) for ip in (roi_ip, rgb_ip, mot_ip))
+    stop_channel(recv)
     if not ok:
         print("[warn] 有 IP 在超时内未置 ap_done（可能流长度/尺寸不匹配，见契约 §3.2 边界）")
 
     res = {
-        "gray_out": bytes(out_buf.tobytes()),          # 384x288 灰度（硬件产出，供比对）
+        "gray_out": bytes(out_buf[:R.GRAY_PIXELS].tobytes()),   # 384x288 灰度（硬件产出，供比对）
         "roi": {
             "sum_r": read_reg(roi_ip, R.RoiStatistic.sum_r),
             "sum_g": read_reg(roi_ip, R.RoiStatistic.sum_g),

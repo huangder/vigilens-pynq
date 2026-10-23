@@ -10,8 +10,10 @@
 //    2) 统计 ROI（半开区间 [x0,x1) × [y0,y1)）内像素的 R/G/B 累加和与像素个数
 //
 //  AXI-Stream 语义（务必记住，踩坑重灾区）：
-//    TUSER = 1 -> 一帧的第一个像素
-//    TLAST = 1 -> 一行的最后一个像素（不是一帧！）
+//    输入：TUSER / TLAST 不参与控制（按 width/height 计数读完一帧，
+//          与 bayer_demosaic / frame_scale 同一口径，适配 DMA 平面帧馈入，
+//          此时 TLAST 只在帧末拉一次，不能当"行末"用）；
+//    输出：透传 video_in 的 TUSER / TLAST / TKEEP / TSTRB（原样保留）。
 //    TKEEP / TSTRB = 0b111（24 bit = 3 byte）
 //
 //  通道顺序：TDATA[7:0]=R, TDATA[15:8]=G, TDATA[23:16]=B   <-- RGB，不是 BGR
@@ -73,42 +75,34 @@ void roi_statistic(hls::stream<axis_pix_t> &video_in,
     ap_uint<32> b_acc = 0;
     ap_uint<32> cnt   = 0;
 
-    ap_uint<16> x = 0;   // 当前列（0 .. width-1）
-    ap_uint<16> y = 0;   // 当前行（0 .. height-1）
+    const int W = (int)width;
+    const int H = (int)height;
 
-    const int total = (int)width * (int)height;   // 一帧像素数
-
-    for (int i = 0; i < total; i++) {
+    for (int y = 0; y < H; y++) {
+        for (int x = 0; x < W; x++) {
 #pragma HLS PIPELINE II=1
 
-        axis_pix_t p = video_in.read();
+            axis_pix_t p = video_in.read();
 
-        // 拆通道：R=[7:0], G=[15:8], B=[23:16]
-        ap_uint<8> r = p.data(7, 0);
-        ap_uint<8> g = p.data(15, 8);
-        ap_uint<8> b = p.data(23, 16);
+            // 拆通道：R=[7:0], G=[15:8], B=[23:16]
+            ap_uint<8> r = p.data(7, 0);
+            ap_uint<8> g = p.data(15, 8);
+            ap_uint<8> b = p.data(23, 16);
 
-        // 半开区间判定：x0 <= x < x1 且 y0 <= y < y1
-        // （与 NumPy 的 img[y0:y1, x0:x1] 完全等价，无需 ±1 心算）
-        bool in_roi = (x >= roi_x0) && (x < roi_x1) &&
-                      (y >= roi_y0) && (y < roi_y1);
+            // 半开区间判定：x0 <= x < x1 且 y0 <= y < y1
+            // （与 NumPy 的 img[y0:y1, x0:x1] 完全等价，无需 ±1 心算）
+            bool in_roi = (x >= (int)roi_x0) && (x < (int)roi_x1) &&
+                          (y >= (int)roi_y0) && (y < (int)roi_y1);
 
-        if (in_roi) {
-            r_acc += r;
-            g_acc += g;
-            b_acc += b;
-            cnt   += 1;
-        }
+            if (in_roi) {
+                r_acc += r;
+                g_acc += g;
+                b_acc += b;
+                cnt   += 1;
+            }
 
-        // 透传（user / last / keep / strb 全部原样保留，供 C9 回环测试）
-        video_out.write(p);
-
-        // 行列推进：TLAST 表示一行结束
-        if (p.last) {
-            x = 0;
-            y++;
-        } else {
-            x++;
+            // 透传（user / last / keep / strb 全部原样保留，供 C9 回环测试）
+            video_out.write(p);
         }
     }
 

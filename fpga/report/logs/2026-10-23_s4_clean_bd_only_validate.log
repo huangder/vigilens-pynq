@@ -1,0 +1,64 @@
+INFO: [Common 17-3922] A valid Vivado Design Suite BASIC license has been detected. Your current license is active and will expire on 09-sep-2027.
+
+****** Vivado v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Fri Oct 23 14:34:49 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source build_bd.tcl -notrace
+create_project: Time (s): cpu = 00:00:11 ; elapsed = 00:00:16 . Memory (MB): peak = 614.867 ; gain = 266.582
+========================================================================
+⚠️  �?套用板级 preset（USE_BOARD_PRESET=0�?
+    �?标板�? Mizar-Z7020�?1 GB DDR3），不是 PYNQ-Z2�?512 MB）�?
+    下面 PS7 �? DDR/UART 配置�? MicroPhase 参考�?��?�显式写入（�? §1 的硬守卫段）�?
+========================================================================
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'd:/Desktop/AMD/fpga/component_roi_statistic/hls/impl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'd:/Desktop/AMD/fpga/component_rgb2gray/hls/impl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'd:/Desktop/AMD/fpga/component_motion_quality/hls/impl/ip'.
+INFO: [IP_Flow 19-1700] Loaded user IP repository 'd:/Desktop/AMD/fpga/component_fir_filter/hls/impl/ip'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'D:/Xilinx/2026.1/Vivado/data/ip'.
+Wrote  : <D:\Desktop\AMD\board\vivado_project\vigilens_bd.srcs\sources_1\bd\system\system.bd> 
+create_bd_design: Time (s): cpu = 00:00:01 ; elapsed = 00:00:05 . Memory (MB): peak = 643.117 ; gain = 22.348
+WARNING: [Boardtcl 53-1] No current board_part set.
+== PS7 手工配置完成（DDR 1GB / UART1 MIO48-49 / 33.333 MHz crystal / APU 667 MHz / FCLK0 on�?==
+INFO: [IP_Flow 19-5107] Inferred bus interface 'm_axis' of definition 'xilinx.com:interface:axis:1.0' (from Xilinx Repository).
+INFO: [IP_Flow 19-5107] Inferred bus interface 's_axis' of definition 'xilinx.com:interface:axis:1.0' (from Xilinx Repository).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'aresetn' of definition 'xilinx.com:signal:reset:1.0' (from Xilinx Repository).
+INFO: [IP_Flow 19-5107] Inferred bus interface 'aclk' of definition 'xilinx.com:signal:clock:1.0' (from Xilinx Repository).
+INFO: [IP_Flow 19-4728] Bus Interface 'aresetn': Added interface parameter 'POLARITY' with value 'ACTIVE_LOW'.
+INFO: [IP_Flow 19-4728] Bus Interface 'aclk': Added interface parameter 'ASSOCIATED_BUSIF' with value 'm_axis'.
+INFO: [IP_Flow 19-4728] Bus Interface 'aclk': Added interface parameter 'ASSOCIATED_RESET' with value 'aresetn'.
+WARNING: [IP_Flow 19-11770] Clock interface 'aclk' has no FREQ_HZ parameter.
+Slave segment '/axi_fifo_mm_s_rx/S_AXI/Mem0' is being assigned into address space '/ps7_0/Data' at <0x4000_0000 [ 4K ]>.
+Slave segment '/axi_fifo_mm_s_tx/S_AXI/Mem0' is being assigned into address space '/ps7_0/Data' at <0x4000_1000 [ 4K ]>.
+Slave segment '/fir_filter_0/s_axi_ctrl/Reg' is being assigned into address space '/ps7_0/Data' at <0x4001_0000 [ 64K ]>.
+Slave segment '/motion_quality_0/s_axi_ctrl/Reg' is being assigned into address space '/ps7_0/Data' at <0x4002_0000 [ 64K ]>.
+Slave segment '/rgb2gray_0/s_axi_ctrl/Reg' is being assigned into address space '/ps7_0/Data' at <0x4003_0000 [ 64K ]>.
+Slave segment '/roi_statistic_0/s_axi_ctrl/Reg' is being assigned into address space '/ps7_0/Data' at <0x4004_0000 [ 64K ]>.
+Slave segment '/axi_dma_0/S_AXI_LITE/Reg' is being assigned into address space '/ps7_0/Data' at <0x41E0_0000 [ 64K ]>.
+Slave segment '/ps7_0/S_AXI_HP0/HP0_DDR_LOWOCM' is being assigned into address space '/axi_dma_0/Data_S2MM' at <0x0000_0000 [ 1G ]>.
+Slave segment '/ps7_0/S_AXI_HP0/HP0_DDR_LOWOCM' is being assigned into address space '/axi_dma_0/Data_MM2S' at <0x0000_0000 [ 1G ]>.
+Wrote  : <D:\Desktop\AMD\board\vivado_project\vigilens_bd.srcs\sources_1\bd\system\system.bd> 
+WARNING: [BD 41-3281] Instance '/ps7_0' is connected on both sides by SmartConnects and cannot automatically configure itself to match the endpoints. Please manually configure its AXI interfaces as required for the design.
+WARNING: [BD 41-3281] Instance '/axi_dma_0' is connected on both sides by SmartConnects and cannot automatically configure itself to match the endpoints. Please manually configure its AXI interfaces as required for the design.
+INFO: [BD 5-943] Reserving offset range <0x4004_0000 [ 64K ]> from slave interface '/axi_smc/S00_AXI' to master interface '/axi_smc/M00_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x4003_0000 [ 64K ]> from slave interface '/axi_smc/S00_AXI' to master interface '/axi_smc/M01_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x4002_0000 [ 64K ]> from slave interface '/axi_smc/S00_AXI' to master interface '/axi_smc/M02_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x4001_0000 [ 64K ]> from slave interface '/axi_smc/S00_AXI' to master interface '/axi_smc/M03_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x41E0_0000 [ 64K ]> from slave interface '/axi_smc/S00_AXI' to master interface '/axi_smc/M04_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x4000_1000 [ 4K ]> from slave interface '/axi_smc/S00_AXI' to master interface '/axi_smc/M05_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x4000_0000 [ 4K ]> from slave interface '/axi_smc/S00_AXI' to master interface '/axi_smc/M06_AXI'. This will be used by smartconnect on path for routing.
+INFO: [xilinx.com:ip:smartconnect:1.0-1] system_axi_smc_0: SmartConnect system_axi_smc_0 is in Ultralite mode.
+INFO: [BD 5-943] Reserving offset range <0x0000_0000 [ 1G ]> from slave interface '/axi_smc_dma/S00_AXI' to master interface '/axi_smc_dma/M00_AXI'. This will be used by smartconnect on path for routing.
+INFO: [BD 5-943] Reserving offset range <0x0000_0000 [ 1G ]> from slave interface '/axi_smc_dma/S01_AXI' to master interface '/axi_smc_dma/M00_AXI'. This will be used by smartconnect on path for routing.
+INFO: [xilinx.com:ip:smartconnect:1.0-1] system_axi_smc_dma_0: SmartConnect system_axi_smc_dma_0 is in High-performance Mode.
+WARNING: [xilinx.com:ip:axis_dwidth_converter:1.1-1] /conv_fir_outSlave interface TUSER_WIDTH (1) is not an integer multiple of number of slave interface TDATA_NUM_BYTES (2). TUSER_BITS_PER_BYTE forced to 0.
+validate_bd_design: Time (s): cpu = 00:00:09 ; elapsed = 00:00:11 . Memory (MB): peak = 849.602 ; gain = 106.559
+== validate_bd_design 完成：return=''，ERROR=0，CRITICAL_WARNING=0 ==
+（CRITICAL WARNING 预期�? 0：取�? tap 已从 BD 摘除�?
+== BD_ONLY=1：BD 校验通过，跳过综合�?==
+INFO: [Common 17-206] Exiting Vivado at Fri Oct 23 14:35:49 2026...

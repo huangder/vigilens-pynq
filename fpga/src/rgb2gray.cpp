@@ -34,7 +34,8 @@
 //    ⚠️ 点采样会保留混叠：运动检测可能因此更"敏感"（噪声被判为运动）。
 //       若实测发现运动量偏噪，可改为块均值（黄金参考需同步改），或退回 320x240 的 2x2 均值。
 //
-//  AXI-Stream 语义：输入 TUSER = 输入帧首像素、TLAST = 输入行末像素；
+//  AXI-Stream 语义：输入 TUSER/TLAST 不参与控制（按 width/height 计数读完一帧，
+//                   与 bayer_demosaic / frame_scale 同一口径，适配 DMA 平面帧馈入）；
 //                   输出 TUSER = 输出帧首像素、TLAST = **输出行**末像素。
 // =============================================================================
 
@@ -89,77 +90,60 @@ void rgb2gray(hls::stream<axis_pix_t> &rgb_in,
 //   ⚠️ pragma 必须写在变量声明之后（同坑 #18）。
 #pragma HLS RESET variable=fid
 
-    const int total_in = (int)width * (int)height;
+    const int W = (int)width;
+    const int H = (int)height;
     const ap_uint<16> ow = (ap_uint<16>)((int)width  / RGB2GRAY_DECIM_DEN * RGB2GRAY_DECIM_NUM);
     const ap_uint<16> oh = (ap_uint<16>)((int)height / RGB2GRAY_DECIM_DEN * RGB2GRAY_DECIM_NUM);
 
-    ap_uint<16> px = 0;      // 输入列相位 0..4
-    ap_uint<16> py = 0;      // 输入行相位 0..4
     ap_uint<16> ox = 0;      // 输出列计数
     ap_uint<32> ocnt = 0;    // 输出像素总数
     ap_uint<32> acc  = 0;
 
-    for (int i = 0; i < total_in; i++) {
+    // 相位抽取：保留 (x % DEN) < NUM 且 (y % DEN) < NUM 的像素。
+    // ⚠️ 由 x/y 循环下标直接算相位（不依赖输入 TLAST），与 bayer_demosaic /
+    //    frame_scale 同一口径 —— 适配 DMA 平面帧馈入（TLAST 只在帧末拉一次，
+    //    不能当"行末"用，否则 py 恒 0、纵向不抽取）。
+    for (int y = 0; y < H; y++) {
+        const int py = y % RGB2GRAY_DECIM_DEN;   // 输入行相位 0..DEN-1
+        for (int x = 0; x < W; x++) {
 #pragma HLS PIPELINE II=1
 
-        axis_pix_t p = rgb_in.read();
+            axis_pix_t p = rgb_in.read();
 
-        // 相位抽取：保留 (x % DEN) < NUM 且 (y % DEN) < NUM 的像素
-        // ⚠️ 用 `% DEN` 而不是原来的 `px < NUM` —— 两者在"行首相位恒为 0"时**结果完全一样**
-        //    （旧写法等于默认相位从 0 起，见 `px = 0` 的初始化与 `p.last` 处的复位），
-        //    但 `% DEN` 才是"3/5 相位抽取"的原意，且对任意 DEN 都成立（3/8、1/4 也照此）。
-        //    这套等价性由既有黄金参考兜底：跑 csim 必须仍是 8/8 + 10/10、且逐字节 0 不符。
-        bool sel = ((px % (ap_uint<16>)RGB2GRAY_DECIM_DEN) < (ap_uint<16>)RGB2GRAY_DECIM_NUM) &&
-                   ((py % (ap_uint<16>)RGB2GRAY_DECIM_DEN) < (ap_uint<16>)RGB2GRAY_DECIM_NUM);
+            const int px = x % RGB2GRAY_DECIM_DEN;   // 输入列相位 0..DEN-1
+            bool sel = (px < RGB2GRAY_DECIM_NUM) && (py < RGB2GRAY_DECIM_NUM);
 
-        if (sel) {
-            // 拆通道：R=[7:0], G=[15:8], B=[23:16]（RGB，不是 BGR）
-            ap_uint<8> r = p.data(7, 0);
-            ap_uint<8> g = p.data(15, 8);
-            ap_uint<8> b = p.data(23, 16);
+            if (sel) {
+                // 拆通道：R=[7:0], G=[15:8], B=[23:16]（RGB，不是 BGR）
+                ap_uint<8> r = p.data(7, 0);
+                ap_uint<8> g = p.data(15, 8);
+                ap_uint<8> b = p.data(23, 16);
 
-            // Y = (77R + 150G + 29B + 128) >> 8，16 bit 足够（最大 65408）
-            ap_uint<16> y16 = (ap_uint<16>)((ap_uint<16>)77  * (ap_uint<16>)r +
-                                            (ap_uint<16>)150 * (ap_uint<16>)g +
-                                            (ap_uint<16>)29  * (ap_uint<16>)b +
-                                            (ap_uint<16>)128);
-            ap_uint<8> y = y16 >> 8;
+                // Y = (77R + 150G + 29B + 128) >> 8，16 bit 足够（最大 65408）
+                ap_uint<16> y16 = (ap_uint<16>)((ap_uint<16>)77  * (ap_uint<16>)r +
+                                                (ap_uint<16>)150 * (ap_uint<16>)g +
+                                                (ap_uint<16>)29  * (ap_uint<16>)b +
+                                                (ap_uint<16>)128);
+                ap_uint<8> y = y16 >> 8;
 
-            axis_gray_t q;
-            q.data = y;
-            q.keep = 0x1;                                  // 8 bit -> 1 byte
-            q.strb = 0x1;
-            q.user = (ocnt == 0) ? 1 : 0;                  // 输出帧首
-            q.last = (ox == (ap_uint<16>)(ow - 1)) ? 1 : 0; // 输出行末
-            q.id   = p.id;
-            q.dest = p.dest;
-            gray_out.write(q);
+                axis_gray_t q;
+                q.data = y;
+                q.keep = 0x1;                                  // 8 bit -> 1 byte
+                q.strb = 0x1;
+                q.user = (ocnt == 0) ? 1 : 0;                  // 输出帧首
+                q.last = (ox == (ap_uint<16>)(ow - 1)) ? 1 : 0; // 输出行末
+                q.id   = p.id;
+                q.dest = p.dest;
+                gray_out.write(q);
 
-            acc  += y;
-            ocnt += 1;
+                acc  += y;
+                ocnt += 1;
 
-            if (ox == (ap_uint<16>)(ow - 1)) {
-                ox = 0;
-            } else {
-                ox++;
-            }
-        }
-
-        // 列相位推进
-        if (px == (ap_uint<16>)(RGB2GRAY_DECIM_DEN - 1)) {
-            px = 0;
-        } else {
-            px++;
-        }
-
-        // 输入行结束 -> 复位列相关状态，推进行相位
-        if (p.last) {
-            px = 0;
-            ox = 0;
-            if (py == (ap_uint<16>)(RGB2GRAY_DECIM_DEN - 1)) {
-                py = 0;
-            } else {
-                py++;
+                if (ox == (ap_uint<16>)(ow - 1)) {
+                    ox = 0;
+                } else {
+                    ox++;
+                }
             }
         }
     }
