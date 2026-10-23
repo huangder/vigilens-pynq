@@ -9,6 +9,7 @@
 | 文件 | 线 | 状态 | 说明 |
 |---|---|---|---|
 | `fpga_hls_c_line.md` | C(FPGA/HLS) | 新建(第 0 天) | C 线全流程可复用 Skill:环境事实 + 标准工作流 + 黄金参考纪律 + 避坑 |
+| `data_pipeline_a_line.md` | A(算法/后端) | 新建(2026-10-23) | 帧源接入手册:时间基准(真实 ts) / 朝向探测最小命中 / 阈值用 ms / 档位灰度逐字节对拍 / 落盘前看三个字段 |
 | `golden_ref_check.md` | A/C 共享 | 待沉淀 | A 线 pytest 黄金参考 + C 线 cocotb 比对脚本沉淀 |
 | `pynq_overlay_loader.md` | C | 待沉淀(M3 后) | Overlay 加载 + 校验(M3 上板后写) |
 | `dma_buffer_debug.md` | C | 待沉淀(M3 后) | 缓存一致性/回环测试踩坑 |
