@@ -182,3 +182,43 @@ report/**/~$*
 .idea/
 Thumbs.db
 desktop.ini
+
+# ---- Vivado 会话产物 / 工程目录（不是交付物，2026-10-23 补）-------------------
+# 🔍 为什么现在补：跑一次 `build_bd.tcl`（无论 BD_ONLY 还是全量）就会在**当前目录**留下
+#    `vivado.log` / `vivado.jou` / `vivado_<pid>.backup.{log,jou}`，还会建 `vivado_project/`、
+#    `.Xil/`、`.gen/`、`.srcs/`。这四类加起来一次就是 30~40 条未跟踪项，把真正要提交的
+#    源码淹掉（2026-10-23 实测:43 项未跟踪里 34 项是这个）。
+#    真正的交付物是 `board/bitstream/system_wrapper.bit` 与它的时序/资源报告，那两条另有规则。
+vivado*.log
+vivado*.jou
+board/vivado*.log
+board/vivado*.jou
+# 同一次会话的临时目录（Vivado / 综合脚本都会建）
+.Xil/
+.gen/
+.srcs/
+# 工程本体（含 runs/ 里的中间网表，几百 MB），用 board/build_bd.tcl 重建
+board/vivado_project/
+board/cam_detect/.Xil/
+# Vivado 输出给用户的一次性信息文件
+clockInfo.txt
+
+# ---- bitstream / HDF：**不入库**，走 Releases（2026-10-23 定）------------------
+# system_wrapper.bit 4.0 MB + system.hdf 456 KB，每次重综合都变（时序不同、内容不同），
+# 提交进 git 只会让历史迅速膨胀，而且**没有任何人能用它复现**（要配同一个 Vivado 版本）。
+# 需要时用 `board/build_bd.tcl` 重建；报告与时序数字照旧入库（board/*.rpt、fpga/report/）。
+# ⚠️ 不要忽略 `board/overlay/*`、`board/*.tcl`、`board/*.v` —— 那些是源码。
+board/bitstream/*.bit
+board/bitstream/*.hdf
+board/bitstream/ps7_init.tcl
+
+# ---- 本机会话的临时目录（板上实验脚本 .tmp/s4/ 等，勿入库）---------------------
+.tmp/
+.tmp_probe.txt
+
+# ---- 本机一次性诊断脚本 / 探针留下的东西（2026-10-23 清点）--------------------
+# board/retry_open_nr.log = IMX219 探针重试日志；data/fatigue_db/_probe.txt = 建库探针；
+# fix_jtag_ftdi.ps1 = 修 FTDI 驱动的一次性脚本（含本机路径，不可移植）。
+board/retry_open_nr.log
+data/fatigue_db/_probe.txt
+fix_jtag_ftdi.ps1
