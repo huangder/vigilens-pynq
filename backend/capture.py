@@ -220,13 +220,25 @@ def image_size(image: Any, *, fallback: tuple[int, int] = (640, 480)) -> tuple[i
 
 
 def choose_rotation(images: list[Any], detect: Any,
-                    *, candidates: tuple[int, ...] = ROTATE_CHOICES) -> tuple[int, dict[int, int]]:
+                    *, candidates: tuple[int, ...] = ROTATE_CHOICES,
+                    min_hits: int | None = None) -> tuple[int, dict[int, int]]:
     """在前几帧上试各种朝向，返回 `(最佳角度, 各角度的命中帧数)`。
 
     `detect(image) -> bool`：这一帧能不能检出人脸（由调用方注入，通常是 mediapipe）。
     **并列时选 0**（宁可不动）；一帧都检不出也返回 0 —— 宁可"没帮上忙"，
     也不要因为探测失败把一段本来正常的素材转错。
+
+    `min_hits`：非 0 角度**至少要有几帧**命中才敢采用（默认 `max(2, 帧数//4)`）。
+
+    ⚠️ 为什么需要 `min_hits`（2026-10-23 真机踩到）：
+    用笔记本内置相机跑 `--source 0`，画面里**没有人脸**（300 帧只可见 1 帧），
+    而 8 帧探测里 `{0:0, 90:0, 180:1, 270:0}` —— 仅凭**一帧偶发误检**，
+    整段 300 帧就被转成了 180°。朝向错了，ROI / 姿态 / rPPG 全部跟着错，
+    而且日志里只多一行"顺时针旋转 180°"，**看起来完全正常**。
+    所以规则改成"证据够才动"：默认至少 2 帧且不少于探测帧数的 1/4。
     """
+    if min_hits is None:
+        min_hits = max(2, len(images) // 4)
     scores: dict[int, int] = {}
     for deg in candidates:
         hits = 0
@@ -241,6 +253,9 @@ def choose_rotation(images: list[Any], detect: Any,
     for deg in candidates:                     # 顺序遍历 ⇒ 并列时天然偏向较小的角度，0 优先
         if scores[deg] > scores.get(best, -1):
             best = deg
+    if scores.get(best, 0) < int(min_hits):
+        # 证据不足：一个角度的零星命中多半是误检，按"不转"处理（0 不需要命中数）
+        return 0, scores
     return best, scores
 
 
