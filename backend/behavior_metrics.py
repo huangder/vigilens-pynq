@@ -34,7 +34,17 @@ class BehaviorTracker:
     def __init__(self, cfg: dict[str, Any] | None = None) -> None:
         c = cfg or load_config()
         self.ear_thr: float = float(c["ear_close_threshold"])
-        self.min_close_frames: int = int(c["min_close_frames"])
+        # ---- 闭眼判定阈值：**时间口径**（docs/37 风险表 R8）----
+        # 旧口径按"连续 N 帧"计数，帧率一翻含义就变（3 帧 @30fps = 100 ms，@60fps = 50 ms）。
+        # 新口径按毫秒：只看"闭眼已经持续多久"，与帧率无关。
+        raw_ms = c.get("min_close_ms")
+        if raw_ms is None:
+            # 只给了旧键：按契约标称帧率折算，保证老配置行为可预期（新配置请直接写 min_close_ms）
+            raw_ms = float(c["min_close_frames"]) * 1000.0 / float(c["fps_nominal"])
+            self.min_close_frames: int | None = int(c["min_close_frames"])
+        else:
+            self.min_close_frames = int(c["min_close_frames"]) if "min_close_frames" in c else None
+        self.min_close_ms: float = float(raw_ms)
         self.window_s: float = float(c["window_seconds"])
         self.long_close_ms: float = float(c.get("long_close_ms", 500))
         self.mar_thr: float = float(c["mar_threshold"])
@@ -42,9 +52,11 @@ class BehaviorTracker:
 
         # ---- 眨眼状态机（OPEN → CLOSING → CLOSED → OPENING → OPEN）----
         self.state: str = "OPEN"
-        self._below = 0          # 连续低于阈值的帧数
-        self._above = 0          # 连续高于阈值的帧数
-        self._closed_since: float | None = None
+        self._below = 0          # 连续低于阈值的帧数（仅用于观测/调试）
+        self._above = 0          # 连续高于阈值的帧数（仅用于观测/调试）
+        self._below_since: float | None = None   # 本轮"连续闭眼"从哪一帧开始（时间口径的判定依据）
+        self._open_since: float | None = None    # 本轮"连续睁眼"从哪一帧开始
+        self._closed_since: float | None = None  # 本次闭眼事件的起点（= 第一帧闭眼，不是"判定为闭眼"那一刻）
         self.blink_count = 0
         self.long_close_count = 0
 
@@ -68,21 +80,32 @@ class BehaviorTracker:
             self._blink_ts.popleft()
 
     def _step_blink(self, ts: float, closed_now: bool, open_now: bool) -> None:
+        # 时间口径：判定依据是"这一串连续状态已经持续了多久"，不是"累计了几帧"。
+        # 为什么不用帧数：契约 §0 的帧率会变（v1.1 45 → v1.2 草案 30 → v1.6 草案 60），
+        # 而"闭眼 100 ms"是生理量、不该随帧率变（docs/37 R8）。
+        thr_s = self.min_close_ms / 1000.0
         if closed_now:
             self._above = 0
+            self._open_since = None
             self._below += 1
+            if self._below_since is None:
+                self._below_since = ts
             if self.state == "OPEN":
                 self.state = "CLOSING"
-            if self._below >= self.min_close_frames:
-                if self.state != "CLOSED":
-                    self.state = "CLOSED"
-                    self._closed_since = ts
+            if self.state != "CLOSED" and (ts - self._below_since) >= thr_s:
+                self.state = "CLOSED"
+                # 起点取"第一帧闭眼"，不是"判定为闭眼这一刻"：
+                # 否则每次眨眼时长都会被少算一个阈值（旧口径下是少算 2 帧）。
+                self._closed_since = self._below_since
         elif open_now:
             self._below = 0
+            self._below_since = None
             self._above += 1
+            if self._open_since is None:
+                self._open_since = ts
             if self.state in ("CLOSING", "CLOSED"):
                 self.state = "OPENING"
-            if self.state == "OPENING" and self._above >= self.min_close_frames:
+            if self.state == "OPENING" and (ts - self._open_since) >= thr_s:
                 self.state = "OPEN"
             if self._closed_since is not None:
                 # 一次闭眼事件结束：判定是"眨眼"还是"长闭眼"
@@ -93,6 +116,13 @@ class BehaviorTracker:
                     self.blink_count += 1
                     self._blink_ts.append(ts)
                 self._closed_since = None
+        else:
+            # 这一帧没有可用人脸/观测：**不能从"看不见"推断闭眼**。
+            # 若保留 streak，人脸丢失 2 秒再回来会被算成一次 2 秒的"长闭眼"（凭空造事件）。
+            self._below = 0
+            self._above = 0
+            self._below_since = None
+            self._open_since = None
 
     def _step_yawn(self, ts: float, mouth_open: bool) -> None:
         if mouth_open:

@@ -30,6 +30,7 @@ FALLBACK: dict[str, Any] = {
     "window_seconds": 30,
     "fps_nominal": 30,          # 契约 docs/interface.md §0（2026-09-20 v1.2 草案：45→30；v1.1 曾为 45）
     "ear_close_threshold": 0.21,
+    "min_close_ms": 100,        # 时间口径（帧率无关）；旧键 min_close_frames 仅作兼容别名
     "min_close_frames": 3,
     "long_close_ms": 500,
     "perclos_warning": 0.25,
