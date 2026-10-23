@@ -23,6 +23,7 @@ mediapipe 的检出率会掉到 0（180° 倒置实测 0%）。所以这里提�
 
 from __future__ import annotations
 
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -42,6 +43,13 @@ VIDEO_SUFFIXES = {".mp4", ".avi", ".mov", ".mkv", ".flv", ".wmv", ".webm"}
 # 指标来自真相机像素，链路却只需要一个 HTTP 客户端。
 MJPEG_DEFAULT_URL = "http://127.0.0.1:8000/video.mjpg"
 MJPEG_MAX_FRAME_BYTES = 4 * 1024 * 1024
+
+# 第 5 种帧源：`uvc:<idx>` —— USB UVC 相机按 **720p60 MJPG** 口径协商（docs/37 W2）。
+# 为什么单独做一个前缀：裸序号 `--source 0` 走 OpenCV 默认后端/默认尺寸，
+# 实测本机只给 640×480@30，会把"默认后端的降级结果"误当成"相机能力"。
+UVC_PREFIX = "uvc:"
+UVC_REQUEST_FOURCC = "MJPG"
+UVC_REQUEST_W, UVC_REQUEST_H, UVC_REQUEST_FPS = 1280, 720, 60.0
 
 # 允许的旋转角度（顺时针，单位度）。0 = 不动。
 ROTATE_CHOICES = (0, 90, 180, 270)
@@ -320,6 +328,101 @@ class OrientingSource:
             yield Frame(frame_id=fr.frame_id, ts=fr.ts, image=rotate_frame(fr.image, self.degrees))
 
 
+def parse_uvc_index(source: str) -> int | None:
+    """把 `"uvc:0"` 解析成 `0`；不是 `uvc:` 形式返回 `None`。
+
+    为什么要有这个前缀（docs/37 W2）：裸序号 `--source 0` 走的是 OpenCV 默认后端、
+    默认尺寸（实测本机会给 640×480@30），而 USB 路线的判据是 **1280×720@60 MJPG**。
+    用 `uvc:` 明确表达"这是 UVC 相机，请按 720p60 口径协商"，避免把"默认后端的降级结果"
+    当成"相机能力"。
+    """
+    s = source.strip()
+    if not s.lower().startswith(UVC_PREFIX):
+        return None
+    tail = s[len(UVC_PREFIX):].strip()
+    if not tail.isdigit():
+        raise ValueError(f"uvc: 后面必须是设备序号，例如 uvc:0（收到 {source!r}）")
+    return int(tail)
+
+
+def fourcc_str(value: int) -> str | None:
+    """把 `CAP_PROP_FOURCC` 的整数读回转成 4 字符（不可读时返回 None）。
+
+    ⚠️ Windows/MSMF 实测恒返回 `0x16`（不可读），Linux/V4L2 才给真值 ——
+    所以**不可读时必须返回 None，不许编一个 "MJPG" 上去**。
+    """
+    if not value or value <= 0:
+        return None
+    try:
+        chars = [chr((value >> (8 * i)) & 0xFF) for i in range(4)]
+    except (ValueError, OverflowError):
+        return None
+    if not all(32 <= ord(c) < 127 for c in chars):
+        return None
+    return "".join(chars)
+
+
+def _uvc_backend(cv2_like: Any) -> tuple[int | None, str]:
+    """按平台挑后端：Windows → MSMF（实测唯一能开内置相机的），其它 → V4L2。"""
+    if sys.platform.startswith("win"):
+        api = getattr(cv2_like, "CAP_MSMF", None)
+        return (api, "MSMF") if api is not None else (None, "default")
+    api = getattr(cv2_like, "CAP_V4L2", None)
+    return (api, "V4L2") if api is not None else (None, "default")
+
+
+def open_uvc_capture(cv2_like: Any, index: int, *, width: int, height: int,
+                     fps: float, fourcc: str = UVC_REQUEST_FOURCC) -> tuple[Any, dict]:
+    """按"720p60 MJPG"口径打开 UVC 相机，返回 `(cap, info)`。
+
+    `info` 里区分 **请求** 与 **协商** 两套值 —— 这是 W1/W2 的核心纪律：
+    相机经常拒绝 60 fps 并静默回落到 30，若只记请求值，后面所有"帧率"结论都是假的。
+    """
+    api, api_name = _uvc_backend(cv2_like)
+    cap = cv2_like.VideoCapture(index, api) if api is not None else cv2_like.VideoCapture(index)
+    # 顺序有讲究：先 FOURCC 再尺寸/帧率 —— 有些 UVC 驱动只在 MJPG 模式下才开放 720p60。
+    try:
+        cap.set(getattr(cv2_like, "CAP_PROP_FOURCC"),
+                cv2_like.VideoWriter_fourcc(*fourcc))
+    except Exception as exc:  # pragma: no cover - 依赖驱动行为
+        print(f"[warn] 设置 FOURCC={fourcc} 失败（{exc}），继续按默认像素格式协商")
+    cap.set(getattr(cv2_like, "CAP_PROP_FRAME_WIDTH"), width)
+    cap.set(getattr(cv2_like, "CAP_PROP_FRAME_HEIGHT"), height)
+    cap.set(getattr(cv2_like, "CAP_PROP_FPS"), fps)
+
+    get = cap.get
+
+    def _get(prop: str, default: float = 0.0) -> float:
+        try:
+            value = get(getattr(cv2_like, prop))
+        except Exception:  # pragma: no cover
+            return default
+        return float(value) if value else default
+
+    info = {
+        "index": index,
+        "backend": api_name,
+        "requested": {"w": width, "h": height, "fps": float(fps), "fourcc": fourcc},
+        "negotiated": {
+            "w": int(_get("CAP_PROP_FRAME_WIDTH") or width),
+            "h": int(_get("CAP_PROP_FRAME_HEIGHT") or height),
+            "fps": _get("CAP_PROP_FPS", 0.0),
+            "fourcc": fourcc_str(int(_get("CAP_PROP_FOURCC", 0.0))),
+        },
+    }
+    return cap, info
+
+
+def describe_uvc(info: dict) -> str:
+    """把协商结果写成一行（**请求 vs 协商不一致时必须显式写出来**）。"""
+    req, got = info["requested"], info["negotiated"]
+    mode = f"uvc#{info['index']} [{info['backend']}] {got['w']}x{got['h']}@{got['fps']:.1f}"
+    mode += f" fourcc={got['fourcc'] or '不可读'}"
+    if (req["w"], req["h"]) != (got["w"], got["h"]) or abs(req["fps"] - got["fps"]) > 0.5:
+        mode += f"（请求 {req['w']}x{req['h']}@{req['fps']:.0f} {req['fourcc']}，已回落）"
+    return mode
+
+
 def open_frame_source(
     source: str,
     *,
@@ -363,6 +466,39 @@ def open_frame_source(
         else:
             url = source.strip().split(":", 1)[1].strip() or MJPEG_DEFAULT_URL
         return _mjpeg_frames(url, limit, fps), f"mjpeg:{url}"
+
+    uvc_index = parse_uvc_index(source)
+    if uvc_index is not None:
+        # 请求值固定按 720p60 MJPG（docs/37 的口径档），**协商结果照实打印**：
+        # 相机拒绝 60 就回落，这是数据，不是错误。
+        cap, info = open_uvc_capture(
+            cv2, uvc_index,
+            width=UVC_REQUEST_W, height=UVC_REQUEST_H, fps=UVC_REQUEST_FPS,
+        )
+        if not cap.isOpened():
+            cap.release()
+            raise RuntimeError(
+                f"OpenCV 打不开 UVC 相机 {uvc_index}（被占用 / 序号不对 / 没有权限）。\n"
+                f"  先用 `python metrics/scripts/check_uvc_camera.py --list` 枚举可用设备。"
+            )
+        desc = describe_uvc(info)
+        print(f"[uvc] {desc}")
+
+        def _uvc_gen() -> Iterator[Frame]:
+            n = 0
+            try:
+                while limit is None or n < limit:
+                    ok, bgr = cap.read()
+                    if not ok:
+                        break
+                    # ts 仍是墙上时钟（契约 §1 要求单调递增即可）；
+                    # ⚠️ R14（"时间轴别按标称帧率换算"）在 pipeline 侧的改法要 A 线拍板，见 docs/37 W2。
+                    yield Frame(frame_id=n, ts=time.time(), image=bgr)
+                    n += 1
+            finally:
+                cap.release()
+
+        return _uvc_gen(), desc
 
     if low.isdigit():
         cap = cv2.VideoCapture(int(low))
