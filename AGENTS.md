@@ -241,7 +241,7 @@ python -m pytest                       # 同 6.1
 python backend/api.py --no-mock        # 终端 1：只广播 ingest 进来的真实帧（浏览器开 http://127.0.0.1:8000/ ）
 python backend/run_pipeline.py --source synthetic --pattern blink --seconds 30 --stub \
     --json metrics/logs/last.json --jsonl metrics/logs/stream.jsonl --post auto   # 终端 2
-python metrics/scripts/check_a_line_p5_m2.py   # 一条命令验证整条链路（17 项，真起两个进程）
+python metrics/scripts/check_a_line_p5_m2.py   # 一条命令验证整条链路（18 项，真起两个进程；2026-10-23 实测）
 ```
 
 > `--post auto` = `http://127.0.0.1:8000/api/ingest`（B 线早已留好的集成点）。
@@ -451,7 +451,7 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 |---|---|
 | **M0** 冻结（主场景/项目名/指标/契约/目录/仓库） | ✅ 完成（契约 **🔒 v1.1 已会签**，2026-09-16） |
 | **M1** 基础框架 | 🔄 **进行中**（A/B 骨架就位；C 线跑到计划前面） |
-| **M2** 软件合体（A 的 JSON 接 B 的网页） | 🟡 **链路已具备**（`run_demo.py` 一键 + `check_a_line_p5_m2.py` 17 项真起两进程）；⚠️ **2026-10-01 未复跑** |
+| **M2** 软件合体（A 的 JSON 接 B 的网页） | 🟡 **链路已具备**（`run_demo.py` 一键 + `check_a_line_p5_m2.py` **18 项**真起两进程，2026-10-23 复跑全绿）；⚠️ 板上形态仍未跑 |
 | **M3** 硬件上板（Overlay + DMA，**首次需要板卡**） | ⏳ 未开始 |
 | **M4** 完整闭环（软硬件同屏 + 黄金回归 + 可复现脚本） | ⏳ 未开始 |
 
