@@ -216,6 +216,15 @@ board/bitstream/ps7_init.tcl
 .tmp/
 .tmp_probe.txt
 
+# ---- 裸机固件的编译产物（board/s4_bench/，2026-10-23）-------------------------
+# 源码（s4_bench.c / start.S / link.ld）与驱动（*.py）入库，二进制不入库：
+# 6 KB 的东西每改一行就变一次，重建只要 `bash board/s4_bench/build.sh`。
+board/s4_bench/*.bin
+board/s4_bench/*.elf
+board/s4_bench/run_*.tcl
+board/s4_bench/res.bin
+board/s4_bench/gray_out.bin
+
 # ---- 本机一次性诊断脚本 / 探针留下的东西（2026-10-23 清点）--------------------
 # board/retry_open_nr.log = IMX219 探针重试日志；data/fatigue_db/_probe.txt = 建库探针；
 # fix_jtag_ftdi.ps1 = 修 FTDI 驱动的一次性脚本（含本机路径，不可移植）。

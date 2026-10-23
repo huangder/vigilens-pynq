@@ -47,9 +47,39 @@ set USE_BOARD_PRESET  0
 
 # 四个 HLS 组件的导出 IP 目录（相对 fpga/）
 set IP_REPO_ROOT "D:/Desktop/AMD/fpga"
+
+# ---- 灰度档位（2026-10-23 新增；**不设就一切照旧**）-------------------------
+#    set "VIGILENS_GRAY_TIER=720p60"
+#      -> rgb2gray 换成 3/8 抽取的那份导出 IP（component_rgb2gray_720p60，灰度 480×270）
+#      -> 产物名换成 system_wrapper_720p60.bit / .hdf，**不覆盖**现行 640×480 的产物
+#   为什么要一个开关而不是直接改：两档的 rgb2gray 是**同一份 RTL 的两次编译**
+#   （抽取比是编译期宏），而 640×480 档是现行契约 v1.1 的档位，不能被实验覆盖掉。
+#   其余三个 IP 与档位无关（roi/motion 的宽高是运行时寄存器，fir 是另一档），直接复用。
+set gray_tier "640x480"
+if {[info exists ::env(VIGILENS_GRAY_TIER)] && $::env(VIGILENS_GRAY_TIER) ne ""} {
+    set gray_tier $::env(VIGILENS_GRAY_TIER)
+}
+set RGB_IP_REPO "$IP_REPO_ROOT/component_rgb2gray/hls/impl/ip"
+set OUT_STEM "system_wrapper"
+if {$gray_tier eq "720p60"} {
+    set RGB_IP_REPO "$IP_REPO_ROOT/component_rgb2gray_720p60/hls/impl/ip"
+    set OUT_STEM "system_wrapper_720p60"
+    if {![file exists [file join $RGB_IP_REPO component.xml]]} {
+        puts "ERROR: 找不到 720p60 档的 rgb2gray IP：$RGB_IP_REPO"
+        puts "       先跑：set \"HLS_IP=rgb2gray\"; set \"VIGILENS_TIER=720p60\"; set \"HLS_COMPONENT=component_rgb2gray_720p60\";"
+        puts "             set \"HLS_EXEC=1\"; vitis-run --mode hls --tcl run_hls.tcl"
+        puts "       再跑：set \"HLS_COMPONENT=component_rgb2gray_720p60\"; vitis-run --mode hls --tcl export_ip.tcl"
+        exit 1
+    }
+    puts "INFO: 灰度档位 720p60（3/8 抽取 → 480×270），rgb2gray 来自 $RGB_IP_REPO"
+} elseif {$gray_tier ne "640x480"} {
+    puts "ERROR: unknown VIGILENS_GRAY_TIER '$gray_tier'. Known: 640x480 / 720p60"
+    exit 1
+}
+
 set ip_repos [list \
     "$IP_REPO_ROOT/component_roi_statistic/hls/impl/ip" \
-    "$IP_REPO_ROOT/component_rgb2gray/hls/impl/ip" \
+    "$RGB_IP_REPO" \
     "$IP_REPO_ROOT/component_motion_quality/hls/impl/ip" \
     "$IP_REPO_ROOT/component_fir_filter/hls/impl/ip" \
 ]
@@ -389,11 +419,13 @@ report_utilization -hierarchical -file util_impl.rpt
 report_timing_summary -file timing_impl.rpt
 
 # 导出 .bit（板上烧录）+ .hdf（PYNQ/mmio 解析地址映射的硬件定义）
+# ⚠️ 文件名随档位变（$OUT_STEM）：720p60 档写 system_wrapper_720p60.*，
+#    免得"换档重综合"把现行 640×480 的产物悄悄覆盖掉（那是最难发现的一类事故）。
 set BIT_DIR [file normalize [file join [file dirname [info script]] bitstream]]
 file mkdir $BIT_DIR
-file copy -force $PROJECT_DIR/vigilens_bd.runs/impl_1/system_wrapper.bit [file join $BIT_DIR system_wrapper.bit]
-write_hwdef -force -file [file join $BIT_DIR system.hdf]
+file copy -force $PROJECT_DIR/vigilens_bd.runs/impl_1/system_wrapper.bit [file join $BIT_DIR "$OUT_STEM.bit"]
+write_hwdef -force -file [file join $BIT_DIR "$OUT_STEM.hdf"]
 
 puts "==== build_bd.tcl 完成。==== "
-puts "产物：board/bitstream/system_wrapper.bit、board/bitstream/system.hdf、util.rpt、timing.rpt、util_impl.rpt、timing_impl.rpt"
+puts "产物：board/bitstream/$OUT_STEM.bit、board/bitstream/$OUT_STEM.hdf、util.rpt、timing.rpt、util_impl.rpt、timing_impl.rpt"
 puts "下一步：逐条跑 board/bringup_check.py -> dma_test.py -> hw_sw_compare.py（对应门限 3~8）。"
