@@ -33,6 +33,10 @@
 数据源开关（《02》M2 只改这一处）：
     python backend/api.py                 # mock 模式：B 线独立开发
     python backend/api.py --no-mock       # 只广播 ingest 进来的真实帧：M2 集成后
+
+**mock 不会与真实数据混流**（台账 BUG-014）：mock 模式下只要收到一帧真实 ingest，
+mock 泵就自动停止并打印一行提示，`/api/status` 的 `source` / `mock_active` 反映实际状态。
+理由：两者进的是同一条总线，混在一起时网页上分不出哪个数字是测出来的 —— 那违反《05》铁律 1。
 """
 
 from __future__ import annotations
@@ -97,6 +101,20 @@ _last_status: str | None = None
 # 为什么是旁路：契约 §1 规定帧的顶层字段只能是那 9 个，多一个就是非法帧；
 # 而证据链是"给界面看的解释"，不是测量数据。详见 docs/08_B线给A线的接口请求.md。
 _latest_triggers: dict[str, Any] | None = None
+
+# mock 泵的停机闸（台账 BUG-014）：**真实帧一到就把 mock 关掉**。
+# 为什么必须关而不是"打一行提醒继续推"：mock 帧和真实帧进的是**同一条总线**，
+# 网页上分不出哪个数字是测出来的 —— 那正好踩《05》铁律 1（不报没测过的数字）。
+# 一旦收到非 mock 的来源，就置位；`_mock_pump` 的等待也用这个 Event，能被立刻唤醒。
+_MOCK_STOP = threading.Event()
+# 只用来保证"已停 mock"这句提示只打一次（真机连推几百帧不该刷屏）。
+_MOCK_YIELD_LOGGED = threading.Event()
+# 当前"有效"的 mock 泵代号。每建一个 app 就 +1，让**上一个 app 的泵线程自行退出**。
+# 为什么需要：模块级 Event 是进程单例，而测试会反复 create_app 并各自起线程；
+# 只清 Event 会让旧线程"复活"，两个泵同时往总线推帧。
+_MOCK_GEN = 0
+# 最近一帧真实数据的来源（`/api/status` 的 `source` 要看**实际收到什么**，不是启动参数）。
+_LAST_REAL_SOURCE: str | None = None
 
 # 旁路画面：只保留**最新一帧**（不排队）。
 # 为什么不排队：画面是给人看的，晚到的帧没有价值；排队只会在慢客户端后面堆内存。
@@ -302,9 +320,28 @@ def frame_jpeg_status(stale_after: float) -> dict:
     }
 
 
+def stop_mock_pump(*, reason: str = "真实帧") -> bool:
+    """停掉 mock 泵（幂等）。返回"本次是否真的从在推变成已停"。
+
+    台账 BUG-014：mock 与真实帧进同一条总线时，网页分不清哪个数字是测出来的。
+    所以真实数据一旦出现，mock 必须**让位**，而不是"打个提醒继续推"。
+    """
+    if _MOCK_STOP.is_set():
+        return False
+    _MOCK_STOP.set()
+    if not _MOCK_YIELD_LOGGED.is_set():
+        _MOCK_YIELD_LOGGED.set()
+        print(f"[api] 收到{reason} → 已停止 mock 推送（mock 帧与真实测量不再混在一条总线上）",
+              flush=True)
+    return True
+
+
 def ingest(frame: dict, *, source: str = "unknown", triggers: list | None = None) -> dict:
     """接收一帧（来自 mock 循环、A 线 POST、或进程内 publish）。"""
-    global _last_status, _latest_triggers
+    global _last_status, _latest_triggers, _LAST_REAL_SOURCE
+    if source not in ("mock", "unknown"):
+        stop_mock_pump(reason=f"来自 {source} 的真实帧")
+        _LAST_REAL_SOURCE = source
     with _lock:
         _history.append(frame)
         if triggers is not None:
@@ -324,15 +361,21 @@ def ingest(frame: dict, *, source: str = "unknown", triggers: list | None = None
     return frame
 
 
-def _mock_pump(hz: float) -> None:
-    """后台线程：按 hz 把 mock 帧推进总线。用线程而不是 asyncio，A 线同步代码也能复用。"""
+def _mock_pump(hz: float, gen: int) -> None:
+    """后台线程：按 hz 把 mock 帧推进总线。用线程而不是 asyncio，A 线同步代码也能复用。
+
+    台账 BUG-014：这个循环**必须可停** —— 两个退出条件：
+      · `_MOCK_STOP` 置位（收到了真实帧）；
+      · `gen != _MOCK_GEN`（已被更新的 app 取代，别让旧线程"复活"）。
+    等待用 `Event.wait()` 而不是 `time.sleep()`，否则真实帧已经到了还要再推一秒 mock。
+    """
     period = 1.0 / hz if hz > 0 else 0.0
     fid = 0
-    while True:
+    while not _MOCK_STOP.is_set() and gen == _MOCK_GEN:
         ingest(mock_frame(fid), source="mock")
         fid += 1
-        if period:
-            time.sleep(period)
+        if period and _MOCK_STOP.wait(period):
+            break
 
 
 # ---------------------------------------------------------------------------
@@ -430,7 +473,15 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
                   description="知倦 / VigiLens —— 无接触疲劳与生命体征趋势监测终端（后端接口）")
 
     if mock:
-        threading.Thread(target=_mock_pump, args=(hz,), daemon=True).start()
+        # 每次建 app 都从"在推"开始（模块级 Event 是进程单例，测试会反复 create_app）；
+        # 同时把 _MOCK_GEN +1，让上一个 app 留下的泵线程自行退出。
+        global _MOCK_GEN
+        _MOCK_STOP.clear()
+        _MOCK_YIELD_LOGGED.clear()
+        _MOCK_GEN += 1
+        threading.Thread(target=_mock_pump, args=(hz, _MOCK_GEN), daemon=True).start()
+        print("[api] mock 模式：页面上的数字**不是真实测量**（B 线独立开发用）；"
+              "收到真实 ingest 帧后会自动停止 mock", flush=True)
 
     def thresholds() -> dict[str, Any]:
         """门控阈值：**唯一来源是仓库根 `config.yaml`**，随 `/api/status` 下发给前端。
@@ -457,9 +508,13 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
         with _lock:
             triggers = _latest_triggers
         preview = PREVIEW_STORE.summary(PREVIEW_STORE.latest())
+        # 台账 BUG-014：`source` 必须反映**实际收到了什么**，不是启动参数。
+        # 否则"页面显示 mock、实际跑的是真实管线"（或反过来）这种事，谁都看不出来。
+        mock_active = bool(mock) and not _MOCK_STOP.is_set()
         return {
             "ok": True,
-            "source": "mock" if mock else "ingest",
+            "source": "mock" if mock_active else (_LAST_REAL_SOURCE or "ingest"),
+            "mock_active": mock_active,
             "published": HUB.published,
             "subscribers": HUB.subscriber_count,
             "frame": latest,
@@ -765,7 +820,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[api] http://{args.host}:{args.port}/api/fatigue_db/summary ← 测量库汇总")
     print(f"[api] http://{args.host}:{args.port}/video.mjpg ← 旁路画面（需 --push-video 或串口收帧桥）")
     print(f"[api] ws://{args.host}:{args.port}/ws           ← 1 帧/秒推送")
-    print(f"[api] 数据源：{'mock（B 线独立开发）' if not args.no_mock else 'ingest（M2 集成）'}")
+    print(f"[api] 数据源：{'mock（B 线独立开发；真实帧一到自动停）' if not args.no_mock else 'ingest（M2 集成）'}")
     uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
     return 0
 

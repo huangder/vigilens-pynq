@@ -40,7 +40,20 @@ python backend/run_pipeline.py --source <本地视频> --post auto \
 
 跟框验收必须使用持续的真实视频/摄像头源。`--no-mock` 只启动接收服务；A 线回放结束后页面会保留最后一帧并在超时后清框。摘要或开发者工具中 `landmark_source=mediapipe` / `detector=mediapipe` 才表示真实人脸检测；`stub` 只代表占位几何量，不会跟随视频中的真实人脸。
 
-`frontend/index.html` 默认地址填的是 8765；若用 `api.py`，把地址改成 `ws://127.0.0.1:8000/ws`。
+### 该开哪一个？（一张表，防"把 mock 当测量"）
+
+| 你想干的事 | 起来的命令 | `/api/status.source` | WebSocket 地址 |
+|---|---|---|---|
+| 只看界面（没后端、断网答辩） | 双击 `frontend/index.html` | 读不到（页面自报「离线 Mock」） | — |
+| 验 1 帧/秒推送链路 | `python backend/websocket.py` | 读不到 ⇒ 显示「来源未声明」 | 手填 `ws://127.0.0.1:8765` |
+| 看**真实测量**（M2 集成） | 终端 1：`python backend/api.py --no-mock`<br>终端 2：`run_pipeline.py ... --post auto` | `ingest` | 自动同源 `/ws` |
+| 一键演示（自动挑端口） | `python metrics/scripts/run_demo.py --source 0` | `ingest` | 自动同源 `/ws` |
+| 改界面、要假数据垫场 | `python backend/api.py`（默认 mock） | 先 `mock`，**收到真实帧即变 `ingest`**（mock 自动停） | 自动同源 `/ws` |
+
+**唯一的红线**：任何要写进报告的截图/数字，页面上必须是 `source=ingest`（A 线 ingest）——
+`mock` 的数字一律不引用，它只是把界面撑起来用的（《05》铁律 1）。
+
+`frontend/index.html` 的地址框默认值是 8765（给独立运行的 `websocket.py` 用）；由 `api.py` 托管页面时**不用手改** —— 页面按当前页面的 `location.host` 自动填成同源 `ws(s)://<host>/ws`，`--port 8897` 这类非默认端口也一样。
 
 页面把三个容易混淆的概念分开显示：顶部连接标签只回答 WebSocket 是否连接；数据来源标签读取
 `/api/status.source`，分别显示「离线 Mock / 服务 Mock / A 线 ingest / 来源未声明」；开发者工具里的
