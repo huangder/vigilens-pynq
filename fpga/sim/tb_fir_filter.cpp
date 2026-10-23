@@ -36,7 +36,16 @@
 #include <ap_axi_sdata.h>
 #include <ap_int.h>
 
-#include "../src/fir_coeffs_q15.h"   // 系数表（唯一来源，与 IP 同一份）
+// 系数表（唯一来源，与 IP 同一份）。
+// ⚠️ 必须和 fpga/src/fir_filter.cpp 用**同一个选择宏**（2026-10-23 修）：
+//    IP 用 -DFIR_FS_60HZ 选 127 阶表，测试台的朴素参考模型/Layer 1 门限/Layer 2 的 meta 核对
+//    也都由 FIR_NUM_TAPS 推导。以前这里硬编码 30 Hz 表 ⇒ 60 Hz 档下 tb 按 63 阶断言、
+//    IP 按 127 阶输出，csim 报 "契约/系数不一致 —— meta taps=127 …本工程 taps=63"。
+#if defined(FIR_FS_60HZ)
+#include "../src/fir_coeffs_q15_60hz.h"   // N=127（60 Hz 档）
+#else
+#include "../src/fir_coeffs_q15.h"        // N=63（30 Hz 档，默认）
+#endif
 
 typedef ap_axiu<16, 1, 1, 1> axis_fir_t;
 
@@ -135,7 +144,11 @@ static int test_embedded(void)
 
     // --- 用例 1：单位脉冲 -> 输出即冲激响应（检验系数顺序 / 群延迟 / 偶对称）---
     {
-        const int n = 96;
+        // ⚠️ 输入长度必须 > N（2026-10-23 修）：冲激响应长度就是 N，喂 96 点时
+        //    63 阶表刚好能看全，但 127 阶表的 y[96..126] 根本不存在 —— 下面的对称性
+        //    检查会在 n=96 的 vector 上越界读，sym 变成"随机结果"（实测 N=127 时 sym=0、
+        //    argmax/vals 都对，是测试台自己越界，不是 IP 错）。
+        const int n = FIR_NUM_TAPS + 32;
         std::vector<short> x(n, 0), y;
         x[0] = 32767;
         Stats st; long hdr = 0;

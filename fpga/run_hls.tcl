@@ -116,7 +116,14 @@ if {[info exists ::env(HLS_COMPONENT)] && $::env(HLS_COMPONENT) ne ""} {
 open_component -reset $comp_name -flow_target vivado
 
 if {$fir_60} {
-    add_files $src_file -cflags "-DFIR_FS_60HZ"
+    # ⚠️ **同一组宏必须同时给测试台**（2026-10-23 修）：fir_filter.cpp 用 -DFIR_FS_60HZ 选
+    # 127 阶系数表，而 tb_fir_filter.cpp 也按 FIR_NUM_TAPS 推期望值/门限。
+    # 之前只给 src 不给 tb ⇒ tb 按 63 阶断言、IP 按 127 阶输出，csim 报
+    # "契约/系数不一致 —— meta taps=127 …本工程 taps=63" 并以退出码 1 失败
+    # （与 rgb2gray 档位宏当年踩的是同一个坑，见下面分支的注释）。
+    set fir_flags "-DFIR_FS_60HZ"
+    add_files $src_file -cflags $fir_flags
+    add_files -tb $tb_file -cflags $fir_flags
 } elseif {$ip_name eq "rgb2gray"} {
     # 档位化的抽取比（缺省 3/5 = 既有档，与以前完全一致）。
     # ⚠️ **同一组宏必须同时给测试台**：测试台的 Layer 1 断言与朴素参考都按抽取比推导，
@@ -127,8 +134,8 @@ if {$fir_60} {
     add_files -tb $tb_file -cflags $decim_flags
 } else {
     add_files $src_file
+    add_files -tb $tb_file
 }
-add_files -tb $tb_file
 set_top $ip_name
 
 # Solution: device + clock（docs/interface.md 第 0 节冻结：PYNQ-Z2 / 100 MHz）
