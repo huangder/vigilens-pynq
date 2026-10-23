@@ -182,16 +182,22 @@ def forehead_roi(bbox, width: int, height: int) -> tuple[int, int, int, int]:
     """从人脸框里取**额头 ROI**（半开区间），返回 `(x0, y0, x1, y1)`。
 
     为什么取额头：皮肤暴露、运动伪影比脸颊小、避开眼睛与嘴（眨眼/说话是强干扰源）。
-    取人脸框**上部**的中间区域 —— 上 35% 高、中间 60% 宽，再裁剪到画面内。
+
+    **前提：`bbox` 是整张脸的外接框**（额头到下巴，见 `face_landmark.bbox_from_points`
+    与台账 BUG-010/011）。所以这里取框高的 **8%~30%**、框宽中间 **50%**：
+    · 上界不用 0（框顶就是发际线，贴着边容易吃头发）；
+    · 下界留到 30% —— 眼睛大约在整脸框的 40%~50% 高处，30% 以内不会碰到眼睛；
+    · 左右各留 25% —— 避开脸缘的高光/阴影与耳朵。
+
     人脸框无效（宽或高 <= 0）时返回空 ROI（四项相等，累加结果为 0）。
     """
     x, y, w, h = (int(v) for v in bbox)
     if w <= 0 or h <= 0:
         return 0, 0, 0, 0
-    x0 = x + int(w * 0.20)
-    x1 = x + int(w * 0.80)
-    y0 = y
-    y1 = y + int(h * 0.35)
+    x0 = x + int(w * 0.25)
+    x1 = x + int(w * 0.75)
+    y0 = y + int(h * 0.08)
+    y1 = y + int(h * 0.30)
     # 裁剪到画面内（与 roi_statistic 的 clamp 同义）
     return (max(0, min(x0, width)), max(0, min(y0, height)),
             max(0, min(x1, width)), max(0, min(y1, height)))

@@ -460,7 +460,10 @@ def main(argv: list[str] | None = None) -> int:
             # ⚠️ ROI 必须按**当帧真实尺寸**裁剪：视频不一定是 640×480（实测 720×1280 的素材
             # 用契约尺寸算 ROI，908 帧里有 861 帧被裁成空 → rPPG 永远填不满窗口）。
             _fw, _fh = image_size(frame.image, fallback=(width, height))
-            _roi = forehead_roi(obs.bbox, _fw, _fh)
+            # 采样区优先用**额头关键点**算出来的那一块（BUG-011 的正解）：整脸框是轴对齐的，
+            # 头一偏框顶就不是额顶，"整脸框上 30%"会落回眼睛（实测 51/60 帧采到瞳孔）。
+            # `forehead` 为 None（stub 检测器或关键点退化）时才回退到框几何的近似。
+            _roi = obs.forehead if obs.forehead is not None else forehead_roi(obs.bbox, _fw, _fh)
             _sum_g, _cnt = roi_channel_sum(frame.image, _roi, channel=1)
             # 时间基准：活帧源（摄像头/网络流）把**采集侧真实到达时间**交给 rPPG，
             # 它才能按真实采样率算频率轴；离线回放传 None，退回 frame_id/fps（可复现）。
