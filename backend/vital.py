@@ -237,12 +237,18 @@ class GreenRppg:
     """
 
     def __init__(self, *, fps: float, window_seconds: float, hr_band_hz,
-                 coeffs: list[int] | None = None, shift: int | None = None):
+                 coeffs: list[int] | None = None, shift: int | None = None,
+                 fs_tol: float = 0.10):
         if coeffs is None or shift is None:
             coeffs, shift, _fs = load_fir_coeffs()
         self.coeffs = coeffs
         self.shift = shift
         self.fps = float(fps)
+        # 真实采样率与标称值的相对偏差上限（`config.yaml: rppg_fs_tol`，默认 0.10）。
+        # 为什么必须有这条护栏：FIR 系数是按 `self.fps` 设计的，真实采样率偏 k 倍时
+        # 频率轴整体缩放 k 倍 ⇒ 报出来的是"看起来正常但错误的数"（docs/16 BUG-029：
+        # 13 fps 实测把 72 bpm 报成 166 bpm、conf 0.9998）。宁可 null，不报错数。
+        self.fs_tol = float(fs_tol)
         self.f_lo, self.f_hi = float(hr_band_hz[0]), float(hr_band_hz[1])
         self.need = max(2, int(round(float(window_seconds) * self.fps)))
         self.reset()
@@ -252,15 +258,20 @@ class GreenRppg:
         """按 `config.yaml` 建实例（采样率取 `fps_nominal`，与契约 §0 一致）。"""
         return cls(fps=float(fps if fps is not None else cfg["fps_nominal"]),
                    window_seconds=float(cfg["window_seconds"]),
-                   hr_band_hz=cfg["hr_band_hz"])
+                   hr_band_hz=cfg["hr_band_hz"],
+                   fs_tol=float(cfg.get("rppg_fs_tol", 0.10)))
 
     def reset(self) -> None:
         from collections import deque
 
         self._win = deque(maxlen=self.need)      # 带通后的样本
-        self._fid = deque(maxlen=self.need)      # 对应的 frame_id（算有效采样率用）
+        self._fid = deque(maxlen=self.need)      # 对应的 frame_id（无时间戳时反推采样率用）
+        self._ts = deque(maxlen=self.need)       # 对应的**采集侧真实时间戳**（活帧源才有；离线为 None）
         self._hist = None                        # FIR 段间状态（连续流语义）
         self._valid = 0                          # 累计有效样本数
+        self.last_fs_eff: float | None = None    # 最近一次 estimate() 用的有效采样率（诊断用）
+        self.last_time_base: str | None = None   # "source_ts" / "fid_nominal"（诊断用）
+        self.last_reject: str | None = None      # 最近一次"不报数"的原因（诊断用）
 
     @property
     def samples(self) -> int:
@@ -272,13 +283,20 @@ class GreenRppg:
         """窗口是否已填满（填满才可能出数）。"""
         return len(self._win) >= self.need
 
-    def push(self, q15: int | None, frame_id: int) -> None:
-        """喂一个样本。`q15=None` 表示这一帧按契约被丢弃（不喂、不补值）。"""
+    def push(self, q15: int | None, frame_id: int, ts: float | None = None) -> None:
+        """喂一个样本。`q15=None` 表示这一帧按契约被丢弃（不喂、不补值）。
+
+        `ts` 是**采集侧的真实到达时间**（`capture.Frame.ts`）。活帧源必须传：
+        只有这样 `estimate()` 才能按真实采样率算频率轴（docs/16 BUG-029 / docs/37 R14）。
+        离线回放（视频文件）传 `None`：那些源的 wall clock 反映的是解码速度，不是采样间隔，
+        用 `frame_id / fps_nominal` 反而可复现。
+        """
         if q15 is None:
             return
         ys, _sat, self._hist = fir_process([int(q15)], self.coeffs, self.shift, self._hist)
         self._win.append(ys[0])
         self._fid.append(int(frame_id))
+        self._ts.append(None if ts is None else float(ts))
         self._valid += 1
 
     def estimate(self) -> dict:
@@ -289,8 +307,7 @@ class GreenRppg:
         呼吸率必须由 PS 侧先降采样再用**另一组系数**，而那组系数尚未冻结（见 §3.5 已知限制）。
         """
         none4 = {"hr_bpm": None, "hr_conf": None, "rr_per_min": None, "rr_conf": None}
-        if not self.ready:
-            return dict(none4)
+        self.last_reject = None      # 每次重新判，避免上一次的原因粘住
 
         import numpy as np
 
@@ -298,13 +315,44 @@ class GreenRppg:
         fids = np.asarray(self._fid, dtype=np.float64)
         n = y.size
 
-        # 有效采样率：窗口首尾帧号跨越的真实时间（漏帧时 < fps）
-        span_s = (fids[-1] - fids[0]) / self.fps
-        if span_s <= 0:
+        # ---- 时间基准（docs/16 BUG-029）------------------------------------
+        # 首选采集侧真实时间戳：漏帧/降速都会被如实反映。
+        # 没有时间戳（离线回放）才退回 frame_id/fps —— 那条路径**恒等于标称 fps**，
+        # 因此它只能证明"帧号连续"，不能证明"采样率正确"，诊断里如实标注。
+        #
+        # ⚠️ 这一段放在"窗口是否填满"之前：真机上窗口要 30 s 才填满（实测链路只有 8~17 fps），
+        # 如果只在填满后才算，运维要等半分钟才知道"采样率根本对不上"。
+        fs_eff = None
+        if n >= 2:
+            ts_list = list(self._ts)
+            has_ts = (len(ts_list) == n and all(t is not None for t in ts_list))
+            time_base = "fid_nominal"
+            span_s = (fids[-1] - fids[0]) / self.fps
+            if has_ts:
+                ts_arr = np.asarray(ts_list, dtype=np.float64)
+                if np.all(np.diff(ts_arr) > 0):
+                    time_base = "source_ts"
+                    span_s = float(ts_arr[-1] - ts_arr[0])
+            self.last_time_base = time_base
+            if span_s <= 0:
+                self.last_fs_eff = None
+                self.last_reject = "no_time_span"
+                return dict(none4)
+            fs_eff = (n - 1) / span_s
+            self.last_fs_eff = float(fs_eff)
+            if time_base == "source_ts":
+                # 真实采样率偏离标称值过多：频率轴会整体缩放，报出来的 bpm 不可辩护 → 不报数。
+                if abs(fs_eff - self.fps) > self.fs_tol * self.fps:
+                    self.last_reject = "fs_mismatch"
+                    return dict(none4)
+            elif not (0 < fs_eff <= self.fps * 1.001):
+                self.last_reject = "fs_eff_implausible"
+                return dict(none4)
+
+        if not self.ready or fs_eff is None:
+            self.last_reject = self.last_reject or "window_not_full"
             return dict(none4)
-        fs_eff = (n - 1) / span_s
-        if not (0 < fs_eff <= self.fps * 1.001):
-            return dict(none4)
+        self.last_reject = None
 
         # 去直流 + Hann 窗（抑制谱泄漏）→ 实 FFT
         yw = (y - y.mean()) * np.hanning(n)

@@ -48,7 +48,7 @@ try:
     from .age_contract import validate_age_state
     from .age_infer import AgeProfileStore
     from .behavior_metrics import BehaviorTracker
-    from .capture import OrientingSource, image_size, open_frame_source
+    from .capture import OrientingSource, image_size, is_live_source, open_frame_source
     from .config import REPO_ROOT, load_config
     from .contract import new_frame
     from .decision import DecisionEngine
@@ -67,7 +67,7 @@ except ImportError:  # python backend/run_pipeline.py
     from age_contract import validate_age_state
     from age_infer import AgeProfileStore
     from behavior_metrics import BehaviorTracker
-    from capture import OrientingSource, image_size, open_frame_source
+    from capture import OrientingSource, image_size, is_live_source, open_frame_source
     from config import REPO_ROOT, load_config
     from contract import new_frame
     from decision import DecisionEngine
@@ -286,6 +286,9 @@ def main(argv: list[str] | None = None) -> int:
     # rPPG（P3）：输入是**绿通道 ROI 累加**经契约 §4.6 量化后的 Q1.15 序列，
     # 带通复用冻结 FIR，滑窗填满后才可能出数（窗口长度 = config 的 window_seconds）。
     rppg = GreenRppg.from_config(cfg, fps=fps)
+    # 活帧源（摄像头 / 网络流）的 `Frame.ts` 是真实到达时间，可以作为 rPPG 的时间基准；
+    # 离线源（synthetic / 视频文件）的 wall clock 是解码速度，必须继续用 frame_id/fps。
+    live_source = is_live_source(args.source)
 
     # ---- 年龄分层疲劳对照（旁路；缺省不加 --age 时这一整段都不存在）----------
     # 设计要点见 docs/28：年龄档案件**不进**契约帧（那 9 个字段是冻结的），
@@ -459,7 +462,11 @@ def main(argv: list[str] | None = None) -> int:
             _fw, _fh = image_size(frame.image, fallback=(width, height))
             _roi = forehead_roi(obs.bbox, _fw, _fh)
             _sum_g, _cnt = roi_channel_sum(frame.image, _roi, channel=1)
-            rppg.push(q15_from_roi_sum(_sum_g, _cnt) if _cnt > 0 else None, fid)
+            # 时间基准：活帧源（摄像头/网络流）把**采集侧真实到达时间**交给 rPPG，
+            # 它才能按真实采样率算频率轴；离线回放传 None，退回 frame_id/fps（可复现）。
+            # 契约帧里的 ts 仍然是 fid/fps（除非 --wall-clock），两者刻意的：一份可复现、一份可辩护。
+            rppg.push(q15_from_roi_sum(_sum_g, _cnt) if _cnt > 0 else None, fid,
+                      ts=frame.ts if live_source else None)
 
             full, dec = build_frame(frame_id=fid, ts=ts, obs=obs,
                                     behavior=beh, quality=qua, engine=engine,
@@ -669,12 +676,18 @@ def main(argv: list[str] | None = None) -> int:
         "video": (vpusher.stats() if vpusher is not None else None),
         # 年龄档案旁路（不进契约帧）：本次用了哪个引擎、档案到哪一步、风险档位分布
         "age": age_summary,
-        # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够）
+        # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够 / 采样率不符）
         "rppg_window_samples": rppg.samples,
         "rppg_window_need": rppg.need,
+        # 时间基准诊断（docs/16 BUG-029）：estimate() 最后用的是真实时间戳还是 frame_id/fps、
+        # 反推出的有效采样率是多少、因为什么没报数。只要 hr_bpm 非空，这一行就该在 summary 里。
+        "rppg_time_base": rppg.last_time_base,
+        "rppg_fs_eff": rppg.last_fs_eff,
+        "rppg_reject": rppg.last_reject,
         "note": ("landmark_source=stub 时，EAR/MAR 为占位几何量；"
                  "vital.hr_* 为 null 的可能原因：窗口未填满（需 %d 个有效样本）、"
-                 "频谱中没有占主导的峰、或质量低于门控阈值 %s。"
+                 "频谱中没有占主导的峰、质量低于门控阈值 %s、"
+                 "或真实采样率与 fps_nominal 偏差超过 rppg_fs_tol（见 rppg_reject）。"
                  "vital.rr_* 恒为 null：契约 §3.5 冻结 63 阶 @45 fps 做不了呼吸带。"
                  % (rppg.need, cfg["vital_require_quality"])),
     }

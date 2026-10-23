@@ -423,6 +423,26 @@ def describe_uvc(info: dict) -> str:
     return mode
 
 
+def is_live_source(source: str) -> bool:
+    """这个帧源的 `Frame.ts` 是否等于**真实到达时间**（活帧源）。
+
+    为什么需要区分（docs/16 BUG-029 / docs/37 R14）：
+      · 摄像头（`0` / `uvc:0`）与网络流（`mjpeg:` / `http(s)://`）是**活**的 ——
+        它们的时间戳就是"这一帧什么时候到的"，rPPG 必须按它算真实采样率；
+      · `synthetic` 与视频文件是**离线**的 —— 一帧接一帧按解码速度读出来，
+        wall clock 差反映的是解码速度而不是采样间隔；对它们用 `frame_id / fps_nominal`
+        反而可复现（同一段回放跑两次，末帧 JSON 必须逐字节相同）。
+    """
+    low = source.strip().lower()
+    if low in ("synthetic", "demo"):
+        return False
+    if low.startswith(UVC_PREFIX) or low.isdigit():
+        return True
+    if low == "mjpeg" or low.startswith(("mjpeg:", "http://", "https://", "rtsp://")):
+        return True
+    return False
+
+
 def open_frame_source(
     source: str,
     *,

@@ -60,6 +60,7 @@ FALLBACK: dict[str, Any] = {
     "hr_band_hz": [0.7, 3.5],
     "rr_band_hz": [0.1, 0.5],
     "vital_require_quality": 0.75,
+    "rppg_fs_tol": 0.10,        # 真实采样率与 fps_nominal 的相对偏差上限（docs/16 BUG-029）
     "ws_push_hz": 1.0,
     "ws_disconnect_timeout_s": 3.0,
     # ---- B 线旁路视频流（config.yaml 同名键；不是契约的一部分）----
