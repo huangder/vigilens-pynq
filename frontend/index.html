@@ -15,7 +15,7 @@
     </a>
     <nav class="section-nav" aria-label="页面导航">
       <a href="#current"><span class="fluent-icon icon-camera" aria-hidden="true"></span>当前监测</a>
-      <a href="#trends"><span class="fluent-icon icon-trend" aria-hidden="true"></span>趋势</a>
+      <a href="#measurements"><span class="fluent-icon icon-trend" aria-hidden="true"></span>测量值与趋势</a>
     </nav>
     <div class="header-actions">
       <span class="pill mock" id="srcPill" title="数据来源：离线 Mock、服务 Mock 或 A 线 ingest"><span class="dot"></span><b id="srcName">等待数据</b></span>
@@ -34,20 +34,20 @@
     <span class="page-context">疲劳趋势辅助提示 · 非医疗诊断</span>
   </div>
 
-  <div class="hero-grid">
+  <div class="workspace-grid">
+  <aside class="context-column" aria-label="视频与测量状态">
     <section class="surface video-panel" aria-labelledby="videoTitle">
-      <div class="surface-heading"><h2 id="videoTitle"><span class="heading-icon camera"><span class="fluent-icon icon-camera" aria-hidden="true"></span></span>同源画面</h2><span>人脸定位</span></div>
+      <div class="surface-heading"><h2 id="videoTitle"><span class="heading-icon camera"><span class="fluent-icon icon-camera" aria-hidden="true"></span></span>同源画面</h2><span>视频预览</span></div>
       <div class="video-wrap">
         <div class="preview-placeholder" id="videoPlaceholder"><span id="videoPlaceholderText">等待同源预览</span></div>
         <img id="previewImage" alt="A 线同源视频预览">
-        <canvas id="video" width="640" height="480" aria-label="同帧人脸定位框"></canvas>
         <div class="badge-stack">
           <span class="badge warn" id="videoBadge">等待同源预览</span>
           <span class="badge" id="previewFreshness">—</span>
-          <span class="badge" id="previewSync">未配对</span>
+          <span class="badge" id="previewSync">未收到画面</span>
         </div>
       </div>
-      <p class="video-note">画面与定位框来自同一帧；静止预览不会继续追踪。</p>
+      <p class="video-note">显示当前视频源画面。</p>
     </section>
 
     <section class="surface status-panel" aria-labelledby="statusTitle">
@@ -63,40 +63,34 @@
         <ul id="triggers"></ul>
       </div>
     </section>
-  </div>
-
   <section class="section gate-section" aria-labelledby="gateTitle">
     <div class="section-heading">
-      <div><p class="eyebrow">测量可信度</p><h2 id="gateTitle"><span class="heading-icon shield"><span class="fluent-icon icon-shield" aria-hidden="true"></span></span>能否测量</h2></div>
-      <p>质量门控未通过时，生命体征不输出数值。</p>
+      <div><h2 id="gateTitle"><span class="heading-icon shield"><span class="fluent-icon icon-shield" aria-hidden="true"></span></span>测量可信度</h2></div>
     </div>
     <div class="gate-layout">
       <div class="gate-verdict"><span class="small-label">当前结论</span><strong id="gateVerdictText">等待数据…</strong><span id="gateVerdictSub">—</span></div>
       <div class="gate-bars" id="gateBars"></div>
     </div>
+    <p class="quality-note">质量门控未通过时，心率与呼吸率不输出数值。</p>
   </section>
+  </aside>
 
-  <section class="section metric-section" aria-labelledby="metricTitle">
+  <section class="metric-section" id="measurements" aria-labelledby="metricTitle">
     <div class="section-heading">
-      <div><p class="eyebrow">本次监测</p><h2 id="metricTitle"><span class="heading-icon pulse"><span class="fluent-icon icon-pulse" aria-hidden="true"></span></span>实时指标</h2></div>
-      <div class="blink-strip" id="blinkStrip"><span id="blinkLabel">眨眼状态机：—</span></div>
+      <div><p class="eyebrow">本次监测</p><h2 id="metricTitle"><span class="heading-icon pulse"><span class="fluent-icon icon-pulse" aria-hidden="true"></span></span>实时测量值</h2></div>
+      <span class="measurement-live" id="measurementLive"><span class="dot"></span><span id="measurementLiveText">等待数据</span></span>
+    </div>
+    <div class="metric-toolbar">
+      <p><span class="history-key"></span>历史趋势 <span class="current-key"></span>最新值 · 最近 120 秒</p>
+      <span id="measurementTime">等待首帧</span>
     </div>
     <div class="cards" id="cards"></div>
-  </section>
-
-  <section class="section trend-section" id="trends" aria-labelledby="trendTitle">
-    <div class="section-heading"><div><p class="eyebrow">近期变化</p><h2 id="trendTitle"><span class="heading-icon trend"><span class="fluent-icon icon-trend" aria-hidden="true"></span></span>趋势</h2></div><p>最近 120 秒</p></div>
-    <div class="chart-surface">
-      <canvas id="chart" width="1200" height="220" aria-label="眨眼率、闭眼比例、心率与信号质量趋势"></canvas>
-      <div class="legend">
-        <span><i style="background:#007aff"></i>眨眼率 /min</span>
-        <span><i style="background:#ff9500"></i>PERCLOS</span>
-        <span><i style="background:#34c759"></i>心率 bpm</span>
-        <span><i style="background:#af52de"></i>信号质量 0~1</span>
-      </div>
-      <p class="chart-note">质量门控不通过时，心率曲线留空。</p>
+    <div class="measurement-footer">
+      <div class="blink-strip" id="blinkStrip"><span id="blinkLabel">眨眼状态机：—</span></div>
+      <p>每张卡片左侧为当前值，右侧为本次监测的历史与最新值。无有效测量时曲线留空。</p>
     </div>
   </section>
+  </div>
 
   <details class="developer-tools" id="developerTools">
     <summary><span>开发者工具</span><small>数据源、预览诊断、事件日志</small></summary>
@@ -116,7 +110,7 @@
           <span class="pill" id="validPill" title="每帧均经过 frontend/mock.js 校验">契约：<b id="validName">—</b></span>
         </div>
         <div id="previewDebug">preview: 尚未连接同源旁路</div>
-        <p class="hint">实时预览需 A 线持续发送同源 JPEG。检测器为 stub 时，定位框不代表真实人脸追踪。</p>
+        <p class="hint">实时预览需 A 线持续发送同源 JPEG。</p>
       </section>
       <section class="dev-section">
         <div class="dev-title"><h2>事件日志</h2><button id="btnClear" type="button">清空</button></div>
@@ -129,6 +123,7 @@
 <script src="mock.js"></script>
 <script src="preview.js"></script>
 <script src="ui_state.js"></script>
+<script src="trends.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

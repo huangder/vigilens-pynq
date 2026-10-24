@@ -7,12 +7,14 @@
 
 | 文件 | 说明 |
 |---|---|
-| `index.html` | 页面骨架：当前判断、质量门控、实时指标、趋势和底部开发者工具 |
+| `index.html` | 页面骨架：左侧视频 / 当前判断 / 质量门控，右侧实时读数与卡内趋势，底部开发者工具 |
 | `style.css` | iOS 语义色参考的浅色主题、响应式排版和本地字体声明 |
 | `app.js` | 仪表盘逻辑：数据源切换、渲染、曲线、日志、契约校验 |
 | `mock.js` | 离线 mock 数据源 + **契约校验器**；同时是 node 可执行脚本（跨语言契约检查用） |
 | `preview.js` | 同源预览坐标换算 + 响应头解析；浏览器和 Node 共用 |
 | `ui_state.js` | 等待 / 断流 / 无人脸 / 可测量的统一显示语义 + 数据来源标签；浏览器和 Node 共用 |
+| `trends.js` | 卡片历史窗口、断流空档、按时间分段与独立量纲范围；浏览器和 Node 共用 |
+| `tests/trends.test.js` | 趋势窗口 / 最新样本 / 空档 / 重播 / 零值 / 量纲的 Node 回归测试 |
 | `icons/` | Microsoft Fluent UI System Icons 的本地 Regular SVG 与 MIT `LICENSE` |
 | `font/` | 可选的本地 MiSans 字体目录（不入库）；缺失时自动回退到系统中文字体 |
 
@@ -31,14 +33,14 @@ python backend/websocket.py                 # 默认 ws://127.0.0.1:8765
 python backend/api.py                       # 浏览器打开 http://127.0.0.1:8000/
 #         验证的是：REST + WS + 静态页面同源，无跨域问题
 
-# 方式 4：真实视频 + 同源检测框（两个终端）
+# 方式 4：真实视频预览（两个终端）
 python backend/api.py --no-mock
 python backend/run_pipeline.py --source <本地视频> --post auto \
     --preview-post auto --preview-hz 12 --realtime
 #         指标仍是冻结契约 1 Hz；视频 JPEG 约 12 fps，经 /api/preview 独立旁路传输
 ```
 
-跟框验收必须使用持续的真实视频/摄像头源。`--no-mock` 只启动接收服务；A 线回放结束后页面会保留最后一帧并在超时后清框。摘要或开发者工具中 `landmark_source=mediapipe` / `detector=mediapipe` 才表示真实人脸检测；`stub` 只代表占位几何量，不会跟随视频中的真实人脸。
+预览验收使用持续的视频/摄像头源。`--no-mock` 只启动接收服务；A 线回放结束后页面会在超时后隐藏过期画面。视频区域只显示源画面，已移除前端人脸定位框与跟踪绘制；后端用于计算指标的人脸检测与质量门控保持原有逻辑。算法结果仍须核对摘要中的 `landmark_source`：`stub` 是占位实现，不能作为真实测量结果引用。
 
 `frontend/index.html` 默认地址填的是 8765；若用 `api.py`，把地址改成 `ws://127.0.0.1:8000/ws`。
 
@@ -46,6 +48,19 @@ python backend/run_pipeline.py --source <本地视频> --post auto \
 `/api/status.source`，分别显示「离线 Mock / 服务 Mock / A 线 ingest / 来源未声明」；开发者工具里的
 计算模式在 M3 前固定为「软件模式」。**WebSocket 是传输方式，不是数据来源**；独立运行
 `backend/websocket.py`、无法读取同源 `/api/status` 时，页面会如实显示「来源未声明」。
+
+## 页面布局与历史曲线
+
+- 桌面采用左右分栏：左侧是视频、当前判断与紧凑质量门控；右侧是测量值。
+- 每张指标卡保持「左侧大读数、右侧趋势」，心率与呼吸率优先展示；置信度以小字辅助呈现。
+  **置信度不等于经标定的测量准确率**，前端不提供编造的准确率。
+- 每项指标使用自己的数值量纲，灰线绘制历史，彩色末段与圆点突出最新值；头部姿态同时绘制
+  偏航实线与俯仰虚线。原先混合量纲的汇总曲线改为卡内曲线。
+- 历史指**本次连接接收到的最近 120 秒样本**，最多保留 120 个点，按契约 `ts` 定位；
+  不持久保存跨次测量数据。切换数据源 / 重新连接 / 上游序号或时间回退时重置窗口，避免混源。
+- 没有历史时只显示当前采样点；无人脸、断流、生命体征门控未通过或缺少样本时留空，
+  不补零、不跨空档连线、不把历史值当当前值。停止接收后历史轴不继续制造采样点。
+- 窄屏时页面上下堆叠，但卡片内部仍保持数值在左、曲线在右；导航可直接跳到测量区。
 
 ## 六种状态怎么演示（B6 验收）
 
@@ -86,6 +101,7 @@ python backend/run_pipeline.py --source <本地视频> --post auto \
 node frontend/mock.js --selftest                                  # JS 侧：六态帧合法 + 5 个坏帧必须被抓
 node frontend/preview.js                                          # 同源 bbox 的 contain/留白/缩放自检
 node frontend/ui_state.js                                         # 无脸/断流/趋势留空/来源标签自检
+node --test frontend/tests/trends.test.js                          # 各指标历史曲线的数值与空档语义
 node frontend/mock.js --limit 6 > metrics/logs/_js_frames.jsonl
 python metrics/scripts/check_frontend_contract.py metrics/logs/_js_frames.jsonl      # Python 侧再验一遍
 python metrics/scripts/check_frontend_wiring.py                   # app.js 引用的 DOM id 是否都存在
@@ -99,6 +115,9 @@ node metrics/scripts/check_b_line_browser.mjs --scenario normal
 node metrics/scripts/check_b_line_browser.mjs --scenario noface
 node metrics/scripts/check_b_line_browser.mjs --scenario disconnected
 node metrics/scripts/check_b_line_browser.mjs --scenario normal --width 390 --height 844
+node metrics/scripts/check_b_line_browser.mjs --scenario history   # 合成 Mock 120 秒历史、缺测恢复与最新点
+node metrics/scripts/check_b_line_browser.mjs --scenario gated     # 低质量帧即使携带数值也不展示生命体征
+node metrics/scripts/check_b_line_browser.mjs --source offline     # file:// 离线打开，不需要后端
 # 另起 backend/websocket.py 后，验证独立 WS 不冒充数据来源：
 node metrics/scripts/check_b_line_browser.mjs --source standalone --ws-url ws://127.0.0.1:8765
 ```
@@ -111,16 +130,16 @@ node metrics/scripts/check_b_line_browser.mjs --source standalone --ws-url ws://
 - [x] B1 FastAPI 三接口（`/api/status` `/api/metrics` `/api/events`）+ `/api/ingest`
 - [x] B2 Mock 数据生成器（契约一致、状态自洽、可复现）
 - [x] B3 WebSocket 每秒推送，断开有明确提示
-- [x] B4 页面骨架：同源视频 + 状态 / 门控 / 指标 / 趋势；开发者控制和日志收在页面底部折叠区
-- [x] B5 趋势曲线（眨眼率 / PERCLOS / 心率 / 质量，原生 canvas，保留 120 秒）
+- [x] B4 页面骨架：左侧同源视频 + 状态 / 紧凑门控，右侧指标；开发者控制和日志收在页面底部折叠区
+- [x] B5 每项指标卡内的历史 / 最新值曲线（原生 canvas，独立量纲，保留本次连接最近 120 秒）
 - [x] B6 事件日志 + 六态状态机展示，样式区分清晰
 - [x] B7 软硬件模式切换**占位**（顶部"模式：软件模式"标签；M3 接 C 线后切"硬件模式"）
-- [x] B8 当前浅色信息工作台截图与浏览器验收记录 →
+- [x] B8 2026-10-04 版浅色信息工作台截图与浏览器验收记录 →
       `metrics/evidence/2026-10-04_b8_light_ui_screenshots.md`；历史深色截图仅用于追溯当时版本。
       新旧证据均无真人数据，只使用 Mock / stub 合成数据
 - [x] **BUG-014 已关闭**：连接状态、数据来源、计算模式分开展示；`/api/status.source` 明确区分
       服务 Mock 与 A 线 ingest，WebSocket 不再冒充数据来源；M3 前硬件模式不可选
-- [x] **无人脸显示语义已收口**：`face.visible == 0` 时指标、门控、眨眼高亮和定位框全部清空，
+- [x] **无人脸显示语义已收口**：`face.visible == 0` 时指标、门控和眨眼高亮全部清空，
       趋势写入空档而不是假 0；断流优先显示「无数据」，下一帧检测到人脸后自动恢复
 - [x] 新增「**信号质量门控 · 能不能测**」面板：4 条门控条 + 总判定，不通过时列出未通过项
       —— 这是产品承诺"先判断能不能测"在界面上的落点
@@ -137,9 +156,9 @@ node metrics/scripts/check_b_line_browser.mjs --source standalone --ws-url ws://
 - [x] 页面由 `api.py` 托管时**自动填好** `ws://<host>/ws`（探测 `/api/status` 是否可用），
       不用再手填；`file://` 或普通静态服务器下仍保留 `websocket.py` 的 8765 默认值
 - [x] 断流帧**不进趋势曲线**：把它当"这段没有数据"（留空），而不是画出一根掉到 0 的假尖峰
-- [x] 视频区接入**同源画面旁路**：A 线把 JPEG 与该帧 bbox 一起推到 `/api/preview`，页面用
-      `object-fit: contain` 同口径计算留白与缩放；不再把浏览器自己开的摄像头画面与后端框混在一起。
-      服务端只保留最新帧，GET 用 ETag/304；断流后页面清除过期框。`file://` 仍明确显示 Mock 示意。
+- [x] 视频区接入**同源画面旁路**：A 线把 JPEG 与预览元数据推到 `/api/preview`，页面用
+      `object-fit: contain` 显示源画面，不叠加人脸定位框。服务端只保留最新帧，GET 用 ETag/304；
+      断流后页面隐藏过期画面。`file://` 明确显示离线 Mock，不绘制模拟人脸框。
 - [ ] 心率/呼吸趋势在 M2 后的真实曲线形态复核（现在心率多数为 `null`，符合门控承诺）
 - [x] **门控阈值改为后端下发**（原本是 `app.js` 里 `THRESHOLDS` 的一份副本，A 线一标定就会
       无声漂移）：`api.py` 的 `/api/status` 带回 `thresholds`（值取自 `config.yaml`，键名逐字一致），

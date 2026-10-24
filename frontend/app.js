@@ -16,6 +16,7 @@
   var M = window.VigiLensMock;
   var P = window.VigiLensPreview;
   var U = window.VigiLensUIState;
+  var T = window.VigiLensTrends;
   // 客户端看门狗：**故意比服务端的 ws_disconnect_timeout_s（3.0 s）慢 1 秒**。
   // 断流的权威来源是服务端 —— api.py 的 /ws 在超时后会下发一帧契约合法的 `disconnected`
   // （见 backend/api.py 的 disconnect_frame 与 backend/A_LINE_DEV_STEPS.md §9 第 8 条）。
@@ -23,6 +24,7 @@
   // 同刻触发会让两边抢着宣布断流，日志里多一条误导性的"超过 Ns 未收到帧"。
   var WS_TIMEOUT_MS = 4000;
   var MAX_POINTS = 120;              // 趋势曲线保留点数（1 Hz → 120 秒）
+  var HISTORY_SECONDS = 120;          // 卡片共用时间窗口；只保留本次连接的历史
   var MOCK_PERIOD_MS = 1000;         // 与契约 1 帧/秒一致
   var PREVIEW_POLL_MS = 80;
   var PREVIEW_STALE_MS = 1500;
@@ -67,18 +69,22 @@
     { key: "yawn", label: "打哈欠", unit: "次", digits: 0, get: function (f) { return f.behavior.yawn_count; } },
     { key: "mar", label: "MAR 嘴部纵横比", unit: "", digits: 3, get: function (f) { return f.behavior.mar; } },
     { key: "visible", label: "人脸可见率", unit: "", digits: 3, get: function (f) { return f.face.visible; }, warn: function (f) { return f.face.visible < THRESHOLDS.face_visible_min; } },
-    { key: "yaw", label: "头部 yaw/pitch", unit: "°", digits: 1, get: function (f) { return f.face.pose.yaw; }, extra: function (f) { return " / " + f.face.pose.pitch.toFixed(1); } },
+    { key: "yaw", label: "头部姿态 · 偏航", unit: "°", digits: 1, get: function (f) { return f.face.pose.yaw; }, secondary: function (f) { return f.face.pose.pitch; } },
     { key: "quality", label: "信号质量 overall", unit: "", digits: 2, get: function (f) { return f.quality.overall; }, warn: function (f) { return f.quality.overall < THRESHOLDS.quality_min_score; } },
     { key: "light", label: "光照分", unit: "", digits: 2, get: function (f) { return f.quality.light_score; } },
     { key: "motion", label: "运动分（越低越好）", unit: "", digits: 2, get: function (f) { return f.quality.motion_score; }, warn: function (f) { return f.quality.motion_score > THRESHOLDS.motion_score_max; } },
-    { key: "hr", label: "心率（门控）", unit: "bpm", digits: 1, gate: true, confKey: "hr_conf", get: function (f) { return f.vital.hr_bpm; } },
+    { key: "hr", label: "心率", unit: "bpm", digits: 1, gate: true, confKey: "hr_conf", get: function (f) { return f.vital.hr_bpm; } },
     // staticNote：只在**没有数值**时显示，用来解释"这张卡为什么出不来数"。
     // 呼吸率是契约级限制（§3.5：63 阶 @45 fps 的过渡带吃掉了 0.1~0.5 Hz 呼吸带），
     // 不加说明的话，答辩现场它看起来就像坏了。
-    { key: "rr", label: "呼吸率（门控）", unit: "/min", digits: 1, gate: true, confKey: "rr_conf",
+    { key: "rr", label: "呼吸率", unit: "/min", digits: 1, gate: true, confKey: "rr_conf",
       staticNote: "契约 §3.5：63 阶 @45 fps 做不了呼吸带，待 PS 侧降采样",
       get: function (f) { return f.vital.rr_per_min; } }
   ];
+
+  // 主测量值优先；质量与光照等辅助指标仍可查看，但排在后面。
+  var CARD_ORDER = ["hr", "rr", "blinkRate", "perclos", "ear", "mar", "blinkCount", "yawn", "longClose", "yaw", "visible", "quality", "light", "motion"];
+  CARD_DEFS.sort(function (a, b) { return CARD_ORDER.indexOf(a.key) - CARD_ORDER.indexOf(b.key); });
 
   /* 门控条目：方向 min = 越大越好，max = 越小越好。
      ⚠️ 这里存的是**阈值键名**而不是数值 —— 数值要在渲染时从 THRESHOLDS 现取，
@@ -140,7 +146,7 @@
   function fitCanvas(cv) {
     var dpr = window.devicePixelRatio || 1;
     var w = cv.clientWidth || cv.width;
-    var h = cv.clientHeight || (cv.id === "video" ? Math.round(w * 480 / 640) : 210);
+    var h = cv.clientHeight || 89;
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
@@ -160,7 +166,7 @@
     while (el.log.childNodes.length > 200) el.log.removeChild(el.log.lastChild);
   }
 
-  /* ------------------------------------------------------- 同源预览 + 同帧检测框 */
+  /* ------------------------------------------------------- 同源视频预览 */
   function setPreviewBadge(kind, text) {
     el.videoBadge.className = "badge" + (kind ? " " + kind : "");
     el.videoBadge.textContent = text;
@@ -177,49 +183,8 @@
     el.videoPlaceholderText.textContent = message || "等待同源预览";
     el.previewFreshness.textContent = "—";
     el.previewFreshness.className = "badge";
-    el.previewSync.textContent = "未配对";
+    el.previewSync.textContent = "未收到画面";
     el.previewSync.className = "badge";
-    drawVideo();
-  }
-
-  function drawVideo() {
-    var c = fitCanvas(el.video);
-    var ctx = c.ctx, w = c.w, h = c.h;
-    ctx.clearRect(0, 0, w, h);
-    var meta = state.previewMeta;
-    if (!meta) {
-      if (state.mode === "offline" && state.lastFrame && state.lastFrame.face.bbox[2] > 0) {
-        meta = {
-          frameId: state.lastFrame.frame_id, bbox: state.lastFrame.face.bbox,
-          sourceWidth: 640, sourceHeight: 480, faceVisible: state.lastFrame.face.visible,
-          status: state.lastFrame.status, mock: true
-        };
-      } else {
-        return;
-      }
-    }
-    if (!U.shouldDrawBbox(state.lastFrame, meta)) return;
-    var mapped = P.mapBbox(meta.bbox, w, h, meta.sourceWidth, meta.sourceHeight);
-    if (!mapped) {
-      return;
-    }
-    var bx = mapped.x, by = mapped.y, bw = mapped.width, bh = mapped.height;
-    var color = STATUS_COLOR[meta.status] || "#007aff";
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(bx, by, bw, bh);
-    ctx.lineWidth = 3;
-    var L = Math.min(18, bw / 3, bh / 3);
-    [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]].forEach(function (p) {
-      ctx.beginPath();
-      ctx.moveTo(p[0] + p[2] * L, p[1]); ctx.lineTo(p[0], p[1]); ctx.lineTo(p[0], p[1] + p[3] * L);
-      ctx.stroke();
-    });
-    ctx.fillStyle = color;
-    ctx.font = "12px ui-monospace, Consolas, monospace";
-    ctx.textAlign = "left";
-    ctx.fillText((meta.mock ? "mock face " : "face ") + Number(meta.faceVisible).toFixed(2),
-                 bx, Math.max(14, by - 7));
   }
 
   /* ---------------------------------------------------------------- 状态区 */
@@ -323,7 +288,7 @@
     } else if (failed.length === 0) {
       el.gateVerdictText.textContent = "可以测量";
       el.gateVerdictText.style.color = STATUS_COLOR.normal;
-      el.gateVerdictSub.textContent = "四项门控全部通过，下方指标可信";
+      el.gateVerdictSub.textContent = "四项基础门控通过；心率与呼吸率另有门控";
     } else {
       el.gateVerdictText.textContent = "测不准，别采信";
       el.gateVerdictText.style.color = STATUS_COLOR.disconnected;
@@ -367,11 +332,21 @@
       div.id = "card_" + d.key;
       div.dataset.group = d.gate ? "vital" : (["quality", "light", "motion"].indexOf(d.key) >= 0 ? "quality" :
         (["visible", "yaw"].indexOf(d.key) >= 0 ? "face" : "behavior"));
-      div.innerHTML = '<div class="card-top"><span class="k">' + d.label + '</span><span class="card-meta">当前</span></div>' +
-        '<div class="v"><span class="num">—</span><span class="u">' +
-        (d.unit || "") + '</span></div><div class="note"></div>';
+      div.innerHTML = '<div class="card-reading"><div class="card-top"><span class="k">' + d.label +
+        '</span><span class="card-meta">当前测量</span></div><div class="v"><span class="num">—</span><span class="u">' +
+        (d.unit || "") + '</span></div><span class="card-secondary"></span><div class="note"></div></div>' +
+        '<div class="card-trend"><div class="card-trend-label"><span>' + (d.secondary ? "偏航 / 俯仰" : "历史趋势") +
+        '</span><span class="latest-label">● 最新</span></div><canvas class="metric-chart" role="img" aria-label="' +
+        d.label + '历史与最新值曲线"></canvas><div class="card-axis"><span>120 秒前</span><span>最新</span></div></div>';
       el.cards.appendChild(div);
     });
+  }
+
+  function cardValue(frame, d) {
+    var value = U.measurementValue(frame, d.get);
+    // 卡片与曲线共用门控口径，避免低质量帧带来的数字被当成有效结果。
+    if (d.gate && frame && (frame.status === "unreliable" || frame.quality.overall < THRESHOLDS.vital_require_quality)) return null;
+    return value;
   }
 
   /* 生理指标的三态显示。这是本项目最核心的产品承诺：
@@ -384,6 +359,12 @@
     }
     if (frame.status === "disconnected") {
       return { text: "无数据", msg: true, note: "视频源或连接中断" };
+    }
+    if (frame.status === "unreliable") {
+      return { text: "已锁定", msg: true, note: "信号不可靠，等待有效测量" };
+    }
+    if (frame.status === "done") {
+      return { text: "暂无", msg: true, note: "本次监测未得到有效值" };
     }
     var q = frame.quality.overall;
     if (q < THRESHOLDS.quality_min_score) {
@@ -401,13 +382,17 @@
 
   function renderCards(frame) {
     var measurement = U.measurementState(frame);
+    var measured = measurement === U.MEASUREMENT.MEASURED;
+    el.measurementLiveText.textContent = !frame ? "等待数据" : (frame.status === "done" ? "本次监测已结束" :
+      (measured ? "最新值实时更新" : (measurement === U.MEASUREMENT.NO_FACE ? "未检测到人脸" : "数据已中断")));
+    el.measurementLive.style.color = frame ? STATUS_COLOR[frame.status] : "";
     CARD_DEFS.forEach(function (d) {
       var card = $("card_" + d.key);
       if (!card) return;
       var num = card.querySelector(".num");
       var unit = card.querySelector(".u");
       var note = card.querySelector(".note");
-      var v = U.measurementValue(frame, d.get);
+      var v = cardValue(frame, d);
       var text, isMsg = false, isWarn = false, noteText = "";
 
       if (measurement !== U.MEASUREMENT.MEASURED) {
@@ -421,7 +406,7 @@
       } else if (frame) {
         var s = fmt(v, d.digits);
         isMsg = (s === null);
-        text = isMsg ? "暂无" : s + (d.extra ? d.extra(frame) : "");
+        text = isMsg ? "暂无" : s;
         isWarn = d.warn ? d.warn(frame) : false;
       } else {
         isMsg = true;
@@ -432,6 +417,9 @@
       card.classList.toggle("msg", isMsg && text.length > 4);
       num.textContent = text;
       if (unit) unit.textContent = isMsg ? "" : (d.unit || "");
+      card.querySelector(".card-secondary").textContent = !isMsg && d.secondary
+        ? "俯仰 " + fmt(d.secondary(frame), d.digits) + "°" : "";
+      card.querySelector(".card-meta").textContent = isMsg ? "当前暂无有效值" : "当前测量";
       // 静态说明只在"没有数值"时拼进去：否则会出现"卡上有数字、备注却说这个指标出不来"
       // 这种自相矛盾（Mock 数据下呼吸率是有值的）。
       var parts = [];
@@ -444,69 +432,82 @@
   }
 
   /* ---------------------------------------------------------------- 曲线 */
-  function renderChart() {
-    var c = fitCanvas(el.chart);
-    var ctx = c.ctx, w = c.w, h = c.h;
-    var padL = 34, padR = 8, padT = 10, padB = 18;
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, w, h);
+  function renderCharts() {
+    CARD_DEFS.forEach(function (d) {
+      var card = $("card_" + d.key);
+      var canvas = card.querySelector(".metric-chart");
+      var c = fitCanvas(canvas), ctx = c.ctx, w = c.w, h = c.h;
+      var padL = 4, padR = 9, padT = 18, padB = 12;
+      ctx.clearRect(0, 0, w, h);
+      var primary = T.series(state.points, function (frame) { return cardValue(frame, d); }, 2 * MOCK_PERIOD_MS / 1000);
+      var secondary = d.secondary ? T.series(state.points, d.secondary, 2 * MOCK_PERIOD_MS / 1000) : [];
+      var bounds = T.range([primary, secondary], d.key !== "yaw");
+      var latest = cardValue(state.lastFrame, d);
+      var currentValid = typeof latest === "number" && isFinite(latest);
+      var color = getComputedStyle(card).getPropertyValue("--metric-color").trim();
+      card.querySelector(".latest-label").textContent = currentValid ? "● 最新" : "当前留空";
+      var count = primary.reduce(function (n, segment) { return n + segment.length; }, 0);
+      canvas.dataset.samples = String(count);
+      canvas.dataset.segments = String(primary.length);
+      canvas.setAttribute("aria-label", d.label + "最近 " + HISTORY_SECONDS + " 秒趋势，" + count +
+        " 个有效样本，" + (currentValid ? "最新值 " + fmt(latest, d.digits) + d.unit : "当前无有效值"));
 
-    // 网格 + y 轴刻度（0 / 50 / 100，按各自量纲归一化到 0~1 后绘制）
-    ctx.strokeStyle = "#e6ebee";
-    ctx.fillStyle = "#89949e";
-    ctx.font = "11px ui-monospace, Consolas, monospace";
-    ctx.lineWidth = 1;
-    for (var i = 0; i <= 4; i++) {
-      var y = padT + (h - padT - padB) * (i / 4);
-      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
-      ctx.textAlign = "right";
-      ctx.fillText(String(100 - i * 25) + "%", padL - 6, y + 3);
-    }
-
-    var pts = state.points;
-    if (pts.length < 2) {
-      ctx.fillStyle = "#89949e";
-      ctx.textAlign = "center";
-      ctx.font = "12px 'Segoe UI', 'Microsoft YaHei', sans-serif";
-      ctx.fillText("等待数据…", w / 2, h / 2);
-      return;
-    }
-
-    function series(getter, scale, max) {
-      ctx.beginPath();
-      var started = false;
-      for (var i = 0; i < pts.length; i++) {
-        var v = U.shouldPlot(pts[i]) ? getter(pts[i]) : null;
-        if (v === null || v === undefined || !isFinite(v)) { started = false; continue; }
-        var x = padL + (w - padL - padR) * (pts.length === 1 ? 0 : i / (MAX_POINTS - 1));
-        var nv = Math.max(0, Math.min(1, max ? v / scale : v));
-        var y = padT + (h - padT - padB) * (1 - nv);
-        if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+      ctx.strokeStyle = "#e9ecf0";
+      ctx.lineWidth = 1;
+      for (var grid = 0; grid <= 2; grid++) {
+        var gy = padT + (h - padT - padB) * grid / 2;
+        ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(w - padR, gy); ctx.stroke();
       }
-      ctx.stroke();
-    }
+      if (!bounds) {
+        ctx.fillStyle = "#8e8e93";
+        ctx.textAlign = "center";
+        ctx.font = "10px 'Microsoft YaHei', sans-serif";
+        ctx.fillText(state.lastFrame ? "暂无有效样本" : "等待数据", w / 2, h / 2 + 4);
+        return;
+      }
 
-    var defs = [
-      { color: "#007aff", get: function (p) { return p.behavior.blink_rate_per_min; }, scale: 40 },
-      { color: "#ff9500", get: function (p) { return p.behavior.perclos; }, scale: 1 },
-      { color: "#34c759", get: function (p) { return p.vital.hr_bpm; }, scale: 140 },
-      { color: "#af52de", get: function (p) { return p.quality.overall; }, scale: 1 }
-    ];
-    defs.forEach(function (d) {
-      ctx.strokeStyle = d.color;
-      ctx.lineWidth = 1.8;
-      ctx.lineJoin = "round";
-      series(d.get, d.scale, true);
+      var endTs = state.points[state.points.length - 1].ts;
+      var startTs = endTs - HISTORY_SECONDS;
+      function x(point) { return padL + (w - padL - padR) * (point.ts - startTs) / HISTORY_SECONDS; }
+      function y(point) { return padT + (h - padT - padB) * (bounds.max - point.value) / (bounds.max - bounds.min); }
+      function dot(point, ink, radius) {
+        ctx.fillStyle = ink;
+        ctx.beginPath(); ctx.arc(x(point), y(point), radius, 0, Math.PI * 2); ctx.fill();
+      }
+      function draw(segments, ink, dashed) {
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 1.8;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.setLineDash(dashed ? [3, 3] : []);
+        segments.forEach(function (segment) {
+          ctx.beginPath();
+          segment.forEach(function (point, index) { if (index) ctx.lineTo(x(point), y(point)); else ctx.moveTo(x(point), y(point)); });
+          ctx.stroke();
+          if (segment.length === 1) dot(segment[0], ink, 2);
+        });
+        ctx.setLineDash([]);
+      }
+      draw(primary, "#a4acb6", false);
+      if (secondary.length) draw(secondary, "#6d97c0", true);
+      if (currentValid && primary.length) {
+        var segment = primary[primary.length - 1];
+        var current = segment[segment.length - 1];
+        // 末段与圆点强调最新值；旧样本继续保留在同一坐标轴中。
+        draw([segment.slice(-2)], color, false);
+        dot(current, color + "25", 7);
+        dot(current, color, 3.5);
+        if (secondary.length) {
+          var pitch = secondary[secondary.length - 1];
+          dot(pitch[pitch.length - 1], "#6d97c0", 3);
+        }
+      }
+      ctx.fillStyle = "#8e8e93";
+      ctx.textAlign = "left";
+      ctx.font = "9px Consolas, monospace";
+      ctx.fillText(fmt(bounds.max, d.digits), padL, 10);
+      ctx.fillText(fmt(bounds.min, d.digits), padL, h - 1);
     });
-
-    // 时间轴两端标注
-    ctx.fillStyle = "#89949e";
-    ctx.font = "11px ui-monospace, Consolas, monospace";
-    ctx.textAlign = "left";
-    ctx.fillText(nowStr(pts[0].ts) || "", padL, h - 5);
-    ctx.textAlign = "right";
-    ctx.fillText(nowStr(pts[pts.length - 1].ts) || "", w - padR, h - 5);
   }
 
   /* ------------------------------------------------------- 收帧 / 校验 / 渲染 */
@@ -538,21 +539,17 @@
       state.lastStatus = frame.status;
     }
 
-    // 断流帧不进趋势曲线：把它当"这一段没有数据"（曲线留空），而不是"测出来是 0"。
-    // 兜底帧是 mock 造的 disconnected，它的 perclos / 眨眼率 / 质量都是 0，
-    // 画上去会变成一根掉到 0 的假尖峰 —— 那等于替系统编了一个它没测到的结论。
-    if (frame.status !== "disconnected") {
-      state.points.push(frame);
-      while (state.points.length > MAX_POINTS) state.points.shift();
-    }
+    // 断流保留空档标记，恢复时不跨空档连线，不把缺测补成 0。
+    T.append(state.points, frame, HISTORY_SECONDS, MAX_POINTS);
+    el.measurementTime.textContent = "已接收 " + state.valid + " 帧";
 
     renderSource();
     el.modeName.textContent = "软件模式";
     if (state.mode !== "ws") {
-      setPreviewBadge("warn", "模拟定位框 · 非真实视频");
+      setPreviewBadge("warn", "离线 Mock · 非真实视频");
       el.previewFreshness.textContent = "离线 Mock";
-      el.previewSync.textContent = "同一 Mock 帧";
-      el.previewSync.className = "badge ok";
+      el.previewSync.textContent = "离线演示";
+      el.previewSync.className = "badge";
     } else if (frame.status === "disconnected" && !state.previewMeta) {
       setPreviewBadge("danger", "预览中断");
     }
@@ -561,8 +558,7 @@
     renderCards(frame);
     renderGate(frame);
     renderBlink(frame);
-    drawVideo();
-    renderChart();
+    renderCharts();
   }
 
   function synthesizeDisconnected() {
@@ -645,6 +641,7 @@
       log("系统", "阈值已按 config.yaml 更新：" + changed.join("、"), "#8944ab");
       renderGate(state.lastFrame);
       renderCards(state.lastFrame);
+      renderCharts();
     }
   }
 
@@ -660,13 +657,12 @@
     el.previewFreshness.className = "badge" + (age > PREVIEW_STALE_MS ? " danger" : "");
     if (age > PREVIEW_STALE_MS) {
       setPreviewBadge("danger", "预览中断");
-      el.previewSync.textContent = "已清除过期框";
+      el.previewSync.textContent = "画面已过期";
       el.previewSync.className = "badge danger";
       state.previewMeta = null;
       el.previewImage.classList.remove("ready");
       el.videoPlaceholder.hidden = false;
       el.videoPlaceholderText.textContent = "预览已停止更新";
-      drawVideo();
     }
   }
 
@@ -677,8 +673,7 @@
     }
     el.previewDebug.textContent = "preview: frame_id=" + meta.frameId +
       " · " + meta.sourceWidth + "×" + meta.sourceHeight +
-      " · bbox=[" + meta.bbox.join(",") + "]" +
-      " · detector=" + (meta.detector || "unknown") + " · etag=" + etag;
+      " · etag=" + etag;
   }
 
   function replacePreviewImage(blob, meta, etag) {
@@ -695,14 +690,10 @@
       el.videoPlaceholder.hidden = true;
       if (old) URL.revokeObjectURL(old);
       setPreviewBadge("ok", "同源预览");
-      el.previewSync.textContent = "frame " + meta.frameId + " 同帧框";
+      el.previewSync.textContent = "预览帧 " + meta.frameId;
       el.previewSync.className = "badge ok";
-      if (meta.detector === "stub") {
-        setPreviewBadge("warn", "预览帧 · stub 框（非人脸检测）");
-      }
       renderPreviewDebug(meta, state.previewEtag);
       updatePreviewFreshness();
-      drawVideo();
     };
     probe.onerror = function () {
       URL.revokeObjectURL(nextUrl);
@@ -799,6 +790,14 @@
 
   function connectWs() {
     stopAll(true);
+    state.points.length = 0;
+    state.lastFrame = null;
+    renderState(null);
+    renderGate(null);
+    renderBlink(null);
+    renderCards(null);
+    renderCharts();
+    el.measurementTime.textContent = "等待首帧";
     clearPreviewImage("等待同源预览");
     var url = el.wsUrl.value.trim();
     if (!url) { log("错误", "请填写 WebSocket 地址", STATUS_COLOR.disconnected); return; }
@@ -874,6 +873,8 @@
   /* ------------------------------------------------------- 离线 mock（无后端） */
   function startOffline() {
     stopAll(true);
+    state.points.length = 0;
+    state.lastFrame = null;
     clearPreviewImage("离线 Mock · 非真实视频");
     state.mode = "offline";
     state.serverSource = "";
@@ -910,10 +911,11 @@
   /* ---------------------------------------------------------------- 初始化 */
   function init() {
     el = {
-      previewImage: $("previewImage"), video: $("video"), videoBadge: $("videoBadge"),
+      previewImage: $("previewImage"), videoBadge: $("videoBadge"),
       videoPlaceholder: $("videoPlaceholder"), videoPlaceholderText: $("videoPlaceholderText"),
       previewFreshness: $("previewFreshness"), previewSync: $("previewSync"),
-      previewDebug: $("previewDebug"), chart: $("chart"),
+      previewDebug: $("previewDebug"), measurementTime: $("measurementTime"),
+      measurementLive: $("measurementLive"), measurementLiveText: $("measurementLiveText"),
       stateLamp: $("stateLamp"), stateName: $("stateName"), stateEn: $("stateEn"),
       advice: $("advice"), reason: $("reason"), triggers: $("triggers"),
       cards: $("cards"), log: $("log"),
@@ -937,7 +939,17 @@
     $("btnConnect").onclick = connectWs;
     $("btnStart").onclick = startMonitoring;
     $("btnOffline").onclick = startOffline;
-    $("btnStop").onclick = function () { stopAll(false); clearPreviewImage("已停止数据源"); setConn("down", "未连接"); };
+    $("btnStop").onclick = function () {
+      stopAll(false);
+      clearPreviewImage("已停止数据源");
+      setConn("down", "未连接");
+      el.measurementLiveText.textContent = "监测已停止";
+      el.measurementLive.style.color = STATUS_COLOR.done;
+      CARD_DEFS.forEach(function (d) {
+        var card = $("card_" + d.key);
+        if (!card.classList.contains("null")) card.querySelector(".card-meta").textContent = "最后一次测量";
+      });
+    };
     $("btnSelftest").onclick = runSelftest;
     $("btnClear").onclick = function () { el.log.innerHTML = ""; };
     el.forceStatus.onchange = function () {
@@ -945,18 +957,17 @@
       log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8944ab");
     };
 
-    window.addEventListener("resize", function () { drawVideo(); renderChart(); });
+    window.addEventListener("resize", renderCharts);
     if (typeof ResizeObserver !== "undefined") {
-      new ResizeObserver(function () { drawVideo(); }).observe(el.video.parentElement);
+      new ResizeObserver(function () { renderCharts(); }).observe(el.cards);
     }
 
     renderState(null);
     renderCards(null);
     renderGate(null);
     renderBlink(null);
-    drawVideo();
     renderSource();
-    renderChart();
+    renderCharts();
     log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#007aff");
 
     syncWithServer();
