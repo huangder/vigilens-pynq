@@ -3,7 +3,7 @@
 > **本文件是任何 AI（含 DSH / Claude Code / Cursor / Copilot 等）进入本仓库后的第一份必读文件。**
 > 动手改任何文件之前，**先读完本文件**。本文件与 `docs/05_AI使用约束.md`、`docs/07_提交规范与分工提交说明.md` 配套：
 > **详版规则以那两份文档为准，本文件只做"入口 + 底线 + 事实索引"**，冲突时以详版文档为准。
-> 维护：改动本文件用 `docs:` 前缀提交。最后核对：**2026-10-01**（基于仓库当时真实状态；本次逐条复核见 `docs/29` §1）。
+> 维护：改动本文件用 `docs:` 前缀提交。最后核对：**2026-10-24**（基于仓库当时真实状态；逐条复核与基线见 §6.1 / §7.6 / §9）。
 
 ---
 
@@ -137,10 +137,10 @@
 
 | 目录 | 内容 |
 |---|---|
-| `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、**年龄分层旁路**（`age_*` / `fatigue_*`）、FastAPI/WebSocket/Mock；`pytest` 现有 **182 项收集** |
+| `backend/` | 契约、采集、关键点、指标、质量、规则融合、存储、rPPG 链路、**年龄分层旁路**（`age_*` / `fatigue_*`）、FastAPI/WebSocket/Mock；`pytest` 现有 **251 项通过**（2026-10-23 实测，`-q` 全跑） |
 | `frontend/` | 零依赖仪表盘（`index.html` / `app.js` / `age.js` / `mock.js`），**不用 CDN、不用 ES module**（`file://` 会白屏），曲线为原生 canvas |
 | `fpga/` | `src/` HLS 源码（**7 个 IP**）、`sim/` 测试台 + Python 黄金参考、`report/` 综合/cosim 报告与**归档日志** |
-| `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包 + `imx219_driver.py` / `imx219_sccb_check.py` + 🆕 `imx219_probe/`（相机存活实验：纯 PL SCCB 探针 + **原始 ILA 证据**）；**`bitstream/` 仍为空**，上板结论目前只有 `docs/31` 的负面读数（IMX219 未应答） |
+| `board/` | 上板脚本（`regmap` / `bringup_check` / `dma_test` / `hw_sw_compare` / `build_bd.tcl` / `overlay/`）+ `openmv/` 首次测试包 + `imx219_driver.py` / `imx219_sccb_check.py` + 🆕 `imx219_probe/`（相机存活实验：纯 PL SCCB 探针 + **原始 ILA 证据**）；🆕 `s4_bench/`（裸机取证固件：`s4_bench.c` / `s4_run.py` / `s4_720.py`）。**`bitstream/` 里已有两档 .bit**（640×480 与 720p60，不入库），并且**已在硅上跑通**：S4 门限 3~9 闭合（`fpga/report/s4_board_closeout_20261023.md`）、720p60 档 480×270 灰度与黄金参考**逐字节相等** + 300 帧长稳（`t10`）。⚠️ 板上执行者是**裸机固件 + xsdb**，**不是** PYNQ 脚本，板上也**没有 Linux**（W7 未做） |
 | `data/` | `raw/` 视频（不入库）、`annotations/`、`golden/`、`reference/age_bands.json`（基线）、`fatigue_db/`（`schema.sql` 入库、库本体不入库） |
 | `metrics/` | `csv/`、`logs/`（生成物，不入库）、`scripts/`（可复现检查脚本，入库）、`evidence/`（**正式证据入库**） |
 | `docs/` | **先看 `docs/README.md`（统一文档索引）**；契约 = `interface.md`；方案/流程 = `00`~`31`。重点：**测试总方案 = `11`、阶段二方案 = `14`、判定基准 = `15`、问题台账 = `16`、阶段二手册 = `17`、C 线成果与遗留 = `26`、IMX219 = `27`、年龄分层 = `28`、后续任务清单 = `29`、上板手册 = `30`、🆕 相机存活实验上板记录 = `31`**；`20` 的 **§7** 是原 `22`（帧率选型）并入的附录。历史快照在 `docs/archive/` |
@@ -171,9 +171,10 @@ python metrics/scripts/check_all.py            # 期望：工具自检 19/19；�
 #      `#previewImage` + `PREVIEW_STALE_MS`），并在同一轮把 T11（OpenCV 造 MJPG）也跑绿。）
 # ② 或逐条跑（下面 6 条是 check_all 覆盖的细项，排查时用）
 python -m pytest -q                            # 基线只增不减；2026-10-23 本机实测 **251 passed**
-#    （⚠️ 234 是**实际通过数**，不是收集数；受限环境跑不完整套时要看报告里到底跑了多少。
+#    （⚠️ 251 是**实际通过数**，不是收集数；受限环境跑不完整套时要看报告里到底跑了多少。
 #      沿革：78 → 88（+旁路 MJPEG 帧源 10 项）→ 98（合并分支）→ 141（+2026-10-01 年龄分层 43 项）→ 182（2026-10-12 并入 origin/main）
-#      → 184（+朝向误检 2 项）→ 199（+uvc: 帧源 15 项）→ 204（+灰度按档位 5 项）→ 215（+闭眼时间口径 11 项）→ **234**（+rPPG 时间基准 19 项）。
+#      → 184（+朝向误检 2 项）→ 199（+uvc: 帧源 15 项）→ 204（+灰度按档位 5 项）→ 215（+闭眼时间口径 11 项）→ 234（+rPPG 时间基准 19 项）
+#      → 239（+mock 让位 5 项）→ 247（+bbox 语义 8 项）→ **251**（+额头关键点 4 项）。
 #      另有单项：`python -m pytest backend/tests/test_age_fatigue.py -q` → **43 passed**）
 #    （工具自检沿革：10/10 → 12/12（bringup/hw_sw/dma 三条）→ 13/13 → 14/14（+board/imx219_sccb_check.py，79/79）
 #      → 15/15（+board/overlay/mmap_overlay.py，16/16）→ 16/16（+metrics/scripts/check_uvc_camera.py，21/21）
@@ -390,12 +391,18 @@ vitis-run --mode hls --tcl run_hls.tcl   :: 默认 roi_statistic；set "HLS_IP=r
   未闭合项：MicroPhase 是否为 Mizar-Z7 提供 Vivado board file **未确认**（若无，PS7 DDR 参数必须取自厂商资料，**不得猜**）。
 - **会签前 v1.1 仍是生效版本**，`CONTRACT_VERSION` 保持 `v1.1`。
 - 本地/远端状态（本节容易过期，**每次用 `git status` / `git log` 复核**）：
-  **2026-10-01 实测** —— `origin/main = 7634803`（`origin/HEAD`）；本地 `main` = `ad9ad54`，**落后 `origin/main` 3 个提交**。
-  `origin/c-line/fs30 = 91811ee`、`origin/c-line/mipi-cm2 = ca835f5`；
-  本地工作分支 `feat/age-fatigue-db` 是 `origin/c-line/mipi-cm2` 的**线性后继**（领先 3 个提交：年龄分层、档位矩阵入口、档位仿真闭环证据），
-  另有本地分支 `c-line/fs30`、`c-line/mipi-cm2`、`b-line/preview-openmv`。
-  ⚠️ **v1.2 / v1.3 / v1.5 三个草案都还没有进 `main`**；`docs/09` 已在本分支（commit `d3a788f`）。
-  ⚠️ 未提交的工作区改动里含**尚未入库**的 IMX219 交付物（`board/imx219_driver.py`、`board/imx219_sccb_check.py`、`docs/27`）。
+  **2026-10-24 复核** —— 工作分支 `feat/age-fatigue-db`（`docs/38` 的清单就是在这条线上写的）。
+  自 2026-10-23 起连续落地并已提交（每条都有真实运行证据）：
+  `7efc741`（摘取证 tap 重综合）、`b8c0484`（S4 闭环归档，BUG-035/036/037 关闭）、
+  `cff8b44`（朝向探测最小命中数，BUG-038）、`ded1305`（`check_uvc_camera.py`，W1）、
+  `069ba31`（W3 笔记本预演 + 文档）、`1bf6a18`（FIR 127 阶 @60 Hz 三层）、`1c40636`/`eba1985`（`uvc:` 帧源，W2）、
+  `9ec871a`（`rgb2gray` 720p60 档）、`4fecd0c`（**v1.6 草案**）、`fa2b8e9`（W3 真机两条通道）、
+  `ce3bea1`/`5a90763`（灰度按档位 + A↔C 逐档对拍）、`a864846`（W7 摸底）、`f907da0`（`min_close_ms`）、
+  `4c1e3fb`（BUG-029 时间基准）、`70ffe39`（BUG-032 收口，回归转全绿）、`f26b4cc`/`7c3a6f6`/`60dfc51`（卫生 + 探针入库）、
+  `272d0ef`（BUG-014 mock 让位）、`3811191`（A 线 skill 包）、`695c10d`（720p60 上板）、`5357aa0`（720p 长稳）、
+  `12ed8f8`（BUG-010/011）、`6a59afe`（契约 §1 澄清）。
+  ⚠️ **v1.2 / v1.3 / v1.5 / v1.6 四个草案仍全部未会签**，`CONTRACT_VERSION` 保持 `v1.1`（草案都在 `docs/interface.md` 头部）。
+  ✅ 2026-10-24 起**工作区干净**：`git status --short` 只剩待板上验证的 `board/s4_bench/s4_bench.c` 与 `s4_run.py`（streaming 档）。
 
 ### 7.7 OpenMV 采集能力（真机实测，2026-09-24）
 
@@ -443,7 +450,7 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 | 1 | `contract.py` 的 `CONTRACT_VERSION` 落后于 `docs/interface.md` | `backend/contract.py` vs `docs/interface.md` | ✅ **2026-09-16 已解决**：v1.1 会签完成时按第 4 节第 5 步升级，两侧现同为 **v1.1** |
 | 2 | `fpga/README.md` 部分小节滞后（如末节"M0 欠账"仍列已完成的 `git init` / `README` / `config.yaml`） | `fpga/README.md` 末尾 | ⏳ **2026-09-16 未当场复核**（C 线文件）；正文结论可信，**引用末尾清单前先核对 `fpga/report/` 实际文件** |
 | 3 | `docs/07` / `fpga/README.md` 中的版本号曾滞后于 `docs/interface.md` | `docs/07` §7、`fpga/README.md` | ✅ **2026-09-16 已同步**（两处均改为 v1.1 会签完成）；**始终以 `docs/interface.md` 头部为准** |
-| 4 | 文档里的回归基线数字多处滞后（check_all、pytest、offline_check 等） | 本次逐条复核，见 `docs/29` §1.2 | ✅ **2026-10-01 已统一**：现行基线 = 工具自检 14/14、回归 PASS 27 / FAIL 2、pytest 182 项收集；**引用基线一律以 `docs/29` §1 为准** |
+| 4 | 文档里的回归基线数字多处滞后（check_all、pytest、offline_check 等） | `docs/29` §1.2、`docs/16` 索引 | ✅ **2026-10-24 已再次统一**：现行基线 = 工具自检 **19/19**、回归 **PASS 34 / FAIL 0**、`pytest` **251 passed**（2026-10-23 实测）；**引用基线一律以本节 §6.1 与 `docs/29` §1 为准** |
 
 > **代码是否真的"实现"某功能，只以三样为准**：源码可读到的实现 + 测试是否覆盖 + 真实运行输出。
 > 文档里的"✅ 完成"是**人类维护者的声明**，可能滞后一天到几周 —— 关键判断请自己跑第 6 节的命令。
@@ -457,8 +464,8 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 | **M0** 冻结（主场景/项目名/指标/契约/目录/仓库） | ✅ 完成（契约 **🔒 v1.1 已会签**，2026-09-16） |
 | **M1** 基础框架 | 🔄 **进行中**（A/B 骨架就位；C 线跑到计划前面） |
 | **M2** 软件合体（A 的 JSON 接 B 的网页） | 🟡 **链路已具备**（`run_demo.py` 一键 + `check_a_line_p5_m2.py` **18 项**真起两进程，2026-10-23 复跑全绿）；⚠️ 板上形态仍未跑 |
-| **M3** 硬件上板（Overlay + DMA，**首次需要板卡**） | ⏳ 未开始 |
-| **M4** 完整闭环（软硬件同屏 + 黄金回归 + 可复现脚本） | ⏳ 未开始 |
+| **M3** 硬件上板（Overlay + DMA，**首次需要板卡**） | 🟡 **PL 数据通路已在硅上跑通**（2026-10-23）：两档 bitstream（640×480 / 720p60）综合实现通过、时序 MET（WNS 0.727 / 0.865 ns）、DMA→ROI→rgb2gray→motion_quality 全链 `ap_done`、灰度与黄金参考**逐字节相等**、300 帧长稳 300/300。<br>⚠️ 执行者是**裸机固件 + xsdb**（`board/s4_bench/`），**Overlay/PYNQ 路径仍未跑**（板上没有 Linux/PYNQ）。 |
+| **M4** 完整闭环（软硬件同屏 + 黄金回归 + 可复现脚本） | ⏳ **未开始**：缺的是**板上 Linux（W7 PetaLinux）+ 真实像素源**。PL 半边、A/B 两边都已就绪 |
 
 **具体的欠账（引用时不要含糊）**：
 
@@ -475,10 +482,11 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
   `config.yaml` 里已用 `⚠️ 占位值` 标注，**改它们要写依据**。
 - **`motion_thresh` 暂定 16**：待 A 线用 OpenCV 口径复核；改它必须**同步重新生成黄金参考**。
 - **C 线**：**七个 IP**（`roi_statistic` / `rgb2gray` / `motion_quality` / `fir_filter` / `raw10_unpack` / `bayer_demosaic` / `frame_scale`）**均已完成 csim+csynth+cosim**（逐字节容差 0）；并落地 45fps/1080p 与 60fps/720p 两条档位链路（两档灰度工作尺寸都固定 480×270）；
-  `board/` 已有上板脚本与 `board/openmv/` 首次测试包，但 **`board/bitstream/` 为空、`build_bd.tcl` 从未跑通** ——
-  **上板相关的一切结论都不存在**。
-  🧪 **已接入过硬件的只有 OpenMV 一处**：2026-09-24 真机跑了一次采集能力矩阵，**只回来 2 行**
-  （详见 §7.7 与 `fpga/report/t6_openmv_capture_matrix_v1.md`）；**Mizar-Z7020 从未上电**。
+  ✅ **2026-10-23 上板结论已存在**：`build_bd.tcl` 已跑通（摘掉取证 tap 后 `validate_bd_design` ERROR=0/CRITICAL_WARNING=0），
+  两档 bitstream 都已综合实现（`board/bitstream/system_wrapper*.bit`，不入库），
+  S4 门限 3~9 闭合见 `fpga/report/s4_board_closeout_20261023.md`，720p60 档 480×270 逐字节相等见 `docs/37` §W6 与 `t10`。
+  🧪 **仍成立的部分**：板上**没有 Linux/PYNQ**，所以 `PYNQ Overlay`、`hw_sw_compare.py` 这类脚本**在板上跑不了**；
+  执行者是裸机固件（`.bin` 经 xsdb 灌进 DDR）。OpenMV 那次矩阵仍只回来 2 行（§7.7）。
   🆕 **IMX219（CM2）侧**：`board/imx219_driver.py` + `board/imx219_sccb_check.py`（**79/79**，已入回归）
   完成的是**"离线能验的那一半"** —— 真机读出模式表、三档几何、链路预算、SCCB 线上字节序、安全阀。
   ⚠️ **寄存器初始化序列仍未填**（本机网络读不到任何 IMX219 注册表来源，`docs/27` §1.1）；驱动因此**拒绝下装**，
