@@ -112,6 +112,18 @@ set comp_name "component_$ip_name"
 if {[info exists ::env(HLS_COMPONENT)] && $::env(HLS_COMPONENT) ne ""} {
     set comp_name $::env(HLS_COMPONENT)
     puts "INFO: HLS_COMPONENT override -> $comp_name"
+} elseif {[info exists ::env(VIGILENS_TIER)] && $::env(VIGILENS_TIER) ne ""} {
+    # ⚠️ 2026-10-24 加的安全阀（BUG-039 的第二起实例）：换档必须同时换组件目录。
+    #     `open_component -reset component_rgb2gray` 会**覆盖**同名组件，
+    #     而 board/build_bd.tcl 的 640x480 档正是从这个默认目录取 IP。
+    #     实测代价：10-23 用 VIGILENS_TIER=720p60 跑 rgb2gray（忘了给 HLS_COMPONENT），
+    #     默认组件被重建为 3/8、导出的 impl/ip 也被冲掉，第二天 BD 校验直接报
+    #     "找不到导出 IP 目录 .../component_rgb2gray/hls/impl/ip"，
+    #     要重跑一遍 3/5 的 csim+csynth+export 才能恢复（≈2 min，但很容易当成"环境坏了"）。
+    puts "ERROR: 设了 VIGILENS_TIER=$::env(VIGILENS_TIER) 却没设 HLS_COMPONENT。"
+    puts "       档位实验必须用独立组件目录，否则会覆盖 640x480 档正在用的 $comp_name。"
+    puts "       例：set \"HLS_COMPONENT=${comp_name}_720p60\" 再重跑本脚本。"
+    exit 1
 }
 open_component -reset $comp_name -flow_target vivado
 

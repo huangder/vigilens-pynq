@@ -47,7 +47,10 @@ python board\s4_bench\s4_720.py recm
    出现后 `rst -dap` / `rst -processor` 都清不掉，只能物理断电重上电（`docs/36` §5）。
 3. **HLS 重跑会毁掉导出 IP**：`component_<ip>/` 是同一个目录，重跑 csim/csynth 会把
    `hls/impl/ip/` 里的 `component.xml` 冲掉，`build_bd.tcl` 随即报"找不到导出 IP"。
-   改完 HLS 一定要补一次 `vitis-run --mode hls --tcl export_ip.tcl`。
+   改完 HLS 一定要补一次 `vitis-run --mode hls --tcl export_ip.tcl`（**用 `vitis-run`，
+   不是 `vivado -mode batch`** —— 它调的是 Vitis HLS 的 `open_component`）。
+   另：**换档必须同时设 `HLS_COMPONENT`**，否则 `open_component -reset component_rgb2gray`
+   会把 640 档正在用的默认组件重建成 3/8（`fpga/run_hls.tcl` 已加安全阀，设了 TIER 没设 COMPONENT 直接退出）。
 4. **`stream`（phase 9）必须配 26 位长度的 bitstream**：`c_sg_length_width=23` 时单次传输上限
    8,388,607 B，装不下"300 帧连续写"，固件在**第 33 帧重新 arm 时** DMA 报 `DMAIntErr` 自停
    （`stream_ok_frames=32`、`S2MM_SR=0x5011`，见 docs/16 BUG-040）。判据看**最后几帧**，不是前几帧。
