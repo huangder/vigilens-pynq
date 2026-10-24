@@ -269,7 +269,11 @@ def main() -> int:
         stale_bits = {
             "PREVIEW_STALE_MS": "PREVIEW_STALE_MS" in jstext,
             "updatePreviewFreshness": "updatePreviewFreshness" in jstext,
-            "已清除过期框": "已清除过期框" in jstext,
+            # 2026-10-24 并 origin/main 后 B 线换了文案：清框动作还在（previewMeta=null、
+            # 占位层重新出现、badge 转 danger），只是提示语从"已清除过期框"改成"画面已过期"。
+            # 探针锚"意图"（过期必须清掉），不锚具体措辞。
+            "画面已过期": "画面已过期" in jstext,
+            "previewMeta = null": "state.previewMeta = null" in jstext,
             "/api/preview/latest": "/api/preview/latest" in jstext,
         }
         ck.add("T14 app.js 用 PREVIEW_STALE_MS 清掉过期画面（停推不显示冻结旧帧），"

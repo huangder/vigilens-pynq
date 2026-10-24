@@ -15,7 +15,7 @@
     </a>
     <nav class="section-nav" aria-label="页面导航">
       <a href="#current"><span class="fluent-icon icon-camera" aria-hidden="true"></span>当前监测</a>
-      <a href="#trends"><span class="fluent-icon icon-trend" aria-hidden="true"></span>趋势</a>
+      <a href="#measurements"><span class="fluent-icon icon-trend" aria-hidden="true"></span>测量值与趋势</a>
     </nav>
     <div class="header-actions">
       <span class="pill mock" id="srcPill" title="数据来源：离线 Mock、服务 Mock 或 A 线 ingest"><span class="dot"></span><b id="srcName">等待数据</b></span>
@@ -34,20 +34,20 @@
     <span class="page-context">疲劳趋势辅助提示 · 非医疗诊断</span>
   </div>
 
-  <div class="hero-grid">
+  <div class="workspace-grid">
+  <aside class="context-column" aria-label="视频与测量状态">
     <section class="surface video-panel" aria-labelledby="videoTitle">
-      <div class="surface-heading"><h2 id="videoTitle"><span class="heading-icon camera"><span class="fluent-icon icon-camera" aria-hidden="true"></span></span>同源画面</h2><span>人脸定位</span></div>
+      <div class="surface-heading"><h2 id="videoTitle"><span class="heading-icon camera"><span class="fluent-icon icon-camera" aria-hidden="true"></span></span>同源画面</h2><span>视频预览</span></div>
       <div class="video-wrap">
         <div class="preview-placeholder" id="videoPlaceholder"><span id="videoPlaceholderText">等待同源预览</span></div>
         <img id="previewImage" alt="A 线同源视频预览">
-        <canvas id="video" width="640" height="480" aria-label="同帧人脸定位框"></canvas>
         <div class="badge-stack">
           <span class="badge warn" id="videoBadge">等待同源预览</span>
           <span class="badge" id="previewFreshness">—</span>
-          <span class="badge" id="previewSync">未配对</span>
+          <span class="badge" id="previewSync">未收到画面</span>
         </div>
       </div>
-      <p class="video-note">画面与定位框来自同一帧；静止预览不会继续追踪。</p>
+      <p class="video-note">显示当前视频源画面。</p>
     </section>
 
     <section class="surface status-panel" aria-labelledby="statusTitle">
@@ -63,149 +63,34 @@
         <ul id="triggers"></ul>
       </div>
     </section>
-  </div>
-
   <section class="section gate-section" aria-labelledby="gateTitle">
     <div class="section-heading">
-      <div><p class="eyebrow">测量可信度</p><h2 id="gateTitle"><span class="heading-icon shield"><span class="fluent-icon icon-shield" aria-hidden="true"></span></span>能否测量</h2></div>
-      <p>质量门控未通过时，生命体征不输出数值。</p>
+      <div><h2 id="gateTitle"><span class="heading-icon shield"><span class="fluent-icon icon-shield" aria-hidden="true"></span></span>测量可信度</h2></div>
     </div>
     <div class="gate-layout">
       <div class="gate-verdict"><span class="small-label">当前结论</span><strong id="gateVerdictText">等待数据…</strong><span id="gateVerdictSub">—</span></div>
       <div class="gate-bars" id="gateBars"></div>
     </div>
+    <p class="quality-note">质量门控未通过时，心率与呼吸率不输出数值。</p>
   </section>
+  </aside>
 
-  <section class="section metric-section" aria-labelledby="metricTitle">
+  <section class="metric-section" id="measurements" aria-labelledby="metricTitle">
     <div class="section-heading">
-      <div><p class="eyebrow">本次监测</p><h2 id="metricTitle"><span class="heading-icon pulse"><span class="fluent-icon icon-pulse" aria-hidden="true"></span></span>实时指标</h2></div>
-      <div class="blink-strip" id="blinkStrip"><span id="blinkLabel">眨眼状态机：—</span></div>
+      <div><p class="eyebrow">本次监测</p><h2 id="metricTitle"><span class="heading-icon pulse"><span class="fluent-icon icon-pulse" aria-hidden="true"></span></span>实时测量值</h2></div>
+      <span class="measurement-live" id="measurementLive"><span class="dot"></span><span id="measurementLiveText">等待数据</span></span>
+    </div>
+    <div class="metric-toolbar">
+      <p><span class="history-key"></span>历史趋势 <span class="current-key"></span>最新值 · 最近 120 秒</p>
+      <span id="measurementTime">等待首帧</span>
     </div>
     <div class="cards" id="cards"></div>
-  </section>
-
-
-  <!-- 年龄档案 · 同龄基线比对 —— 旁路载荷：**不属于**冻结的 9 字段契约帧 -->
-  <section class="section age-panel" id="agePanel">
-    <h2>年龄档案 · 同龄基线比对</h2>
-
-    <div class="age-head">
-      <span class="age-state" id="ageStateText">未确定</span>
-      <span class="badge" id="ageSourceBadge">来源：未定</span>
-      <span class="badge warn" id="ageLockBadge" hidden>已确认年龄，年龄推测已停用</span>
-      <span class="spacer"></span>
-      <span class="badge warn" id="ageDemoBadge" hidden>离线演示</span>
-      <span class="pill" id="ageSourcePill"><span class="dot"></span>数据源：<b id="ageSourceText">探测中…</b></span>
-    </div>
-    <div class="age-sub" id="ageSubjectText">匿名主体 ——（尚未收录）</div>
-    <div class="age-src" id="agePrivacyNote">隐私：—</div>
-
-    <div id="ageGrid">
-      <!-- 图像年龄推断（仅建议） -->
-      <div class="card age-card" id="ageEstimateCard">
-        <div class="k">图像年龄推断 · 仅作<b>建议</b>，不是结论</div>
-        <div class="age-value" id="ageEstimateValue">—</div>
-        <div class="age-sub" id="ageEstimateMeta">—</div>
-        <div style="margin-top:6px">
-          <span class="badge warn" id="ageEstimateWarnBadge" hidden>占位引擎 · 无精度证据，不得作为结论</span>
-        </div>
-        <div class="age-src" id="ageEstimateNote"></div>
-      </div>
-
-      <!-- 收录人脸判断 -->
-      <div class="card age-card" id="ageEnrollCard">
-        <div class="k">收录人脸判断 · 观察窗口</div>
-        <div class="age-line2"><span class="badge" id="ageEnrollBadge">未开始</span></div>
-        <div class="age-sub" id="ageEnrollText">—</div>
-        <div class="gate-row age-enroll-row">
-          <div class="bar"><div class="fill" id="ageEnrollFill"></div></div>
-        </div>
-        <div class="age-src" id="ageEnrollReason">—</div>
-        <div class="age-actions">
-          <button class="primary" id="ageBtnEnrollAccept">收录这张脸</button>
-          <button id="ageBtnEnrollReject">不收录</button>
-        </div>
-      </div>
-
-      <!-- 同龄基线 · 耦合风险比对 -->
-      <div class="card age-card" id="ageCompareCard">
-        <div class="k">同龄基线 · 耦合风险比对</div>
-        <div class="age-sub" id="ageCompareVerdict">—</div>
-        <div id="ageCompareNumbers" hidden>
-          <div class="age-line2">
-            <span class="badge" id="ageCompareLevel">等级：—</span>
-            <span class="age-sub" id="ageCompareValue">—</span>
-          </div>
-          <div class="gate-row">
-            <div class="bar"><div class="fill" id="ageCompareFill"></div></div>
-          </div>
-          <div class="age-sub" id="ageCompareBand">—</div>
-          <div id="ageCompareContrib"></div>
-          <div class="age-sub" id="ageCompareInteractions">—</div>
-          <div class="age-sub" id="ageCompareReason">—</div>
-          <div class="age-src" id="ageCompareSources">—</div>
-          <div class="age-src">z 为标准化偏离量，方向已归一到「越疲劳越大」（例如眨眼率低于基线记为正的抑制量）；
-            逐项条长只表示 |log_odds| 的相对大小，不改变数值口径。</div>
-        </div>
-        <div id="ageCompareIncomparable" hidden>
-          <div class="age-sub" id="ageCompareIncomparableText">不可比：—</div>
-          <div class="age-src"><b>这里一个数字都不显示</b> —— 条件不满足时给数字等于编造结论，
-            这正是本产品的承诺（先判断能不能测，再决定测出什么）。</div>
-        </div>
-      </div>
-
-      <!-- 数据库 -->
-      <div class="card age-card" id="ageDbCard">
-        <div class="k">测量库 / 参照基线</div>
-        <div class="age-sub" id="ageDbText">—</div>
-        <div class="age-src" id="ageDbBands">—</div>
-      </div>
-    </div>
-
-    <!-- 用户确认年龄 + 四个动作 -->
-    <div class="age-head" style="margin-top:12px">
-      <label class="pill">手动确认年龄
-        <input type="number" id="ageManualInput" min="6" max="100" step="1" placeholder="6~100"
-               aria-label="手动确认年龄，取值 6~100">
-      </label>
-      <button class="primary" id="ageBtnManual">确认年龄</button>
-      <button id="ageBtnAcceptEstimate">接受推断</button>
-      <button id="ageBtnRejectEstimate">忽略推断</button>
-      <button id="ageBtnReset">重置档案</button>
-      <span class="age-error" id="ageManualError"></span>
-      <span class="age-msg" id="ageActionMsg"></span>
-    </div>
-
-    <div class="age-events-head">
-      <b>年龄档案事件</b>
-      <span id="ageEventCount">—</span>
-      <span class="badge warn" id="ageEventDemoBadge" hidden>离线演示 · 非真实事件</span>
-    </div>
-    <ul id="ageEventList"></ul>
-
-    <div class="hint" style="margin-top:10px">
-      本面板是<b>旁路载荷</b>：年龄档案件走 <code>GET /api/age</code>，<b>不进</b>冻结的 9 字段契约帧
-      （唯一 schema 见 <code>backend/age_contract.py</code>）。三条产品承诺：
-      <b>不可比时不报数字</b>、<b>占位引擎的推断不得作为结论</b>、<b>一次正式确认后停用图像推测</b>。
-      离线演示的数值由 <code>frontend/mock.js</code> 的确定性演示器产生，<b>不是真实推断或测量结果</b>；
-      参照基线与耦合增益仍是 <code>config.yaml</code> 里标注的<b>占位值（未标定）</b>；
-      数据库统计在离线时明确写"不可用"，不编造 session 数。
+    <div class="measurement-footer">
+      <div class="blink-strip" id="blinkStrip"><span id="blinkLabel">眨眼状态机：—</span></div>
+      <p>每张卡片左侧为当前值，右侧为本次监测的历史与最新值。无有效测量时曲线留空。</p>
     </div>
   </section>
-
-  <section class="section trend-section" id="trends" aria-labelledby="trendTitle">
-    <div class="section-heading"><div><p class="eyebrow">近期变化</p><h2 id="trendTitle"><span class="heading-icon trend"><span class="fluent-icon icon-trend" aria-hidden="true"></span></span>趋势</h2></div><p>最近 120 秒</p></div>
-    <div class="chart-surface">
-      <canvas id="chart" width="1200" height="220" aria-label="眨眼率、闭眼比例、心率与信号质量趋势"></canvas>
-      <div class="legend">
-        <span><i style="background:#007aff"></i>眨眼率 /min</span>
-        <span><i style="background:#ff9500"></i>PERCLOS</span>
-        <span><i style="background:#34c759"></i>心率 bpm</span>
-        <span><i style="background:#af52de"></i>信号质量 0~1</span>
-      </div>
-      <p class="chart-note">质量门控不通过时，心率曲线留空。</p>
-    </div>
-  </section>
+  </div>
 
   <details class="developer-tools" id="developerTools">
     <summary><span>开发者工具</span><small>数据源、预览诊断、事件日志</small></summary>
@@ -225,7 +110,7 @@
           <span class="pill" id="validPill" title="每帧均经过 frontend/mock.js 校验">契约：<b id="validName">—</b></span>
         </div>
         <div id="previewDebug">preview: 尚未连接同源旁路</div>
-        <p class="hint">实时预览需 A 线持续发送同源 JPEG。检测器为 stub 时，定位框不代表真实人脸追踪。</p>
+        <p class="hint">实时预览需 A 线持续发送同源 JPEG。</p>
       </section>
       <section class="dev-section">
         <div class="dev-title"><h2>事件日志</h2><button id="btnClear" type="button">清空</button></div>
@@ -237,8 +122,8 @@
 
 <script src="mock.js"></script>
 <script src="preview.js"></script>
-<script src="age.js"></script>
 <script src="ui_state.js"></script>
+<script src="trends.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
