@@ -113,7 +113,38 @@
       mapBbox([260, 80, 180, 220], 640, 480, 640, 480)
     ];
     if (moving[0].x === moving[1].x) failures.push("连续帧 bbox 改变时屏幕坐标必须同步改变");
-    return { checked: 6, failures: failures, ok: failures.length === 0 };
+
+    /* ---- 1280×720（v1.5/v1.6 草案的 720p 档）：换算里不许留 640×480 的印子 ---- */
+    var hd = mapBbox([100, 100, 200, 200], 1280, 720, 1280, 720);   // 同尺寸 ⇒ 恒等
+    near(hd.x, 100, "hd.x"); near(hd.y, 100, "hd.y");
+    near(hd.width, 200, "hd.width"); near(hd.height, 200, "hd.height");
+
+    var hdLetter = mapBbox([0, 0, 1280, 720], 640, 480, 1280, 720);  // 4:3 视口 ⇒ 上下留黑 60
+    near(hdLetter.x, 0, "hdLetter.x"); near(hdLetter.y, 60, "hdLetter.y");
+    near(hdLetter.width, 640, "hdLetter.width"); near(hdLetter.height, 360, "hdLetter.height");
+
+    var hdPillar = containLayout(1000, 480, 1280, 720);              // 宽视口 ⇒ 左右留黑
+    near(hdPillar.scale, 480 / 720, "hdPillar.scale");
+    near(hdPillar.offsetX, (1000 - 1280 * (480 / 720)) / 2, "hdPillar.offsetX");
+    near(hdPillar.offsetY, 0, "hdPillar.offsetY");
+
+    /* 源尺寸必须来自服务端响应头，前端不能自己假设 640×480 */
+    var table = {};
+    table[HEADERS.frameId] = "42";
+    table[HEADERS.ts] = "1729000000.5";
+    table[HEADERS.bboxX] = "100"; table[HEADERS.bboxY] = "120";
+    table[HEADERS.bboxW] = "300"; table[HEADERS.bboxH] = "240";
+    table[HEADERS.sourceWidth] = "1280"; table[HEADERS.sourceHeight] = "720";
+    table[HEADERS.faceVisible] = "1"; table[HEADERS.status] = "normal";
+    table[HEADERS.detector] = "mediapipe";
+    var meta = parseMeta({ get: function (name) { return name in table ? table[name] : null; } });
+    if (meta.sourceWidth !== 1280 || meta.sourceHeight !== 720) {
+      failures.push("parseMeta 必须原样保留 1280×720，实际 " +
+                    meta.sourceWidth + "×" + meta.sourceHeight);
+    }
+    if (meta.frameId !== 42) failures.push("parseMeta.frameId: " + meta.frameId);
+
+    return { checked: 9, failures: failures, ok: failures.length === 0 };
   }
 
   return { HEADERS: HEADERS, containLayout: containLayout, mapBbox: mapBbox, parseMeta: parseMeta, selfTest: selfTest };

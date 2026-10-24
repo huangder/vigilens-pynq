@@ -265,6 +265,13 @@ def check_syntax(rep: Report, py: str) -> None:
         rep.add("语法", "frontend/app.js（node --check）", PASS if code == 0 else FAIL,
                 last_meaningful(out, 1) or "OK")
 
+        # preview.js 的坐标换算自检：**含 1280×720 一档**。它红了意味着
+        # "720p 画的定位框和画面错位"——页面不会报错，只会把框画歪，所以必须机器钉住。
+        code, out = run([node, "frontend/preview.js"], timeout=60)
+        rep.add("语法", "frontend/preview.js 坐标换算自检（含 720p）",
+                PASS if code == 0 else FAIL,
+                last_meaningful(out, 3) or ("OK" if code == 0 else "自检失败"))
+
 
 # ---------------------------------------------------------------------------
 # [5] 就绪状态（**不计入退出码**）

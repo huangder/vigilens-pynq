@@ -27,6 +27,11 @@
   var PREVIEW_POLL_MS = 80;
   var PREVIEW_STALE_MS = 1500;
 
+  /* 离线 mock 的合成帧就是契约 §0 的 640×480（mock.js 按这个尺寸造框与 bbox）。
+     ⚠️ 它只在**没有同源预览元数据**时用来画框，不是"真实帧尺寸"的假设：
+     真实尺寸一律取 `/api/preview/latest` 响应头里的 x-vigilens-source-width/height（720p、1080p 都走这条）。 */
+  var MOCK_SOURCE = { width: 640, height: 480 };
+
   /* 六态配色：与 panel 顶部状态灯、日志 tag 共用一套 */
   var STATUS_COLOR = {
     normal: "#248a3d",
@@ -137,10 +142,29 @@
     return d.toTimeString().slice(0, 8);
   }
 
+  /* 当前画面的源尺寸：优先用服务端写在响应头里的**真实**尺寸（720p / 1080p 都走这条），
+     只有还没有预览元数据时才回落到离线 mock 的 640×480。 */
+  function currentSourceSize() {
+    var meta = state.previewMeta;
+    if (meta && meta.sourceWidth > 0 && meta.sourceHeight > 0) {
+      return { width: meta.sourceWidth, height: meta.sourceHeight };
+    }
+    return MOCK_SOURCE;
+  }
+
   function fitCanvas(cv) {
     var dpr = window.devicePixelRatio || 1;
     var w = cv.clientWidth || cv.width;
-    var h = cv.clientHeight || (cv.id === "video" ? Math.round(w * 480 / 640) : 210);
+    var h = cv.clientHeight;
+    if (!h) {
+      // 画布被隐藏（clientHeight=0）时按**源**宽高比兜底，而不是写死 4:3 —— 720p 源是 16:9
+      if (cv.id === "video") {
+        var src = currentSourceSize();
+        h = Math.round(w * src.height / src.width);
+      } else {
+        h = 210;
+      }
+    }
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
@@ -191,7 +215,8 @@
       if (state.mode === "offline" && state.lastFrame && state.lastFrame.face.bbox[2] > 0) {
         meta = {
           frameId: state.lastFrame.frame_id, bbox: state.lastFrame.face.bbox,
-          sourceWidth: 640, sourceHeight: 480, faceVisible: state.lastFrame.face.visible,
+          sourceWidth: MOCK_SOURCE.width, sourceHeight: MOCK_SOURCE.height,
+          faceVisible: state.lastFrame.face.visible,
           status: state.lastFrame.status, mock: true
         };
       } else {
