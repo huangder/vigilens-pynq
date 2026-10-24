@@ -39,7 +39,7 @@ python board\s4_bench\s4_720.py recm
 | `s4_run.py` | 驱动：`xsdb` 编程 PL → `ps7_init` → 灌帧/黄金 → 跑相位 → 取回结果块 |
 | `s4_720.py` | 只换常量（bitstream/固件/向量/几何）的 720p60 档驱动 |
 
-## 三个坑（都真踩过，别再踩）
+## 四个坑（都真踩过，别再踩）
 
 1. **`--build-id=none` 必须有**：不加的话镜像最前面多 36 字节 `.note.gnu.build-id`，
    CPU 把它当指令执行 ⇒ 数据中止到 `0x10`，结果块 `magic` 全 0（2026-10-23）。
@@ -48,6 +48,20 @@ python board\s4_bench\s4_720.py recm
 3. **HLS 重跑会毁掉导出 IP**：`component_<ip>/` 是同一个目录，重跑 csim/csynth 会把
    `hls/impl/ip/` 里的 `component.xml` 冲掉，`build_bd.tcl` 随即报"找不到导出 IP"。
    改完 HLS 一定要补一次 `vitis-run --mode hls --tcl export_ip.tcl`。
+4. **`stream`（phase 9）必须配 26 位长度的 bitstream**：`c_sg_length_width=23` 时单次传输上限
+   8,388,607 B，装不下"300 帧连续写"，固件在**第 33 帧重新 arm 时** DMA 报 `DMAIntErr` 自停
+   （`stream_ok_frames=32`、`S2MM_SR=0x5011`，见 docs/16 BUG-040）。判据看**最后几帧**，不是前几帧。
+
+## 一个额外的诊断阶段：`stream`（phase 9）
+
+```bat
+python board\s4_bench\s4_720.py stream
+```
+
+它测的不是"对不对"（对不对比 `CMP` 已经钉住了），而是**每帧要多久**：
+通道只在开头复位一次、S2MM 整段 arm 一次，300 帧跑完看 `stream_gt_ticks / 300`。
+2026-10-24 用它判定 720p 到不了 60 fps（每帧 9,217,369 ticks，与逐帧停通道只差 0.0064%），
+见 [`fpga/report/t11_streaming_720p_20261024.md`](../../fpga/report/t11_streaming_720p_20261024.md)。
 
 ## 产物
 

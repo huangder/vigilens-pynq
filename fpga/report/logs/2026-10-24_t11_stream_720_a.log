@@ -1,0 +1,108 @@
+prog words 2041 frame words 691200 gold words 32400
+tcl stream 7987652 bytes
+xsdb exit 0
+  | RSTDAP_ERR i=0 Invalid target. Use "targets" command to select a target
+  | PRE_SIL=813695232 PRE_PLL=63
+  | FPGA_BEGIN
+  | FPGA_ERR=
+  | STATE=Stopped: (Suspended)
+  | SRC_ERR=
+  | PS7_BEGIN
+  | POLLOK 0XF800010C 0x00000001 i=0
+  | POLLOK 0XF800010C 0x00000002 i=0
+  | POLLOK 0XF800010C 0x00000004 i=0
+  | POLLOK 0XF8000B74 0x00002000 i=0
+  | POLLOK 0XF8006054 0x00000007 i=0
+  | PS7_ERR=
+  | PS7_DONE
+  | SIL=F8007080:   30800100
+  | DDRREAD= 8000000:   0866F000
+  | PS7_STAGE_END
+  | LOADED
+  | PC=pc: 00100000
+  | STOPPED pc=pc: 00101674
+  | RESHDR= A000000:   600D600D
+  | DUMPED
+magic=0x600D600D loglen=1785 status=0
+---- log ----
+S4 bench start
+phase=0x00000009
+pre_mm2s_cr=0x00010002
+pre_mm2s_sr=0x00000001
+pre_s2mm_cr=0x00010002
+pre_s2mm_sr=0x00000001
+mm2s_reset_loops=0
+s2mm_reset_loops=0
+cfg_w=1280
+cfg_h=720
+cfg_gw=480
+cfg_gh=270
+roi_x1_rb=0x00000500
+mot_w_rb=0x000001E0
+roi_ctrl_started=0x00000001
+rgb_ctrl_started=0x00000001
+mot_ctrl_started=0x00000001
+mm2s_pre_main_reset_loops=0
+s2mm_pre_main_reset_loops=0
+order=0x00000000
+s2mm_da_rb=0x09000000
+s2mm_len_rb=0x0001FBC0
+s2mm_armed_cr=0x00010003
+s2mm_armed_sr=0x00000000
+mm2s_len_rb=0x002A3000
+mm2s_armed_cr=0x00010003
+mm2s_armed_sr=0x00000000
+mm2s_idle_loops=77869
+mm2s_sr_after=0x00001002
+roi_wait_loops=0
+roi_ctrl=0x00000004
+rgb_wait_loops=0
+rgb_ctrl=0x00000004
+mot_wait_loops=0
+mot_ctrl=0x00000004
+s2mm_stopped_cr=0x00010002
+s2mm_stopped_sr=0x00000000
+ROI 117585600 117435290 117487576 921600 1
+RGB 480 270 129600 16534331 1
+MOT 16534331 129279 65373 129600 1
+done
+post_roi_ctrl=0x00000004
+post_rgb_ctrl=0x00000004
+post_mot_ctrl=0x00000004
+post_roi_fid=1
+post_roi_cnt=921600
+post_rgb_fid=1
+post_rgb_pc=129600
+post_mot_fid=1
+post_mot_cnt=129600
+post_mm2s_sr=0x00001002
+post_s2mm_sr=0x00000000
+CMP mismatch=0 first_idx=4294967295
+stream_frames=300
+stream_fid0=1
+stream_base=0x10000000
+stream_chunk_frames=32
+stream_fail_frame=33
+stream_fail_kind=2
+stream_fail_mm2s_sr=0x00001001
+stream_fail_s2mm_sr=0x00005011
+stream_fail_roi_ctrl=0x00000001
+stream_fail_rgb_ctrl=0x00000001
+stream_fail_mot_ctrl=0x00000001
+stream_ok_frames=32
+stream_fails=1
+stream_first_fail=33
+stream_arms=2
+stream_gt_ticks=511660130
+stream_s2mm_sr=0x00005011
+stream_roi_fid=33
+stream_rgb_fid=33
+stream_mot_fid=33
+stream_roi_cnt=921600
+stream_rgb_pc=129600
+stream_mot_cnt=129600
+stream_cmp_first mismatch=0 first_idx=4294967295
+stream_cmp_last mismatch=0 first_idx=4294967295
+done_stream
+
+---- end log ----

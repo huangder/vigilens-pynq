@@ -210,10 +210,20 @@ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1         $DMA_IP
 #     而 DMA 简单模式每拍 TKEEP 全 1（4 个有效字节），4 不可能是 3 的整数倍 ⇒ 转换器无法成帧，
 #     M_AXIS 永远不给 TREADY，MM2S 连 4 字节都完成不了（SR 停在 0、无错误位，实测）。
 #     → MM2S 流宽改 8bit（DDR 里仍是紧密 RGB888，3 B/像素），由 8→24 的整数比转换器打包。
+# 2026-10-24 第四处实测（streaming 测完才定位到瓶颈，**结论是"改不动"**）：
+#   26 位长度让 300 帧一次 arm 成功（300/300、逐字节相等），但**每帧耗时几乎没变**
+#   （9,217,369 vs 9,217,962 ticks/帧，快 0.006%）⇒ 瓶颈不是 DMA 握手，而是**流宽**：
+#   MM2S 8 bit ⇒ 一个 RGB 像素 3 拍 ⇒ 1 拍/时钟 × 100 MHz = 100 MB/s = 3 时钟/像素，
+#   2,764,800 B/帧 ÷ 100 MB/s = 27.65 ms，与实测 27.68 ms 吻合（也反证全局定时器 ≈ 333 MHz）。
+#   ⚠️ 试过把 c_m_axis_mm2s_tdata_width 改 24 —— **IP 直接拒绝**：
+#   "Value '24' is out of the range ... Valid values are - 8, 16, 32, 64, 128, 256, 512, 1024"
+#   （.tmp/bd_720_w24.log）。而 32 又过不了 conv_rgb（4→3 非整数比，见上面 2026-10-19 那条）。
+#   ⇒ 想再快只能：① 自写 32→24 的 gearbox RTL；② 两路 8 bit 流并联；③ 时钟抬到 ≥166 MHz。
+#   三条都不是"改个参数"，已作为遗留写进 fpga/report/t11_streaming_720p_20261024.md §4。
 set_property -dict [list \
     CONFIG.c_include_sg {0} \
     CONFIG.c_sg_include_stscntrl_strm {0} \
-    CONFIG.c_sg_length_width {23} \
+    CONFIG.c_sg_length_width {26} \
     CONFIG.c_m_axis_mm2s_tdata_width {8} \
 ] [get_bd_cells $DMA_IP]
 create_bd_cell -type ip -vlnv xilinx.com:ip:axi_fifo_mm_s:4.3   $FIFO_TX
@@ -233,6 +243,7 @@ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0  rst_ps7_0
 #    改法：MM2S 流宽设为 8bit（见上面 axi_dma 的配置），这里用 **1→3** 的整数比打包：
 #    DDR 里 3 字节/像素的紧密 RGB888 原样进流，每 3 拍凑成 1 个 24bit 像素，完全不依赖 TKEEP。
 create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 conv_rgb
+# MM2S 只能取 8/16/32/... （24 被 IP 拒绝，见上面 2026-10-24 那条），所以这里保持 1→3 打包。
 set_property -dict [list CONFIG.S_TDATA_NUM_BYTES {1} CONFIG.M_TDATA_NUM_BYTES {3}] [get_bd_cells conv_rgb]
 # ---- 数据面取证核：已于 2026-10-23 从 BD 摘除（C1 收尾）----
 # 2026-10-19 排查 S4 门限 5 时，曾在 MM2S→conv_rgb 之间插 board/axis_tap.v、
