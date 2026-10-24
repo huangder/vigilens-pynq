@@ -163,8 +163,9 @@
 #       python -m venv .venv && .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # ① 项目总入口：一条命令跑完全部可离线检查（推荐先跑这个）
-python metrics/scripts/check_all.py            # 期望：工具自检 19/19；回归结论 PASS 34 / FAIL 0
-#    （2026-10-23 本机实测：工具自检 **19/19**；回归 **PASS 34 / FAIL 0**，用时 59.6 s。
+python metrics/scripts/check_all.py            # 期望：工具自检 19/19；回归结论 PASS 35 / FAIL 0
+#    （2026-10-24 本机实测：工具自检 **19/19**；回归 **PASS 35 / FAIL 0**，用时 59.3 s。
+#      35 = 34 + 1 项 `node frontend/preview.js` 坐标换算自检（含 1280×720 一档，B3 加的）。
 #      沿革：2026-10-01 曾是 14/14 + PASS 27 / FAIL 2（① pytest 段在受限环境 300 s 超时；
 #      ② check_video_bypass 的 T13/T14 断言 B 线旧 MJPEG UI = 台账 BUG-032）。
 #      BUG-032 已于 2026-10-23 关闭：T13/T14 改成断言**新的同源预览**（`frontend/preview.js` +
@@ -450,7 +451,7 @@ AI 遇到相关话题时**如实说明**，不要据此编造结论，也不要�
 | 1 | `contract.py` 的 `CONTRACT_VERSION` 落后于 `docs/interface.md` | `backend/contract.py` vs `docs/interface.md` | ✅ **2026-09-16 已解决**：v1.1 会签完成时按第 4 节第 5 步升级，两侧现同为 **v1.1** |
 | 2 | `fpga/README.md` 部分小节滞后（如末节"M0 欠账"仍列已完成的 `git init` / `README` / `config.yaml`） | `fpga/README.md` 末尾 | ⏳ **2026-09-16 未当场复核**（C 线文件）；正文结论可信，**引用末尾清单前先核对 `fpga/report/` 实际文件** |
 | 3 | `docs/07` / `fpga/README.md` 中的版本号曾滞后于 `docs/interface.md` | `docs/07` §7、`fpga/README.md` | ✅ **2026-09-16 已同步**（两处均改为 v1.1 会签完成）；**始终以 `docs/interface.md` 头部为准** |
-| 4 | 文档里的回归基线数字多处滞后（check_all、pytest、offline_check 等） | `docs/29` §1.2、`docs/16` 索引 | ✅ **2026-10-24 已再次统一**：现行基线 = 工具自检 **19/19**、回归 **PASS 34 / FAIL 0**、`pytest` **251 passed**（2026-10-23 实测）；**引用基线一律以本节 §6.1 与 `docs/29` §1 为准** |
+| 4 | 文档里的回归基线数字多处滞后（check_all、pytest、offline_check 等） | `docs/29` §1.2、`docs/16` 索引 | ✅ **2026-10-24 已再次统一**：现行基线 = 工具自检 **19/19**、回归 **PASS 35 / FAIL 0**、`pytest` **251 passed**（2026-10-24 实测）；**引用基线一律以本节 §6.1 与 `docs/29` §1 为准** |
 
 > **代码是否真的"实现"某功能，只以三样为准**：源码可读到的实现 + 测试是否覆盖 + 真实运行输出。
 > 文档里的"✅ 完成"是**人类维护者的声明**，可能滞后一天到几周 —— 关键判断请自己跑第 6 节的命令。
