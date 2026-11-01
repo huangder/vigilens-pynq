@@ -50,6 +50,8 @@ FALLBACK: dict[str, Any] = {
     "fatigue_yawn_count": 2,
     "fatigue_long_close_count": 1,
     "fatigue_blink_rate_low": 10.0,
+    "alert_duration_seconds": 10,
+    "hr_alert_high_bpm": 100.0,
     "hr_band_hz": [0.7, 3.5],
     "rr_band_hz": [0.1, 0.5],
     "vital_require_quality": 0.75,

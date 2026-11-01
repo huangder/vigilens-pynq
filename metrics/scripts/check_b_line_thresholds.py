@@ -6,7 +6,7 @@
 默默退回旧副本，于是**该报警却不报警**，而且没有任何报错。
 
 检查项（4 条）：
-    1. `config.yaml` 的 8 个阈值键，`/api/status.thresholds` 一个不少（键名逐字一致）
+    1. `config.yaml` 的门控 / 持续提示阈值键，`/api/status.thresholds` 一个不少（键名逐字一致）
     2. 下发的**数值**与 `config.yaml` 一致（不是下发了个默认值）
     3. `app.js` 里 `THRESHOLDS` 的键 ⊆ 下发键（前端要用的，后端必须都给）
     4. 内置副本的数值与 `config.yaml` 一致（离线兜底也要是对的）
@@ -42,7 +42,7 @@ sys.path.insert(0, str(REPO_ROOT / "backend"))
 KEYS = (
     "perclos_warning", "face_visible_min", "quality_min_score", "light_score_min",
     "motion_score_max", "vital_require_quality", "fatigue_long_close_count",
-    "ws_disconnect_timeout_s",
+    "alert_duration_seconds", "hr_alert_high_bpm", "ws_disconnect_timeout_s",
 )
 
 
@@ -102,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
         if missing:
             failures.append(f"第 1 项：/api/status.thresholds 缺键 {missing}")
         else:
-            print(f"  1) 8 个阈值键齐全：{', '.join(KEYS)}")
+            print(f"  1) {len(KEYS)} 个阈值键齐全：{', '.join(KEYS)}")
 
         wrong = [f"{k}: 下发 {served.get(k)!r} ≠ config {cfg.get(k)!r}"
                  for k in KEYS if k in served and served[k] != cfg.get(k)]

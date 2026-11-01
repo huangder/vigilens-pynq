@@ -29,6 +29,7 @@ function option(name, fallback) {
 }
 
 const scenario = option("--scenario", "normal");
+const alertScenario = ["alert-fatigue", "alert-heart", "alert-combined"].includes(scenario);
 const source = option("--source", "ingest");
 const wsUrl = option("--ws-url", "");
 const base = option("--base", "http://127.0.0.1:8897").replace(/\/$/, "");
@@ -115,6 +116,7 @@ async function main() {
     throw new Error("--source must be ingest, mock, standalone or offline");
   }
   if (source === "standalone" && !wsUrl) throw new Error("--source standalone requires --ws-url");
+  if (alertScenario && source !== "ingest") throw new Error("alert scenarios require the isolated ingest test service");
   if (source !== "offline") await waitForJson(`${base}/api/status`);
 
   const browserPath = browserCandidates.find((candidate) => fs.existsSync(candidate));
@@ -191,7 +193,62 @@ async function main() {
     }
     await delay(500);
     let finalFrame = null;
-    if (source === "ingest" && scenario === "history") {
+    const alertChecks = [];
+    if (source === "ingest" && alertScenario) {
+      const policy = (await waitForJson(base + "/api/status")).thresholds;
+      const seconds = Math.floor(policy.alert_duration_seconds) + 1;
+      const highHeart = scenario !== "alert-fatigue";
+      const fatigue = scenario !== "alert-heart";
+      const expectedKind = fatigue ? (highHeart ? "combined" : "fatigue") : "heart_rate";
+      let sequence = 1000;
+      async function pushAlertSample(recovered = false) {
+        const f = Mock.mockFrame(sequence, { status: !recovered && fatigue ? "fatigue_risk" : "normal", ts: sequence });
+        f.face.visible = 1;
+        f.quality = { overall: 1, light_score: 1, motion_score: 0 };
+        f.vital.hr_bpm = !recovered && highHeart ? policy.hr_alert_high_bpm + 5 : policy.hr_alert_high_bpm - 5;
+        f.reason = "QA 合成 Mock：持续提示回归，非真实测量";
+        await postFrame(f);
+        finalFrame = f;
+        sequence++;
+        await delay(70);
+      }
+      async function warningView() {
+        const result = await send("Runtime.evaluate", {
+          returnByValue: true,
+          expression: '(() => { const layer = document.getElementById("fatigueAlert"); const box = layer.querySelector(".alert-dialog").getBoundingClientRect(); return { hidden: layer.hidden, kind: layer.dataset.kind, title: document.getElementById("alertTitle").textContent, advice: document.getElementById("alertAdvice").textContent, focus: document.activeElement.id, backgroundInert: document.querySelector("main").inert && document.querySelector("header").inert, x: box.x, right: box.right, top: box.top, bottom: box.bottom }; })()'
+        });
+        return result.result.value;
+      }
+      for (let second = 0; second <= seconds; second++) {
+        await pushAlertSample();
+        if (second <= policy.alert_duration_seconds) {
+          alertChecks.push({ name: "no early warning at " + second + " seconds", ok: (await warningView()).hidden });
+        }
+      }
+      const shown = await warningView();
+      alertChecks.push({ name: "sustained warning kind", ok: !shown.hidden && shown.kind === expectedKind });
+      alertChecks.push({ name: "safe advice and focus", ok: shown.advice.includes("休息") && shown.focus === "alertDismiss" && shown.backgroundInert });
+      alertChecks.push({ name: "popup fits viewport near the top", ok: shown.x >= 0 && shown.right <= width && shown.top >= 0 && shown.top < height / 2 && shown.bottom <= height });
+      await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+      await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 });
+      alertChecks.push({ name: "keyboard focus remains inside warning", ok: (await warningView()).focus === "alertDismiss" });
+      await send("Runtime.evaluate", { expression: 'document.getElementById("alertDismiss").click()' });
+      for (let n = 0; n < 3; n++) await pushAlertSample();
+      alertChecks.push({ name: "acknowledgement suppresses repeated warning", ok: (await warningView()).hidden });
+      await pushAlertSample(true);
+      for (let n = 0; n <= seconds; n++) await pushAlertSample();
+      alertChecks.push({ name: "recovery rearms a fresh sustained episode", ok: !(await warningView()).hidden });
+      await pushAlertSample(true);
+      const recovered = await warningView();
+      alertChecks.push({ name: "recovery clears warning and restores page", ok: recovered.hidden && !recovered.backgroundInert });
+      for (let n = 0; n <= seconds; n++) await pushAlertSample();
+      await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+      await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+      alertChecks.push({ name: "Escape acknowledges the warning", ok: (await warningView()).hidden });
+      await pushAlertSample(true);
+      for (let n = 0; n <= seconds; n++) await pushAlertSample();
+      alertChecks.push({ name: "final popup visible for screenshot", ok: !(await warningView()).hidden });
+    } else if (source === "ingest" && scenario === "history") {
       // Accelerated synthetic fixtures exercise 120 seconds of the timestamp axis.
       // These are explicitly Mock data, not measurement/performance evidence.
       for (let i = 0; i < 120; i++) {
@@ -244,6 +301,7 @@ async function main() {
     });
     const data = inspection.result.value;
     const failures = [];
+    for (const check of alertChecks) if (!check.ok) failures.push(check.name);
     if (data.source !== expectedSource) failures.push(`source=${data.source}, expected=${expectedSource}`);
     if (data.connection !== (source === "offline" ? "离线模式" : "已连接")) failures.push(`connection=${data.connection}`);
     if (data.horizontalOverflow) failures.push("horizontal overflow");
@@ -265,7 +323,8 @@ async function main() {
         done: "测量完成",
         noface: "信号不可靠",
         history: "正常",
-        gated: "信号不可靠"
+        gated: "信号不可靠",
+        "alert-fatigue": "疲劳风险升高", "alert-heart": "正常", "alert-combined": "疲劳风险升高"
       };
       const expectedPlaceholder = scenario === "noface"
         ? "无测量"
@@ -294,17 +353,25 @@ async function main() {
     }
 
     if (screenshotPath) {
+      if (alertScenario) await send("Runtime.evaluate", { expression: 'document.getElementById("alertDetail").textContent = "QA 合成 Mock · 非真实测量 · " + document.getElementById("alertDetail").textContent' });
       await send("Runtime.evaluate", { expression: `document.querySelector(".page-context").textContent = "QA 合成 Mock · 仅验证界面，非测量结果"` });
       const layout = await send("Page.getLayoutMetrics");
       const size = layout.cssContentSize;
       const screenshot = await send("Page.captureScreenshot", {
         format: "png",
-        captureBeyondViewport: true,
-        clip: { x: 0, y: 0, width: Math.min(size.width, width), height: size.height, scale: 1 }
+        captureBeyondViewport: !alertScenario,
+        clip: { x: 0, y: 0, width: Math.min(size.width, width), height: alertScenario ? Math.min(size.height, height) : size.height, scale: 1 }
       });
       fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, "base64"));
     }
 
+    if (source === "ingest" && alertScenario) {
+      const stopped = await send("Runtime.evaluate", {
+        returnByValue: true,
+        expression: '(() => { document.getElementById("btnStop").click(); return { hidden: document.getElementById("fatigueAlert").hidden, inert: document.querySelector("main").inert }; })()'
+      });
+      if (!stopped.result.value.hidden || stopped.result.value.inert) failures.push("stop did not clear popup and page state");
+    }
     if (source === "ingest" && scenario === "history") {
       const stopped = await send("Runtime.evaluate", {
         returnByValue: true,
@@ -330,6 +397,7 @@ async function main() {
     console.log(JSON.stringify({
       scenario,
       sourceMode: source,
+      alertChecks,
       data,
       failures,
       ok: failures.length === 0,

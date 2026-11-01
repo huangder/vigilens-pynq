@@ -14,6 +14,8 @@
 | `preview.js` | 同源预览坐标换算 + 响应头解析；浏览器和 Node 共用 |
 | `ui_state.js` | 等待 / 断流 / 无人脸 / 可测量的统一显示语义 + 数据来源标签；浏览器和 Node 共用 |
 | `trends.js` | 卡片历史窗口、断流空档、按时间分段与独立量纲范围；浏览器和 Node 共用 |
+| `alerts.js` | 疲劳 / 心率持续提示：独立计时、质量门控、中断重置、确认去重；浏览器和 Node 共用 |
+| `tests/alerts.test.js` | 提示时长边界、缺测、重播、门控、恢复与组合提示的合成回归 |
 | `tests/trends.test.js` | 趋势窗口 / 最新样本 / 空档 / 重播 / 零值 / 量纲的 Node 回归测试 |
 | `icons/` | Microsoft Fluent UI System Icons 的本地 Regular SVG 与 MIT `LICENSE` |
 | `font/` | 可选的本地 MiSans 字体目录（不入库）；缺失时自动回退到系统中文字体 |
@@ -62,6 +64,22 @@ python backend/run_pipeline.py --source <本地视频> --post auto \
   不补零、不跨空档连线、不把历史值当当前值。停止接收后历史轴不继续制造采样点。
 - 窄屏时页面上下堆叠，但卡片内部仍保持数值在左、曲线在右；导航可直接跳到测量区。
 
+## 持续状态警示
+
+- 疲劳风险状态持续**超过 10 秒**，或有效心率读数持续高于提示线超过该时长时，在整个网页上层靠顶部弹窗。
+  疲劳和心率独立计时；两者都达到持续条件时合并提示，并提供暂停任务、休息和放松等辅助建议。
+- 参数唯一来源是根 `config.yaml`：`alert_duration_seconds` 为用户指定的 10 秒；
+  `hr_alert_high_bpm` 暂为 **100 bpm 的可调原型提示线，未标定且不是诊断标准**。
+  `/api/status.thresholds` 下发参数；离线页面使用同值兜底。调整服务配置后需重启服务并刷新页面。
+- 按契约 `ts` 的连续有效样本计时，恰好 10 秒不弹；下一条超过该时长的有效样本才触发。
+  无人脸、低质量、不合法帧、断流、超过连接超时的采样空档、停止、完成、切换数据源或上游回退均重置。
+  疲劳使用既有 `fatigue_risk`；心率另须通过生命体征质量门控，不改变后端算法或六态契约。
+- 点击「我知道了」、按 Escape 或点击遮罩可确认；同一段持续异常不反复打扰。
+  有效数据恢复后再次持续异常才重新提醒；恢复或停止时弹窗自动清除。
+- 没有新增身份识别。提示针对本次连续有效数据流，不能确认更换了一个人；
+  轮换被测者时请停止并重新连接。Mock 告警在弹窗内明确标注为演示。
+- 离线演示可在开发者工具强制 `fatigue_risk` 并持续等待超过提示时长；六态每秒轮转不会触发持续告警。
+
 ## 六种状态怎么演示（B6 验收）
 
 两种方式，任选：
@@ -102,6 +120,7 @@ node frontend/mock.js --selftest                                  # JS 侧：六
 node frontend/preview.js                                          # 同源 bbox 的 contain/留白/缩放自检
 node frontend/ui_state.js                                         # 无脸/断流/趋势留空/来源标签自检
 node --test frontend/tests/trends.test.js                          # 各指标历史曲线的数值与空档语义
+node --test frontend/tests/alerts.test.js                          # 持续提示时长、门控、恢复与确认语义
 node frontend/mock.js --limit 6 > metrics/logs/_js_frames.jsonl
 python metrics/scripts/check_frontend_contract.py metrics/logs/_js_frames.jsonl      # Python 侧再验一遍
 python metrics/scripts/check_frontend_wiring.py                   # app.js 引用的 DOM id 是否都存在
@@ -118,6 +137,9 @@ node metrics/scripts/check_b_line_browser.mjs --scenario normal --width 390 --he
 node metrics/scripts/check_b_line_browser.mjs --scenario history   # 合成 Mock 120 秒历史、缺测恢复与最新点
 node metrics/scripts/check_b_line_browser.mjs --scenario gated     # 低质量帧即使携带数值也不展示生命体征
 node metrics/scripts/check_b_line_browser.mjs --source offline     # file:// 离线打开，不需要后端
+node metrics/scripts/check_b_line_browser.mjs --scenario alert-fatigue  # 合成持续疲劳提示
+node metrics/scripts/check_b_line_browser.mjs --scenario alert-heart    # 合成心率提示
+node metrics/scripts/check_b_line_browser.mjs --scenario alert-combined --width 390 --height 900 # 合成组合提示与窄屏
 # 另起 backend/websocket.py 后，验证独立 WS 不冒充数据来源：
 node metrics/scripts/check_b_line_browser.mjs --source standalone --ws-url ws://127.0.0.1:8765
 ```

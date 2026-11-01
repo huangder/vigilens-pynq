@@ -25,6 +25,22 @@
   </div>
 </header>
 
+<div class="alert-layer" id="fatigueAlert" hidden>
+  <div class="alert-backdrop" data-alert-dismiss="true"></div>
+  <section class="alert-dialog" role="alertdialog" aria-modal="true" aria-labelledby="alertTitle" aria-describedby="alertMessage alertAdvice alertDetail">
+    <div class="alert-icon" aria-hidden="true">!</div>
+    <div class="alert-copy">
+      <p class="alert-eyebrow">持续状态提示</p>
+      <h2 id="alertTitle">请留意当前状态</h2>
+      <p id="alertMessage">当前状态已持续一段时间，建议先暂停测量并休息。</p>
+      <p class="alert-advice" id="alertAdvice">可以坐下休息、眺望远处、补充水分，并保持环境光线和姿势稳定后再重新测量。</p>
+      <p class="alert-disclaimer">这是疲劳趋势监测的辅助提示，不是医疗诊断。</p>
+      <p class="alert-detail" id="alertDetail"></p>
+    </div>
+    <button class="alert-dismiss" id="alertDismiss" type="button">我知道了</button>
+  </section>
+</div>
+
 <main id="current">
   <div class="page-heading">
     <div>
@@ -124,6 +140,7 @@
 <script src="preview.js"></script>
 <script src="ui_state.js"></script>
 <script src="trends.js"></script>
+<script src="alerts.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

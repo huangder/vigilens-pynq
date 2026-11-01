@@ -29,6 +29,23 @@
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; background: var(--bg); color: var(--ink); font: 14px/1.5 MiSans, "Microsoft YaHei", system-ui, sans-serif; }
 [hidden] { display: none !important; }
+body.alert-open { overflow: hidden; }
+.alert-layer { position: fixed; inset: 0; z-index: 50; display: grid; place-items: start center; padding: 92px 18px 24px; overflow-y: auto; }
+.alert-backdrop { position: fixed; inset: 0; background: rgba(28, 28, 30, .34); backdrop-filter: blur(2px); }
+.alert-dialog { position: relative; width: min(720px, 100%); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 15px; align-items: start; padding: 20px 22px; border: 1px solid #f0b8ae; border-top: 4px solid var(--orange); border-radius: 20px; background: #fffaf8; box-shadow: 0 18px 55px rgba(28, 28, 30, .22); }
+.alert-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--orange); color: #fff; font-size: 22px; font-weight: 800; }
+.alert-copy { min-width: 0; }
+.alert-dialog .alert-eyebrow { margin: 0 0 3px; color: var(--orange); font-size: 11px; font-weight: 700; }
+.alert-dialog h2 { margin: 0 0 7px; font-size: 20px; line-height: 1.35; }
+.alert-dialog p { margin: 0; overflow-wrap: anywhere; }
+.alert-dialog #alertMessage { font-size: 15px; line-height: 1.6; font-weight: 600; }
+.alert-dialog .alert-advice { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.alert-dialog .alert-disclaimer, .alert-dialog .alert-detail { margin-top: 9px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.alert-dismiss { align-self: center; white-space: nowrap; border-color: #e2b1a8; color: #9d3646; background: #fff; }
+.alert-layer[data-kind="heart_rate"] .alert-icon { background: var(--red); }
+.alert-layer[data-kind="heart_rate"] .alert-dialog { border-color: #efb5bc; border-top-color: var(--red); }
+.alert-layer[data-kind="heart_rate"] .alert-eyebrow { color: var(--red); }
+@media (max-width: 540px) { .alert-layer { padding: 20px 12px; }.alert-dialog { grid-template-columns: auto minmax(0, 1fr); padding: 18px 15px; gap: 12px; }.alert-dismiss { grid-column: 1 / -1; justify-self: stretch; }.alert-dialog h2 { font-size: 18px; } }
 button, input, select { font: inherit; }
 button { cursor: pointer; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); padding: 8px 13px; transition: transform 140ms var(--ease-out), color 160ms ease, background-color 160ms ease; }
 button:active { transform: scale(.97); }

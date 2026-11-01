@@ -17,6 +17,7 @@
   var P = window.VigiLensPreview;
   var U = window.VigiLensUIState;
   var T = window.VigiLensTrends;
+  var A = window.VigiLensAlerts;
   // 客户端看门狗：**故意比服务端的 ws_disconnect_timeout_s（3.0 s）慢 1 秒**。
   // 断流的权威来源是服务端 —— api.py 的 /ws 在超时后会下发一帧契约合法的 `disconnected`
   // （见 backend/api.py 的 disconnect_frame 与 backend/A_LINE_DEV_STEPS.md §9 第 8 条）。
@@ -56,7 +57,10 @@
     light_score_min: 0.50,        // config.yaml: light_score_min
     motion_score_max: 0.35,       // config.yaml: motion_score_max
     vital_require_quality: 0.75,  // config.yaml: vital_require_quality（比上面更严：决定心率/呼吸出不出数）
-    fatigue_long_close_count: 1   // config.yaml: fatigue_long_close_count
+    fatigue_long_close_count: 1,  // config.yaml: fatigue_long_close_count
+    alert_duration_seconds: 10,   // config.yaml: alert_duration_seconds
+    hr_alert_high_bpm: 100.0,     // config.yaml: hr_alert_high_bpm（原型提示线）
+    ws_disconnect_timeout_s: 3.0 // config.yaml: ws_disconnect_timeout_s
   };
 
   /* 指标卡定义（顺序即界面顺序） */
@@ -127,11 +131,54 @@
     pollTimer: null,
     serverSource: "",      // 当前连接的 /api/status.source；独立 WS 时为空
     hostedServerSource: "",// 托管本页的 api.py 来源，供同源 /ws 连接时使用
-    usesApiStatus: false    // 当前 WS 是否就是托管页面的同源 /ws
+    usesApiStatus: false,   // 当前 WS 是否就是托管页面的同源 /ws
+    alertTracker: A.createTracker()
   };
 
   /* ---------------------------------------------------------------- 工具 */
   function $(id) { return document.getElementById(id); }
+
+  function hideAlert() {
+    if (!el.fatigueAlert) return;
+    var wasOpen = !el.fatigueAlert.hidden;
+    el.fatigueAlert.hidden = true;
+    el.fatigueAlert.removeAttribute("data-kind");
+    document.querySelector("header").inert = false;
+    document.querySelector("main").inert = false;
+    document.body.classList.remove("alert-open");
+    if (wasOpen && state.alertReturnFocus && state.alertReturnFocus.isConnected) state.alertReturnFocus.focus();
+    state.alertReturnFocus = null;
+  }
+
+  function resetAlert() {
+    state.alertTracker = A.createTracker();
+    hideAlert();
+  }
+
+  function showAlert(alert) {
+    if (!el.fatigueAlert) return;
+    var opening = el.fatigueAlert.hidden;
+    if (opening) state.alertReturnFocus = document.activeElement;
+    el.alertTitle.textContent = alert.title;
+    el.alertMessage.textContent = alert.message;
+    el.alertAdvice.textContent = alert.advice;
+    el.alertDetail.textContent = "连续超过 " + THRESHOLDS.alert_duration_seconds + " 秒 · " +
+      (state.mode === "offline" || state.serverSource === "mock" ? "Mock 演示 · 非真实测量" : "本次监测") +
+      (alert.kind !== "fatigue" ? " · 心率提示线 " + THRESHOLDS.hr_alert_high_bpm + " bpm（原型设置，非诊断标准）" : "");
+    el.fatigueAlert.dataset.kind = alert.kind;
+    el.fatigueAlert.hidden = false;
+    document.querySelector("header").inert = true;
+    document.querySelector("main").inert = true;
+    document.body.classList.add("alert-open");
+    if (opening) el.alertDismiss.focus();
+  }
+
+  function updateAlert(frame) {
+    var event = A.update(state.alertTracker, frame, THRESHOLDS);
+    var active = A.current(state.alertTracker);
+    if (event) log("持续提示", event.title, STATUS_COLOR.fatigue_risk);
+    if (active) showAlert(active); else hideAlert();
+  }
 
   function fmt(v, digits) {
     if (v === null || v === undefined || (typeof v === "number" && !isFinite(v))) return null;
@@ -516,11 +563,12 @@
 
     var errs = M.validateFrame(frame);
     if (errs.length) {
+      resetAlert();
       state.invalid++;
       el.validName.textContent = "✗ " + state.invalid;
       el.validPill.style.color = STATUS_COLOR.disconnected;
       el.validPill.style.borderColor = "#f0d9dc";
-      log("契约✗", "frame_id=" + frame.frame_id + " 不合契约：" + errs[0] + "（共 " + errs.length + " 项）", STATUS_COLOR.disconnected);
+      log("契约✗", "frame_id=" + (frame && frame.frame_id) + " 不合契约：" + errs[0] + "（共 " + errs.length + " 项）", STATUS_COLOR.disconnected);
       return;
     }
     state.valid++;
@@ -530,6 +578,7 @@
 
     state.lastFrame = frame;
     state.frameId = frame.frame_id;
+    updateAlert(frame);
 
     if (frame.status !== state.lastStatus) {
       var from = state.lastStatus === null ? "（首帧）" : (M.STATUS_ZH[state.lastStatus] || state.lastStatus);
@@ -574,7 +623,9 @@
   }
 
   function setServerSource(source) {
-    state.serverSource = source === "mock" || source === "ingest" ? source : "";
+    var next = source === "mock" || source === "ingest" ? source : "";
+    if (next !== state.serverSource) resetAlert();
+    state.serverSource = next;
     state.hostedServerSource = state.serverSource;
     renderSource();
   }
@@ -637,6 +688,7 @@
       WS_TIMEOUT_MS = Math.round((t + 1) * 1000);
     }
     if (changed.length) {
+      resetAlert();
       // 只有真的与内置副本不同才说话，避免每次打开页面都刷一行噪音
       log("系统", "阈值已按 config.yaml 更新：" + changed.join("、"), "#8944ab");
       renderGate(state.lastFrame);
@@ -784,6 +836,7 @@
     state.triggers = null;
     state.usesApiStatus = false;
     state.mode = "stopped";
+    resetAlert();
     renderSource();
     if (!silent) log("系统", "已停止数据源", "#5d6b85");
   }
@@ -834,7 +887,7 @@
       state.lastRxAt = Date.now();
       var frame;
       try { frame = JSON.parse(ev.data); }
-      catch (e) { log("错误", "收到非 JSON 消息，已丢弃：" + String(ev.data).slice(0, 60), STATUS_COLOR.disconnected); return; }
+      catch (e) { resetAlert(); log("错误", "收到非 JSON 消息，已丢弃：" + String(ev.data).slice(0, 60), STATUS_COLOR.disconnected); return; }
       // api.py 的 /api/status 包了一层 frame；/ws 直接推裸帧，这里两种都吃
       onFrame(frame.frame && frame.frame.status ? frame.frame : frame);
     };
@@ -915,6 +968,9 @@
       videoPlaceholder: $("videoPlaceholder"), videoPlaceholderText: $("videoPlaceholderText"),
       previewFreshness: $("previewFreshness"), previewSync: $("previewSync"),
       previewDebug: $("previewDebug"), measurementTime: $("measurementTime"),
+      fatigueAlert: $("fatigueAlert"), alertTitle: $("alertTitle"), alertMessage: $("alertMessage"),
+      alertAdvice: $("alertAdvice"), alertDismiss: $("alertDismiss"),
+      alertDetail: $("alertDetail"),
       measurementLive: $("measurementLive"), measurementLiveText: $("measurementLiveText"),
       stateLamp: $("stateLamp"), stateName: $("stateName"), stateEn: $("stateEn"),
       advice: $("advice"), reason: $("reason"), triggers: $("triggers"),
@@ -952,6 +1008,18 @@
     };
     $("btnSelftest").onclick = runSelftest;
     $("btnClear").onclick = function () { el.log.innerHTML = ""; };
+    $("alertDismiss").onclick = function () {
+      A.dismiss(state.alertTracker);
+      hideAlert();
+    };
+    el.fatigueAlert.querySelector("[data-alert-dismiss]").onclick = function () {
+      A.dismiss(state.alertTracker);
+      hideAlert();
+    };
+    el.fatigueAlert.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") { event.preventDefault(); el.alertDismiss.click(); }
+      if (event.key === "Tab") { event.preventDefault(); el.alertDismiss.focus(); }
+    });
     el.forceStatus.onchange = function () {
       state.forcedStatus = el.forceStatus.value;
       log("系统", state.forcedStatus ? "强制状态：" + M.STATUS_ZH[state.forcedStatus] : "恢复六态轮转", "#8944ab");

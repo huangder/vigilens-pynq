@@ -318,7 +318,7 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
         keys = (
             "perclos_warning", "face_visible_min", "quality_min_score", "light_score_min",
             "motion_score_max", "vital_require_quality", "fatigue_long_close_count",
-            "ws_disconnect_timeout_s",
+            "alert_duration_seconds", "hr_alert_high_bpm", "ws_disconnect_timeout_s",
         )
         return {k: cfg[k] for k in keys if k in cfg}
 

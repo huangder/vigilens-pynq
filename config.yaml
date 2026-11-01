@@ -64,6 +64,10 @@ fatigue_yawn_count: 2               # 窗口内打哈欠次数 ≥ 此值 → fa
 fatigue_long_close_count: 1         # 窗口内长闭眼次数 ≥ 此值 → fatigue_risk
 fatigue_blink_rate_low: 10.0        # 眨眼率低于此值（且 >0）→ fatigue_risk
 
+# ---- B 线：持续状态提示 -----------------------------------------------------
+alert_duration_seconds: 10          # 用户 2026-11-01 要求：连续超过 10 秒才弹窗；缺测重计
+hr_alert_high_bpm: 100.0            # ⚠️ 可调原型提示线，未标定；非诊断标准，不修改疲劳判定
+
 # ---- A 线 ↔ C 线：rPPG 带通（与 docs/interface.md 3.4 一致）-----------------
 hr_band_hz: [0.7, 3.5]              # 心率带通
 rr_band_hz: [0.1, 0.5]             # 呼吸带通
