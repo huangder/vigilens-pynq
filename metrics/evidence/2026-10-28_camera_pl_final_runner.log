@@ -1,0 +1,112 @@
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: root
+Password: 
+# VIGI_JPEG_FAST=1 /usr/bin/vigi_camera_pl /dev/video0 1280 720 30 30 16; printf
+ 'CAMERA_PL_EXIT=%s\n' "$?"
+SAMPLE_REQUEST target_fps=30 time_base=v4l2_buffer no_padding=1
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=30
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+f '\nVIGI_COMMAND_DONE\n'
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+PL_READY profile=720p-3of8 ram=0x12000000 bytes=16777216 fid0=0 motion_threshold=16
+JPEG_CONFIG method=IFAST fancy_upsampling=0 cpu_reference=every_frame
+CAPTURE_FRAME n=1 sequence=0 bytes=18772 ts=87.731604
+SAMPLE_FRAME n=1 source_sequence=0 ts_us=87731604
+CAMERA_PL_FRAME n=1 seq=0 ts_us=87731604 mismatch=0 roi_g=230400000 roi_count=921600 motion_valid=0 motion_ratio_q16=65536 decode_ms=32.828 reference_ms=16.457 transfer_pl_ms=21.241
+CAPTURE_FRAME n=2 sequence=1 bytes=18772 ts=87.767608
+SAMPLE_FRAME n=2 source_sequence=1 ts_us=87767608
+CAMERA_PL_FRAME n=2 seq=1 ts_us=87767608 mismatch=0 roi_g=230400000 roi_count=921600 motion_valid=1 motion_ratio_q16=0 decode_ms=27.725 reference_ms=18.159 transfer_pl_ms=19.820
+CAPTURE_FRAME n=3 sequence=2 bytes=18772 ts=87.783633
+CAPTURE_FRAME n=4 sequence=3 bytes=18772 ts=87.799640
+SAMPLE_FRAME n=3 source_sequence=3 ts_us=87799640
+CAMERA_PL_FRAME n=3 seq=3 ts_us=87799640 mismatch=0 roi_g=230400000 roi_count=921600 motion_valid=1 motion_ratio_q16=0 decode_ms=27.720 reference_ms=19.103 transfer_pl_ms=19.815
+CAPTURE_FRAME n=5 sequence=6 bytes=18772 ts=87.851658
+SAMPLE_FRAME n=4 source_sequence=6 ts_us=87851658
+CAMERA_PL_FRAME n=4 seq=6 ts_us=87851658 mismatch=0 roi_g=230400000 roi_count=921600 motion_valid=1 motion_ratio_q16=0 decode_ms=27.783 reference_ms=18.711 transfer_pl_ms=19.801
+CAPTURE_FRAME n=6 sequence=10 bytes=18976 ts=87.919615
+SAMPLE_FRAME n=5 source_sequence=10 ts_us=87919615
+CAMERA_PL_FRAME n=5 seq=10 ts_us=87919615 mismatch=0 roi_g=230398492 roi_count=921600 motion_valid=1 motion_ratio_q16=9 decode_ms=27.849 reference_ms=18.574 transfer_pl_ms=19.842
+CAPTURE_FRAME n=7 sequence=11 bytes=18960 ts=87.935627
+SAMPLE_FRAME n=6 source_sequence=11 ts_us=87935627
+CAMERA_PL_FRAME n=6 seq=11 ts_us=87935627 mismatch=0 roi_g=230398821 roi_count=921600 motion_valid=1 motion_ratio_q16=0 decode_ms=27.913 reference_ms=18.668 transfer_pl_ms=19.835
+CAPTURE_FRAME n=8 sequence=14 bytes=21352 ts=87.983635
+SAMPLE_FRAME n=7 source_sequence=14 ts_us=87983635
+CAMERA_PL_FRAME n=7 seq=14 ts_us=87983635 mismatch=0 roi_g=230161626 roi_count=921600 motion_valid=1 motion_ratio_q16=318 decode_ms=28.620 reference_ms=18.626 transfer_pl_ms=19.843
+CAPTURE_FRAME n=9 sequence=18 bytes=27394 ts=88.051633
+SAMPLE_FRAME n=8 source_sequence=18 ts_us=88051633
+CAMERA_PL_FRAME n=8 seq=18 ts_us=88051633 mismatch=0 roi_g=228684920 roi_count=921600 motion_valid=1 motion_ratio_q16=2580 decode_ms=29.570 reference_ms=18.664 transfer_pl_ms=19.842
+CAPTURE_FRAME n=10 sequence=22 bytes=46328 ts=88.119628
+SAMPLE_FRAME n=9 source_sequence=22 ts_us=88119628
+CAMERA_PL_FRAME n=9 seq=22 ts_us=88119628 mismatch=0 roi_g=209357012 roi_count=921600 motion_valid=1 motion_ratio_q16=28890 decode_ms=33.145 reference_ms=18.193 transfer_pl_ms=19.833
+CAPTURE_FRAME n=11 sequence=26 bytes=50585 ts=88.187622
+SAMPLE_FRAME n=10 source_sequence=26 ts_us=88187622
+CAMERA_PL_FRAME n=10 seq=26 ts_us=88187622 mismatch=0 roi_g=196288379 roi_count=921600 motion_valid=1 motion_ratio_q16=36165 decode_ms=33.696 reference_ms=18.146 transfer_pl_ms=19.379
+CAPTURE_FRAME n=12 sequence=30 bytes=52815 ts=88.255620
+SAMPLE_FRAME n=11 source_sequence=30 ts_us=88255620
+CAMERA_PL_FRAME n=11 seq=30 ts_us=88255620 mismatch=0 roi_g=183064430 roi_count=921600 motion_valid=1 motion_ratio_q16=42496 decode_ms=33.436 reference_ms=18.693 transfer_pl_ms=19.843
+CAPTURE_FRAME n=13 sequence=34 bytes=54429 ts=88.323612
+SAMPLE_FRAME n=12 source_sequence=34 ts_us=88323612
+CAMERA_PL_FRAME n=12 seq=34 ts_us=88323612 mismatch=0 roi_g=155564528 roi_count=921600 motion_valid=1 motion_ratio_q16=54390 decode_ms=33.603 reference_ms=18.643 transfer_pl_ms=19.846
+CAPTURE_FRAME n=14 sequence=38 bytes=54466 ts=88.387626
+SAMPLE_FRAME n=13 source_sequence=38 ts_us=88387626
+CAMERA_PL_FRAME n=13 seq=38 ts_us=88387626 mismatch=0 roi_g=144634116 roi_count=921600 motion_valid=1 motion_ratio_q16=7032 decode_ms=34.180 reference_ms=18.144 transfer_pl_ms=19.405
+CAPTURE_FRAME n=15 sequence=43 bytes=53956 ts=88.471624
+SAMPLE_FRAME n=14 source_sequence=43 ts_us=88471624
+CAMERA_PL_FRAME n=14 seq=43 ts_us=88471624 mismatch=0 roi_g=129249618 roi_count=921600 motion_valid=1 motion_ratio_q16=54531 decode_ms=34.064 reference_ms=18.667 transfer_pl_ms=18.912
+CAPTURE_FRAME n=16 sequence=47 bytes=53453 ts=88.539619
+SAMPLE_FRAME n=15 source_sequence=47 ts_us=88539619
+CAMERA_PL_FRAME n=15 seq=47 ts_us=88539619 mismatch=0 roi_g=124059325 roi_count=921600 motion_valid=1 motion_ratio_q16=382 decode_ms=33.542 reference_ms=18.643 transfer_pl_ms=19.835
+CAPTURE_FRAME n=17 sequence=51 bytes=53337 ts=88.607620
+SAMPLE_FRAME n=16 source_sequence=51 ts_us=88607620
+CAMERA_PL_FRAME n=16 seq=51 ts_us=88607620 mismatch=0 roi_g=120471416 roi_count=921600 motion_valid=1 motion_ratio_q16=313 decode_ms=33.515 reference_ms=18.654 transfer_pl_ms=19.835
+CAPTURE_FRAME n=18 sequence=56 bytes=52855 ts=88.691615
+SAMPLE_FRAME n=17 source_sequence=56 ts_us=88691615
+CAMERA_PL_FRAME n=17 seq=56 ts_us=88691615 mismatch=0 roi_g=116384037 roi_count=921600 motion_valid=1 motion_ratio_q16=281 decode_ms=33.949 reference_ms=18.167 transfer_pl_ms=19.397
+CAPTURE_FRAME n=19 sequence=60 bytes=52749 ts=88.759609
+SAMPLE_FRAME n=18 source_sequence=60 ts_us=88759609
+CAMERA_PL_FRAME n=18 seq=60 ts_us=88759609 mismatch=0 roi_g=115043252 roi_count=921600 motion_valid=1 motion_ratio_q16=169 decode_ms=33.446 reference_ms=18.716 transfer_pl_ms=19.838
+CAPTURE_FRAME n=20 sequence=64 bytes=52814 ts=88.827612
+SAMPLE_FRAME n=19 source_sequence=64 ts_us=88827612
+CAMERA_PL_FRAME n=19 seq=64 ts_us=88827612 mismatch=0 roi_g=115025223 roi_count=921600 motion_valid=1 motion_ratio_q16=160 decode_ms=33.420 reference_ms=18.716 transfer_pl_ms=19.836
+CAPTURE_FRAME n=21 sequence=69 bytes=52824 ts=88.911610
+SAMPLE_FRAME n=20 source_sequence=69 ts_us=88911610
+CAMERA_PL_FRAME n=20 seq=69 ts_us=88911610 mismatch=0 roi_g=115016459 roi_count=921600 motion_valid=1 motion_ratio_q16=145 decode_ms=34.100 reference_ms=18.153 transfer_pl_ms=19.650
+CAPTURE_FRAME n=22 sequence=73 bytes=52691 ts=88.979597
+SAMPLE_FRAME n=21 source_sequence=73 ts_us=88979597
+CAMERA_PL_FRAME n=21 seq=73 ts_us=88979597 mismatch=0 roi_g=115031218 roi_count=921600 motion_valid=1 motion_ratio_q16=158 decode_ms=33.432 reference_ms=18.632 transfer_pl_ms=18.904
+CAPTURE_FRAME n=23 sequence=78 bytes=52685 ts=89.063598
+SAMPLE_FRAME n=22 source_sequence=78 ts_us=89063598
+CAMERA_PL_FRAME n=22 seq=78 ts_us=89063598 mismatch=0 roi_g=115031286 roi_count=921600 motion_valid=1 motion_ratio_q16=144 decode_ms=33.348 reference_ms=18.689 transfer_pl_ms=19.843
+CAPTURE_FRAME n=24 sequence=82 bytes=52743 ts=89.131598
+SAMPLE_FRAME n=23 source_sequence=82 ts_us=89131598
+CAMERA_PL_FRAME n=23 seq=82 ts_us=89131598 mismatch=0 roi_g=115021478 roi_count=921600 motion_valid=1 motion_ratio_q16=147 decode_ms=33.476 reference_ms=18.568 transfer_pl_ms=19.820
+CAPTURE_FRAME n=25 sequence=86 bytes=52609 ts=89.195615
+SAMPLE_FRAME n=24 source_sequence=86 ts_us=89195615
+CAMERA_PL_FRAME n=24 seq=86 ts_us=89195615 mismatch=0 roi_g=115277583 roi_count=921600 motion_valid=1 motion_ratio_q16=157 decode_ms=33.916 reference_ms=18.183 transfer_pl_ms=19.612
+CAPTURE_FRAME n=26 sequence=91 bytes=52700 ts=89.279610
+SAMPLE_FRAME n=25 source_sequence=91 ts_us=89279610
+CAMERA_PL_FRAME n=25 seq=91 ts_us=89279610 mismatch=0 roi_g=115363798 roi_count=921600 motion_valid=1 motion_ratio_q16=159 decode_ms=33.272 reference_ms=18.694 transfer_pl_ms=18.906
+CAPTURE_FRAME n=27 sequence=95 bytes=52637 ts=89.347606
+SAMPLE_FRAME n=26 source_sequence=95 ts_us=89347606
+CAMERA_PL_FRAME n=26 seq=95 ts_us=89347606 mismatch=0 roi_g=115387150 roi_count=921600 motion_valid=1 motion_ratio_q16=152 decode_ms=33.466 reference_ms=18.624 transfer_pl_ms=19.828
+CAPTURE_FRAME n=28 sequence=99 bytes=52629 ts=89.415599
+SAMPLE_FRAME n=27 source_sequence=99 ts_us=89415599
+CAMERA_PL_FRAME n=27 seq=99 ts_us=89415599 mismatch=0 roi_g=115441823 roi_count=921600 motion_valid=1 motion_ratio_q16=148 decode_ms=33.483 reference_ms=18.619 transfer_pl_ms=19.815
+CAPTURE_FRAME n=29 sequence=103 bytes=52647 ts=89.483593
+SAMPLE_FRAME n=28 source_sequence=103 ts_us=89483593
+CAMERA_PL_FRAME n=28 seq=103 ts_us=89483593 mismatch=0 roi_g=115436719 roi_count=921600 motion_valid=1 motion_ratio_q16=154 decode_ms=33.868 reference_ms=18.203 transfer_pl_ms=19.595
+CAPTURE_FRAME n=30 sequence=108 bytes=52482 ts=89.567622
+SAMPLE_FRAME n=29 source_sequence=108 ts_us=89567622
+CAMERA_PL_FRAME n=29 seq=108 ts_us=89567622 mismatch=0 roi_g=115418452 roi_count=921600 motion_valid=1 motion_ratio_q16=144 decode_ms=33.422 reference_ms=18.618 transfer_pl_ms=18.914
+SAMPLE_RESULT input=30 kept=29 dropped=1 driver_sequence_gaps=79 empty_slots=27 input_fps=15.795052 output_fps=15.250395 native_30fps=no
+CAMERA_PL_PASS compared_frames=29 native_camera_mode_verified=0
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=30 requested_mode=unmet
+CAMERA_PL_EXIT=2
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

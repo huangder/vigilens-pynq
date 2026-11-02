@@ -1,0 +1,35 @@
+
+[1]+  Done                       sh /tmp/vigilens_final/run_native.sh /tmp/vigilens_final 360 1>/tmp/vigilens_final/http_probe_run.log 2>&1
+# echo FINAL_LIVE_SUMMARY_BEGIN
+FINAL_LIVE_SUMMARY_BEGIN
+# tail -n 3 /tmp/vigilens_final/run.log
+RY|^AUTOruntime.env: OK
+NATIVE_RUN camera_pid=197 http_pid=196 frames=1800
+NATIVE_CAMERA_EXIT=0
+# grep -E '^CAPTURE_MODE|^CAPTURE_COLOR|^CAMERA_GEOMETRY|^AUTONOMY_SUMMARY|^AUDI
+T_SUMMARY|^SAMPLE_RESULT|^CAMERA_PL_PASS|^CAPTURE_FAIL|^ERT_HYBRID_SUMMARY|^ERT_
+SUMMARY' /tmp/vigilens_final/camera.log
+mera.logCAPTURE_MODE 640x480 fourcc=0x56595559 interval=1/30
+CAPTURE_COLOR colorspace=8 ycbcr=1 quantization=2 stride=1280
+CAMERA_GEOMETRY width=640 height=480 gray_width=240 gray_height=180 input=yuyv stride=1280 limited=1
+SAMPLE_RESULT input=360 kept=352 dropped=8 driver_sequence_gaps=0 empty_slots=9 input_fps=29.887317 output_fps=29.221305 native_30fps=yes
+ERT_HYBRID_SUMMARY foreground_inferences=75 accepted_lk_frames=222
+ERT_SUMMARY observations=313 visible=260 lost=53 model_submitted=12 model_completed=12
+AUTONOMY_SUMMARY submitted=352 accepted=314 skipped=38 processed=314 succeeded=313 rejected=1 failed=0 rc=0 camera_submit_fps=29.221305 analysis_update_fps=26.013776
+AUDIT_SUMMARY frames=352 audits=12 failures=0 reference_ms_total=292
+CAMERA_PL_PASS compared_frames=352 native_camera_mode_verified=1
+# grep '^ERT_MODEL_FRAME' /tmp/vigilens_final/camera.log | tail -n 4
+ntf '\nVERT_MODEL_FRAME frame_id=238 ts=533.450924000 visible=1 detector_ms=170.540 landmark_ms=81.155 detections=1 geometry_failure=0 detector_path=2
+ERT_MODEL_FRAME frame_id=268 ts=534.454691000 visible=1 detector_ms=373.751 landmark_ms=290.385 detections=1 geometry_failure=0 detector_path=2
+ERT_MODEL_FRAME frame_id=299 ts=535.486885000 visible=1 detector_ms=201.387 landmark_ms=50.608 detections=1 geometry_failure=0 detector_path=2
+ERT_MODEL_FRAME frame_id=330 ts=536.522424000 visible=1 detector_ms=133.719 landmark_ms=133.248 detections=1 geometry_failure=0 detector_path=2
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    123892    114540  52% /tmp
+# echo FINAL_LIVE_SUMMARY_END
+FINAL_LIVE_SUMMARY_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

@@ -1,0 +1,1008 @@
+{
+  "url": "http://169.254.73.29:8080",
+  "metrics_only": true,
+  "samples": [
+    {
+      "elapsed_s": 0.09156629999779398,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 1.1179076000007626,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 2.131300299999566,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 3.1351044999973965,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 4.1612741999997525,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 5.1792915999976685,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 6.196571199998289,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 7.2154045999996015,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 8.218842599999334,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 9.237826799999311,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 10.255326300000888,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 11.274353199998586,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 12.290080799997668,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 13.317618299999594,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 14.335875900000246,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 15.353230699998676,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 16.367821100000583,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 17.38396289999946,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 18.387996599998587,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 19.406188400000246,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 20.420408499998302,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 21.446356199998263,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 22.461300499999197,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 23.46472519999952,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 24.4682264999974,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 25.48214680000092,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 26.500485900000058,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 27.519224499999837,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 28.54042499999923,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 29.544525400000566,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 30.54807069999879,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 31.55159989999811,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_unavailable\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 32.57173319999856,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_unavailable\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 33.59953350000069,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_unavailable\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 34.62818909999987,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_unavailable\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 35.657449800000904,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_unavailable\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 36.66239119999955,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_unavailable\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 37.689294699997845,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_unavailable\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 38.718836199997895,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_unavailable\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 39.72495229999913,
+      "status": 200,
+      "latency_ms": 4.377999997814186,
+      "frame": {
+        "ts": 855.452275,
+        "frame_id": 11,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7592,
+          "motion_score": 0.061,
+          "overall": 0.6613
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 40.75213480000093,
+      "status": 200,
+      "latency_ms": 26.106799999979557,
+      "frame": {
+        "ts": 856.452254,
+        "frame_id": 38,
+        "face": {
+          "visible": 1,
+          "bbox": [
+            136,
+            184,
+            217,
+            253
+          ],
+          "pose": {
+            "yaw": -5.074162046931096,
+            "pitch": -38.69952424940576,
+            "roll": -0.31654504151243645
+          }
+        },
+        "behavior": {
+          "ear_left": 0.4041,
+          "ear_right": 0.3834,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0.6066,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7612,
+          "motion_score": 0.058,
+          "overall": 0.8632
+        },
+        "status": "adjust_posture",
+        "advice": "\u5934\u90e8\u504f\u79bb\u8fc7\u5927\uff0c\u8bf7\u8c03\u6574\u59ff\u52bf\u6b63\u5bf9\u6444\u50cf\u5934",
+        "reason": "\u5934\u90e8 pitch = -38.7\u00b0 \u8d85\u51fa \u00b125\u00b0\uff08\u8fde\u7eed 8 \u5e27\u8d8a\u754c\uff09"
+      }
+    },
+    {
+      "elapsed_s": 41.76763220000066,
+      "status": 200,
+      "latency_ms": 14.19030000033672,
+      "frame": {
+        "ts": 857.488231,
+        "frame_id": 67,
+        "face": {
+          "visible": 1,
+          "bbox": [
+            128,
+            196,
+            205,
+            236
+          ],
+          "pose": {
+            "yaw": -3.5544990598051163,
+            "pitch": -39.411052599439095,
+            "roll": -3.661196814478433
+          }
+        },
+        "behavior": {
+          "ear_left": 0.3172,
+          "ear_right": 0.255,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0.6283,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.768,
+          "motion_score": 0.0364,
+          "overall": 0.8731
+        },
+        "status": "adjust_posture",
+        "advice": "\u5934\u90e8\u504f\u79bb\u8fc7\u5927\uff0c\u8bf7\u8c03\u6574\u59ff\u52bf\u6b63\u5bf9\u6444\u50cf\u5934",
+        "reason": "\u5934\u90e8 pitch = -39.4\u00b0 \u8d85\u51fa \u00b125\u00b0\uff08\u8fde\u7eed 16 \u5e27\u8d8a\u754c\uff09"
+      }
+    },
+    {
+      "elapsed_s": 42.79501119999986,
+      "status": 200,
+      "latency_ms": 25.994200001150602,
+      "frame": {
+        "ts": 858.456307,
+        "frame_id": 96,
+        "face": {
+          "visible": 1,
+          "bbox": [
+            143,
+            204,
+            200,
+            232
+          ],
+          "pose": {
+            "yaw": -8.521643692947748,
+            "pitch": -41.83891777724549,
+            "roll": -0.5211743639537437
+          }
+        },
+        "behavior": {
+          "ear_left": 0.2865,
+          "ear_right": 0.2755,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0.6249,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7659,
+          "motion_score": 0.0251,
+          "overall": 0.8754
+        },
+        "status": "adjust_posture",
+        "advice": "\u5934\u90e8\u504f\u79bb\u8fc7\u5927\uff0c\u8bf7\u8c03\u6574\u59ff\u52bf\u6b63\u5bf9\u6444\u50cf\u5934",
+        "reason": "\u5934\u90e8 pitch = -41.8\u00b0 \u8d85\u51fa \u00b125\u00b0\uff08\u8fde\u7eed 42 \u5e27\u8d8a\u754c\uff09"
+      }
+    },
+    {
+      "elapsed_s": 43.813733399998455,
+      "status": 200,
+      "latency_ms": 17.198100002133287,
+      "frame": {
+        "ts": 859.456328,
+        "frame_id": 126,
+        "face": {
+          "visible": 1,
+          "bbox": [
+            157,
+            197,
+            196,
+            234
+          ],
+          "pose": {
+            "yaw": -12.057047006148075,
+            "pitch": -40.168917615274275,
+            "roll": -0.8423797708666716
+          }
+        },
+        "behavior": {
+          "ear_left": 0.3129,
+          "ear_right": 0.2944,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0.6439,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7605,
+          "motion_score": 0.0897,
+          "overall": 0.8533
+        },
+        "status": "adjust_posture",
+        "advice": "\u5934\u90e8\u504f\u79bb\u8fc7\u5927\uff0c\u8bf7\u8c03\u6574\u59ff\u52bf\u6b63\u5bf9\u6444\u50cf\u5934",
+        "reason": "\u5934\u90e8 pitch = -40.2\u00b0 \u8d85\u51fa \u00b125\u00b0\uff08\u8fde\u7eed 69 \u5e27\u8d8a\u754c\uff09"
+      }
+    },
+    {
+      "elapsed_s": 44.828480399999535,
+      "status": 200,
+      "latency_ms": 13.22759999675327,
+      "frame": {
+        "ts": 860.388537,
+        "frame_id": 154,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.76,
+          "motion_score": 0.0427,
+          "overall": 0.6672
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 45.84468449999986,
+      "status": 200,
+      "latency_ms": 14.527499999530846,
+      "frame": {
+        "ts": 861.556141,
+        "frame_id": 189,
+        "face": {
+          "visible": 1,
+          "bbox": [
+            159,
+            190,
+            193,
+            225
+          ],
+          "pose": {
+            "yaw": -3.9046865389297447,
+            "pitch": -41.857225549860416,
+            "roll": -1.5261557127102483
+          }
+        },
+        "behavior": {
+          "ear_left": 0.3404,
+          "ear_right": 0.362,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0.5985,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7605,
+          "motion_score": 0.0176,
+          "overall": 0.875
+        },
+        "status": "adjust_posture",
+        "advice": "\u5934\u90e8\u504f\u79bb\u8fc7\u5927\uff0c\u8bf7\u8c03\u6574\u59ff\u52bf\u6b63\u5bf9\u6444\u50cf\u5934",
+        "reason": "\u5934\u90e8 pitch = -41.9\u00b0 \u8d85\u51fa \u00b125\u00b0\uff08\u8fde\u7eed 95 \u5e27\u8d8a\u754c\uff09"
+      }
+    },
+    {
+      "elapsed_s": 46.86907000000065,
+      "status": 200,
+      "latency_ms": 22.795600001700222,
+      "frame": {
+        "ts": 862.524472,
+        "frame_id": 218,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7585,
+          "motion_score": 0.0687,
+          "overall": 0.6586
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 47.88581019999765,
+      "status": 200,
+      "latency_ms": 15.418099999806145,
+      "frame": {
+        "ts": 863.560503,
+        "frame_id": 249,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7624,
+          "motion_score": 0.0787,
+          "overall": 0.6576
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 48.890100199998415,
+      "status": 200,
+      "latency_ms": 3.114600000117207,
+      "frame": {
+        "ts": 864.560477,
+        "frame_id": 279,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7586,
+          "motion_score": 0.0527,
+          "overall": 0.6635
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 49.89428889999908,
+      "status": 200,
+      "latency_ms": 2.888600000005681,
+      "frame": {
+        "ts": 865.56012,
+        "frame_id": 309,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7602,
+          "motion_score": 0.0343,
+          "overall": 0.6698
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 50.91364439999961,
+      "status": 200,
+      "latency_ms": 17.98159999816562,
+      "frame": {
+        "ts": 866.596191,
+        "frame_id": 340,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7632,
+          "motion_score": 0.0236,
+          "overall": 0.6745
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 51.93018789999769,
+      "status": 200,
+      "latency_ms": 15.227700001560152,
+      "frame": {
+        "ts": 867.596027,
+        "frame_id": 370,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7608,
+          "motion_score": 0.0629,
+          "overall": 0.6615
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 52.9478214999981,
+      "status": 200,
+      "latency_ms": 16.022800002247095,
+      "frame": {
+        "ts": 868.596363,
+        "frame_id": 400,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7623,
+          "motion_score": 0.0334,
+          "overall": 0.6711
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 53.954530899998645,
+      "status": 200,
+      "latency_ms": 5.460200001834892,
+      "frame": {
+        "ts": 869.632283,
+        "frame_id": 431,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.7603,
+          "motion_score": 0.04,
+          "overall": 0.6682
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    },
+    {
+      "elapsed_s": 54.98142630000075,
+      "status": 200,
+      "latency_ms": 25.483900000836,
+      "frame": {
+        "ts": 870.600379,
+        "frame_id": 460,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 0,
+          "blink_rate_per_min": 0,
+          "perclos": 0,
+          "long_close_count": 0,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.761,
+          "motion_score": 0.0448,
+          "overall": 0.667
+        },
+        "status": "adjust_posture",
+        "advice": "\u8bf7\u6b63\u5bf9\u6444\u50cf\u5934\uff0c\u4fdd\u6301\u9762\u90e8\u5b8c\u6574\u51fa\u73b0\u5728\u753b\u9762\u5185",
+        "reason": "\u4eba\u8138\u53ef\u89c1\u7387 0.00 \u4f4e\u4e8e\u4e0b\u9650 0.70"
+      }
+    }
+  ]
+}

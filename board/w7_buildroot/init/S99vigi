@@ -1,0 +1,50 @@
+#!/bin/sh
+# Register diagnostics are read-only. PHY reset belongs to phy-generic.
+# Capture tests print metadata; no images are stored or transmitted.
+M() { echo "== VIGI: $*"; }
+echo "================ VIGI SELF-REPORT (start) ================"
+M "uname: $(uname -a)"
+M "cmdline: $(cat /proc/cmdline)"
+grep -E 'MemTotal|MemFree|MemAvailable' /proc/meminfo
+M "mmc interrupt flood count: $(dmesg | grep -c 'mmc0: Got command interrupt')"
+M "USB topology:"
+ls /sys/bus/usb/devices 2>/dev/null
+for device in /sys/bus/usb/devices/*; do
+    [ -f "$device/idVendor" ] || continue
+    echo "  $device $(cat "$device/idVendor"):$(cat "$device/idProduct") $(cat "$device/product" 2>/dev/null)"
+done
+M "USB platform binding:"
+ls -l /sys/bus/platform/devices/e0002000.usb/driver 2>/dev/null
+M "gpio/pin probe (read-only; LATCH=0x44, PAD=0x64):"
+if command -v devmem >/dev/null 2>&1; then
+    for address in 0xF800012C 0xF80007B8 0xE000A244 0xE000A248 0xE000A044 0xE000A064 0xE0002170 0xE0002140 0xE00021A8; do
+        echo "  register $address = $(devmem "$address" 32)"
+    done
+    pin=28
+    while [ "$pin" -le 39 ]; do
+        echo "  MIO$pin = $(devmem $((0xF8000700 + pin * 4)) 32)"
+        pin=$((pin + 1))
+    done
+fi
+M "modprobe uvcvideo:"
+modprobe uvcvideo 2>&1
+sleep 2
+M "video devices:"
+ls -l /dev/video* 2>/dev/null || echo "  no video devices"
+for name in /sys/class/video4linux/*/name; do
+    [ -f "$name" ] && echo "  $name: $(cat "$name")"
+done
+M "capture validation (no images saved):"
+for device in /dev/video*; do
+    [ -c "$device" ] || continue
+    [ -x /usr/bin/uvc_probe ] || { echo "  uvc_probe missing"; break; }
+    /usr/bin/uvc_probe "$device" 640 480 30
+    /usr/bin/uvc_probe "$device" 1280 720 30
+done
+M "USB/kernel diagnostics:"
+dmesg | grep -iE 'usb|ulpi|phy|chipidea|pinctrl|video' | tail -70
+M "modules:"
+lsmod
+M "uptime: $(cat /proc/uptime)"
+echo "================ VIGI SELF-REPORT (end) =================="
+exit 0

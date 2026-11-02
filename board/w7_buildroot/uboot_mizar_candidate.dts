@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+#include "zynq-7000.dtsi"
+/ {
+    model = "Mizar-Z7 SD candidate (unverified)";
+    compatible = "xlnx,zynq-7000";
+    aliases { serial0 = &uart1; mmc0 = &sdhci0; };
+    chosen { stdout-path = "serial0:115200n8"; };
+    memory@0 { device_type = "memory"; reg = <0 0x20000000>; };
+};
+&clkc { ps-clk-frequency = <33333333>; };
+/* Preserve the validated PS initialization; do not run generic board pinctrl.
+ * GPIO14/15 are NOT card-detect/write-protect inputs on this board.
+ * SD electrical-standard review remains required before physical boot.
+ */
+&sdhci0 { bootph-all; status = "okay"; bus-width = <4>; broken-cd; disable-wp; max-frequency = <25000000>; };
+&uart1 { bootph-all; status = "okay"; };

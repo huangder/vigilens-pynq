@@ -15,13 +15,13 @@ import math
 
 import pytest
 
-from backend.config import load_config
+from backend.config import load_config, rppg_window_seconds
 from backend.vital import (GreenRppg, forehead_roi, fir_process, load_fir_coeffs,
                            q15_from_roi_sum, roi_channel_sum)
 
 CFG = load_config()
 FPS = float(CFG["fps_nominal"])
-WINDOW = float(CFG["window_seconds"])
+WINDOW = rppg_window_seconds(CFG)
 
 
 def _feed(est: GreenRppg, freq_hz: float, *, amp: int = 6000, noise: float = 0.0,
@@ -65,7 +65,14 @@ def test_q15_rejects_empty_roi() -> None:
 def test_fir_uses_frozen_coefficients_and_arithmetic() -> None:
     """带通必须用冻结系数（唯一来源是 C 线的头文件），且首样本符合 y=h[0]*x>>15。"""
     coeffs, shift, fs = load_fir_coeffs()
-    assert len(coeffs) == 63 and shift == 15 and fs == 45
+    # ⚠️ 不要硬编码 30/45（帧率已改过两次：30 → 45（v1.1）→ 30（v1.2 草案））。
+    #    这里断言的是"C 线冻结头文件里的 fs 与契约 §0 的 fps_nominal 一致"，
+    #    即抓住两个单一来源之间的漂移 —— 比写死一个数字更强。
+    assert len(coeffs) == 63 and shift == 15
+    assert fs == float(CFG["fps_nominal"]), (
+        f"FIR 头文件 fs={fs} 与 config.yaml fps_nominal={CFG['fps_nominal']} 不一致："
+        "系数与帧率必须同改（见 docs/interface.md §0/§3.5）"
+    )
     ys, sat, _hist = fir_process([1000], coeffs, shift, None)
     assert ys[0] == (coeffs[0] * 1000) >> shift
     assert sat == 0
@@ -133,10 +140,28 @@ def test_rppg_recovers_on_bin_frequency() -> None:
 
 def test_rppg_recovers_off_bin_frequency() -> None:
     """落在两个频点正中间（最坏情况）：误差应 <= 1 个频点间距。"""
-    est = GreenRppg.from_config(CFG)
-    r = _feed(est, 1.25)                            # 75 BPM，1.25/(45/1350) = 37.5 个频点
+    # Keep the existing <=2 bpm regression on the original 20s candidate.
+    est = GreenRppg.from_config({**CFG, "rppg_window_seconds": 20})
+    r = _feed(est, 1.25, seconds=20)
     assert r["hr_bpm"] is not None
     assert abs(r["hr_bpm"] - 75.0) <= 2.0
+
+
+def test_ten_second_window_retains_full_fill_and_exposes_coarser_grid() -> None:
+    est = GreenRppg.from_config({**CFG, "rppg_window_seconds": 10})
+    assert est.need == 300
+    r = _feed(est, 1.25, seconds=10)
+    assert r["hr_bpm"] is not None
+    # Exact-bin estimation: a halfway 75 bpm stimulus is 3 bpm from either bin.
+    assert r["hr_bpm"] in (72.0, 78.0)
+
+
+def test_five_second_window_fills_and_keeps_coarse_bin_visible() -> None:
+    est = GreenRppg.from_config({**CFG, "rppg_window_seconds": 5})
+    assert est.need == 150
+    r = _feed(est, 1.30, seconds=5)
+    assert r["hr_bpm"] is not None
+    assert r["hr_bpm"] in (72.0, 84.0)
 
 
 def test_rppg_rejects_pure_noise() -> None:
@@ -160,6 +185,47 @@ def test_rppg_constant_signal_gives_no_peak() -> None:
     est = GreenRppg.from_config(CFG)
     r = _feed(est, 0.0, amp=0)
     assert r["hr_bpm"] is None
+
+
+def test_rppg_noise_reports_no_dominant_peak() -> None:
+    """门窗全开但没真峰时，必须把原因写进 `last_reject`（BUG-041）。
+
+    以前的现场是：窗口 900/900 已满、`vital.*` 全 null、`rppg_reject` 却是 `null`，
+    运维无法区分"没测够 / 没峰 / 采样率不对"。修法 = 每一条 return 都写原因。
+    """
+    est = GreenRppg.from_config(CFG)
+    r = _feed(est, 0.0, amp=0, noise=6000, seed=7)
+    assert r["hr_bpm"] is None
+    assert est.last_reject == "no_dominant_peak", est.last_reject
+    assert est.last_conf is not None and est.last_conf <= 0.5
+
+
+def test_rppg_constant_signal_reports_no_band_energy() -> None:
+    """恒定输入去直流后全零：带内一点能量都没有，原因必须是 `no_band_energy`。"""
+    est = GreenRppg.from_config(CFG)
+    r = _feed(est, 0.0, amp=0)
+    assert r["hr_bpm"] is None
+    assert est.last_reject == "no_band_energy", est.last_reject
+
+
+def test_rppg_success_sets_conf_and_clears_reject() -> None:
+    """出数时 `last_conf` 必须同步给出来源置信度，且 `last_reject` 必须为空。"""
+    est = GreenRppg.from_config(CFG)
+    r = _feed(est, 1.20)
+    assert r["hr_bpm"] is not None
+    assert est.last_reject is None
+    assert est.last_conf is not None and est.last_conf > 0.5
+
+
+def test_rppg_reject_reason_does_not_stick() -> None:
+    """原因不许"粘住"：先跑一轮噪声（有原因），reset 后再跑好信号必须变回 None。"""
+    est = GreenRppg.from_config(CFG)
+    _feed(est, 0.0, amp=0, noise=6000, seed=7)
+    assert est.last_reject == "no_dominant_peak"
+    est.reset()
+    r = _feed(est, 1.20)
+    assert r["hr_bpm"] is not None
+    assert est.last_reject is None
 
 
 def test_rppg_is_deterministic() -> None:

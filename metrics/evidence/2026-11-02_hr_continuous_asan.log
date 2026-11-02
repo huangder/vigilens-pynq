@@ -1,0 +1,8 @@
+PASS pose failure rejected; image dimensions consumed
+PASS held HR cleared on face/ROI/motion/id/time/malformed/gap/posture/PnP/loss/quality refusal
+PASS slow analysis cadence names sampling_too_slow and recovers on a fast feed
+PASS source jitter uses window-rate gate; short quality pause recomputes HR; face loss clears history
+PASS synthetic metric stimuli produce blink/long-close/PERCLOS/yawn/HR and quality; physiological_accuracy_verified=0
+PASS filtered HR confirms new estimates and face loss clears raw/filtered output
+PASS progressive filter starts on the first valid estimate
+PASS autonomy native integration

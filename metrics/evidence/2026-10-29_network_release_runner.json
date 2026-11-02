@@ -1,0 +1,22 @@
+{
+    "pipeline_exit":  0,
+    "checker_exit":  0,
+    "board_probe_exit":  2,
+    "closed_loop_pass":  true,
+    "error":  null,
+    "run_id":  "20261029_release_boot",
+    "board_ip":  "169.254.73.29",
+    "peer_ip":  "169.254.73.28",
+    "serial_port":  "COM11",
+    "api_url":  "http://127.0.0.1:8000",
+    "frames_requested":  30,
+    "prepared_only":  false,
+    "config_fps":  30,
+    "config_motion_threshold":  16,
+    "frame_id_offset":  2468,
+    "board_pid":  182,
+    "native_camera_mode_verified":  false,
+    "realtime_target_met":  false,
+    "selected_fps":  3.8548761899431647,
+    "face_visible_frames":  0
+}

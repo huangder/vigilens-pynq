@@ -1,0 +1,19 @@
+tail -n 4 /tmp/vigilens_hr5_filter/run.log
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+NATIVE_RUN camera_pid=881 http_pid=880 frames=1800
+# tail -n 4 /tmp/vigilens_hr5_filter/camera.log
+CAPTURE_FRAME n=1334 sequence=1333 bytes=614400 ts=12884.798754
+SAMPLE_FRAME n=1334 source_sequence=1333 ts_us=12884798754
+CAMERA_PL_FRAME n=1334 seq=1333 ts_us=12884798754 mismatch=0 audit=0 roi_g=36672707 roi_count=307200 motion_valid=1 motion_ratio_q16=706 decode_ms=10.333 reference_ms=0.000 transfer_pl_ms=5.664 decode_cpu_ms=9.811 transfer_pl_cpu_ms=2.909
+AUTONOMY_HANDOFF frame_id=1333 gray_ms=0.355 submit_ms=0.045 accepted=1
+# tail -n 1 /tmp/vigilens_hr5_filter/contracts.jsonl
+{"ts":12884.862772,"frame_id":1335,"face":{"visible":1,"bbox":[129,2,276,309],"pose":{"yaw":-1.8648999826931258,"pitch":3.8336329684326689,"roll":4.7609636943092193}},"behavior":{"ear_left":0.28220000000000001,"ear_right":0.28120000000000001,"blink_state":"OPEN","blink_count":4,"blink_rate_per_min":2,"perclos":0.33069999999999999,"long_close_count":7,"mar":0.39419999999999999,"yawn_count":0},"vital":{"hr_bpm":null,"hr_conf":null,"rr_per_min":null,"rr_conf":null},"quality":{"light_score":0.93730000000000002,"motion_score":0.039600000000000003,"overall":0.95679999999999998},"status":"fatigue_risk","advice":"????????????????????????????????? 5 ?????????????????????","reason":"?????????PERCLOS 0.33 > 0.25???????????? 7 ??? ??? 1???????????? 2.0/min < 10"}
+# ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+  880 root     ./vg_metrics_http --bind 0.0.0.0 --port 8080 --latest /tmp/vigilens_hr5_filter/latest.json --display /tmp/vigilens_hr5_filter/display.html --stale-seconds 3.0
+  881 root     ./vigi_camera_autonomy /dev/video0 640 480 1800 30 16
+# printf '\nHR5_FILTER_RUNNING_END\n'
+
+HR5_FILTER_RUNNING_END
+# 

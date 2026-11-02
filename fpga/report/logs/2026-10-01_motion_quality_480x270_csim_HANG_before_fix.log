@@ -1,0 +1,74 @@
+
+****** vitis-run v2026.1 (64-bit)
+  **** SW Build 6511674 on 2026-06-16-13:14:00
+  **** Start of session at: Thu Oct  1 15:56:55 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+  **** HLS Build v2026.1 6493734
+Sourcing Tcl script 'D:/Desktop/AMD/fpga/run_hls.tcl'
+INFO: 妗ｄ綅 VIGILENS_TIER=720p60 鈫 鎶藉彇 3/8锛屾暟鎹®鐩®褰 sim/data_motion_720p60
+INFO: HLS_IP    = motion_quality
+INFO: source    = src/motion_quality.cpp
+INFO: testbench = sim/tb_motion_quality.cpp
+INFO: HLS_COMPONENT override -> component_u1_mq720full_b2
+INFO: [HLS 200-1510] Running: open_component -reset component_u1_mq720full_b2 -flow_target vivado 
+INFO: [HLS 200-10] Creating and opening component 'D:/Desktop/AMD/fpga/component_u1_mq720full_b2'.
+INFO: [HLS 200-10] Cleaning up the component database.
+INFO: [HLS 200-1505] Using flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+WARNING: [HLS 200-2149] The 'flow_target' option is deprecated and will be removed in a future release. For 'vivado' value you may simply remove the option for equivalent behavior.
+INFO: [HLS 200-2176] Writing Vitis IDE component file D:/Desktop/AMD/fpga/component_u1_mq720full_b2/vitis-comp.json
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_u1_mq720full_b2/hls_config.cfg
+WARNING: [HLS 200-484] The 'open_component -flow_target' command is deprecated and will be removed in a future release.
+INFO: [HLS 200-1510] Running: add_files src/motion_quality.cpp 
+INFO: [HLS 200-10] Adding design file 'src/motion_quality.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb sim/tb_motion_quality.cpp 
+INFO: [HLS 200-10] Adding test bench file 'sim/tb_motion_quality.cpp' to the project
+INFO: [HLS 200-1510] Running: set_top motion_quality 
+INFO: [HLS 200-1510] Running: set_part xc7z020clg400-1 
+INFO: [HLS 200-1611] Setting target device to 'xc7z020-clg400-1'
+INFO: [HLS 200-1510] Running: create_clock -period 10 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: data dir  = D:/Desktop/AMD/fpga/sim/data_motion_720p60
+INFO: hls_exec  = 2  (1=csim+csynth, 2=+cosim, 3=+export)
+INFO: [HLS 200-1510] Running: csim_design -argv D:/Desktop/AMD/fpga/sim/data_motion_720p60 
+INFO: [HLS 200-1915] Writing HLS config ini file D:/Desktop/AMD/fpga/component_u1_mq720full_b2/hls_config.cfg
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [HLS 200-2191] C-Simulation will use clang-16 as the compiler
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../sim/tb_motion_quality.cpp in debug mode
+   Compiling ../../../../src/motion_quality.cpp in debug mode
+   Generating csim.exe
+In file included from ../../../../sim/tb_motion_quality.cpp:30:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../src/motion_quality.cpp:31:
+In file included from D:/Xilinx/2026.1/Vitis/include\ap_axi_sdata.h:15:
+In file included from D:/Xilinx/2026.1/Vitis/include/ap_int.h:10:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_common.h:668:
+In file included from D:/Xilinx/2026.1/Vitis/include\etc/ap_private.h:68:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_half.h:26:
+In file included from D:/Xilinx/2026.1/Vitis/include/etc/hls_half_fpo.h:19:
+In file included from D:/Xilinx/2026.1/Vitis/include\hls_fpo.h:140:
+In file included from D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:150:
+D:/Xilinx/2026.1/Vitis/include\gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+D:/Xilinx/2026.1/Vitis/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.

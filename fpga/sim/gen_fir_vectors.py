@@ -333,7 +333,7 @@ def main():
     argmax = max(range(len(imp_y)), key=lambda i: imp_y[i])
     sym_ok = all(imp_y[k] == imp_y[taps - 1 - k] for k in range(taps))
     print("   峰值下标 = %d（期望群延迟 %d）%s" % (argmax, (taps - 1) // 2,
-                                          "OK" if argmax == (taps - 1) // 2 else "BAD"))
+                                        "OK" if argmax == (taps - 1) // 2 else "BAD"))
     print("   偶对称 out[k]==out[N-1-k]：%s" % ("OK" if sym_ok else "BAD"))
     if argmax != (taps - 1) // 2 or not sym_ok:
         print("!! 冲激响应结构自检失败")

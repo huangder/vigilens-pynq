@@ -1,0 +1,63 @@
+
+# sh -c '
+> set -e
+> if [ -n "$(pidof vigi_camera_pl 2>/dev/null)" ]; then echo AUTONOMY_BUSY; exit
+ 10; fi
+> wget -T 15 -O /tmp/vg_model_probe_xnn http://169.254.73.28:8093/vg_model_probe
+_xnn
+> echo "039ba39321a76fbca5467dfcdba2e34064da0ad4f800e06db3a5e7dfb77ba34a  /tmp/v
+g_model_probe_xnn" | sha256sum -c -
+> echo "e06a804e0144f9929eda782122916b35d60c697c3c9344013ca2bbe76a6ce2b4  /tmp/a
+ttention.tflite" | sha256sum -c -
+> echo "bbff11cebd1eb27a1e004cae0b0e63ec8c551cbf34a4451148b4908b8db3eca8  /tmp/d
+etection.tflite" | sha256sum -c -
+> chmod 700 /tmp/vg_model_probe_xnn
+> echo AUTONOMY_BOARD_PROBE_BEGIN
+> uname -m
+> for n in 1 2; do
+>  echo ATTENTION_THREADS=$n
+>  /tmp/vg_model_probe_xnn /tmp/attention.tflite --zeros /tmp/xnn_attention_t$n 
+30 $n
+>  cat /tmp/xnn_attention_t$n.json
+>  echo DETECTION_THREADS=$n
+>  /tmp/vg_model_probe_xnn /tmp/detection.tflite --zeros /tmp/xnn_detection_t$n 
+30 $n
+>  cat /tmp/xnn_detection_t$n.json
+> done
+> grep -E "MemTotal|MemAvailable" /proc/meminfo
+> echo AUTONOMY_BOARD_PROBE_END
+> '
+_DONE\n'
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/vg_model_probe_xnn'
+vg_model_probe_xnn    44% |**************                  | 6316k  0:00:01 ETAvg_model_probe_xnn   100% |********************************| 13.9M  0:00:00 ETA
+'/tmp/vg_model_probe_xnn' saved
+/tmp/vg_model_probe_xnn: OK
+/tmp/attention.tflite: OK
+/tmp/detection.tflite: OK
+AUTONOMY_BOARD_PROBE_BEGIN
+armv7l
+ATTENTION_THREADS=1
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+MODEL_PROBE_PASS outputs=7 synthetic=1 delegate_nodes=3 mean_ms=182.768
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":30,"threads":1,"input_bytes":442368,"delegate_nodes":3,"mean_ms":182.76821343333333,"p50_ms":182.71813399999999,"p95_ms":182.93711500000001,"max_rss_kib":25588,"outputs":[{"slot":0,"elements":1404,"shape":[1,1,1,1404]},{"slot":1,"elements":160,"shape":[1,1,1,160]},{"slot":2,"elements":142,"shape":[1,1,1,142]},{"slot":3,"elements":142,"shape":[1,1,1,142]},{"slot":4,"elements":10,"shape":[1,1,1,10]},{"slot":5,"elements":10,"shape":[1,1,1,10]},{"slot":6,"elements":1,"shape":[1,1,1,1]}]}
+DETECTION_THREADS=1
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+MODEL_PROBE_PASS outputs=2 synthetic=1 delegate_nodes=1 mean_ms=99.23
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":30,"threads":1,"input_bytes":196608,"delegate_nodes":1,"mean_ms":99.229971800000001,"p50_ms":99.177324999999996,"p95_ms":99.392893000000001,"max_rss_kib":9596,"outputs":[{"slot":0,"elements":14336,"shape":[1,896,16]},{"slot":1,"elements":896,"shape":[1,896,1]}]}
+ATTENTION_THREADS=2
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+MODEL_PROBE_PASS outputs=7 synthetic=1 delegate_nodes=3 mean_ms=99.7528
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":30,"threads":2,"input_bytes":442368,"delegate_nodes":3,"mean_ms":99.752779366666658,"p50_ms":99.737755000000007,"p95_ms":99.988861,"max_rss_kib":25336,"outputs":[{"slot":0,"elements":1404,"shape":[1,1,1,1404]},{"slot":1,"elements":160,"shape":[1,1,1,160]},{"slot":2,"elements":142,"shape":[1,1,1,142]},{"slot":3,"elements":142,"shape":[1,1,1,142]},{"slot":4,"elements":10,"shape":[1,1,1,10]},{"slot":5,"elements":10,"shape":[1,1,1,10]},{"slot":6,"elements":1,"shape":[1,1,1,1]}]}
+DETECTION_THREADS=2
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+MODEL_PROBE_PASS outputs=2 synthetic=1 delegate_nodes=1 mean_ms=50.9524
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":30,"threads":2,"input_bytes":196608,"delegate_nodes":1,"mean_ms":50.952409900000006,"p50_ms":50.961883,"p95_ms":51.170009999999998,"max_rss_kib":9472,"outputs":[{"slot":0,"elements":14336,"shape":[1,896,16]},{"slot":1,"elements":896,"shape":[1,896,1]}]}
+MemTotal:         476868 kB
+MemAvailable:     390648 kB
+AUTONOMY_BOARD_PROBE_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

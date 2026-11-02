@@ -1,0 +1,165 @@
+
+# sh -c '
+> set -e
+> wget -T 15 -O /tmp/vg_ncnn_probe_options http://169.254.73.28:8093/vg_ncnn_pro
+be_options
+> echo "fe16640233b21071af8eab6db6877b1a2efc72eda03bc66c796f063c8bb615f2  /tmp/v
+g_ncnn_probe_options" | sha256sum -c -
+> echo "6735001ab4f53ff72fd315522e491f9a598701a63fd518a559b4a318f378f523  /tmp/p
+eppa.param" | sha256sum -c -
+> echo "2c336fa2f1dc2b4ae339ddbba139408f2c590eabe64f8c580ccfa9946c5158c3  /tmp/p
+eppa.bin" | sha256sum -c -
+> echo "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd  /tmp/p
+eppa_input.f32" | sha256sum -c -
+> chmod 700 /tmp/vg_ncnn_probe_options
+> echo PEPPA_KERNEL_SWEEP_BEGIN
+> for mode in default winograd_only sgemm_only direct; do
+>  for packing in 1 0; do
+>   prefix=/tmp/peppa_${mode}_p${packing}
+>   VG_NCNN_KERNELS=$mode VG_NCNN_PACKING=$packing /tmp/vg_ncnn_probe_options /t
+mp/peppa.param /tmp/peppa.bin 160 160 input1 output1 $prefix 30 2 143 /tmp/peppa
+_input.f32
+>   cat $prefix.json
+>   echo VIGI_FILE_BEGIN peppa_${mode}_p${packing}.output0.f32
+>   gzip -c $prefix.output0.f32 | base64
+>   echo VIGI_FILE_END
+>  done
+> done
+> echo PEPPA_KERNEL_SWEEP_END
+> '
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/vg_ncnn_probe_options'
+[  225.210736] random: crng init done
+vg_ncnn_probe_option 100% |********************************| 10.4M  0:00:00 ETA
+'/tmp/vg_ncnn_probe_options' saved
+/tmp/vg_ncnn_probe_options: OK
+/tmp/peppa.param: OK
+/tmp/peppa.bin: OK
+/tmp/peppa_input.f32: OK
+PEPPA_KERNEL_SWEEP_BEGIN
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":true,"kernel_policy":"default","winograd":true,"sgemm":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":30,"threads":2,"mean_ms":36.350106366666672,"p50_ms":36.296346,"p95_ms":36.552331000000002,"max_rss_kib":8140,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+VIGI_FILE_BEGIN peppa_default_p1.output0.f32
+H4sIAAAAAAAAAwXBaUjTARgH4DQ33bxyH4KpFV06TZBJIDH3e5tgVgQDjxX8rYmYH1xpuhm2PDBz
+hs1leGTN0Q50sgyaEabNK/2gNU1BpQSNpFNl4XCFqVvP47CviD8zDJjtCXHJVCPKZx1it9QGJ39Y
+bGUmIHdviIMyV7BjO4yX2z40284gh0IptKoQVUI+dWQ1IdNxkMy37Ig6H0VjK06cEEaQPPY7AlRs
+KivbxZHTfzDl5FACaxmyoxzKEzjgrgihzkgz0pgwWi2pQ//+XAgKqhG3UQmB8C4U8Y2QCu5jXN+O
+Cm8zbihM8Pl1QDE6gKIkA8pXx6D61Yo2ZhqpNY1I0S/iy18N1IavaB+uRXJ3N77FvcYmOnGlYgar
+OWZo5T8xkGKE48cWLnxqwps1F66dbcOLUx4kfDTgw8UtNPC7UDLnwePiHoTV/4ZKrUIaS4+88VpE
+HzIhPVEHd6gFxeutMPp1Y0SihS/3GeoDapCotCK4pQ91C1acxCj6py1YjHgPrsiC/MJZ9EqeIpw3
+iRmRDV7DEFLf9uDOoBKT2T5kx2pQ+m4vGTUtyKhkUfS8HspHbIpRmyHNZFHBveeQGfyJff0VMji7
+sM13oXSJQ75zRhzYCSd/XSu0AxF0ydOAJO0+WhZpIEvmEntODW/+HlLYHiLEHkjrvieo0gVR+lUL
+ePxAurlpx+XqXay5TDh2nEu8f+1I8QRT1vwDpDm5NFjUiz6XcChDohvUuyQjkbdFI2bp0vBCfAz9
+B/Cnbb48AgAA
+VIGI_FILE_END
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":false,"kernel_policy":"default","winograd":true,"sgemm":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":30,"threads":2,"mean_ms":37.214658166666673,"p50_ms":37.194684000000002,"p95_ms":37.395485999999998,"max_rss_kib":7364,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+VIGI_FILE_BEGIN peppa_default_p0.output0.f32
+H4sIAAAAAAAAAwXBaUwSABgGYDNQMajwRxvZuQqNtYrW1gp5vzA710YLxS2cWctmVB6IrUw0Z9Kl
+ZFPSQhZIIiPbonsMRbE1LXG6ics2/WGXmiN1UTNEep7XjjHxsEIBebBbnO+thmrAJZ6R2vGe5xY3
+K7qhmJ0RM2RjmLOvhyMYRo39AE4QhzilSmiEPGpMrYHMtYZMVxyIPxJPnrFeCIRcykz4jkh1FKmK
+Qli39w+8vSwSMEch38Ci04kuTJew6fHKJuxTLKXxgkq8XJEF/tky8Gc0SBBexzlBNaSJd+AxNECz
+UIvc82ZERDYip9OJvB1GXJrsgnpCj1pFH5LLq7HH8Blf/mpx2fgVD9wV2Gmz4dvmt5hFMzJL+jGR
+0QTdyXE4k0xo+zGHo8M1cP30Q3noPp7tDmDLJyO86XO4xbMifzCAhrxWcG78gqpYjRSmAafeVSB+
+rRn7t+kwzbHgwpQepkU2tEuqEM56gkpGObYWtiCm7g0qh1qwHZ1w9lkwxP0ItsiCLOUAXkgegR3X
+g36RHUFjO5I9rbjWVoietDDSErQo+LCYTNo6HNcwaZXPgML6KOIXN0EqY1L2zaeQGyOJcfEVjrFC
+sPmsUI2waOGwCavnl1GETo8qJ5fSA7chrFpOoyIt5LtiKWqwGPNnIkhpvwe2I5qmwg9Rqouhg9kW
+xPGiqei3AxllIUz6zdi4KZa4/xqQFFhCqb67SOmNJXfuc3T5he05El2bwS/p4F0VdVilI+5pAZ/+
+A87sOmQ8AgAA
+VIGI_FILE_END
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":true,"kernel_policy":"winograd_only","winograd":true,"sgemm":false,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":30,"threads":2,"mean_ms":36.152137933333329,"p50_ms":36.129877,"p95_ms":36.206400000000002,"max_rss_kib":8140,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+VIGI_FILE_BEGIN peppa_winograd_only_p1.output0.f32
+H4sIAAAAAAAAAwXBaUjTARgH4DQ33bxyH4KpFV06TZBJIDH3e5tgVgQDjxX8rYmYH1xpuhm2PDBz
+hs1leGTN0Q50sgyaEabNK/2gNU1BpQSNpFNl4XCFqVvP47CviD8zDJjtCXHJVCPKZx1it9QGJ39Y
+bGUmIHdviIMyV7BjO4yX2z40284gh0IptKoQVUI+dWQ1IdNxkMy37Ig6H0VjK06cEEaQPPY7AlRs
+KivbxZHTfzDl5FACaxmyoxzKEzjgrgihzkgz0pgwWi2pQ//+XAgKqhG3UQmB8C4U8Y2QCu5jXN+O
+Cm8zbihM8Pl1QDE6gKIkA8pXx6D61Yo2ZhqpNY1I0S/iy18N1IavaB+uRXJ3N77FvcYmOnGlYgar
+OWZo5T8xkGKE48cWLnxqwps1F66dbcOLUx4kfDTgw8UtNPC7UDLnwePiHoTV/4ZKrUIaS4+88VpE
+HzIhPVEHd6gFxeutMPp1Y0SihS/3GeoDapCotCK4pQ91C1acxCj6py1YjHgPrsiC/MJZ9EqeIpw3
+iRmRDV7DEFLf9uDOoBKT2T5kx2pQ+m4vGTUtyKhkUfS8HspHbIpRmyHNZFHBveeQGfyJff0VMji7
+sM13oXSJQ75zRhzYCSd/XSu0AxF0ydOAJO0+WhZpIEvmEntODW/+HlLYHiLEHkjrvieo0gVR+lUL
+ePxAurlpx+XqXay5TDh2nEu8f+1I8QRT1vwDpDm5NFjUiz6XcChDohvUuyQjkbdFI2bp0vBCfAz9
+B/Cnbb48AgAA
+VIGI_FILE_END
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":false,"kernel_policy":"winograd_only","winograd":true,"sgemm":false,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":30,"threads":2,"mean_ms":37.359302166666666,"p50_ms":37.339159000000002,"p95_ms":37.562297999999998,"max_rss_kib":7364,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+VIGI_FILE_BEGIN peppa_winograd_only_p0.output0.f32
+H4sIAAAAAAAAAwXBaUwSABgGYDNQMajwRxvZuQqNtYrW1gp5vzA710YLxS2cWctmVB6IrUw0Z9Kl
+ZFPSQhZIIiPbonsMRbE1LXG6ics2/WGXmiN1UTNEep7XjjHxsEIBebBbnO+thmrAJZ6R2vGe5xY3
+K7qhmJ0RM2RjmLOvhyMYRo39AE4QhzilSmiEPGpMrYHMtYZMVxyIPxJPnrFeCIRcykz4jkh1FKmK
+Qli39w+8vSwSMEch38Ci04kuTJew6fHKJuxTLKXxgkq8XJEF/tky8Gc0SBBexzlBNaSJd+AxNECz
+UIvc82ZERDYip9OJvB1GXJrsgnpCj1pFH5LLq7HH8Blf/mpx2fgVD9wV2Gmz4dvmt5hFMzJL+jGR
+0QTdyXE4k0xo+zGHo8M1cP30Q3noPp7tDmDLJyO86XO4xbMifzCAhrxWcG78gqpYjRSmAafeVSB+
+rRn7t+kwzbHgwpQepkU2tEuqEM56gkpGObYWtiCm7g0qh1qwHZ1w9lkwxP0ItsiCLOUAXkgegR3X
+g36RHUFjO5I9rbjWVoietDDSErQo+LCYTNo6HNcwaZXPgML6KOIXN0EqY1L2zaeQGyOJcfEVjrFC
+sPmsUI2waOGwCavnl1GETo8qJ5fSA7chrFpOoyIt5LtiKWqwGPNnIkhpvwe2I5qmwg9Rqouhg9kW
+xPGiqei3AxllIUz6zdi4KZa4/xqQFFhCqb67SOmNJXfuc3T5he05El2bwS/p4F0VdVilI+5pAZ/+
+A87sOmQ8AgAA
+VIGI_FILE_END
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":true,"kernel_policy":"sgemm_only","winograd":false,"sgemm":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":30,"threads":2,"mean_ms":36.188877766666671,"p50_ms":36.137844000000001,"p95_ms":36.630391000000003,"max_rss_kib":8140,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+VIGI_FILE_BEGIN peppa_sgemm_only_p1.output0.f32
+H4sIAAAAAAAAAwXBaUjTARgH4DQ33bxyH4KpFV06TZBJIDH3e5tgVgQDjxX8rYmYH1xpuhm2PDBz
+hs1leGTN0Q50sgyaEabNK/2gNU1BpQSNpFNl4XCFqVvP47CviD8zDJjtCXHJVCPKZx1it9QGJ39Y
+bGUmIHdviIMyV7BjO4yX2z40284gh0IptKoQVUI+dWQ1IdNxkMy37Ig6H0VjK06cEEaQPPY7AlRs
+KivbxZHTfzDl5FACaxmyoxzKEzjgrgihzkgz0pgwWi2pQ//+XAgKqhG3UQmB8C4U8Y2QCu5jXN+O
+Cm8zbihM8Pl1QDE6gKIkA8pXx6D61Yo2ZhqpNY1I0S/iy18N1IavaB+uRXJ3N77FvcYmOnGlYgar
+OWZo5T8xkGKE48cWLnxqwps1F66dbcOLUx4kfDTgw8UtNPC7UDLnwePiHoTV/4ZKrUIaS4+88VpE
+HzIhPVEHd6gFxeutMPp1Y0SihS/3GeoDapCotCK4pQ91C1acxCj6py1YjHgPrsiC/MJZ9EqeIpw3
+iRmRDV7DEFLf9uDOoBKT2T5kx2pQ+m4vGTUtyKhkUfS8HspHbIpRmyHNZFHBveeQGfyJff0VMji7
+sM13oXSJQ75zRhzYCSd/XSu0AxF0ydOAJO0+WhZpIEvmEntODW/+HlLYHiLEHkjrvieo0gVR+lUL
+ePxAurlpx+XqXay5TDh2nEu8f+1I8QRT1vwDpDm5NFjUiz6XcChDohvUuyQjkbdFI2bp0vBCfAz9
+B/Cnbb48AgAA
+VIGI_FILE_END
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":false,"kernel_policy":"sgemm_only","winograd":false,"sgemm":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":30,"threads":2,"mean_ms":37.326450566666672,"p50_ms":37.313975999999997,"p95_ms":37.453637999999998,"max_rss_kib":7364,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+VIGI_FILE_BEGIN peppa_sgemm_only_p0.output0.f32
+H4sIAAAAAAAAAwXBaUwSABgGYDNQMajwRxvZuQqNtYrW1gp5vzA710YLxS2cWctmVB6IrUw0Z9Kl
+ZFPSQhZIIiPbonsMRbE1LXG6ics2/WGXmiN1UTNEep7XjjHxsEIBebBbnO+thmrAJZ6R2vGe5xY3
+K7qhmJ0RM2RjmLOvhyMYRo39AE4QhzilSmiEPGpMrYHMtYZMVxyIPxJPnrFeCIRcykz4jkh1FKmK
+Qli39w+8vSwSMEch38Ci04kuTJew6fHKJuxTLKXxgkq8XJEF/tky8Gc0SBBexzlBNaSJd+AxNECz
+UIvc82ZERDYip9OJvB1GXJrsgnpCj1pFH5LLq7HH8Blf/mpx2fgVD9wV2Gmz4dvmt5hFMzJL+jGR
+0QTdyXE4k0xo+zGHo8M1cP30Q3noPp7tDmDLJyO86XO4xbMifzCAhrxWcG78gqpYjRSmAafeVSB+
+rRn7t+kwzbHgwpQepkU2tEuqEM56gkpGObYWtiCm7g0qh1qwHZ1w9lkwxP0ItsiCLOUAXkgegR3X
+g36RHUFjO5I9rbjWVoietDDSErQo+LCYTNo6HNcwaZXPgML6KOIXN0EqY1L2zaeQGyOJcfEVjrFC
+sPmsUI2waOGwCavnl1GETo8qJ5fSA7chrFpOoyIt5LtiKWqwGPNnIkhpvwe2I5qmwg9Rqouhg9kW
+xPGiqei3AxllIUz6zdi4KZa4/xqQFFhCqb67SOmNJXfuc3T5he05El2bwS/p4F0VdVilI+5pAZ/+
+A87sOmQ8AgAA
+VIGI_FILE_END
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":true,"kernel_policy":"direct","winograd":false,"sgemm":false,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":30,"threads":2,"mean_ms":36.163454766666668,"p50_ms":36.097782000000002,"p95_ms":36.415716000000003,"max_rss_kib":8144,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+VIGI_FILE_BEGIN peppa_direct_p1.output0.f32
+H4sIAAAAAAAAAwXBaUjTARgH4DQ33bxyH4KpFV06TZBJIDH3e5tgVgQDjxX8rYmYH1xpuhm2PDBz
+hs1leGTN0Q50sgyaEabNK/2gNU1BpQSNpFNl4XCFqVvP47CviD8zDJjtCXHJVCPKZx1it9QGJ39Y
+bGUmIHdviIMyV7BjO4yX2z40284gh0IptKoQVUI+dWQ1IdNxkMy37Ig6H0VjK06cEEaQPPY7AlRs
+KivbxZHTfzDl5FACaxmyoxzKEzjgrgihzkgz0pgwWi2pQ//+XAgKqhG3UQmB8C4U8Y2QCu5jXN+O
+Cm8zbihM8Pl1QDE6gKIkA8pXx6D61Yo2ZhqpNY1I0S/iy18N1IavaB+uRXJ3N77FvcYmOnGlYgar
+OWZo5T8xkGKE48cWLnxqwps1F66dbcOLUx4kfDTgw8UtNPC7UDLnwePiHoTV/4ZKrUIaS4+88VpE
+HzIhPVEHd6gFxeutMPp1Y0SihS/3GeoDapCotCK4pQ91C1acxCj6py1YjHgPrsiC/MJZ9EqeIpw3
+iRmRDV7DEFLf9uDOoBKT2T5kx2pQ+m4vGTUtyKhkUfS8HspHbIpRmyHNZFHBveeQGfyJff0VMji7
+sM13oXSJQ75zRhzYCSd/XSu0AxF0ydOAJO0+WhZpIEvmEntODW/+HlLYHiLEHkjrvieo0gVR+lUL
+ePxAurlpx+XqXay5TDh2nEu8f+1I8QRT1vwDpDm5NFjUiz6XcChDohvUuyQjkbdFI2bp0vBCfAz9
+B/Cnbb48AgAA
+VIGI_FILE_END
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":false,"kernel_policy":"direct","winograd":false,"sgemm":false,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":30,"threads":2,"mean_ms":37.339288400000001,"p50_ms":37.344929999999998,"p95_ms":37.450530000000001,"max_rss_kib":7364,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+VIGI_FILE_BEGIN peppa_direct_p0.output0.f32
+H4sIAAAAAAAAAwXBaUwSABgGYDNQMajwRxvZuQqNtYrW1gp5vzA710YLxS2cWctmVB6IrUw0Z9Kl
+ZFPSQhZIIiPbonsMRbE1LXG6ics2/WGXmiN1UTNEep7XjjHxsEIBebBbnO+thmrAJZ6R2vGe5xY3
+K7qhmJ0RM2RjmLOvhyMYRo39AE4QhzilSmiEPGpMrYHMtYZMVxyIPxJPnrFeCIRcykz4jkh1FKmK
+Qli39w+8vSwSMEch38Ci04kuTJew6fHKJuxTLKXxgkq8XJEF/tky8Gc0SBBexzlBNaSJd+AxNECz
+UIvc82ZERDYip9OJvB1GXJrsgnpCj1pFH5LLq7HH8Blf/mpx2fgVD9wV2Gmz4dvmt5hFMzJL+jGR
+0QTdyXE4k0xo+zGHo8M1cP30Q3noPp7tDmDLJyO86XO4xbMifzCAhrxWcG78gqpYjRSmAafeVSB+
+rRn7t+kwzbHgwpQepkU2tEuqEM56gkpGObYWtiCm7g0qh1qwHZ1w9lkwxP0ItsiCLOUAXkgegR3X
+g36RHUFjO5I9rbjWVoietDDSErQo+LCYTNo6HNcwaZXPgML6KOIXN0EqY1L2zaeQGyOJcfEVjrFC
+sPmsUI2waOGwCavnl1GETo8qJ5fSA7chrFpOoyIt5LtiKWqwGPNnIkhpvwe2I5qmwg9Rqouhg9kW
+xPGiqei3AxllIUz6zdi4KZa4/xqQFFhCqb67SOmNJXfuc3T5he05El2bwS/p4F0VdVilI+5pAZ/+
+A87sOmQ8AgAA
+VIGI_FILE_END
+PEPPA_KERNEL_SWEEP_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

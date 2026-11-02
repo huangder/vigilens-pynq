@@ -1,0 +1,57 @@
+=== A 线自检（一条命令跑完）===
+时间：2026-10-29 23:00:26   Python：3.12.13
+解释器：D:\Desktop\AMD\.venv\Scripts\python.exe
+
+[A] 仓库四项自检（AGENTS.md 6.1）
+    [PASS] pytest  -> 485 passed, 2 warnings in 26.27s
+    [PASS] mock.js --selftest  -> ok: true
+    [PASS] check_frontend_wiring  -> 前端接线检查：通过 —— 所有静态 id 引用都能在 index.html 找到对应元素。
+    [PASS] check_frontend_contract  -> 跨语言契约检查：通过 —— 全部 6 帧在 Python 侧同样合法。
+
+[B] backend/ 模块自检（10 个）
+    [PASS] config.py
+    [PASS] decision.py
+    [PASS] mock.py
+    [PASS] capture.py
+    [PASS] face_landmark.py
+    [PASS] behavior_metrics.py
+    [PASS] quality.py
+    [PASS] storage.py
+    [PASS] contract.py
+    [PASS] publish.py
+
+[C] 端到端合成回放 + 重复运行逐字节一致
+    [PASS] 末帧 JSON 逐字节相同，CSV 逐字节相同
+    处理帧数 900，逻辑时长 30.0s，关键点来源 stub，状态分布 {'fatigue_risk': 235, 'unreliable': 166, 'normal': 499}
+
+[D] P1 A<->C 黄金参考对拍（5 项）
+    [PASS] 灰度+缩放口径                  [契约 4.4]  退出码 0
+    [PASS] roi_statistic 黄金参考       [契约 4.2]  退出码 0
+    [PASS] motion_quality 黄金参考      [契约 3.3]  退出码 0
+    [PASS] Q1.15 量化口径               [契约 4.6]  退出码 0
+    [PASS] fir_filter 逐样本           [契约 4.5]  退出码 0
+    [PASS] 总结论：全部通过（5/5 项通过）
+
+[E] P5 / M2 端到端（A 线真实数据 → B 线服务 → /ws）
+    [PASS] 服务就绪 —— http://127.0.0.1:52391 已监听
+    [PASS] 数据源=ingest（不是 B 线 mock） —— /api/status.source = 'ingest'
+    [PASS] 空闲时 status=disconnected —— published=0, frame.status='disconnected'
+    [PASS] 回放 blink —— 推 31 帧 / 节流跳过 870 帧，frame_id 从 0 起，状态分布 {'fatigue_risk': 235, 'unreliable': 166, 'normal': 499}，收尾帧 done
+    [PASS] 回放 yawn —— 推 31 帧 / 节流跳过 870 帧，frame_id 从 100000 起，状态分布 {'normal': 170, 'unreliable': 166, 'fatigue_risk': 564}，收尾帧 done
+    [PASS] 回放 still —— 推 31 帧 / 节流跳过 870 帧，frame_id 从 200000 起，状态分布 {'normal': 734, 'unreliable': 166}，收尾帧 done
+    [PASS] 回放 turn —— 推 31 帧 / 节流跳过 870 帧，frame_id 从 300000 起，状态分布 {'normal': 76, 'unreliable': 587, 'adjust_posture': 237}，收尾帧 done
+    [PASS] 历史非空 —— /api/metrics 收到 124 帧
+    [PASS] frame_id / ts 单调递增（契约 §1） —— frame_id 0 → 300900，ts 0.0 → 10030.0
+    [PASS] 最新一帧逐字段一致 —— frame_id=300900（比对字段 9 个）
+    [PASS] 历史字段一致 —— 逐帧比对 124 条 × 6 个字段
+    [PASS] 六态齐全 —— 出现 ['adjust_posture', 'disconnected', 'done', 'fatigue_risk', 'normal', 'unreliable']
+    [PASS] 事件日志非空 —— /api/events 记录 51 次状态切换
+    [PASS] 坏帧被 422 拒收 —— HTTP 422，errors=["status 必须是 ('normal', 'fatigue_risk', 'adjust_posture', 'unreliable', 'disconnected', 'done') 之一，实际 'definitely_not_a_status'"]
+    [PASS] 坏帧未进历史 —— 历史条数 124 → 124
+    [PASS] WS 推送原样到达 —— /ws 原样收到 frame_id=400899（9 个字段）
+    [PASS] GET / 返回仪表盘 —— HTTP 200，5897 字节，引用 app.js=True
+    [PASS] 证据链随帧到达 /api/status —— triggers.frame_id=500899（帧 frame_id=500899），items=2 条，帧里无 _triggers=True
+    [PASS] 详情：D:\Desktop\AMD\metrics\logs\_p5_m2_report.json（不入库；要归档证据请加 --evidence）
+
+==============================================================
+A 线自检全部通过：17 项（用时 43.7s）

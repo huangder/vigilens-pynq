@@ -1,0 +1,31 @@
+
+[2]+  Done                       sh /tmp/vigilens_final/run_native.sh /tmp/vigilens_final 600 1>/tmp/vigilens_final/http_publish_run.log 2>&1
+# echo YUYV_LIVE_FINISH_BEGIN
+YUYV_LIVE_FINISH_BEGIN
+# tail -n 2 /tmp/vigilens_final/http_publish_run.log
+|^SAMPLENATIVE_RUN camera_pid=258 http_pid=257 frames=600
+NATIVE_CAMERA_EXIT=0
+# grep -E '^AUTONOMY_SUMMARY|^AUDIT_SUMMARY|^SAMPLE_RESULT|^CAMERA_PL_PASS' /tmp
+/vigilens_final/camera.log
+SAMPLE_RESULT input=600 kept=590 dropped=10 driver_sequence_gaps=0 empty_slots=11 input_fps=29.920649 output_fps=29.421139 native_30fps=yes
+AUTONOMY_SUMMARY submitted=590 accepted=496 skipped=94 processed=496 succeeded=495 rejected=1 failed=0 rc=0 camera_submit_fps=29.421139 analysis_update_fps=24.716382
+AUDIT_SUMMARY frames=590 audits=20 failures=0 reference_ms_total=445
+CAMERA_PL_PASS compared_frames=590 native_camera_mode_verified=1
+# ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+  253 root     ./vg_metrics_http --bind 0.0.0.0 --port 8080 --latest /tmp/vigilens_final/latest.json --display /tmp/vigilens_final/display.html --stale-seconds 3
+# if [ "$(readlink /proc/253/exe)" = /tmp/vigilens_final/vg_metrics_http ]; then
+ kill 253; fi
+kill|unh# dmesg | grep -iE 'panic|oops|out of memory|oom-kill|unhandled' | tail -n 5
+
+
+printf[1]+  Done                       ./vg_metrics_http --bind 0.0.0.0 --port 8080 --latest /tmp/vigilens_final/latest.json --display /tmp/vigilens_final/display.html --stale-seconds 3 1>/tmp/http_diagnostic.log 2>&1
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    124152    114280  52% /tmp
+# echo YUYV_LIVE_FINISH_END
+YUYV_LIVE_FINISH_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

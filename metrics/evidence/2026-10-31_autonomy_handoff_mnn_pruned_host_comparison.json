@@ -1,0 +1,24 @@
+{
+  "kind": "mnn_pruned_fp32_host_synthetic_comparison",
+  "input_sha256": "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd",
+  "elements": 143,
+  "output_sha256": "78afbfd7e50bdc3b8f16b5ee61c73b932ab2f48d428200ade3b49143156f5781",
+  "comparisons": {
+    "peppa_pruned_ort.output0.f32": {
+      "reference_sha256": "569b79100f4b2394aa01a9011ee4f45dc38def7314892335be87900986d96b46",
+      "max_abs_difference": 2.1457672119140625e-06,
+      "mean_abs_difference": 1.186361679664025e-07,
+      "first136_max_abs_difference": 2.086162567138672e-07
+    },
+    "peppa_pruned_ncnn.output0.f32": {
+      "reference_sha256": "e42569dca9d0a92123034cdd11c6aa6ff511a45e882ff0578f08bc52cab7bb6c",
+      "max_abs_difference": 9.5367431640625e-07,
+      "mean_abs_difference": 1.2270012101927005e-07,
+      "first136_max_abs_difference": 2.682209014892578e-07
+    }
+  },
+  "new_tolerance_introduced": false,
+  "accuracy_verified": false,
+  "full_pipeline_realtime_verified": false,
+  "original_onnx_equivalence_verified": false
+}

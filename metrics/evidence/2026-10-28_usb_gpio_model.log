@@ -1,0 +1,29 @@
+COLD_USB_BASELINE_OK
+PASS reset USB baseline is accepted
+PASS running host cannot be misreported as cold baseline
+RESETB expected=0 sampled=0
+RESETB expected=1 sampled=1
+USB_PREPARE_OK bank501=1.8V RESETB=low->high
+PASS GPIO reset produces low then high
+PASS masked write preserves all unrelated output latches
+PASS direction and enable preserve unrelated pins
+PASS reset pin stays LVCMOS18 with GPIO output mux
+PASS only required peripheral clocks are enabled
+PASS UART1 also uses verified 1.8V bank voltage without mux changes
+PASS MIO28 changes electrical type only
+PASS MIO29 changes electrical type only
+PASS MIO30 changes electrical type only
+PASS MIO31 changes electrical type only
+PASS MIO32 changes electrical type only
+PASS MIO33 changes electrical type only
+PASS MIO34 changes electrical type only
+PASS MIO35 changes electrical type only
+PASS MIO36 changes electrical type only
+PASS MIO37 changes electrical type only
+PASS MIO38 changes electrical type only
+PASS MIO39 changes electrical type only
+RESETB expected=0 sampled=1
+RESETB expected=1 sampled=1
+PASS stuck reset input is rejected instead of using latch as evidence
+PASS reset is released even when low verification fails
+RESULT: PASS

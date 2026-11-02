@@ -1,0 +1,23 @@
+JPEG_DECODE_FAIL sequence=2
+CAMERA_PL_FAIL incomplete_pipeline submitted=5 processed=2
+CAMERA_PL_FAIL incomplete_pipeline submitted=9 processed=2
+JPEG_DECODE_FAIL sequence=2
+CAMERA_PL_FAIL incomplete_pipeline submitted=5 processed=0
+CAMERA_PL_FAIL incomplete_pipeline submitted=9 processed=2
+DECODE_SUMMARY workers=1 frames=2 peak_active=1
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=1 frames=240 peak_active=1
+AUDIT_SUMMARY frames=240 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=1 frames=2 peak_active=1
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=1 frames=2 peak_active=1
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=2 frames=2 peak_active=2
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=2 frames=240 peak_active=2
+AUDIT_SUMMARY frames=240 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=2 frames=0 peak_active=2
+AUDIT_SUMMARY frames=0 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=2 frames=2 peak_active=2
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+CAMERA_PIPELINE_HOST_PASS workers=1,2 ordered_drain=2,240 reorder=forced history=retained worker_failures=4 startup_failures=5 abort=1

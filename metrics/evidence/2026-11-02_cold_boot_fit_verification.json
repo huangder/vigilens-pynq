@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "sha256": "1af4eb97f26d943b65ec88ffb490f7c94e214b4fcf6822b11b50773141fba7ad",
+  "images": {
+    "firmware-1": {
+      "type": "firmware",
+      "description": "U-Boot 2024.10 for zynq board",
+      "bytes": 1036664,
+      "hash_algorithm": "crc32",
+      "hash_verified": true
+    },
+    "fdt-1": {
+      "type": "flat_dt",
+      "description": "zynq-mizar-candidate",
+      "bytes": 13976,
+      "hash_algorithm": "crc32",
+      "hash_verified": true
+    }
+  },
+  "default_configuration": "conf-1",
+  "firmware": "firmware-1",
+  "fdt": "fdt-1",
+  "sole_board": "zynq-mizar-candidate",
+  "hardware_boot_verified": false
+}

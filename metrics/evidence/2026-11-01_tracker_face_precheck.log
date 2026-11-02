@@ -1,0 +1,835 @@
+SAMPLE_REQUEST target_fps=30 time_base=v4l2_buffer no_padding=1
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=240
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+The device supports: i8sdot:0, fp16:0, i8mm: 0, sve2: 0, sme2: 0
+VISION_CONFIG detector_threads=1 landmark_threads=1 ncnn_packing=0 analysis_nice=0 config_sha256=bb9e5887d115588d95a51cb4bb6d55f310a6a71baa6d42750c2fceb8d56bc644
+AUTONOMY_READY measurement=board_native no_pc_producer=1
+PL_READY profile=720p-3of8 ram=0x12000000 bytes=16777216 fid0=0 motion_threshold=16 pipeline=threaded audit_every=30 codec=raw decode_workers=2 pl_wait=yield
+JPEG_CONFIG method=IFAST fancy_upsampling=0 cpu_reference=audit
+CAPTURE_FRAME n=1 sequence=0 bytes=83830 ts=81.536977
+SAMPLE_FRAME n=1 source_sequence=0 ts_us=81536977
+CAPTURE_FRAME n=2 sequence=1 bytes=83843 ts=81.572986
+SAMPLE_FRAME n=2 source_sequence=1 ts_us=81572986
+CAPTURE_FRAME n=3 sequence=2 bytes=83799 ts=81.589068
+CAPTURE_FRAME n=4 sequence=3 bytes=83665 ts=81.605028
+SAMPLE_FRAME n=3 source_sequence=3 ts_us=81605028
+CAPTURE_FRAME n=5 sequence=4 bytes=84222 ts=81.621068
+CAPTURE_FRAME n=6 sequence=5 bytes=84098 ts=81.641418
+SAMPLE_FRAME n=4 source_sequence=5 ts_us=81641418
+CAMERA_PL_FRAME n=1 seq=0 ts_us=81536977 mismatch=0 audit=1 roi_g=141006318 roi_count=921600 motion_valid=0 motion_ratio_q16=65341 decode_ms=39.292 reference_ms=26.314 transfer_pl_ms=20.686 decode_cpu_ms=39.143 transfer_pl_cpu_ms=12.107
+CAPTURE_FRAME n=7 sequence=6 bytes=84048 ts=81.657006
+CAPTURE_FRAME n=8 sequence=7 bytes=84042 ts=81.673088
+SAMPLE_FRAME n=5 source_sequence=7 ts_us=81673088
+AUTONOMY_HANDOFF frame_id=0 gray_ms=1.147 submit_ms=37.528 accepted=1
+CAPTURE_FRAME n=9 sequence=8 bytes=83875 ts=81.689389
+AUTONOMY_SAMPLE frame_id=0 ts=81.536977000 rc=-2 rejected=1 clear_rc=0 mean_luma=0.598413399 motion_q16=0 motion_valid=0
+CAPTURE_FRAME n=10 sequence=9 bytes=84175 ts=81.705657
+SAMPLE_FRAME n=6 source_sequence=9 ts_us=81705657
+CAMERA_PL_FRAME n=2 seq=1 ts_us=81572986 mismatch=0 audit=0 roi_g=141030978 roi_count=921600 motion_valid=1 motion_ratio_q16=1037 decode_ms=46.043 reference_ms=0.000 transfer_pl_ms=27.842 decode_cpu_ms=41.052 transfer_pl_cpu_ms=9.517
+CAPTURE_FRAME n=11 sequence=10 bytes=84038 ts=81.725047
+CAPTURE_FRAME n=12 sequence=11 bytes=84132 ts=81.741023
+SAMPLE_FRAME n=7 source_sequence=11 ts_us=81741023
+AUTONOMY_HANDOFF frame_id=1 gray_ms=1.011 submit_ms=27.051 accepted=1
+CAPTURE_FRAME n=13 sequence=12 bytes=84189 ts=81.757030
+CAPTURE_FRAME n=14 sequence=13 bytes=84138 ts=81.773076
+SAMPLE_FRAME n=8 source_sequence=13 ts_us=81773076
+CAMERA_PL_FRAME n=3 seq=3 ts_us=81605028 mismatch=0 audit=0 roi_g=141100733 roi_count=921600 motion_valid=1 motion_ratio_q16=1198 decode_ms=72.106 reference_ms=0.000 transfer_pl_ms=31.773 decode_cpu_ms=41.313 transfer_pl_cpu_ms=8.201
+CAPTURE_FRAME n=15 sequence=14 bytes=83936 ts=81.789088
+AUTONOMY_HANDOFF frame_id=2 gray_ms=1.010 submit_ms=25.766 accepted=1
+CAPTURE_FRAME n=16 sequence=15 bytes=84330 ts=81.809412
+SAMPLE_FRAME n=9 source_sequence=15 ts_us=81809412
+CAPTURE_FRAME n=17 sequence=16 bytes=84186 ts=81.825229
+CAMERA_PL_FRAME n=4 seq=5 ts_us=81641418 mismatch=0 audit=0 roi_g=142761088 roi_count=921600 motion_valid=1 motion_ratio_q16=1171 decode_ms=58.227 reference_ms=0.000 transfer_pl_ms=36.035 decode_cpu_ms=47.475 transfer_pl_cpu_ms=9.488
+AUTONOMY_HANDOFF frame_id=3 gray_ms=1.133 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=18 sequence=17 bytes=84212 ts=81.841646
+SAMPLE_FRAME n=10 source_sequence=17 ts_us=81841646
+CAPTURE_FRAME n=19 sequence=18 bytes=84224 ts=81.857077
+CAMERA_PL_FRAME n=5 seq=7 ts_us=81673088 mismatch=0 audit=0 roi_g=142771275 roi_count=921600 motion_valid=1 motion_ratio_q16=1122 decode_ms=78.979 reference_ms=0.000 transfer_pl_ms=25.950 decode_cpu_ms=40.334 transfer_pl_cpu_ms=8.743
+AUTONOMY_HANDOFF frame_id=4 gray_ms=1.118 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=20 sequence=19 bytes=84177 ts=81.873033
+SAMPLE_FRAME n=11 source_sequence=19 ts_us=81873033
+CAPTURE_FRAME n=21 sequence=20 bytes=84385 ts=81.893041
+CAMERA_PL_FRAME n=6 seq=9 ts_us=81705657 mismatch=0 audit=0 roi_g=142755245 roi_count=921600 motion_valid=1 motion_ratio_q16=1143 decode_ms=57.943 reference_ms=0.000 transfer_pl_ms=32.712 decode_cpu_ms=46.230 transfer_pl_cpu_ms=8.136
+AUTONOMY_HANDOFF frame_id=5 gray_ms=1.214 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=22 sequence=21 bytes=84232 ts=81.909294
+SAMPLE_FRAME n=12 source_sequence=21 ts_us=81909294
+CAPTURE_FRAME n=23 sequence=22 bytes=84214 ts=81.925642
+CAPTURE_FRAME n=24 sequence=23 bytes=84264 ts=81.941023
+SAMPLE_FRAME n=13 source_sequence=23 ts_us=81941023
+CAMERA_PL_FRAME n=7 seq=11 ts_us=81741023 mismatch=0 audit=0 roi_g=142830393 roi_count=921600 motion_valid=1 motion_ratio_q16=1078 decode_ms=55.308 reference_ms=0.000 transfer_pl_ms=37.970 decode_cpu_ms=38.298 transfer_pl_cpu_ms=10.232
+AUTONOMY_HANDOFF frame_id=6 gray_ms=1.210 submit_ms=0.011 accepted=0
+CAPTURE_FRAME n=25 sequence=24 bytes=84103 ts=81.957053
+CAPTURE_FRAME n=26 sequence=25 bytes=84164 ts=81.977013
+SAMPLE_FRAME n=14 source_sequence=25 ts_us=81977013
+CAMERA_PL_FRAME n=8 seq=13 ts_us=81773076 mismatch=0 audit=0 roi_g=142854390 roi_count=921600 motion_valid=1 motion_ratio_q16=1041 decode_ms=52.930 reference_ms=0.000 transfer_pl_ms=39.119 decode_cpu_ms=41.923 transfer_pl_cpu_ms=9.729
+AUTONOMY_HANDOFF frame_id=7 gray_ms=1.098 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=27 sequence=26 bytes=84134 ts=81.993057
+CAPTURE_FRAME n=28 sequence=27 bytes=84306 ts=82.009787
+SAMPLE_FRAME n=15 source_sequence=27 ts_us=82009787
+CAMERA_PL_FRAME n=9 seq=15 ts_us=81809412 mismatch=0 audit=0 roi_g=142911896 roi_count=921600 motion_valid=1 motion_ratio_q16=1016 decode_ms=86.532 reference_ms=0.000 transfer_pl_ms=38.668 decode_cpu_ms=33.939 transfer_pl_cpu_ms=8.885
+AUTONOMY_HANDOFF frame_id=8 gray_ms=1.236 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=29 sequence=28 bytes=84250 ts=82.025147
+CAPTURE_FRAME n=30 sequence=29 bytes=84157 ts=82.045892
+SAMPLE_FRAME n=16 source_sequence=29 ts_us=82045892
+CAMERA_PL_FRAME n=10 seq=17 ts_us=81841646 mismatch=0 audit=0 roi_g=142907692 roi_count=921600 motion_valid=1 motion_ratio_q16=982 decode_ms=104.098 reference_ms=0.000 transfer_pl_ms=30.573 decode_cpu_ms=36.756 transfer_pl_cpu_ms=11.610
+AUTONOMY_HANDOFF frame_id=9 gray_ms=1.163 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=31 sequence=30 bytes=84233 ts=82.061650
+CAPTURE_FRAME n=32 sequence=31 bytes=84323 ts=82.078097
+SAMPLE_FRAME n=17 source_sequence=31 ts_us=82078097
+CAMERA_PL_FRAME n=11 seq=19 ts_us=81873033 mismatch=0 audit=0 roi_g=142917567 roi_count=921600 motion_valid=1 motion_ratio_q16=961 decode_ms=82.917 reference_ms=0.000 transfer_pl_ms=40.287 decode_cpu_ms=35.098 transfer_pl_cpu_ms=11.716
+AUTONOMY_HANDOFF frame_id=10 gray_ms=1.292 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=33 sequence=32 bytes=84288 ts=82.093067
+CAPTURE_FRAME n=34 sequence=33 bytes=84222 ts=82.109039
+SAMPLE_FRAME n=18 source_sequence=33 ts_us=82109039
+CAMERA_PL_FRAME n=12 seq=21 ts_us=81909294 mismatch=0 audit=0 roi_g=142928473 roi_count=921600 motion_valid=1 motion_ratio_q16=987 decode_ms=77.784 reference_ms=0.000 transfer_pl_ms=34.607 decode_cpu_ms=35.272 transfer_pl_cpu_ms=9.220
+AUTONOMY_HANDOFF frame_id=11 gray_ms=1.183 submit_ms=0.008 accepted=0
+CAMERA_PL_FRAME n=13 seq=23 ts_us=81941023 mismatch=0 audit=0 roi_g=142959510 roi_count=921600 motion_valid=1 motion_ratio_q16=987 decode_ms=104.146 reference_ms=0.000 transfer_pl_ms=38.014 decode_cpu_ms=34.922 transfer_pl_cpu_ms=8.896
+AUTONOMY_HANDOFF frame_id=12 gray_ms=1.175 submit_ms=0.010 accepted=0
+CAPTURE_FRAME n=35 sequence=34 bytes=84118 ts=82.129008
+CAPTURE_FRAME n=36 sequence=35 bytes=84268 ts=82.145051
+SAMPLE_FRAME n=19 source_sequence=35 ts_us=82145051
+CAPTURE_FRAME n=37 sequence=36 bytes=84195 ts=82.161027
+CAMERA_PL_FRAME n=14 seq=25 ts_us=81977013 mismatch=0 audit=0 roi_g=142975541 roi_count=921600 motion_valid=1 motion_ratio_q16=1018 decode_ms=83.442 reference_ms=0.000 transfer_pl_ms=18.534 decode_cpu_ms=35.035 transfer_pl_cpu_ms=10.937
+AUTONOMY_HANDOFF frame_id=13 gray_ms=1.169 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=38 sequence=39 bytes=84217 ts=82.213799
+SAMPLE_FRAME n=20 source_sequence=39 ts_us=82213799
+CAMERA_PL_FRAME n=15 seq=27 ts_us=82009787 mismatch=0 audit=0 roi_g=142973206 roi_count=921600 motion_valid=1 motion_ratio_q16=1044 decode_ms=88.069 reference_ms=0.000 transfer_pl_ms=29.989 decode_cpu_ms=35.734 transfer_pl_cpu_ms=8.997
+AUTONOMY_HANDOFF frame_id=14 gray_ms=1.143 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=39 sequence=40 bytes=84189 ts=82.229834
+CAPTURE_FRAME n=40 sequence=41 bytes=83991 ts=82.245137
+SAMPLE_FRAME n=21 source_sequence=41 ts_us=82245137
+CAMERA_PL_FRAME n=16 seq=29 ts_us=82045892 mismatch=0 audit=0 roi_g=142965432 roi_count=921600 motion_valid=1 motion_ratio_q16=961 decode_ms=91.476 reference_ms=0.000 transfer_pl_ms=19.966 decode_cpu_ms=35.037 transfer_pl_cpu_ms=8.685
+AUTONOMY_HANDOFF frame_id=15 gray_ms=1.202 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=41 sequence=42 bytes=84262 ts=82.261541
+CAPTURE_FRAME n=42 sequence=44 bytes=84200 ts=82.297057
+SAMPLE_FRAME n=22 source_sequence=44 ts_us=82297057
+CAMERA_PL_FRAME n=17 seq=31 ts_us=82078097 mismatch=0 audit=0 roi_g=142965724 roi_count=921600 motion_valid=1 motion_ratio_q16=1024 decode_ms=87.317 reference_ms=0.000 transfer_pl_ms=30.063 decode_cpu_ms=35.042 transfer_pl_cpu_ms=8.800
+AUTONOMY_HANDOFF frame_id=16 gray_ms=1.225 submit_ms=0.010 accepted=0
+CAPTURE_FRAME n=43 sequence=45 bytes=84039 ts=82.313009
+SAMPLE_FRAME n=23 source_sequence=45 ts_us=82313009
+CAMERA_PL_FRAME n=18 seq=33 ts_us=82109039 mismatch=0 audit=0 roi_g=142990875 roi_count=921600 motion_valid=1 motion_ratio_q16=1018 decode_ms=89.895 reference_ms=0.000 transfer_pl_ms=19.998 decode_cpu_ms=34.853 transfer_pl_cpu_ms=8.543
+AUTONOMY_HANDOFF frame_id=17 gray_ms=1.186 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=44 sequence=46 bytes=84044 ts=82.329012
+CAPTURE_FRAME n=45 sequence=47 bytes=84101 ts=82.345131
+SAMPLE_FRAME n=24 source_sequence=47 ts_us=82345131
+CAMERA_PL_FRAME n=19 seq=35 ts_us=82145051 mismatch=0 audit=0 roi_g=142985058 roi_count=921600 motion_valid=1 motion_ratio_q16=1067 decode_ms=82.940 reference_ms=0.000 transfer_pl_ms=38.265 decode_cpu_ms=34.518 transfer_pl_cpu_ms=10.551
+AUTONOMY_HANDOFF frame_id=18 gray_ms=1.185 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=46 sequence=50 bytes=84213 ts=82.397599
+SAMPLE_FRAME n=25 source_sequence=50 ts_us=82397599
+CAPTURE_FRAME n=47 sequence=52 bytes=83926 ts=82.429040
+SAMPLE_FRAME n=26 source_sequence=52 ts_us=82429040
+CAMERA_PL_FRAME n=20 seq=39 ts_us=82213799 mismatch=0 audit=0 roi_g=142977736 roi_count=921600 motion_valid=1 motion_ratio_q16=1146 decode_ms=87.026 reference_ms=0.000 transfer_pl_ms=30.015 decode_cpu_ms=35.186 transfer_pl_cpu_ms=8.929
+AUTONOMY_HANDOFF frame_id=19 gray_ms=1.256 submit_ms=0.009 accepted=0
+CAMERA_PL_FRAME n=21 seq=41 ts_us=82245137 mismatch=0 audit=0 roi_g=142998322 roi_count=921600 motion_valid=1 motion_ratio_q16=1048 decode_ms=90.850 reference_ms=0.000 transfer_pl_ms=39.388 decode_cpu_ms=35.833 transfer_pl_cpu_ms=11.629
+AUTONOMY_HANDOFF frame_id=20 gray_ms=1.089 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=48 sequence=53 bytes=83943 ts=82.449052
+SAMPLE_FRAME n=27 source_sequence=53 ts_us=82449052
+CAMERA_PL_FRAME n=22 seq=44 ts_us=82297057 mismatch=0 audit=0 roi_g=142972622 roi_count=921600 motion_valid=1 motion_ratio_q16=1022 decode_ms=90.549 reference_ms=0.000 transfer_pl_ms=19.981 decode_cpu_ms=35.689 transfer_pl_cpu_ms=9.206
+AUTONOMY_HANDOFF frame_id=21 gray_ms=1.157 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=49 sequence=55 bytes=83985 ts=82.481015
+SAMPLE_FRAME n=28 source_sequence=55 ts_us=82481015
+CAMERA_PL_FRAME n=23 seq=45 ts_us=82313009 mismatch=0 audit=0 roi_g=142995128 roi_count=921600 motion_valid=1 motion_ratio_q16=949 decode_ms=83.563 reference_ms=0.000 transfer_pl_ms=19.987 decode_cpu_ms=35.718 transfer_pl_cpu_ms=8.559
+AUTONOMY_HANDOFF frame_id=22 gray_ms=1.183 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=50 sequence=57 bytes=84003 ts=82.513019
+SAMPLE_FRAME n=29 source_sequence=57 ts_us=82513019
+CAMERA_PL_FRAME n=24 seq=47 ts_us=82345131 mismatch=0 audit=0 roi_g=142985039 roi_count=921600 motion_valid=1 motion_ratio_q16=1005 decode_ms=77.533 reference_ms=0.000 transfer_pl_ms=20.011 decode_cpu_ms=34.400 transfer_pl_cpu_ms=8.520
+AUTONOMY_HANDOFF frame_id=23 gray_ms=1.203 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=51 sequence=61 bytes=84121 ts=82.581682
+SAMPLE_FRAME n=30 source_sequence=61 ts_us=82581682
+CAMERA_PL_FRAME n=25 seq=50 ts_us=82397599 mismatch=0 audit=0 roi_g=142985570 roi_count=921600 motion_valid=1 motion_ratio_q16=1062 decode_ms=82.932 reference_ms=0.000 transfer_pl_ms=20.043 decode_cpu_ms=34.751 transfer_pl_cpu_ms=9.727
+AUTONOMY_HANDOFF frame_id=24 gray_ms=1.120 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=52 sequence=63 bytes=84112 ts=82.617576
+SAMPLE_FRAME n=31 source_sequence=63 ts_us=82617576
+CAPTURE_FRAME n=53 sequence=66 bytes=84137 ts=82.665045
+SAMPLE_FRAME n=32 source_sequence=66 ts_us=82665045
+CAMERA_PL_FRAME n=26 seq=52 ts_us=82429040 mismatch=0 audit=0 roi_g=143001809 roi_count=921600 motion_valid=1 motion_ratio_q16=988 decode_ms=78.750 reference_ms=0.000 transfer_pl_ms=39.993 decode_cpu_ms=34.452 transfer_pl_cpu_ms=11.538
+AUTONOMY_HANDOFF frame_id=25 gray_ms=1.112 submit_ms=0.008 accepted=0
+CAMERA_PL_FRAME n=27 seq=53 ts_us=82449052 mismatch=0 audit=0 roi_g=142984084 roi_count=921600 motion_valid=1 motion_ratio_q16=944 decode_ms=85.080 reference_ms=0.000 transfer_pl_ms=37.607 decode_cpu_ms=34.767 transfer_pl_cpu_ms=8.805
+AUTONOMY_HANDOFF frame_id=26 gray_ms=1.273 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=54 sequence=68 bytes=84050 ts=82.701662
+SAMPLE_FRAME n=33 source_sequence=68 ts_us=82701662
+CAPTURE_FRAME n=55 sequence=72 bytes=84019 ts=82.765773
+SAMPLE_FRAME n=34 source_sequence=72 ts_us=82765773
+CAMERA_PL_FRAME n=28 seq=55 ts_us=82481015 mismatch=0 audit=0 roi_g=142993507 roi_count=921600 motion_valid=1 motion_ratio_q16=969 decode_ms=88.822 reference_ms=0.000 transfer_pl_ms=39.155 decode_cpu_ms=35.530 transfer_pl_cpu_ms=11.537
+AUTONOMY_HANDOFF frame_id=27 gray_ms=1.122 submit_ms=0.010 accepted=0
+CAMERA_PL_FRAME n=29 seq=57 ts_us=82513019 mismatch=0 audit=0 roi_g=142975461 roi_count=921600 motion_valid=1 motion_ratio_q16=1002 decode_ms=97.508 reference_ms=0.000 transfer_pl_ms=38.613 decode_cpu_ms=36.763 transfer_pl_cpu_ms=10.876
+AUTONOMY_HANDOFF frame_id=28 gray_ms=1.095 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=56 sequence=73 bytes=84034 ts=82.785056
+SAMPLE_FRAME n=35 source_sequence=73 ts_us=82785056
+CAMERA_PL_FRAME n=30 seq=61 ts_us=82581682 mismatch=0 audit=0 roi_g=143013654 roi_count=921600 motion_valid=1 motion_ratio_q16=1015 decode_ms=88.578 reference_ms=0.000 transfer_pl_ms=19.472 decode_cpu_ms=36.646 transfer_pl_cpu_ms=8.814
+AUTONOMY_HANDOFF frame_id=29 gray_ms=1.143 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=57 sequence=77 bytes=84021 ts=82.853028
+SAMPLE_FRAME n=36 source_sequence=77 ts_us=82853028
+CAPTURE_FRAME n=58 sequence=79 bytes=84098 ts=82.885596
+SAMPLE_FRAME n=37 source_sequence=79 ts_us=82885596
+CAPTURE_FRAME n=59 sequence=83 bytes=84076 ts=82.953595
+SAMPLE_FRAME n=38 source_sequence=83 ts_us=82953595
+CAMERA_PL_FRAME n=31 seq=63 ts_us=82617576 mismatch=0 audit=1 roi_g=142996865 roi_count=921600 motion_valid=1 motion_ratio_q16=999 decode_ms=91.709 reference_ms=101.529 transfer_pl_ms=39.591 decode_cpu_ms=36.035 transfer_pl_cpu_ms=10.599
+AUTONOMY_HANDOFF frame_id=30 gray_ms=1.140 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=60 sequence=85 bytes=83875 ts=82.985005
+SAMPLE_FRAME n=39 source_sequence=85 ts_us=82985005
+CAMERA_PL_FRAME n=32 seq=66 ts_us=82665045 mismatch=0 audit=0 roi_g=142989620 roi_count=921600 motion_valid=1 motion_ratio_q16=950 decode_ms=95.104 reference_ms=0.000 transfer_pl_ms=39.175 decode_cpu_ms=34.202 transfer_pl_cpu_ms=11.443
+AUTONOMY_HANDOFF frame_id=31 gray_ms=1.010 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=61 sequence=89 bytes=84175 ts=83.053075
+SAMPLE_FRAME n=40 source_sequence=89 ts_us=83053075
+CAMERA_PL_FRAME n=33 seq=68 ts_us=82701662 mismatch=0 audit=0 roi_g=143000609 roi_count=921600 motion_valid=1 motion_ratio_q16=921 decode_ms=94.420 reference_ms=0.000 transfer_pl_ms=53.850 decode_cpu_ms=34.416 transfer_pl_cpu_ms=10.078
+AUTONOMY_HANDOFF frame_id=32 gray_ms=1.005 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=62 sequence=91 bytes=84080 ts=83.085010
+SAMPLE_FRAME n=41 source_sequence=91 ts_us=83085010
+CAMERA_PL_FRAME n=34 seq=72 ts_us=82765773 mismatch=0 audit=0 roi_g=142965873 roi_count=921600 motion_valid=1 motion_ratio_q16=956 decode_ms=90.339 reference_ms=0.000 transfer_pl_ms=18.747 decode_cpu_ms=34.390 transfer_pl_cpu_ms=8.550
+AUTONOMY_HANDOFF frame_id=33 gray_ms=1.116 submit_ms=0.006 accepted=0
+CAMERA_PL_FRAME n=35 seq=73 ts_us=82785056 mismatch=0 audit=0 roi_g=142977814 roi_count=921600 motion_valid=1 motion_ratio_q16=946 decode_ms=111.004 reference_ms=0.000 transfer_pl_ms=28.635 decode_cpu_ms=35.309 transfer_pl_cpu_ms=9.258
+AUTONOMY_HANDOFF frame_id=34 gray_ms=1.115 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=63 sequence=95 bytes=84268 ts=83.152998
+SAMPLE_FRAME n=42 source_sequence=95 ts_us=83152998
+CAMERA_PL_FRAME n=36 seq=77 ts_us=82853028 mismatch=0 audit=0 roi_g=142957764 roi_count=921600 motion_valid=1 motion_ratio_q16=942 decode_ms=100.480 reference_ms=0.000 transfer_pl_ms=38.381 decode_cpu_ms=36.114 transfer_pl_cpu_ms=10.703
+AUTONOMY_HANDOFF frame_id=35 gray_ms=1.122 submit_ms=0.010 accepted=0
+CAPTURE_FRAME n=64 sequence=98 bytes=84068 ts=83.205585
+SAMPLE_FRAME n=43 source_sequence=98 ts_us=83205585
+CAMERA_PL_FRAME n=37 seq=79 ts_us=82885596 mismatch=0 audit=0 roi_g=142973910 roi_count=921600 motion_valid=1 motion_ratio_q16=944 decode_ms=83.321 reference_ms=0.000 transfer_pl_ms=48.513 decode_cpu_ms=34.898 transfer_pl_cpu_ms=9.340
+AUTONOMY_HANDOFF frame_id=36 gray_ms=1.375 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=65 sequence=101 bytes=84173 ts=83.256976
+SAMPLE_FRAME n=44 source_sequence=101 ts_us=83256976
+CAMERA_PL_FRAME n=38 seq=83 ts_us=82953595 mismatch=0 audit=0 roi_g=142979913 roi_count=921600 motion_valid=1 motion_ratio_q16=984 decode_ms=96.560 reference_ms=0.000 transfer_pl_ms=28.720 decode_cpu_ms=35.313 transfer_pl_cpu_ms=9.114
+AUTONOMY_HANDOFF frame_id=37 gray_ms=1.090 submit_ms=0.008 accepted=0
+CAMERA_PL_FRAME n=39 seq=85 ts_us=82985005 mismatch=0 audit=0 roi_g=142986506 roi_count=921600 motion_valid=1 motion_ratio_q16=941 decode_ms=78.894 reference_ms=0.000 transfer_pl_ms=28.669 decode_cpu_ms=35.466 transfer_pl_cpu_ms=8.761
+AUTONOMY_HANDOFF frame_id=38 gray_ms=1.132 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=66 sequence=104 bytes=84062 ts=83.304991
+SAMPLE_FRAME n=45 source_sequence=104 ts_us=83304991
+CAMERA_PL_FRAME n=40 seq=89 ts_us=83053075 mismatch=0 audit=0 roi_g=142940779 roi_count=921600 motion_valid=1 motion_ratio_q16=1005 decode_ms=85.421 reference_ms=0.000 transfer_pl_ms=19.922 decode_cpu_ms=34.502 transfer_pl_cpu_ms=9.076
+AUTONOMY_HANDOFF frame_id=39 gray_ms=1.096 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=67 sequence=107 bytes=83849 ts=83.357011
+SAMPLE_FRAME n=46 source_sequence=107 ts_us=83357011
+CAMERA_PL_FRAME n=41 seq=91 ts_us=83085010 mismatch=0 audit=0 roi_g=142934507 roi_count=921600 motion_valid=1 motion_ratio_q16=1032 decode_ms=91.710 reference_ms=0.000 transfer_pl_ms=30.021 decode_cpu_ms=34.626 transfer_pl_cpu_ms=8.617
+AUTONOMY_HANDOFF frame_id=40 gray_ms=1.208 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=68 sequence=110 bytes=81095 ts=83.405571
+SAMPLE_FRAME n=47 source_sequence=110 ts_us=83405571
+CAMERA_PL_FRAME n=42 seq=95 ts_us=83152998 mismatch=0 audit=0 roi_g=142952410 roi_count=921600 motion_valid=1 motion_ratio_q16=1179 decode_ms=82.710 reference_ms=0.000 transfer_pl_ms=20.014 decode_cpu_ms=34.103 transfer_pl_cpu_ms=9.328
+AUTONOMY_HANDOFF frame_id=41 gray_ms=1.084 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=69 sequence=113 bytes=81394 ts=83.457009
+SAMPLE_FRAME n=48 source_sequence=113 ts_us=83457009
+CAMERA_PL_FRAME n=43 seq=98 ts_us=83205585 mismatch=0 audit=0 roi_g=142934714 roi_count=921600 motion_valid=1 motion_ratio_q16=1267 decode_ms=75.323 reference_ms=0.000 transfer_pl_ms=20.017 decode_cpu_ms=34.492 transfer_pl_cpu_ms=8.469
+AUTONOMY_HANDOFF frame_id=42 gray_ms=1.093 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=70 sequence=115 bytes=82973 ts=83.489009
+SAMPLE_FRAME n=49 source_sequence=115 ts_us=83489009
+CAMERA_PL_FRAME n=44 seq=101 ts_us=83256976 mismatch=0 audit=0 roi_g=142936529 roi_count=921600 motion_valid=1 motion_ratio_q16=1690 decode_ms=82.150 reference_ms=0.000 transfer_pl_ms=29.860 decode_cpu_ms=34.648 transfer_pl_cpu_ms=9.527
+AUTONOMY_HANDOFF frame_id=43 gray_ms=1.030 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=71 sequence=118 bytes=83975 ts=83.541761
+SAMPLE_FRAME n=50 source_sequence=118 ts_us=83541761
+CAMERA_PL_FRAME n=45 seq=104 ts_us=83304991 mismatch=0 audit=0 roi_g=142904959 roi_count=921600 motion_valid=1 motion_ratio_q16=1525 decode_ms=90.278 reference_ms=0.000 transfer_pl_ms=16.940 decode_cpu_ms=34.719 transfer_pl_cpu_ms=8.616
+AUTONOMY_HANDOFF frame_id=44 gray_ms=0.951 submit_ms=0.008 accepted=0
+AUTONOMY_SAMPLE frame_id=1 ts=81.572986000 rc=0 detections=1 visible=1 detector_ms=1820.253 landmark_ms=93.327 total_ms=1938.763 detect_path=4 landmark_model_ms=73.576 detector_caller_cpu_ms=1575.030 landmark_caller_cpu_ms=86.453 vital_hz=0.000 vital_reject=vitals_blocked
+CAPTURE_FRAME n=72 sequence=120 bytes=83923 ts=83.573068
+SAMPLE_FRAME n=51 source_sequence=120 ts_us=83573068
+CAMERA_PL_FRAME n=46 seq=107 ts_us=83357011 mismatch=0 audit=0 roi_g=142785784 roi_count=921600 motion_valid=1 motion_ratio_q16=1793 decode_ms=69.608 reference_ms=0.000 transfer_pl_ms=19.178 decode_cpu_ms=34.817 transfer_pl_cpu_ms=8.332
+CAPTURE_FRAME n=73 sequence=124 bytes=84196 ts=83.641101
+SAMPLE_FRAME n=52 source_sequence=124 ts_us=83641101
+AUTONOMY_HANDOFF frame_id=45 gray_ms=0.987 submit_ms=32.651 accepted=1
+CAPTURE_FRAME n=74 sequence=125 bytes=84377 ts=83.660983
+CAPTURE_FRAME n=75 sequence=129 bytes=84512 ts=83.725562
+SAMPLE_FRAME n=53 source_sequence=129 ts_us=83725562
+CAMERA_PL_FRAME n=47 seq=110 ts_us=83405571 mismatch=0 audit=0 roi_g=141943914 roi_count=921600 motion_valid=1 motion_ratio_q16=4100 decode_ms=78.781 reference_ms=0.000 transfer_pl_ms=56.812 decode_cpu_ms=34.725 transfer_pl_cpu_ms=11.997
+AUTONOMY_HANDOFF frame_id=46 gray_ms=1.109 submit_ms=0.009 accepted=0
+CAMERA_PL_FRAME n=48 seq=113 ts_us=83457009 mismatch=0 audit=0 roi_g=142711528 roi_count=921600 motion_valid=1 motion_ratio_q16=5417 decode_ms=97.112 reference_ms=0.000 transfer_pl_ms=18.641 decode_cpu_ms=33.897 transfer_pl_cpu_ms=8.047
+AUTONOMY_HANDOFF frame_id=47 gray_ms=0.973 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=76 sequence=131 bytes=84529 ts=83.760997
+SAMPLE_FRAME n=54 source_sequence=131 ts_us=83760997
+AUTONOMY_SAMPLE frame_id=2 ts=81.605028000 rc=0 detections=1 visible=1 detector_ms=41.905 landmark_ms=92.172 total_ms=166.872 detect_path=2 landmark_model_ms=72.415 detector_caller_cpu_ms=40.366 landmark_caller_cpu_ms=81.963 vital_hz=31.209 vital_reject=vitals_blocked
+CAMERA_PL_FRAME n=49 seq=115 ts_us=83489009 mismatch=0 audit=0 roi_g=143532272 roi_count=921600 motion_valid=1 motion_ratio_q16=5000 decode_ms=85.174 reference_ms=0.000 transfer_pl_ms=28.810 decode_cpu_ms=34.666 transfer_pl_cpu_ms=8.213
+AUTONOMY_HANDOFF frame_id=48 gray_ms=1.251 submit_ms=31.266 accepted=1
+CAPTURE_FRAME n=77 sequence=135 bytes=84823 ts=83.829050
+SAMPLE_FRAME n=55 source_sequence=135 ts_us=83829050
+CAMERA_PL_FRAME n=50 seq=118 ts_us=83541761 mismatch=0 audit=0 roi_g=143652450 roi_count=921600 motion_valid=1 motion_ratio_q16=5283 decode_ms=99.501 reference_ms=0.000 transfer_pl_ms=20.014 decode_cpu_ms=34.686 transfer_pl_cpu_ms=8.271
+AUTONOMY_HANDOFF frame_id=49 gray_ms=1.081 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=78 sequence=136 bytes=84504 ts=83.844972
+SAMPLE_FRAME n=56 source_sequence=136 ts_us=83844972
+CAMERA_PL_FRAME n=51 seq=120 ts_us=83573068 mismatch=0 audit=0 roi_g=143638839 roi_count=921600 motion_valid=1 motion_ratio_q16=3569 decode_ms=96.045 reference_ms=0.000 transfer_pl_ms=29.994 decode_cpu_ms=34.612 transfer_pl_cpu_ms=8.492
+AUTONOMY_HANDOFF frame_id=50 gray_ms=1.002 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=79 sequence=137 bytes=84461 ts=83.861022
+CAPTURE_FRAME n=80 sequence=141 bytes=84209 ts=83.929093
+SAMPLE_FRAME n=57 source_sequence=141 ts_us=83929093
+AUTONOMY_SAMPLE frame_id=45 ts=83.357011000 rc=0 detections=1 visible=1 detector_ms=42.223 landmark_ms=89.432 total_ms=158.412 detect_path=2 landmark_model_ms=71.305 detector_caller_cpu_ms=41.003 landmark_caller_cpu_ms=82.964 vital_hz=0.571 vital_reject=vitals_blocked
+CAMERA_PL_FRAME n=52 seq=124 ts_us=83641101 mismatch=0 audit=0 roi_g=143808079 roi_count=921600 motion_valid=1 motion_ratio_q16=3995 decode_ms=91.237 reference_ms=0.000 transfer_pl_ms=31.316 decode_cpu_ms=34.450 transfer_pl_cpu_ms=9.675
+CAPTURE_FRAME n=81 sequence=143 bytes=84741 ts=83.961619
+SAMPLE_FRAME n=58 source_sequence=143 ts_us=83961619
+AUTONOMY_HANDOFF frame_id=51 gray_ms=1.103 submit_ms=43.164 accepted=1
+CAMERA_PL_FRAME n=53 seq=129 ts_us=83725562 mismatch=0 audit=0 roi_g=144189574 roi_count=921600 motion_valid=1 motion_ratio_q16=3350 decode_ms=80.109 reference_ms=0.000 transfer_pl_ms=23.771 decode_cpu_ms=34.717 transfer_pl_cpu_ms=8.755
+AUTONOMY_HANDOFF frame_id=52 gray_ms=1.118 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=82 sequence=146 bytes=84387 ts=84.013018
+SAMPLE_FRAME n=59 source_sequence=146 ts_us=84013018
+CAMERA_PL_FRAME n=54 seq=131 ts_us=83760997 mismatch=0 audit=0 roi_g=144228382 roi_count=921600 motion_valid=1 motion_ratio_q16=2286 decode_ms=94.009 reference_ms=0.000 transfer_pl_ms=29.993 decode_cpu_ms=33.974 transfer_pl_cpu_ms=8.985
+AUTONOMY_HANDOFF frame_id=53 gray_ms=1.085 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=83 sequence=147 bytes=83966 ts=84.029092
+CAPTURE_FRAME n=84 sequence=149 bytes=83676 ts=84.064984
+SAMPLE_FRAME n=60 source_sequence=149 ts_us=84064984
+CAMERA_PL_FRAME n=55 seq=135 ts_us=83829050 mismatch=0 audit=0 roi_g=144148088 roi_count=921600 motion_valid=1 motion_ratio_q16=3715 decode_ms=84.194 reference_ms=0.000 transfer_pl_ms=19.989 decode_cpu_ms=34.778 transfer_pl_cpu_ms=8.081
+AUTONOMY_HANDOFF frame_id=54 gray_ms=1.027 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=85 sequence=152 bytes=84133 ts=84.113819
+SAMPLE_FRAME n=61 source_sequence=152 ts_us=84113819
+AUTONOMY_SAMPLE frame_id=48 ts=83.489009000 rc=0 detections=1 visible=1 detector_ms=46.865 landmark_ms=87.747 total_ms=181.805 detect_path=2 landmark_model_ms=69.218 detector_caller_cpu_ms=42.507 landmark_caller_cpu_ms=81.637 vital_hz=7.576 vital_reject=vitals_blocked
+CAMERA_PL_FRAME n=56 seq=136 ts_us=83844972 mismatch=0 audit=0 roi_g=144173621 roi_count=921600 motion_valid=1 motion_ratio_q16=1306 decode_ms=86.430 reference_ms=0.000 transfer_pl_ms=38.489 decode_cpu_ms=34.086 transfer_pl_cpu_ms=10.776
+CAPTURE_FRAME n=86 sequence=155 bytes=83909 ts=84.165786
+SAMPLE_FRAME n=62 source_sequence=155 ts_us=84165786
+AUTONOMY_HANDOFF frame_id=55 gray_ms=1.114 submit_ms=33.436 accepted=1
+CAMERA_PL_FRAME n=57 seq=141 ts_us=83929093 mismatch=0 audit=0 roi_g=144317977 roi_count=921600 motion_valid=1 motion_ratio_q16=4833 decode_ms=102.955 reference_ms=0.000 transfer_pl_ms=34.658 decode_cpu_ms=35.420 transfer_pl_cpu_ms=9.056
+AUTONOMY_HANDOFF frame_id=56 gray_ms=1.127 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=87 sequence=156 bytes=83600 ts=84.181430
+SAMPLE_FRAME n=63 source_sequence=156 ts_us=84181430
+CAMERA_PL_FRAME n=58 seq=143 ts_us=83961619 mismatch=0 audit=0 roi_g=144175417 roi_count=921600 motion_valid=1 motion_ratio_q16=2752 decode_ms=96.812 reference_ms=0.000 transfer_pl_ms=19.985 decode_cpu_ms=36.211 transfer_pl_cpu_ms=8.392
+AUTONOMY_HANDOFF frame_id=57 gray_ms=1.210 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=88 sequence=158 bytes=83574 ts=84.213003
+SAMPLE_FRAME n=64 source_sequence=158 ts_us=84213003
+CAMERA_PL_FRAME n=59 seq=146 ts_us=84013018 mismatch=0 audit=0 roi_g=144115586 roi_count=921600 motion_valid=1 motion_ratio_q16=2579 decode_ms=90.200 reference_ms=0.000 transfer_pl_ms=30.009 decode_cpu_ms=34.883 transfer_pl_cpu_ms=9.167
+AUTONOMY_HANDOFF frame_id=58 gray_ms=1.209 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=89 sequence=161 bytes=84415 ts=84.265492
+SAMPLE_FRAME n=65 source_sequence=161 ts_us=84265492
+CAMERA_PL_FRAME n=60 seq=149 ts_us=84064984 mismatch=0 audit=0 roi_g=144073296 roi_count=921600 motion_valid=1 motion_ratio_q16=4727 decode_ms=86.867 reference_ms=0.000 transfer_pl_ms=20.004 decode_cpu_ms=34.671 transfer_pl_cpu_ms=9.027
+AUTONOMY_HANDOFF frame_id=59 gray_ms=1.165 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=90 sequence=164 bytes=83830 ts=84.317680
+SAMPLE_FRAME n=66 source_sequence=164 ts_us=84317680
+CAPTURE_FRAME n=91 sequence=166 bytes=83326 ts=84.349102
+SAMPLE_FRAME n=67 source_sequence=166 ts_us=84349102
+CAPTURE_FRAME n=92 sequence=169 bytes=83380 ts=84.400965
+SAMPLE_FRAME n=68 source_sequence=169 ts_us=84400965
+CAMERA_PL_FRAME n=61 seq=152 ts_us=84113819 mismatch=0 audit=1 roi_g=143742749 roi_count=921600 motion_valid=1 motion_ratio_q16=4145 decode_ms=82.132 reference_ms=85.724 transfer_pl_ms=54.246 decode_cpu_ms=34.832 transfer_pl_cpu_ms=11.219
+AUTONOMY_HANDOFF frame_id=60 gray_ms=1.127 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=93 sequence=172 bytes=83742 ts=84.449021
+SAMPLE_FRAME n=69 source_sequence=172 ts_us=84449021
+CAMERA_PL_FRAME n=62 seq=155 ts_us=84165786 mismatch=0 audit=0 roi_g=143850279 roi_count=921600 motion_valid=1 motion_ratio_q16=3091 decode_ms=91.359 reference_ms=0.000 transfer_pl_ms=38.291 decode_cpu_ms=34.271 transfer_pl_cpu_ms=9.445
+AUTONOMY_HANDOFF frame_id=61 gray_ms=1.147 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=94 sequence=175 bytes=84012 ts=84.500982
+SAMPLE_FRAME n=70 source_sequence=175 ts_us=84500982
+CAMERA_PL_FRAME n=63 seq=156 ts_us=84181430 mismatch=0 audit=0 roi_g=143881583 roi_count=921600 motion_valid=1 motion_ratio_q16=2442 decode_ms=100.043 reference_ms=0.000 transfer_pl_ms=26.970 decode_cpu_ms=34.292 transfer_pl_cpu_ms=7.998
+AUTONOMY_HANDOFF frame_id=62 gray_ms=1.095 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=95 sequence=178 bytes=84142 ts=84.553534
+SAMPLE_FRAME n=71 source_sequence=178 ts_us=84553534
+CAMERA_PL_FRAME n=64 seq=158 ts_us=84213003 mismatch=0 audit=0 roi_g=143804919 roi_count=921600 motion_valid=1 motion_ratio_q16=3878 decode_ms=95.308 reference_ms=0.000 transfer_pl_ms=37.910 decode_cpu_ms=34.578 transfer_pl_cpu_ms=10.310
+AUTONOMY_HANDOFF frame_id=63 gray_ms=1.157 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=96 sequence=181 bytes=83993 ts=84.600964
+SAMPLE_FRAME n=72 source_sequence=181 ts_us=84600964
+CAMERA_PL_FRAME n=65 seq=161 ts_us=84265492 mismatch=0 audit=0 roi_g=143788864 roi_count=921600 motion_valid=1 motion_ratio_q16=3378 decode_ms=100.249 reference_ms=0.000 transfer_pl_ms=38.299 decode_cpu_ms=35.122 transfer_pl_cpu_ms=10.549
+AUTONOMY_HANDOFF frame_id=64 gray_ms=1.170 submit_ms=0.008 accepted=0
+CAMERA_PL_FRAME n=66 seq=164 ts_us=84317680 mismatch=0 audit=0 roi_g=143919491 roi_count=921600 motion_valid=1 motion_ratio_q16=3713 decode_ms=78.844 reference_ms=0.000 transfer_pl_ms=38.452 decode_cpu_ms=34.354 transfer_pl_cpu_ms=10.699
+AUTONOMY_HANDOFF frame_id=65 gray_ms=1.082 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=97 sequence=184 bytes=83839 ts=84.652953
+SAMPLE_FRAME n=73 source_sequence=184 ts_us=84652953
+CAMERA_PL_FRAME n=67 seq=166 ts_us=84349102 mismatch=0 audit=0 roi_g=143916146 roi_count=921600 motion_valid=1 motion_ratio_q16=4116 decode_ms=95.549 reference_ms=0.000 transfer_pl_ms=48.383 decode_cpu_ms=35.590 transfer_pl_cpu_ms=10.636
+AUTONOMY_HANDOFF frame_id=66 gray_ms=1.304 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=98 sequence=187 bytes=83286 ts=84.701798
+SAMPLE_FRAME n=74 source_sequence=187 ts_us=84701798
+AUTONOMY_SAMPLE frame_id=51 ts=83.641101000 rc=0 detections=0 visible=0 detector_ms=648.454 landmark_ms=0.000 total_ms=648.679 detect_path=3 landmark_model_ms=0.000 detector_caller_cpu_ms=604.348 landmark_caller_cpu_ms=0.000 vital_hz=6.575 vital_reject=vitals_blocked
+CAMERA_PL_FRAME n=68 seq=169 ts_us=84400965 mismatch=0 audit=0 roi_g=143428589 roi_count=921600 motion_valid=1 motion_ratio_q16=4738 decode_ms=103.571 reference_ms=0.000 transfer_pl_ms=28.874 decode_cpu_ms=37.413 transfer_pl_cpu_ms=8.737
+AUTONOMY_HANDOFF frame_id=67 gray_ms=1.142 submit_ms=33.555 accepted=1
+CAPTURE_FRAME n=99 sequence=190 bytes=82988 ts=84.752954
+SAMPLE_FRAME n=75 source_sequence=190 ts_us=84752954
+CAMERA_PL_FRAME n=69 seq=172 ts_us=84449021 mismatch=0 audit=0 roi_g=143004539 roi_count=921600 motion_valid=1 motion_ratio_q16=3454 decode_ms=106.288 reference_ms=0.000 transfer_pl_ms=34.920 decode_cpu_ms=36.978 transfer_pl_cpu_ms=9.031
+AUTONOMY_HANDOFF frame_id=68 gray_ms=1.144 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=100 sequence=193 bytes=83105 ts=84.804984
+SAMPLE_FRAME n=76 source_sequence=193 ts_us=84804984
+CAMERA_PL_FRAME n=70 seq=175 ts_us=84500982 mismatch=0 audit=0 roi_g=142991500 roi_count=921600 motion_valid=1 motion_ratio_q16=2219 decode_ms=99.176 reference_ms=0.000 transfer_pl_ms=38.568 decode_cpu_ms=35.488 transfer_pl_cpu_ms=9.120
+AUTONOMY_HANDOFF frame_id=69 gray_ms=1.295 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=101 sequence=196 bytes=82981 ts=84.853027
+SAMPLE_FRAME n=77 source_sequence=196 ts_us=84853027
+CAMERA_PL_FRAME n=71 seq=178 ts_us=84553534 mismatch=0 audit=0 roi_g=142995362 roi_count=921600 motion_valid=1 motion_ratio_q16=2966 decode_ms=103.442 reference_ms=0.000 transfer_pl_ms=28.678 decode_cpu_ms=34.449 transfer_pl_cpu_ms=9.442
+AUTONOMY_HANDOFF frame_id=70 gray_ms=1.192 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=72 seq=181 ts_us=84600964 mismatch=0 audit=0 roi_g=142873554 roi_count=921600 motion_valid=1 motion_ratio_q16=3413 decode_ms=95.974 reference_ms=0.000 transfer_pl_ms=38.432 decode_cpu_ms=34.492 transfer_pl_cpu_ms=10.675
+AUTONOMY_HANDOFF frame_id=71 gray_ms=1.135 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=102 sequence=199 bytes=82785 ts=84.904961
+SAMPLE_FRAME n=78 source_sequence=199 ts_us=84904961
+CAPTURE_FRAME n=103 sequence=202 bytes=82733 ts=84.956951
+SAMPLE_FRAME n=79 source_sequence=202 ts_us=84956951
+CAMERA_PL_FRAME n=73 seq=184 ts_us=84652953 mismatch=0 audit=0 roi_g=143313599 roi_count=921600 motion_valid=1 motion_ratio_q16=3195 decode_ms=97.901 reference_ms=0.000 transfer_pl_ms=39.443 decode_cpu_ms=35.477 transfer_pl_cpu_ms=11.689
+AUTONOMY_HANDOFF frame_id=72 gray_ms=1.080 submit_ms=0.009 accepted=0
+CAMERA_PL_FRAME n=74 seq=187 ts_us=84701798 mismatch=0 audit=0 roi_g=143132903 roi_count=921600 motion_valid=1 motion_ratio_q16=2972 decode_ms=93.556 reference_ms=0.000 transfer_pl_ms=39.151 decode_cpu_ms=35.729 transfer_pl_cpu_ms=9.969
+AUTONOMY_HANDOFF frame_id=73 gray_ms=1.116 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=104 sequence=205 bytes=82735 ts=85.005697
+SAMPLE_FRAME n=80 source_sequence=205 ts_us=85005697
+CAMERA_PL_FRAME n=75 seq=190 ts_us=84752954 mismatch=0 audit=0 roi_g=142627422 roi_count=921600 motion_valid=1 motion_ratio_q16=2912 decode_ms=84.652 reference_ms=0.000 transfer_pl_ms=38.027 decode_cpu_ms=35.814 transfer_pl_cpu_ms=10.292
+AUTONOMY_HANDOFF frame_id=74 gray_ms=1.162 submit_ms=0.012 accepted=0
+CAPTURE_FRAME n=105 sequence=208 bytes=82534 ts=85.057055
+SAMPLE_FRAME n=81 source_sequence=208 ts_us=85057055
+CAMERA_PL_FRAME n=76 seq=193 ts_us=84804984 mismatch=0 audit=0 roi_g=142592656 roi_count=921600 motion_valid=1 motion_ratio_q16=2406 decode_ms=92.354 reference_ms=0.000 transfer_pl_ms=20.017 decode_cpu_ms=36.134 transfer_pl_cpu_ms=8.713
+AUTONOMY_HANDOFF frame_id=75 gray_ms=1.121 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=106 sequence=211 bytes=82559 ts=85.105554
+SAMPLE_FRAME n=82 source_sequence=211 ts_us=85105554
+CAMERA_PL_FRAME n=77 seq=196 ts_us=84853027 mismatch=0 audit=0 roi_g=142535351 roi_count=921600 motion_valid=1 motion_ratio_q16=2508 decode_ms=76.098 reference_ms=0.000 transfer_pl_ms=30.014 decode_cpu_ms=35.187 transfer_pl_cpu_ms=8.822
+AUTONOMY_HANDOFF frame_id=76 gray_ms=1.108 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=107 sequence=215 bytes=82421 ts=85.173020
+SAMPLE_FRAME n=83 source_sequence=215 ts_us=85173020
+CAMERA_PL_FRAME n=78 seq=199 ts_us=84904961 mismatch=0 audit=0 roi_g=142449921 roi_count=921600 motion_valid=1 motion_ratio_q16=2695 decode_ms=82.134 reference_ms=0.000 transfer_pl_ms=37.974 decode_cpu_ms=34.383 transfer_pl_cpu_ms=10.242
+AUTONOMY_HANDOFF frame_id=77 gray_ms=1.133 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=108 sequence=217 bytes=82257 ts=85.208993
+SAMPLE_FRAME n=84 source_sequence=217 ts_us=85208993
+CAMERA_PL_FRAME n=79 seq=202 ts_us=84956951 mismatch=0 audit=0 roi_g=142369209 roi_count=921600 motion_valid=1 motion_ratio_q16=2731 decode_ms=83.423 reference_ms=0.000 transfer_pl_ms=20.011 decode_cpu_ms=35.001 transfer_pl_cpu_ms=8.620
+AUTONOMY_HANDOFF frame_id=78 gray_ms=1.156 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=109 sequence=219 bytes=82459 ts=85.240989
+SAMPLE_FRAME n=85 source_sequence=219 ts_us=85240989
+AUTONOMY_SAMPLE frame_id=55 ts=83.844972000 rc=0 detections=0 visible=0 detector_ms=551.423 landmark_ms=0.000 total_ms=551.655 detect_path=1 landmark_model_ms=0.000 detector_caller_cpu_ms=507.835 landmark_caller_cpu_ms=0.000 vital_hz=4.905 vital_reject=vitals_blocked
+CAMERA_PL_FRAME n=80 seq=205 ts_us=85005697 mismatch=0 audit=0 roi_g=142207942 roi_count=921600 motion_valid=1 motion_ratio_q16=2307 decode_ms=83.154 reference_ms=0.000 transfer_pl_ms=19.987 decode_cpu_ms=35.475 transfer_pl_cpu_ms=8.764
+CAPTURE_FRAME n=110 sequence=222 bytes=82513 ts=85.293011
+SAMPLE_FRAME n=86 source_sequence=222 ts_us=85293011
+AUTONOMY_HANDOFF frame_id=79 gray_ms=1.067 submit_ms=33.296 accepted=1
+CAPTURE_FRAME n=111 sequence=225 bytes=82451 ts=85.341693
+SAMPLE_FRAME n=87 source_sequence=225 ts_us=85341693
+CAMERA_PL_FRAME n=81 seq=208 ts_us=85057055 mismatch=0 audit=0 roi_g=141980188 roi_count=921600 motion_valid=1 motion_ratio_q16=1791 decode_ms=77.687 reference_ms=0.000 transfer_pl_ms=39.160 decode_cpu_ms=34.310 transfer_pl_cpu_ms=11.053
+AUTONOMY_HANDOFF frame_id=80 gray_ms=1.105 submit_ms=0.009 accepted=0
+CAMERA_PL_FRAME n=82 seq=211 ts_us=85105554 mismatch=0 audit=0 roi_g=141792159 roi_count=921600 motion_valid=1 motion_ratio_q16=1610 decode_ms=97.300 reference_ms=0.000 transfer_pl_ms=38.024 decode_cpu_ms=34.844 transfer_pl_cpu_ms=10.296
+AUTONOMY_HANDOFF frame_id=81 gray_ms=1.330 submit_ms=0.011 accepted=0
+CAPTURE_FRAME n=112 sequence=228 bytes=82481 ts=85.393516
+SAMPLE_FRAME n=88 source_sequence=228 ts_us=85393516
+CAMERA_PL_FRAME n=83 seq=215 ts_us=85173020 mismatch=0 audit=0 roi_g=141630495 roi_count=921600 motion_valid=1 motion_ratio_q16=1794 decode_ms=95.204 reference_ms=0.000 transfer_pl_ms=29.166 decode_cpu_ms=36.643 transfer_pl_cpu_ms=8.739
+AUTONOMY_HANDOFF frame_id=82 gray_ms=1.197 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=113 sequence=231 bytes=82574 ts=85.445920
+SAMPLE_FRAME n=89 source_sequence=231 ts_us=85445920
+CAMERA_PL_FRAME n=84 seq=217 ts_us=85208993 mismatch=0 audit=0 roi_g=141579867 roi_count=921600 motion_valid=1 motion_ratio_q16=1388 decode_ms=91.639 reference_ms=0.000 transfer_pl_ms=18.177 decode_cpu_ms=35.797 transfer_pl_cpu_ms=8.857
+AUTONOMY_HANDOFF frame_id=83 gray_ms=1.215 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=114 sequence=234 bytes=82599 ts=85.492989
+SAMPLE_FRAME n=90 source_sequence=234 ts_us=85492989
+CAMERA_PL_FRAME n=85 seq=219 ts_us=85240989 mismatch=0 audit=0 roi_g=141503562 roi_count=921600 motion_valid=1 motion_ratio_q16=1550 decode_ms=82.826 reference_ms=0.000 transfer_pl_ms=19.991 decode_cpu_ms=34.521 transfer_pl_cpu_ms=8.625
+AUTONOMY_HANDOFF frame_id=84 gray_ms=1.128 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=115 sequence=236 bytes=82844 ts=85.528961
+SAMPLE_FRAME n=91 source_sequence=236 ts_us=85528961
+CAMERA_PL_FRAME n=86 seq=222 ts_us=85293011 mismatch=0 audit=0 roi_g=141472138 roi_count=921600 motion_valid=1 motion_ratio_q16=2215 decode_ms=82.834 reference_ms=0.000 transfer_pl_ms=19.998 decode_cpu_ms=34.449 transfer_pl_cpu_ms=9.312
+AUTONOMY_HANDOFF frame_id=85 gray_ms=1.116 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=116 sequence=240 bytes=82928 ts=85.593644
+SAMPLE_FRAME n=92 source_sequence=240 ts_us=85593644
+CAMERA_PL_FRAME n=87 seq=225 ts_us=85341693 mismatch=0 audit=0 roi_g=141577140 roi_count=921600 motion_valid=1 motion_ratio_q16=2696 decode_ms=77.991 reference_ms=0.000 transfer_pl_ms=19.988 decode_cpu_ms=34.427 transfer_pl_cpu_ms=8.961
+AUTONOMY_HANDOFF frame_id=86 gray_ms=1.108 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=117 sequence=242 bytes=82993 ts=85.628948
+SAMPLE_FRAME n=93 source_sequence=242 ts_us=85628948
+CAMERA_PL_FRAME n=88 seq=228 ts_us=85393516 mismatch=0 audit=0 roi_g=141722052 roi_count=921600 motion_valid=1 motion_ratio_q16=3142 decode_ms=82.933 reference_ms=0.000 transfer_pl_ms=19.999 decode_cpu_ms=34.404 transfer_pl_cpu_ms=8.761
+AUTONOMY_HANDOFF frame_id=87 gray_ms=1.105 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=118 sequence=245 bytes=82898 ts=85.681682
+SAMPLE_FRAME n=94 source_sequence=245 ts_us=85681682
+CAMERA_PL_FRAME n=89 seq=231 ts_us=85445920 mismatch=0 audit=0 roi_g=141918991 roi_count=921600 motion_valid=1 motion_ratio_q16=3165 decode_ms=77.492 reference_ms=0.000 transfer_pl_ms=29.990 decode_cpu_ms=34.379 transfer_pl_cpu_ms=8.816
+AUTONOMY_HANDOFF frame_id=88 gray_ms=1.210 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=119 sequence=247 bytes=81868 ts=85.713055
+SAMPLE_FRAME n=95 source_sequence=247 ts_us=85713055
+CAMERA_PL_FRAME n=90 seq=234 ts_us=85492989 mismatch=0 audit=0 roi_g=142068100 roi_count=921600 motion_valid=1 motion_ratio_q16=2909 decode_ms=83.760 reference_ms=0.000 transfer_pl_ms=37.937 decode_cpu_ms=34.274 transfer_pl_cpu_ms=10.182
+AUTONOMY_HANDOFF frame_id=89 gray_ms=1.024 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=120 sequence=250 bytes=80772 ts=85.764938
+SAMPLE_FRAME n=96 source_sequence=250 ts_us=85764938
+CAPTURE_FRAME n=121 sequence=253 bytes=80769 ts=85.813545
+SAMPLE_FRAME n=97 source_sequence=253 ts_us=85813545
+AUTONOMY_SAMPLE frame_id=67 ts=84.400965000 rc=0 detections=0 visible=0 detector_ms=568.088 landmark_ms=0.000 total_ms=568.310 detect_path=1 landmark_model_ms=0.000 detector_caller_cpu_ms=529.946 landmark_caller_cpu_ms=0.000 vital_hz=1.799 vital_reject=vitals_blocked
+CAPTURE_FRAME n=122 sequence=256 bytes=82147 ts=85.864982
+SAMPLE_FRAME n=98 source_sequence=256 ts_us=85864982
+CAMERA_PL_FRAME n=91 seq=236 ts_us=85528961 mismatch=0 audit=1 roi_g=142061425 roi_count=921600 motion_valid=1 motion_ratio_q16=1931 decode_ms=85.419 reference_ms=96.445 transfer_pl_ms=43.711 decode_cpu_ms=35.487 transfer_pl_cpu_ms=12.431
+AUTONOMY_HANDOFF frame_id=90 gray_ms=1.217 submit_ms=33.728 accepted=1
+CAPTURE_FRAME n=123 sequence=258 bytes=83520 ts=85.897000
+SAMPLE_FRAME n=99 source_sequence=258 ts_us=85897000
+CAMERA_PL_FRAME n=92 seq=240 ts_us=85593644 mismatch=0 audit=0 roi_g=141987064 roi_count=921600 motion_valid=1 motion_ratio_q16=2776 decode_ms=96.180 reference_ms=0.000 transfer_pl_ms=19.953 decode_cpu_ms=35.192 transfer_pl_cpu_ms=8.859
+AUTONOMY_HANDOFF frame_id=91 gray_ms=1.117 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=124 sequence=262 bytes=83952 ts=85.965035
+SAMPLE_FRAME n=100 source_sequence=262 ts_us=85965035
+CAMERA_PL_FRAME n=93 seq=242 ts_us=85628948 mismatch=0 audit=0 roi_g=142020795 roi_count=921600 motion_valid=1 motion_ratio_q16=1583 decode_ms=104.106 reference_ms=0.000 transfer_pl_ms=38.631 decode_cpu_ms=34.120 transfer_pl_cpu_ms=8.544
+AUTONOMY_HANDOFF frame_id=92 gray_ms=1.118 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=125 sequence=265 bytes=83693 ts=86.017060
+SAMPLE_FRAME n=101 source_sequence=265 ts_us=86017060
+CAMERA_PL_FRAME n=94 seq=245 ts_us=85681682 mismatch=0 audit=0 roi_g=142240614 roi_count=921600 motion_valid=1 motion_ratio_q16=2549 decode_ms=112.049 reference_ms=0.000 transfer_pl_ms=38.027 decode_cpu_ms=35.601 transfer_pl_cpu_ms=10.310
+AUTONOMY_HANDOFF frame_id=93 gray_ms=1.184 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=126 sequence=269 bytes=83170 ts=86.084973
+SAMPLE_FRAME n=102 source_sequence=269 ts_us=86084973
+CAMERA_PL_FRAME n=95 seq=247 ts_us=85713055 mismatch=0 audit=0 roi_g=142766458 roi_count=921600 motion_valid=1 motion_ratio_q16=3828 decode_ms=81.480 reference_ms=0.000 transfer_pl_ms=38.878 decode_cpu_ms=35.753 transfer_pl_cpu_ms=11.276
+AUTONOMY_HANDOFF frame_id=94 gray_ms=1.083 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=127 sequence=271 bytes=82901 ts=86.117036
+SAMPLE_FRAME n=103 source_sequence=271 ts_us=86117036
+CAMERA_PL_FRAME n=96 seq=250 ts_us=85764938 mismatch=0 audit=0 roi_g=143030885 roi_count=921600 motion_valid=1 motion_ratio_q16=5378 decode_ms=81.755 reference_ms=0.000 transfer_pl_ms=48.981 decode_cpu_ms=34.327 transfer_pl_cpu_ms=9.051
+AUTONOMY_HANDOFF frame_id=95 gray_ms=1.133 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=128 sequence=274 bytes=82912 ts=86.168916
+SAMPLE_FRAME n=104 source_sequence=274 ts_us=86168916
+CAMERA_PL_FRAME n=97 seq=253 ts_us=85813545 mismatch=0 audit=0 roi_g=143640914 roi_count=921600 motion_valid=1 motion_ratio_q16=6104 decode_ms=102.369 reference_ms=0.000 transfer_pl_ms=28.407 decode_cpu_ms=34.669 transfer_pl_cpu_ms=10.144
+AUTONOMY_HANDOFF frame_id=96 gray_ms=1.107 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=98 seq=256 ts_us=85864982 mismatch=0 audit=0 roi_g=144543478 roi_count=921600 motion_valid=1 motion_ratio_q16=6020 decode_ms=87.158 reference_ms=0.000 transfer_pl_ms=38.134 decode_cpu_ms=36.426 transfer_pl_cpu_ms=10.402
+AUTONOMY_HANDOFF frame_id=97 gray_ms=1.072 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=129 sequence=277 bytes=83101 ts=86.216938
+SAMPLE_FRAME n=105 source_sequence=277 ts_us=86216938
+CAMERA_PL_FRAME n=99 seq=258 ts_us=85897000 mismatch=0 audit=0 roi_g=144814764 roi_count=921600 motion_valid=1 motion_ratio_q16=4601 decode_ms=90.257 reference_ms=0.000 transfer_pl_ms=29.340 decode_cpu_ms=35.698 transfer_pl_cpu_ms=8.217
+AUTONOMY_HANDOFF frame_id=98 gray_ms=1.106 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=130 sequence=280 bytes=83322 ts=86.269020
+SAMPLE_FRAME n=106 source_sequence=280 ts_us=86269020
+CAMERA_PL_FRAME n=100 seq=262 ts_us=85965035 mismatch=0 audit=0 roi_g=144395390 roi_count=921600 motion_valid=1 motion_ratio_q16=5647 decode_ms=100.307 reference_ms=0.000 transfer_pl_ms=37.349 decode_cpu_ms=35.591 transfer_pl_cpu_ms=11.259
+AUTONOMY_HANDOFF frame_id=99 gray_ms=0.982 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=131 sequence=283 bytes=83502 ts=86.317546
+SAMPLE_FRAME n=107 source_sequence=283 ts_us=86317546
+CAMERA_PL_FRAME n=101 seq=265 ts_us=86017060 mismatch=0 audit=0 roi_g=143659237 roi_count=921600 motion_valid=1 motion_ratio_q16=4483 decode_ms=104.015 reference_ms=0.000 transfer_pl_ms=30.116 decode_cpu_ms=36.444 transfer_pl_cpu_ms=9.115
+AUTONOMY_HANDOFF frame_id=100 gray_ms=0.968 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=132 sequence=286 bytes=83539 ts=86.368949
+SAMPLE_FRAME n=108 source_sequence=286 ts_us=86368949
+CAMERA_PL_FRAME n=102 seq=269 ts_us=86084973 mismatch=0 audit=0 roi_g=142478663 roi_count=921600 motion_valid=1 motion_ratio_q16=4450 decode_ms=70.729 reference_ms=0.000 transfer_pl_ms=28.837 decode_cpu_ms=37.638 transfer_pl_cpu_ms=8.748
+AUTONOMY_HANDOFF frame_id=101 gray_ms=1.063 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=133 sequence=289 bytes=83484 ts=86.421676
+SAMPLE_FRAME n=109 source_sequence=289 ts_us=86421676
+CAPTURE_FRAME n=134 sequence=290 bytes=83613 ts=86.436935
+CAPTURE_FRAME n=135 sequence=293 bytes=84072 ts=86.489024
+SAMPLE_FRAME n=110 source_sequence=293 ts_us=86489024
+CAMERA_PL_FRAME n=103 seq=271 ts_us=86117036 mismatch=0 audit=0 roi_g=142070132 roi_count=921600 motion_valid=1 motion_ratio_q16=2739 decode_ms=93.259 reference_ms=0.000 transfer_pl_ms=29.971 decode_cpu_ms=35.802 transfer_pl_cpu_ms=9.876
+AUTONOMY_HANDOFF frame_id=102 gray_ms=1.045 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=136 sequence=295 bytes=84326 ts=86.521593
+SAMPLE_FRAME n=111 source_sequence=295 ts_us=86521593
+CAMERA_PL_FRAME n=104 seq=274 ts_us=86168916 mismatch=0 audit=0 roi_g=141905303 roi_count=921600 motion_valid=1 motion_ratio_q16=3275 decode_ms=44.619 reference_ms=0.000 transfer_pl_ms=38.457 decode_cpu_ms=40.402 transfer_pl_cpu_ms=10.839
+AUTONOMY_HANDOFF frame_id=103 gray_ms=1.047 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=137 sequence=296 bytes=84263 ts=86.537167
+SAMPLE_FRAME n=112 source_sequence=296 ts_us=86537167
+CAMERA_PL_FRAME n=105 seq=277 ts_us=86216938 mismatch=0 audit=0 roi_g=143213823 roi_count=921600 motion_valid=1 motion_ratio_q16=3141 decode_ms=42.225 reference_ms=0.000 transfer_pl_ms=29.010 decode_cpu_ms=39.376 transfer_pl_cpu_ms=8.508
+AUTONOMY_HANDOFF frame_id=104 gray_ms=1.064 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=138 sequence=297 bytes=84316 ts=86.553923
+CAPTURE_FRAME n=139 sequence=299 bytes=84272 ts=86.589004
+SAMPLE_FRAME n=113 source_sequence=299 ts_us=86589004
+CAMERA_PL_FRAME n=106 seq=280 ts_us=86269020 mismatch=0 audit=0 roi_g=143439860 roi_count=921600 motion_valid=1 motion_ratio_q16=2907 decode_ms=92.626 reference_ms=0.000 transfer_pl_ms=38.681 decode_cpu_ms=34.837 transfer_pl_cpu_ms=9.229
+AUTONOMY_HANDOFF frame_id=105 gray_ms=1.029 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=140 sequence=301 bytes=84336 ts=86.621472
+SAMPLE_FRAME n=114 source_sequence=301 ts_us=86621472
+CAMERA_PL_FRAME n=107 seq=283 ts_us=86317546 mismatch=0 audit=0 roi_g=143700683 roi_count=921600 motion_valid=1 motion_ratio_q16=2924 decode_ms=50.227 reference_ms=0.000 transfer_pl_ms=28.698 decode_cpu_ms=41.784 transfer_pl_cpu_ms=9.279
+AUTONOMY_HANDOFF frame_id=106 gray_ms=0.946 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=141 sequence=302 bytes=84250 ts=86.637284
+SAMPLE_FRAME n=115 source_sequence=302 ts_us=86637284
+CAMERA_PL_FRAME n=108 seq=286 ts_us=86368949 mismatch=0 audit=0 roi_g=143688971 roi_count=921600 motion_valid=1 motion_ratio_q16=2996 decode_ms=44.552 reference_ms=0.000 transfer_pl_ms=28.872 decode_cpu_ms=40.589 transfer_pl_cpu_ms=9.448
+AUTONOMY_HANDOFF frame_id=107 gray_ms=1.060 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=142 sequence=303 bytes=84535 ts=86.657276
+CAPTURE_FRAME n=143 sequence=305 bytes=84522 ts=86.689270
+SAMPLE_FRAME n=116 source_sequence=305 ts_us=86689270
+CAMERA_PL_FRAME n=109 seq=289 ts_us=86421676 mismatch=0 audit=0 roi_g=143763070 roi_count=921600 motion_valid=1 motion_ratio_q16=3247 decode_ms=94.177 reference_ms=0.000 transfer_pl_ms=28.721 decode_cpu_ms=34.276 transfer_pl_cpu_ms=9.300
+AUTONOMY_HANDOFF frame_id=108 gray_ms=1.043 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=144 sequence=307 bytes=84473 ts=86.721472
+SAMPLE_FRAME n=117 source_sequence=307 ts_us=86721472
+CAMERA_PL_FRAME n=110 seq=293 ts_us=86489024 mismatch=0 audit=0 roi_g=144114497 roi_count=921600 motion_valid=1 motion_ratio_q16=3613 decode_ms=50.960 reference_ms=0.000 transfer_pl_ms=38.699 decode_cpu_ms=41.997 transfer_pl_cpu_ms=8.833
+AUTONOMY_HANDOFF frame_id=109 gray_ms=0.927 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=145 sequence=308 bytes=84271 ts=86.741008
+SAMPLE_FRAME n=118 source_sequence=308 ts_us=86741008
+CAMERA_PL_FRAME n=111 seq=295 ts_us=86521593 mismatch=0 audit=0 roi_g=144316675 roi_count=921600 motion_valid=1 motion_ratio_q16=2371 decode_ms=45.371 reference_ms=0.000 transfer_pl_ms=17.815 decode_cpu_ms=41.154 transfer_pl_cpu_ms=9.363
+AUTONOMY_HANDOFF frame_id=110 gray_ms=1.166 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=146 sequence=309 bytes=84290 ts=86.757521
+CAPTURE_FRAME n=147 sequence=311 bytes=84400 ts=86.789305
+SAMPLE_FRAME n=119 source_sequence=311 ts_us=86789305
+CAMERA_PL_FRAME n=112 seq=296 ts_us=86537167 mismatch=0 audit=0 roi_g=144410886 roi_count=921600 motion_valid=1 motion_ratio_q16=1667 decode_ms=99.010 reference_ms=0.000 transfer_pl_ms=29.724 decode_cpu_ms=34.801 transfer_pl_cpu_ms=8.223
+AUTONOMY_HANDOFF frame_id=111 gray_ms=1.067 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=148 sequence=313 bytes=84341 ts=86.824941
+SAMPLE_FRAME n=120 source_sequence=313 ts_us=86824941
+CAMERA_PL_FRAME n=113 seq=299 ts_us=86589004 mismatch=0 audit=0 roi_g=144602134 roi_count=921600 motion_valid=1 motion_ratio_q16=3052 decode_ms=51.330 reference_ms=0.000 transfer_pl_ms=38.520 decode_cpu_ms=41.695 transfer_pl_cpu_ms=10.779
+AUTONOMY_HANDOFF frame_id=112 gray_ms=1.035 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=149 sequence=314 bytes=84158 ts=86.841486
+SAMPLE_FRAME n=121 source_sequence=314 ts_us=86841486
+CAMERA_PL_FRAME n=114 seq=301 ts_us=86621472 mismatch=0 audit=0 roi_g=144677371 roi_count=921600 motion_valid=1 motion_ratio_q16=2189 decode_ms=49.168 reference_ms=0.000 transfer_pl_ms=48.844 decode_cpu_ms=45.612 transfer_pl_cpu_ms=9.411
+AUTONOMY_HANDOFF frame_id=113 gray_ms=0.923 submit_ms=0.005 accepted=0
+CAPTURE_FRAME n=150 sequence=315 bytes=84219 ts=86.857049
+CAPTURE_FRAME n=151 sequence=316 bytes=84081 ts=86.873065
+SAMPLE_FRAME n=122 source_sequence=316 ts_us=86873065
+CAMERA_PL_FRAME n=115 seq=302 ts_us=86637284 mismatch=0 audit=0 roi_g=144668901 roi_count=921600 motion_valid=1 motion_ratio_q16=1529 decode_ms=103.899 reference_ms=0.000 transfer_pl_ms=18.874 decode_cpu_ms=35.755 transfer_pl_cpu_ms=8.103
+AUTONOMY_HANDOFF frame_id=114 gray_ms=1.044 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=152 sequence=319 bytes=84172 ts=86.925136
+SAMPLE_FRAME n=123 source_sequence=319 ts_us=86925136
+CAMERA_PL_FRAME n=116 seq=305 ts_us=86689270 mismatch=0 audit=0 roi_g=144502804 roi_count=921600 motion_valid=1 motion_ratio_q16=2519 decode_ms=47.454 reference_ms=0.000 transfer_pl_ms=38.732 decode_cpu_ms=39.823 transfer_pl_cpu_ms=9.218
+AUTONOMY_HANDOFF frame_id=115 gray_ms=1.014 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=153 sequence=320 bytes=84226 ts=86.940956
+SAMPLE_FRAME n=124 source_sequence=320 ts_us=86940956
+CAMERA_PL_FRAME n=117 seq=307 ts_us=86721472 mismatch=0 audit=0 roi_g=144447463 roi_count=921600 motion_valid=1 motion_ratio_q16=1966 decode_ms=45.832 reference_ms=0.000 transfer_pl_ms=23.039 decode_cpu_ms=41.645 transfer_pl_cpu_ms=9.541
+AUTONOMY_HANDOFF frame_id=116 gray_ms=0.999 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=154 sequence=321 bytes=84151 ts=86.957545
+CAPTURE_FRAME n=155 sequence=323 bytes=84369 ts=86.993533
+SAMPLE_FRAME n=125 source_sequence=323 ts_us=86993533
+CAMERA_PL_FRAME n=118 seq=308 ts_us=86741008 mismatch=0 audit=0 roi_g=144404717 roi_count=921600 motion_valid=1 motion_ratio_q16=1448 decode_ms=94.546 reference_ms=0.000 transfer_pl_ms=38.171 decode_cpu_ms=34.453 transfer_pl_cpu_ms=10.344
+AUTONOMY_HANDOFF frame_id=117 gray_ms=0.993 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=156 sequence=325 bytes=84198 ts=87.024922
+SAMPLE_FRAME n=126 source_sequence=325 ts_us=87024922
+CAMERA_PL_FRAME n=119 seq=311 ts_us=86789305 mismatch=0 audit=0 roi_g=144339347 roi_count=921600 motion_valid=1 motion_ratio_q16=2437 decode_ms=48.552 reference_ms=0.000 transfer_pl_ms=55.088 decode_cpu_ms=40.816 transfer_pl_cpu_ms=10.782
+AUTONOMY_HANDOFF frame_id=118 gray_ms=0.963 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=157 sequence=326 bytes=84196 ts=87.041545
+SAMPLE_FRAME n=127 source_sequence=326 ts_us=87041545
+CAMERA_PL_FRAME n=120 seq=313 ts_us=86824941 mismatch=0 audit=0 roi_g=144292610 roi_count=921600 motion_valid=1 motion_ratio_q16=2154 decode_ms=47.427 reference_ms=0.000 transfer_pl_ms=18.880 decode_cpu_ms=42.611 transfer_pl_cpu_ms=8.711
+AUTONOMY_HANDOFF frame_id=119 gray_ms=0.969 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=158 sequence=327 bytes=84230 ts=87.060911
+CAPTURE_FRAME n=159 sequence=329 bytes=84464 ts=87.092999
+SAMPLE_FRAME n=128 source_sequence=329 ts_us=87092999
+CAMERA_PL_FRAME n=121 seq=314 ts_us=86841486 mismatch=0 audit=1 roi_g=144260385 roi_count=921600 motion_valid=1 motion_ratio_q16=1590 decode_ms=110.477 reference_ms=80.681 transfer_pl_ms=20.138 decode_cpu_ms=37.467 transfer_pl_cpu_ms=13.996
+AUTONOMY_HANDOFF frame_id=120 gray_ms=2.355 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=160 sequence=331 bytes=84353 ts=87.124935
+SAMPLE_FRAME n=129 source_sequence=331 ts_us=87124935
+CAMERA_PL_FRAME n=122 seq=316 ts_us=86873065 mismatch=0 audit=0 roi_g=144201274 roi_count=921600 motion_valid=1 motion_ratio_q16=2289 decode_ms=46.305 reference_ms=0.000 transfer_pl_ms=17.274 decode_cpu_ms=39.600 transfer_pl_cpu_ms=8.181
+AUTONOMY_HANDOFF frame_id=121 gray_ms=2.094 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=161 sequence=332 bytes=84555 ts=87.145085
+SAMPLE_FRAME n=130 source_sequence=332 ts_us=87145085
+CAMERA_PL_FRAME n=123 seq=319 ts_us=86925136 mismatch=0 audit=0 roi_g=144159731 roi_count=921600 motion_valid=1 motion_ratio_q16=2968 decode_ms=47.432 reference_ms=0.000 transfer_pl_ms=16.844 decode_cpu_ms=43.605 transfer_pl_cpu_ms=6.372
+AUTONOMY_HANDOFF frame_id=122 gray_ms=1.056 submit_ms=0.008 accepted=0
+CAMERA_PL_FRAME n=124 seq=320 ts_us=86940956 mismatch=0 audit=0 roi_g=144144188 roi_count=921600 motion_valid=1 motion_ratio_q16=1500 decode_ms=84.035 reference_ms=0.000 transfer_pl_ms=30.640 decode_cpu_ms=34.123 transfer_pl_cpu_ms=11.354
+AUTONOMY_HANDOFF frame_id=123 gray_ms=0.966 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=162 sequence=333 bytes=84434 ts=87.160965
+CAPTURE_FRAME n=163 sequence=338 bytes=84132 ts=87.244978
+SAMPLE_FRAME n=131 source_sequence=338 ts_us=87244978
+CAMERA_PL_FRAME n=125 seq=323 ts_us=86993533 mismatch=0 audit=0 roi_g=144072393 roi_count=921600 motion_valid=1 motion_ratio_q16=2196 decode_ms=44.450 reference_ms=0.000 transfer_pl_ms=18.299 decode_cpu_ms=37.158 transfer_pl_cpu_ms=7.328
+AUTONOMY_HANDOFF frame_id=124 gray_ms=1.068 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=164 sequence=339 bytes=84131 ts=87.261033
+CAPTURE_FRAME n=165 sequence=343 bytes=84161 ts=87.328915
+SAMPLE_FRAME n=132 source_sequence=343 ts_us=87328915
+CAMERA_PL_FRAME n=126 seq=325 ts_us=87024922 mismatch=0 audit=0 roi_g=144074573 roi_count=921600 motion_valid=1 motion_ratio_q16=1645 decode_ms=64.782 reference_ms=0.000 transfer_pl_ms=25.453 decode_cpu_ms=34.788 transfer_pl_cpu_ms=7.934
+AUTONOMY_HANDOFF frame_id=125 gray_ms=1.126 submit_ms=0.010 accepted=0
+CAPTURE_FRAME n=166 sequence=344 bytes=84159 ts=87.344952
+SAMPLE_FRAME n=133 source_sequence=344 ts_us=87344952
+CAPTURE_FRAME n=167 sequence=345 bytes=84058 ts=87.360905
+CAMERA_PL_FRAME n=127 seq=326 ts_us=87041545 mismatch=0 audit=0 roi_g=144036941 roi_count=921600 motion_valid=1 motion_ratio_q16=1297 decode_ms=79.208 reference_ms=0.000 transfer_pl_ms=39.316 decode_cpu_ms=39.782 transfer_pl_cpu_ms=10.990
+CAPTURE_FRAME n=168 sequence=346 bytes=84203 ts=87.381544
+SAMPLE_FRAME n=134 source_sequence=346 ts_us=87381544
+AUTONOMY_HANDOFF frame_id=126 gray_ms=1.707 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=169 sequence=347 bytes=84296 ts=87.396963
+CAPTURE_FRAME n=170 sequence=348 bytes=84182 ts=87.413528
+SAMPLE_FRAME n=135 source_sequence=348 ts_us=87413528
+CAMERA_PL_FRAME n=128 seq=329 ts_us=87092999 mismatch=0 audit=0 roi_g=144018386 roi_count=921600 motion_valid=1 motion_ratio_q16=1947 decode_ms=83.230 reference_ms=0.000 transfer_pl_ms=30.221 decode_cpu_ms=35.934 transfer_pl_cpu_ms=8.726
+AUTONOMY_HANDOFF frame_id=127 gray_ms=0.986 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=129 seq=331 ts_us=87124935 mismatch=0 audit=0 roi_g=144004092 roi_count=921600 motion_valid=1 motion_ratio_q16=1654 decode_ms=45.114 reference_ms=0.000 transfer_pl_ms=38.553 decode_cpu_ms=38.867 transfer_pl_cpu_ms=8.640
+AUTONOMY_HANDOFF frame_id=128 gray_ms=1.044 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=171 sequence=349 bytes=84262 ts=87.429015
+CAPTURE_FRAME n=172 sequence=350 bytes=84303 ts=87.444924
+SAMPLE_FRAME n=136 source_sequence=350 ts_us=87444924
+CAPTURE_FRAME n=173 sequence=351 bytes=84240 ts=87.464939
+CAPTURE_FRAME n=174 sequence=352 bytes=84020 ts=87.480993
+SAMPLE_FRAME n=137 source_sequence=352 ts_us=87480993
+CAMERA_PL_FRAME n=130 seq=332 ts_us=87145085 mismatch=0 audit=0 roi_g=143990905 roi_count=921600 motion_valid=1 motion_ratio_q16=1212 decode_ms=47.000 reference_ms=0.000 transfer_pl_ms=27.995 decode_cpu_ms=39.373 transfer_pl_cpu_ms=9.563
+AUTONOMY_HANDOFF frame_id=129 gray_ms=1.041 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=175 sequence=353 bytes=84305 ts=87.496989
+CAPTURE_FRAME n=176 sequence=354 bytes=84432 ts=87.513002
+SAMPLE_FRAME n=138 source_sequence=354 ts_us=87513002
+CAMERA_PL_FRAME n=131 seq=338 ts_us=87244978 mismatch=0 audit=0 roi_g=143976868 roi_count=921600 motion_valid=1 motion_ratio_q16=2595 decode_ms=100.143 reference_ms=0.000 transfer_pl_ms=49.052 decode_cpu_ms=34.752 transfer_pl_cpu_ms=11.071
+AUTONOMY_HANDOFF frame_id=130 gray_ms=1.089 submit_ms=0.009 accepted=0
+AUTONOMY_SAMPLE frame_id=79 ts=85.005697000 rc=0 detections=1 visible=1 detector_ms=1333.010 landmark_ms=193.788 total_ms=1584.618 detect_path=1 landmark_model_ms=172.786 detector_caller_cpu_ms=754.048 landmark_caller_cpu_ms=71.843 vital_hz=1.654 vital_reject=vitals_blocked
+CAPTURE_FRAME n=177 sequence=355 bytes=84386 ts=87.528935
+CAPTURE_FRAME n=178 sequence=356 bytes=84369 ts=87.548893
+SAMPLE_FRAME n=139 source_sequence=356 ts_us=87548893
+CAMERA_PL_FRAME n=132 seq=343 ts_us=87328915 mismatch=0 audit=0 roi_g=143903149 roi_count=921600 motion_valid=1 motion_ratio_q16=3076 decode_ms=42.150 reference_ms=0.000 transfer_pl_ms=29.133 decode_cpu_ms=37.374 transfer_pl_cpu_ms=8.750
+AUTONOMY_HANDOFF frame_id=131 gray_ms=1.119 submit_ms=26.772 accepted=1
+CAPTURE_FRAME n=179 sequence=357 bytes=84331 ts=87.565080
+CAPTURE_FRAME n=180 sequence=358 bytes=84330 ts=87.581774
+SAMPLE_FRAME n=140 source_sequence=358 ts_us=87581774
+CAMERA_PL_FRAME n=133 seq=344 ts_us=87344952 mismatch=0 audit=0 roi_g=143898271 roi_count=921600 motion_valid=1 motion_ratio_q16=1331 decode_ms=48.403 reference_ms=0.000 transfer_pl_ms=16.849 decode_cpu_ms=40.628 transfer_pl_cpu_ms=7.700
+AUTONOMY_HANDOFF frame_id=132 gray_ms=0.936 submit_ms=0.006 accepted=0
+CAPTURE_FRAME n=181 sequence=359 bytes=84324 ts=87.597078
+CAMERA_PL_FRAME n=134 seq=346 ts_us=87381544 mismatch=0 audit=0 roi_g=143842366 roi_count=921600 motion_valid=1 motion_ratio_q16=1456 decode_ms=107.163 reference_ms=0.000 transfer_pl_ms=16.199 decode_cpu_ms=35.099 transfer_pl_cpu_ms=7.964
+CAPTURE_FRAME n=182 sequence=361 bytes=84325 ts=87.632916
+SAMPLE_FRAME n=141 source_sequence=361 ts_us=87632916
+AUTONOMY_HANDOFF frame_id=133 gray_ms=5.744 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=135 seq=348 ts_us=87413528 mismatch=0 audit=0 roi_g=143854105 roi_count=921600 motion_valid=1 motion_ratio_q16=1089 decode_ms=43.619 reference_ms=0.000 transfer_pl_ms=19.690 decode_cpu_ms=37.662 transfer_pl_cpu_ms=7.570
+AUTONOMY_HANDOFF frame_id=134 gray_ms=1.006 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=183 sequence=362 bytes=84381 ts=87.648985
+SAMPLE_FRAME n=142 source_sequence=362 ts_us=87648985
+CAMERA_PL_FRAME n=136 seq=350 ts_us=87444924 mismatch=0 audit=0 roi_g=143871302 roi_count=921600 motion_valid=1 motion_ratio_q16=1146 decode_ms=71.345 reference_ms=0.000 transfer_pl_ms=28.877 decode_cpu_ms=41.965 transfer_pl_cpu_ms=8.623
+AUTONOMY_HANDOFF frame_id=135 gray_ms=1.810 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=184 sequence=363 bytes=84225 ts=87.664918
+CAPTURE_FRAME n=185 sequence=364 bytes=84146 ts=87.680901
+SAMPLE_FRAME n=143 source_sequence=364 ts_us=87680901
+CAMERA_PL_FRAME n=137 seq=352 ts_us=87480993 mismatch=0 audit=0 roi_g=143895171 roi_count=921600 motion_valid=1 motion_ratio_q16=1164 decode_ms=59.680 reference_ms=0.000 transfer_pl_ms=28.919 decode_cpu_ms=34.620 transfer_pl_cpu_ms=8.970
+AUTONOMY_HANDOFF frame_id=136 gray_ms=1.010 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=186 sequence=365 bytes=84274 ts=87.700894
+CAPTURE_FRAME n=187 sequence=366 bytes=84272 ts=87.716900
+SAMPLE_FRAME n=144 source_sequence=366 ts_us=87716900
+CAMERA_PL_FRAME n=138 seq=354 ts_us=87513002 mismatch=0 audit=0 roi_g=143888031 roi_count=921600 motion_valid=1 motion_ratio_q16=1118 decode_ms=69.950 reference_ms=0.000 transfer_pl_ms=25.227 decode_cpu_ms=34.922 transfer_pl_cpu_ms=8.267
+AUTONOMY_HANDOFF frame_id=137 gray_ms=1.005 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=188 sequence=367 bytes=84243 ts=87.732914
+CAMERA_PL_FRAME n=139 seq=356 ts_us=87548893 mismatch=0 audit=0 roi_g=143885176 roi_count=921600 motion_valid=1 motion_ratio_q16=1129 decode_ms=66.438 reference_ms=0.000 transfer_pl_ms=20.777 decode_cpu_ms=34.595 transfer_pl_cpu_ms=8.224
+AUTONOMY_HANDOFF frame_id=138 gray_ms=0.991 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=189 sequence=369 bytes=84059 ts=87.764899
+SAMPLE_FRAME n=145 source_sequence=369 ts_us=87764899
+AUTONOMY_SAMPLE frame_id=90 ts=85.528961000 rc=0 detections=1 visible=1 detector_ms=80.351 landmark_ms=135.900 total_ms=249.101 detect_path=2 landmark_model_ms=110.294 detector_caller_cpu_ms=37.964 landmark_caller_cpu_ms=76.040 vital_hz=1.911 vital_reject=vitals_blocked
+CAMERA_PL_FRAME n=140 seq=358 ts_us=87581774 mismatch=0 audit=0 roi_g=143886186 roi_count=921600 motion_valid=1 motion_ratio_q16=1125 decode_ms=71.033 reference_ms=0.000 transfer_pl_ms=29.432 decode_cpu_ms=34.572 transfer_pl_cpu_ms=9.023
+AUTONOMY_HANDOFF frame_id=139 gray_ms=1.148 submit_ms=33.067 accepted=1
+CAPTURE_FRAME n=190 sequence=370 bytes=84190 ts=87.784918
+SAMPLE_FRAME n=146 source_sequence=370 ts_us=87784918
+CAPTURE_FRAME n=191 sequence=371 bytes=84195 ts=87.801758
+CAPTURE_FRAME n=192 sequence=372 bytes=84323 ts=87.817705
+SAMPLE_FRAME n=147 source_sequence=372 ts_us=87817705
+CAMERA_PL_FRAME n=141 seq=361 ts_us=87632916 mismatch=0 audit=0 roi_g=143873303 roi_count=921600 motion_valid=1 motion_ratio_q16=1258 decode_ms=71.349 reference_ms=0.000 transfer_pl_ms=20.016 decode_cpu_ms=35.201 transfer_pl_cpu_ms=8.918
+AUTONOMY_HANDOFF frame_id=140 gray_ms=1.159 submit_ms=0.008 accepted=0
+CAMERA_PL_FRAME n=142 seq=362 ts_us=87648985 mismatch=0 audit=0 roi_g=143842552 roi_count=921600 motion_valid=1 motion_ratio_q16=1097 decode_ms=75.738 reference_ms=0.000 transfer_pl_ms=38.513 decode_cpu_ms=34.456 transfer_pl_cpu_ms=9.123
+AUTONOMY_HANDOFF frame_id=141 gray_ms=1.324 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=193 sequence=375 bytes=84364 ts=87.868883
+SAMPLE_FRAME n=148 source_sequence=375 ts_us=87868883
+CAMERA_PL_FRAME n=143 seq=364 ts_us=87680901 mismatch=0 audit=0 roi_g=143790768 roi_count=921600 motion_valid=1 motion_ratio_q16=1224 decode_ms=86.799 reference_ms=0.000 transfer_pl_ms=17.598 decode_cpu_ms=35.389 transfer_pl_cpu_ms=9.780
+AUTONOMY_HANDOFF frame_id=142 gray_ms=1.196 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=194 sequence=376 bytes=84248 ts=87.884900
+SAMPLE_FRAME n=149 source_sequence=376 ts_us=87884900
+CAMERA_PL_FRAME n=144 seq=366 ts_us=87716900 mismatch=0 audit=0 roi_g=143770427 roi_count=921600 motion_valid=1 motion_ratio_q16=1214 decode_ms=94.121 reference_ms=0.000 transfer_pl_ms=38.443 decode_cpu_ms=35.308 transfer_pl_cpu_ms=10.617
+AUTONOMY_HANDOFF frame_id=143 gray_ms=1.167 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=195 sequence=377 bytes=84273 ts=87.900927
+CAPTURE_FRAME n=196 sequence=381 bytes=84349 ts=87.968902
+SAMPLE_FRAME n=150 source_sequence=381 ts_us=87968902
+CAPTURE_FRAME n=197 sequence=382 bytes=84212 ts=87.984932
+SAMPLE_FRAME n=151 source_sequence=382 ts_us=87984932
+CAMERA_PL_FRAME n=145 seq=369 ts_us=87764899 mismatch=0 audit=0 roi_g=143706443 roi_count=921600 motion_valid=1 motion_ratio_q16=1235 decode_ms=83.357 reference_ms=0.000 transfer_pl_ms=29.363 decode_cpu_ms=36.321 transfer_pl_cpu_ms=9.662
+AUTONOMY_HANDOFF frame_id=144 gray_ms=1.125 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=146 seq=370 ts_us=87784918 mismatch=0 audit=0 roi_g=143713231 roi_count=921600 motion_valid=1 motion_ratio_q16=1064 decode_ms=68.524 reference_ms=0.000 transfer_pl_ms=28.864 decode_cpu_ms=35.889 transfer_pl_cpu_ms=9.708
+AUTONOMY_HANDOFF frame_id=145 gray_ms=1.153 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=198 sequence=387 bytes=84335 ts=88.069477
+SAMPLE_FRAME n=152 source_sequence=387 ts_us=88069477
+CAMERA_PL_FRAME n=147 seq=372 ts_us=87817705 mismatch=0 audit=0 roi_g=143694544 roi_count=921600 motion_valid=1 motion_ratio_q16=1179 decode_ms=85.745 reference_ms=0.000 transfer_pl_ms=24.953 decode_cpu_ms=34.346 transfer_pl_cpu_ms=9.991
+AUTONOMY_HANDOFF frame_id=146 gray_ms=1.130 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=199 sequence=388 bytes=84260 ts=88.084978
+SAMPLE_FRAME n=153 source_sequence=388 ts_us=88084978
+CAMERA_PL_FRAME n=148 seq=375 ts_us=87868883 mismatch=0 audit=0 roi_g=143676091 roi_count=921600 motion_valid=1 motion_ratio_q16=1307 decode_ms=86.587 reference_ms=0.000 transfer_pl_ms=19.480 decode_cpu_ms=35.438 transfer_pl_cpu_ms=9.151
+AUTONOMY_HANDOFF frame_id=147 gray_ms=1.111 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=200 sequence=389 bytes=84432 ts=88.104880
+SAMPLE_FRAME n=154 source_sequence=389 ts_us=88104880
+CAPTURE_FRAME n=201 sequence=392 bytes=84395 ts=88.153025
+SAMPLE_FRAME n=155 source_sequence=392 ts_us=88153025
+CAMERA_PL_FRAME n=149 seq=376 ts_us=87884900 mismatch=0 audit=0 roi_g=143680440 roi_count=921600 motion_valid=1 motion_ratio_q16=1061 decode_ms=75.623 reference_ms=0.000 transfer_pl_ms=29.970 decode_cpu_ms=35.421 transfer_pl_cpu_ms=8.718
+AUTONOMY_HANDOFF frame_id=148 gray_ms=1.078 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=150 seq=381 ts_us=87968902 mismatch=0 audit=0 roi_g=143694355 roi_count=921600 motion_valid=1 motion_ratio_q16=1308 decode_ms=84.504 reference_ms=0.000 transfer_pl_ms=38.669 decode_cpu_ms=34.506 transfer_pl_cpu_ms=8.912
+AUTONOMY_HANDOFF frame_id=149 gray_ms=1.038 submit_ms=0.005 accepted=0
+CAPTURE_FRAME n=202 sequence=394 bytes=84395 ts=88.189455
+SAMPLE_FRAME n=156 source_sequence=394 ts_us=88189455
+CAPTURE_FRAME n=203 sequence=397 bytes=84350 ts=88.236966
+SAMPLE_FRAME n=157 source_sequence=397 ts_us=88236966
+CAPTURE_FRAME n=204 sequence=399 bytes=84350 ts=88.273475
+SAMPLE_FRAME n=158 source_sequence=399 ts_us=88273475
+CAMERA_PL_FRAME n=151 seq=382 ts_us=87984932 mismatch=0 audit=1 roi_g=143707077 roi_count=921600 motion_valid=1 motion_ratio_q16=1043 decode_ms=85.675 reference_ms=95.962 transfer_pl_ms=33.951 decode_cpu_ms=34.367 transfer_pl_cpu_ms=10.733
+AUTONOMY_HANDOFF frame_id=150 gray_ms=1.184 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=205 sequence=403 bytes=84137 ts=88.336925
+SAMPLE_FRAME n=159 source_sequence=403 ts_us=88336925
+CAMERA_PL_FRAME n=152 seq=387 ts_us=88069477 mismatch=0 audit=0 roi_g=143734912 roi_count=921600 motion_valid=1 motion_ratio_q16=1504 decode_ms=101.200 reference_ms=0.000 transfer_pl_ms=29.413 decode_cpu_ms=34.566 transfer_pl_cpu_ms=8.249
+AUTONOMY_HANDOFF frame_id=151 gray_ms=1.130 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=206 sequence=404 bytes=84351 ts=88.357047
+SAMPLE_FRAME n=160 source_sequence=404 ts_us=88357047
+CAMERA_PL_FRAME n=153 seq=388 ts_us=88084978 mismatch=0 audit=0 roi_g=143732198 roi_count=921600 motion_valid=1 motion_ratio_q16=1036 decode_ms=94.208 reference_ms=0.000 transfer_pl_ms=38.080 decode_cpu_ms=34.217 transfer_pl_cpu_ms=10.213
+AUTONOMY_HANDOFF frame_id=152 gray_ms=1.311 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=207 sequence=409 bytes=84304 ts=88.440886
+SAMPLE_FRAME n=161 source_sequence=409 ts_us=88440886
+CAMERA_PL_FRAME n=154 seq=389 ts_us=88104880 mismatch=0 audit=0 roi_g=143723769 roi_count=921600 motion_valid=1 motion_ratio_q16=1046 decode_ms=89.188 reference_ms=0.000 transfer_pl_ms=30.778 decode_cpu_ms=34.415 transfer_pl_cpu_ms=13.130
+AUTONOMY_HANDOFF frame_id=153 gray_ms=1.213 submit_ms=0.009 accepted=0
+CAMERA_PL_FRAME n=155 seq=392 ts_us=88153025 mismatch=0 audit=0 roi_g=143723567 roi_count=921600 motion_valid=1 motion_ratio_q16=1207 decode_ms=97.943 reference_ms=0.000 transfer_pl_ms=26.521 decode_cpu_ms=35.439 transfer_pl_cpu_ms=10.032
+AUTONOMY_HANDOFF frame_id=154 gray_ms=1.138 submit_ms=0.009 accepted=0
+CAMERA_PL_FRAME n=156 seq=394 ts_us=88189455 mismatch=0 audit=0 roi_g=143759137 roi_count=921600 motion_valid=1 motion_ratio_q16=1110 decode_ms=92.634 reference_ms=0.000 transfer_pl_ms=38.461 decode_cpu_ms=35.069 transfer_pl_cpu_ms=9.034
+AUTONOMY_HANDOFF frame_id=155 gray_ms=1.144 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=208 sequence=411 bytes=84296 ts=88.473477
+SAMPLE_FRAME n=162 source_sequence=411 ts_us=88473477
+CAMERA_PL_FRAME n=157 seq=397 ts_us=88236966 mismatch=0 audit=0 roi_g=143744625 roi_count=921600 motion_valid=1 motion_ratio_q16=1015 decode_ms=113.908 reference_ms=0.000 transfer_pl_ms=17.832 decode_cpu_ms=36.008 transfer_pl_cpu_ms=10.006
+AUTONOMY_HANDOFF frame_id=156 gray_ms=1.168 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=209 sequence=415 bytes=84147 ts=88.541254
+SAMPLE_FRAME n=163 source_sequence=415 ts_us=88541254
+CAMERA_PL_FRAME n=158 seq=399 ts_us=88273475 mismatch=0 audit=0 roi_g=143714998 roi_count=921600 motion_valid=1 motion_ratio_q16=983 decode_ms=106.673 reference_ms=0.000 transfer_pl_ms=29.359 decode_cpu_ms=36.670 transfer_pl_cpu_ms=10.625
+AUTONOMY_HANDOFF frame_id=157 gray_ms=1.119 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=210 sequence=417 bytes=84177 ts=88.573534
+SAMPLE_FRAME n=164 source_sequence=417 ts_us=88573534
+CAMERA_PL_FRAME n=159 seq=403 ts_us=88336925 mismatch=0 audit=0 roi_g=143706531 roi_count=921600 motion_valid=1 motion_ratio_q16=1078 decode_ms=88.538 reference_ms=0.000 transfer_pl_ms=17.663 decode_cpu_ms=36.744 transfer_pl_cpu_ms=9.861
+AUTONOMY_HANDOFF frame_id=158 gray_ms=1.138 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=211 sequence=423 bytes=84088 ts=88.676970
+SAMPLE_FRAME n=165 source_sequence=423 ts_us=88676970
+CAMERA_PL_FRAME n=160 seq=404 ts_us=88357047 mismatch=0 audit=0 roi_g=143697456 roi_count=921600 motion_valid=1 motion_ratio_q16=1017 decode_ms=90.441 reference_ms=0.000 transfer_pl_ms=19.369 decode_cpu_ms=36.678 transfer_pl_cpu_ms=8.950
+AUTONOMY_HANDOFF frame_id=159 gray_ms=1.180 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=212 sequence=424 bytes=84258 ts=88.693685
+CAPTURE_FRAME n=213 sequence=428 bytes=84258 ts=88.760880
+SAMPLE_FRAME n=166 source_sequence=428 ts_us=88760880
+CAPTURE_FRAME n=214 sequence=430 bytes=84297 ts=88.792894
+SAMPLE_FRAME n=167 source_sequence=430 ts_us=88792894
+CAMERA_PL_FRAME n=161 seq=409 ts_us=88440886 mismatch=0 audit=0 roi_g=143663777 roi_count=921600 motion_valid=1 motion_ratio_q16=1298 decode_ms=87.707 reference_ms=0.000 transfer_pl_ms=19.133 decode_cpu_ms=35.488 transfer_pl_cpu_ms=10.536
+AUTONOMY_HANDOFF frame_id=160 gray_ms=1.172 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=162 seq=411 ts_us=88473477 mismatch=0 audit=0 roi_g=143670496 roi_count=921600 motion_valid=1 motion_ratio_q16=1104 decode_ms=64.723 reference_ms=0.000 transfer_pl_ms=38.124 decode_cpu_ms=34.574 transfer_pl_cpu_ms=10.513
+AUTONOMY_HANDOFF frame_id=161 gray_ms=1.169 submit_ms=0.010 accepted=0
+CAPTURE_FRAME n=215 sequence=434 bytes=84336 ts=88.861219
+SAMPLE_FRAME n=168 source_sequence=434 ts_us=88861219
+CAMERA_PL_FRAME n=163 seq=415 ts_us=88541254 mismatch=0 audit=0 roi_g=143619994 roi_count=921600 motion_valid=1 motion_ratio_q16=1233 decode_ms=80.903 reference_ms=0.000 transfer_pl_ms=23.933 decode_cpu_ms=36.163 transfer_pl_cpu_ms=8.827
+AUTONOMY_HANDOFF frame_id=162 gray_ms=1.144 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=216 sequence=435 bytes=84282 ts=88.876947
+SAMPLE_FRAME n=169 source_sequence=435 ts_us=88876947
+CAMERA_PL_FRAME n=164 seq=417 ts_us=88573534 mismatch=0 audit=0 roi_g=143673848 roi_count=921600 motion_valid=1 motion_ratio_q16=1077 decode_ms=103.019 reference_ms=0.000 transfer_pl_ms=29.428 decode_cpu_ms=36.549 transfer_pl_cpu_ms=9.006
+AUTONOMY_HANDOFF frame_id=163 gray_ms=1.113 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=217 sequence=436 bytes=84386 ts=88.893539
+CAPTURE_FRAME n=218 sequence=440 bytes=84251 ts=88.960919
+SAMPLE_FRAME n=170 source_sequence=440 ts_us=88960919
+CAPTURE_FRAME n=219 sequence=441 bytes=84246 ts=88.977688
+SAMPLE_FRAME n=171 source_sequence=441 ts_us=88977688
+CAMERA_PL_FRAME n=165 seq=423 ts_us=88676970 mismatch=0 audit=0 roi_g=143680185 roi_count=921600 motion_valid=1 motion_ratio_q16=1446 decode_ms=84.306 reference_ms=0.000 transfer_pl_ms=27.002 decode_cpu_ms=34.358 transfer_pl_cpu_ms=7.983
+AUTONOMY_HANDOFF frame_id=164 gray_ms=1.237 submit_ms=0.010 accepted=0
+CAMERA_PL_FRAME n=166 seq=428 ts_us=88760880 mismatch=0 audit=0 roi_g=143698134 roi_count=921600 motion_valid=1 motion_ratio_q16=1341 decode_ms=88.203 reference_ms=0.000 transfer_pl_ms=38.200 decode_cpu_ms=35.097 transfer_pl_cpu_ms=10.432
+AUTONOMY_HANDOFF frame_id=165 gray_ms=1.110 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=220 sequence=445 bytes=84238 ts=89.044864
+SAMPLE_FRAME n=172 source_sequence=445 ts_us=89044864
+CAPTURE_FRAME n=221 sequence=446 bytes=84363 ts=89.061199
+CAPTURE_FRAME n=222 sequence=447 bytes=84332 ts=89.080915
+SAMPLE_FRAME n=173 source_sequence=447 ts_us=89080915
+CAMERA_PL_FRAME n=167 seq=430 ts_us=88792894 mismatch=0 audit=0 roi_g=143733504 roi_count=921600 motion_valid=1 motion_ratio_q16=1023 decode_ms=89.846 reference_ms=0.000 transfer_pl_ms=39.936 decode_cpu_ms=36.051 transfer_pl_cpu_ms=10.554
+AUTONOMY_HANDOFF frame_id=166 gray_ms=1.127 submit_ms=0.008 accepted=0
+CAMERA_PL_FRAME n=168 seq=434 ts_us=88861219 mismatch=0 audit=0 roi_g=143732126 roi_count=921600 motion_valid=1 motion_ratio_q16=1029 decode_ms=74.618 reference_ms=0.000 transfer_pl_ms=28.839 decode_cpu_ms=35.483 transfer_pl_cpu_ms=9.653
+AUTONOMY_HANDOFF frame_id=167 gray_ms=1.150 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=223 sequence=451 bytes=84227 ts=89.145506
+SAMPLE_FRAME n=174 source_sequence=451 ts_us=89145506
+CAPTURE_FRAME n=224 sequence=452 bytes=84070 ts=89.164875
+CAPTURE_FRAME n=225 sequence=453 bytes=84412 ts=89.181466
+SAMPLE_FRAME n=175 source_sequence=453 ts_us=89181466
+CAMERA_PL_FRAME n=169 seq=435 ts_us=88876947 mismatch=0 audit=0 roi_g=143728137 roi_count=921600 motion_valid=1 motion_ratio_q16=1027 decode_ms=86.822 reference_ms=0.000 transfer_pl_ms=29.923 decode_cpu_ms=34.745 transfer_pl_cpu_ms=11.612
+AUTONOMY_HANDOFF frame_id=168 gray_ms=1.138 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=170 seq=440 ts_us=88960919 mismatch=0 audit=0 roi_g=143727119 roi_count=921600 motion_valid=1 motion_ratio_q16=1115 decode_ms=74.640 reference_ms=0.000 transfer_pl_ms=33.741 decode_cpu_ms=34.806 transfer_pl_cpu_ms=10.665
+AUTONOMY_HANDOFF frame_id=169 gray_ms=1.140 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=226 sequence=457 bytes=84108 ts=89.248846
+SAMPLE_FRAME n=176 source_sequence=457 ts_us=89248846
+CAPTURE_FRAME n=227 sequence=458 bytes=84312 ts=89.265799
+CAPTURE_FRAME n=228 sequence=459 bytes=84065 ts=89.280864
+SAMPLE_FRAME n=177 source_sequence=459 ts_us=89280864
+CAMERA_PL_FRAME n=171 seq=441 ts_us=88977688 mismatch=0 audit=0 roi_g=143691173 roi_count=921600 motion_valid=1 motion_ratio_q16=1022 decode_ms=91.571 reference_ms=0.000 transfer_pl_ms=37.999 decode_cpu_ms=35.615 transfer_pl_cpu_ms=10.246
+AUTONOMY_HANDOFF frame_id=170 gray_ms=1.197 submit_ms=0.012 accepted=0
+CAMERA_PL_FRAME n=172 seq=445 ts_us=89044864 mismatch=0 audit=0 roi_g=143663272 roi_count=921600 motion_valid=1 motion_ratio_q16=1086 decode_ms=73.461 reference_ms=0.000 transfer_pl_ms=38.167 decode_cpu_ms=34.896 transfer_pl_cpu_ms=10.423
+AUTONOMY_HANDOFF frame_id=171 gray_ms=1.139 submit_ms=0.009 accepted=0
+CAPTURE_FRAME n=229 sequence=463 bytes=84320 ts=89.348859
+SAMPLE_FRAME n=178 source_sequence=463 ts_us=89348859
+CAMERA_PL_FRAME n=173 seq=447 ts_us=89080915 mismatch=0 audit=0 roi_g=143679131 roi_count=921600 motion_valid=1 motion_ratio_q16=1043 decode_ms=87.813 reference_ms=0.000 transfer_pl_ms=18.160 decode_cpu_ms=36.511 transfer_pl_cpu_ms=10.375
+AUTONOMY_HANDOFF frame_id=172 gray_ms=1.130 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=230 sequence=464 bytes=84093 ts=89.365696
+CAPTURE_FRAME n=231 sequence=465 bytes=84196 ts=89.380951
+SAMPLE_FRAME n=179 source_sequence=465 ts_us=89380951
+CAMERA_PL_FRAME n=174 seq=451 ts_us=89145506 mismatch=0 audit=0 roi_g=143669753 roi_count=921600 motion_valid=1 motion_ratio_q16=1063 decode_ms=98.798 reference_ms=0.000 transfer_pl_ms=29.415 decode_cpu_ms=37.439 transfer_pl_cpu_ms=8.770
+AUTONOMY_HANDOFF frame_id=173 gray_ms=1.136 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=232 sequence=468 bytes=84278 ts=89.432944
+SAMPLE_FRAME n=180 source_sequence=468 ts_us=89432944
+CAPTURE_FRAME n=233 sequence=470 bytes=84339 ts=89.464907
+SAMPLE_FRAME n=181 source_sequence=470 ts_us=89464907
+CAMERA_PL_FRAME n=175 seq=453 ts_us=89181466 mismatch=0 audit=0 roi_g=143676792 roi_count=921600 motion_valid=1 motion_ratio_q16=1014 decode_ms=87.821 reference_ms=0.000 transfer_pl_ms=28.144 decode_cpu_ms=36.007 transfer_pl_cpu_ms=9.522
+AUTONOMY_HANDOFF frame_id=174 gray_ms=1.099 submit_ms=0.011 accepted=0
+CAMERA_PL_FRAME n=176 seq=457 ts_us=89248846 mismatch=0 audit=0 roi_g=143672602 roi_count=921600 motion_valid=1 motion_ratio_q16=1004 decode_ms=73.913 reference_ms=0.000 transfer_pl_ms=25.039 decode_cpu_ms=33.964 transfer_pl_cpu_ms=9.985
+AUTONOMY_HANDOFF frame_id=175 gray_ms=1.000 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=234 sequence=471 bytes=84309 ts=89.484899
+SAMPLE_FRAME n=182 source_sequence=471 ts_us=89484899
+CAPTURE_FRAME n=235 sequence=474 bytes=84139 ts=89.533494
+SAMPLE_FRAME n=183 source_sequence=474 ts_us=89533494
+CAMERA_PL_FRAME n=177 seq=459 ts_us=89280864 mismatch=0 audit=0 roi_g=143671292 roi_count=921600 motion_valid=1 motion_ratio_q16=1017 decode_ms=83.540 reference_ms=0.000 transfer_pl_ms=39.343 decode_cpu_ms=34.868 transfer_pl_cpu_ms=9.779
+AUTONOMY_HANDOFF frame_id=176 gray_ms=1.147 submit_ms=0.008 accepted=0
+CAMERA_PL_FRAME n=178 seq=463 ts_us=89348859 mismatch=0 audit=0 roi_g=143673691 roi_count=921600 motion_valid=1 motion_ratio_q16=1026 decode_ms=74.208 reference_ms=0.000 transfer_pl_ms=28.521 decode_cpu_ms=35.262 transfer_pl_cpu_ms=8.825
+AUTONOMY_HANDOFF frame_id=177 gray_ms=1.031 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=236 sequence=475 bytes=84153 ts=89.549666
+SAMPLE_FRAME n=184 source_sequence=475 ts_us=89549666
+CAMERA_PL_FRAME n=179 seq=465 ts_us=89380951 mismatch=0 audit=0 roi_g=143671098 roi_count=921600 motion_valid=1 motion_ratio_q16=1066 decode_ms=86.611 reference_ms=0.000 transfer_pl_ms=19.889 decode_cpu_ms=34.354 transfer_pl_cpu_ms=9.364
+AUTONOMY_HANDOFF frame_id=178 gray_ms=1.110 submit_ms=0.008 accepted=0
+CAPTURE_FRAME n=237 sequence=480 bytes=84282 ts=89.632862
+SAMPLE_FRAME n=185 source_sequence=480 ts_us=89632862
+CAMERA_PL_FRAME n=180 seq=468 ts_us=89432944 mismatch=0 audit=0 roi_g=143676562 roi_count=921600 motion_valid=1 motion_ratio_q16=1134 decode_ms=92.477 reference_ms=0.000 transfer_pl_ms=30.012 decode_cpu_ms=34.643 transfer_pl_cpu_ms=8.756
+AUTONOMY_HANDOFF frame_id=179 gray_ms=1.196 submit_ms=0.007 accepted=0
+CAPTURE_FRAME n=238 sequence=481 bytes=84268 ts=89.652970
+SAMPLE_FRAME n=186 source_sequence=481 ts_us=89652970
+AUTONOMY_SAMPLE frame_id=131 ts=87.328915000 rc=0 detections=0 visible=0 detector_ms=2010.828 landmark_ms=0.000 total_ms=2011.060 detect_path=5 landmark_model_ms=0.000 detector_caller_cpu_ms=1892.510 landmark_caller_cpu_ms=0.000 vital_hz=0.556 vital_reject=vitals_blocked
+CAPTURE_FRAME n=239 sequence=485 bytes=84282 ts=89.721444
+SAMPLE_FRAME n=187 source_sequence=485 ts_us=89721444
+CAPTURE_FRAME n=240 sequence=486 bytes=84226 ts=89.737574
+SAMPLE_FRAME n=188 source_sequence=486 ts_us=89737574
+CAMERA_PL_FRAME n=181 seq=470 ts_us=89464907 mismatch=0 audit=1 roi_g=143657475 roi_count=921600 motion_valid=1 motion_ratio_q16=1082 decode_ms=74.489 reference_ms=88.191 transfer_pl_ms=41.752 decode_cpu_ms=34.167 transfer_pl_cpu_ms=10.931
+AUTONOMY_HANDOFF frame_id=180 gray_ms=1.257 submit_ms=23.341 accepted=1
+SAMPLE_RESULT input=240 kept=188 dropped=52 driver_sequence_gaps=247 empty_slots=59 input_fps=29.144220 output_fps=22.803218 native_30fps=no
+CAMERA_PL_FRAME n=182 seq=471 ts_us=89484899 mismatch=0 audit=0 roi_g=143642505 roi_count=921600 motion_valid=1 motion_ratio_q16=1068 decode_ms=88.845 reference_ms=0.000 transfer_pl_ms=39.447 decode_cpu_ms=34.105 transfer_pl_cpu_ms=11.083
+AUTONOMY_HANDOFF frame_id=181 gray_ms=1.197 submit_ms=0.009 accepted=0
+CAMERA_PL_FRAME n=183 seq=474 ts_us=89533494 mismatch=0 audit=0 roi_g=143632416 roi_count=921600 motion_valid=1 motion_ratio_q16=1138 decode_ms=95.364 reference_ms=0.000 transfer_pl_ms=38.397 decode_cpu_ms=34.633 transfer_pl_cpu_ms=10.672
+AUTONOMY_HANDOFF frame_id=182 gray_ms=1.141 submit_ms=0.011 accepted=0
+CAMERA_PL_FRAME n=184 seq=475 ts_us=89549666 mismatch=0 audit=0 roi_g=143648400 roi_count=921600 motion_valid=1 motion_ratio_q16=1005 decode_ms=93.025 reference_ms=0.000 transfer_pl_ms=28.964 decode_cpu_ms=34.727 transfer_pl_cpu_ms=8.679
+AUTONOMY_HANDOFF frame_id=183 gray_ms=1.032 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=185 seq=480 ts_us=89632862 mismatch=0 audit=0 roi_g=143653380 roi_count=921600 motion_valid=1 motion_ratio_q16=1286 decode_ms=86.705 reference_ms=0.000 transfer_pl_ms=28.810 decode_cpu_ms=34.800 transfer_pl_cpu_ms=8.718
+AUTONOMY_HANDOFF frame_id=184 gray_ms=1.144 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=186 seq=481 ts_us=89652970 mismatch=0 audit=0 roi_g=143657764 roi_count=921600 motion_valid=1 motion_ratio_q16=1060 decode_ms=85.966 reference_ms=0.000 transfer_pl_ms=29.038 decode_cpu_ms=36.076 transfer_pl_cpu_ms=11.091
+AUTONOMY_HANDOFF frame_id=185 gray_ms=1.015 submit_ms=0.007 accepted=0
+CAMERA_PL_FRAME n=187 seq=485 ts_us=89721444 mismatch=0 audit=0 roi_g=143649253 roi_count=921600 motion_valid=1 motion_ratio_q16=1150 decode_ms=79.640 reference_ms=0.000 transfer_pl_ms=17.857 decode_cpu_ms=35.637 transfer_pl_cpu_ms=9.703
+AUTONOMY_HANDOFF frame_id=186 gray_ms=1.037 submit_ms=0.006 accepted=0
+CAMERA_PL_FRAME n=188 seq=486 ts_us=89737574 mismatch=0 audit=0 roi_g=143630511 roi_count=921600 motion_valid=1 motion_ratio_q16=991 decode_ms=77.212 reference_ms=0.000 transfer_pl_ms=18.219 decode_cpu_ms=35.169 transfer_pl_cpu_ms=10.036
+AUTONOMY_HANDOFF frame_id=187 gray_ms=1.227 submit_ms=0.007 accepted=0
+AUTONOMY_SAMPLE frame_id=139 ts=87.581774000 rc=0 detections=0 visible=0 detector_ms=550.477 landmark_ms=0.000 total_ms=550.700 detect_path=1 landmark_model_ms=0.000 detector_caller_cpu_ms=542.344 landmark_caller_cpu_ms=0.000 vital_hz=3.955 vital_reject=vitals_blocked
+AUTONOMY_SAMPLE frame_id=180 ts=89.464907000 rc=0 detections=0 visible=0 detector_ms=480.249 landmark_ms=0.000 total_ms=480.467 detect_path=1 landmark_model_ms=0.000 detector_caller_cpu_ms=480.213 landmark_caller_cpu_ms=0.000 vital_hz=0.531 vital_reject=vitals_blocked
+AUTONOMY_SUMMARY submitted=188 accepted=13 skipped=175 processed=13 succeeded=12 rejected=1 failed=0 rc=0 camera_submit_fps=22.803218 analysis_update_fps=1.312260
+DECODE_SUMMARY workers=2 frames=188 peak_active=2
+AUDIT_SUMMARY frames=188 audits=7 failures=0 reference_ms_total=571
+LOCAL_CAMERA_FINISH pl_frames=188 pixel_transport=disabled
+CAMERA_PL_PASS compared_frames=188 native_camera_mode_verified=0
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=240 requested_mode=unmet

@@ -1,0 +1,25 @@
+{
+  "experimental": true,
+  "files": {
+    "vigi_live": "9f1e208a1ef0eb70ad65dc7b1b82daab801c27a46eadbffc0cef901258119b57",
+    "vg_live_http": "ec24e3e0f3faf48484f20031c19d84e3b5a258b2f7c45af02cdf85b27316e785",
+    "det1.bin": "8dedfdc5e37378d23131a6cb91d1e0a446ecb7751e2d3eadd5f086fdf18b5cec",
+    "det1.param": "a9338e207dbbaa7ad56625492b551aeb4ecaf10ac279d098b02f17b0a62b1e0b",
+    "det2.bin": "15a3f7df9dc7cc1ec0976fad36ef58128bf1b5de8c2abfb42ae722e803dbd842",
+    "det2.param": "e9f614c923b3fede02c236be0246465e83a34b37ceed0bc2bcb6bfda32461d25",
+    "det3.bin": "93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962",
+    "det3.param": "b7fe7677d4840677aa0ea5690c7018630cc8d4a661be95290fe26814920bfad4",
+    "libgomp.so.1": "2d25b3b1e4a3d8ac657c406a888395eda289cbeef85a13f94dadca0452922ac2",
+    "shape_predictor_68_face_landmarks.dat": "fbdc2cb80eb9aa7a758672cbfdda32ba6300efe9b6e6c7a299ff7e736b11b92f",
+    "display.html": "d26ba34cea9b9e38bd216806327d1c69b7cf1322c8e3df11292ce8d236565f33",
+    "runtime.env": "c555a44ffe0304fb8760354321943790ecb6a73cb67603f1e38f923595b7e7f5"
+  },
+  "source_sha256": {
+    "board/autonomy/ert_runtime.cpp": "cd58e2bf452a049794cb4c9a08159ddf52458be65689fb55bb2f8f163114c5b1",
+    "board/autonomy/tests/ert_lifecycle_test.cpp": "82ab951678958617331f7d823bcf9283c2dc2f8dd28e87e46b0134aa31ad3e54",
+    "board/autonomy/tests/run_ert_lifecycle.sh": "cd4568951ce9b0e6a526821a967cd1bcc376f1bd0b20cbc590f667d132f157e4",
+    "config.yaml": "beed734d2f9a8606c23f4c2444d1a1a6cc0f44fc597525ea5cb8c5022bd50c59"
+  },
+  "accuracy_verified": false,
+  "full30_passed": false
+}

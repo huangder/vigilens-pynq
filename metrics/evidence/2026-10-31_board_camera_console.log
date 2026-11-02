@@ -1,0 +1,33 @@
+
+# echo C3_BEGIN
+C3_BEGIN
+# /usr/bin/uvc_probe /dev/video0 640 480 10 2>&1 | tail -6
+ 1280 720 5 2>&1 | tail -6
+echo R2=$?
+echo C3_END
+
+printf '\nVIGI_COMMAND_DONE\n'
+CAPTURE_FRAME n=6 sequence=5 bytes=20147 ts=2517.273495
+CAPTURE_FRAME n=7 sequence=6 bytes=20280 ts=2517.293481
+CAPTURE_FRAME n=8 sequence=7 bytes=20292 ts=2517.309483
+CAPTURE_FRAME n=9 sequence=8 bytes=21679 ts=2517.325486
+CAPTURE_FRAME n=10 sequence=9 bytes=21528 ts=2517.341491
+CAPTURE_FRAMES_OK /dev/video0 negotiated=640x480 frames=10 requested_mode=unmet
+# echo R1=$?
+R1=0
+# /usr/bin/uvc_probe /dev/video0 1280 720 5 2>&1 | tail -6
+CAPTURE_FRAME n=1 sequence=0 bytes=69425 ts=2517.618466
+CAPTURE_FRAME n=2 sequence=1 bytes=69525 ts=2517.654475
+CAPTURE_FRAME n=3 sequence=2 bytes=69422 ts=2517.670479
+CAPTURE_FRAME n=4 sequence=3 bytes=69526 ts=2517.686483
+CAPTURE_FRAME n=5 sequence=4 bytes=69948 ts=2517.702485
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=5 requested_mode=unmet
+# echo R2=$?
+R2=0
+# echo C3_END
+C3_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

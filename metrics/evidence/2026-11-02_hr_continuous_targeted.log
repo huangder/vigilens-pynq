@@ -1,0 +1,4 @@
+........................ssss                                             [100%]
+=========================== short test summary info ===========================
+SKIPPED [4] .tools\python312\Lib\site-packages\_pytest\unittest.py:523: Linux host gcc required
+24 passed, 4 skipped in 1.05s

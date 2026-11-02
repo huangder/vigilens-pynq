@@ -111,6 +111,31 @@ def test_choose_rotation_survives_a_throwing_detector() -> None:
     assert best == 0 and scores[0] == 0
 
 
+def test_choose_rotation_ignores_a_single_lucky_hit() -> None:
+    """只有 1 帧偶发检出 → 不翻转（真机踩到：无人脸的桌面画面在 180° 检出 1/8 帧）。
+
+    这一条钉住的是**代价不对等**：漏转只是没帮上忙，错转会让 ROI/姿态/rPPG 全错，
+    而日志里只多一行"顺时针旋转 180°"，看起来完全正常。
+    """
+    calls = {"n": 0}
+
+    def one_lucky_hit(_img_: np.ndarray) -> bool:
+        calls["n"] += 1
+        return calls["n"] == 5          # 4 个角度 x 8 帧里的第 5 次调用
+
+    best, scores = choose_rotation([_img("none")] * 8, one_lucky_hit)
+    assert max(scores.values()) == 1, scores
+    assert best == 0, f"1 帧命中不足以翻转整段，scores={scores}"
+
+
+def test_choose_rotation_accepts_two_agreeing_hits() -> None:
+    """2 帧一致命中（= 8 帧探测的 1/4）就足够翻转，别把正常素材判成"不敢动"。"""
+    imgs = [_img("none")] * 6 + [_img("br")] * 2
+    best, scores = choose_rotation(imgs, _detect_only_when_marker_at_top_left)
+    assert scores[180] == 2, scores
+    assert best == 180, scores
+
+
 # ---------------------------------------------------------------------------
 # OrientingSource：探测 + 整条流旋转，且不许丢帧
 # ---------------------------------------------------------------------------

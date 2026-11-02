@@ -1,0 +1,7 @@
+{
+  "board/autonomy/point_tracker.cpp": "44f08a6feb94e2b9ffe7175f9f8bdc5986b9efdc46f52c3b230758b542a434a1",
+  "board/autonomy/point_tracker.hpp": "369e6374ba3bc228d37595b393e340f9d244b496a6d4b0f2754e8c5b1d01c776",
+  "board/autonomy/tracked_runtime.cpp": "76b4acd8f52a30e643503e8472a64beab9c2fccf3ac4702079008a891d4695a5",
+  "board/autonomy/build_native_vision.sh": "19a30e826104fe3d7c713d0b219c8a6253f5511dbebaa372c1db236855bd8021",
+  "board/autonomy/tests/contour_tracker_test.cpp": "7364bd7000bfb1d78920da094176e031f1d108002a81a8c5b111e8b8b1a9f058"
+}

@@ -23,6 +23,7 @@
 # ---- A 线：视觉与算法 -------------------------------------------------------
 numpy>=1.26,<3                       # BSD-3-Clause；指标计算与黄金参考
 opencv-python>=4.8,<5                # Apache-2.0；视频读取 / 帧差 / 色彩转换
+Pillow>=10,<13                      # HPND；匹配板端 IFAST/无 fancy upsampling 的 JPEG 解码
 mediapipe>=0.10,<0.10.30             # Apache-2.0；人脸与关键点检测（478 点）
                                      #   ⚠️ **上界不能去掉**：mediapipe 从 0.10.30 起（含全部 1.x）
                                      #      把旧的 Solutions API（`mp.solutions.face_mesh`）整个删除，

@@ -1,4 +1,4 @@
-fs=45
+fs=30
 taps=63
 coeff_shift=15
 band_hz=0.70,3.50

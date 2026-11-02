@@ -1,0 +1,24 @@
+Internal ctest changing into directory: /mnt/d/Desktop/AMD/.tmp/autonomy/full30_20261101/ctest
+Test project /mnt/d/Desktop/AMD/.tmp/autonomy/full30_20261101/ctest
+    Start 1: detect_policy
+1/9 Test #1: detect_policy ....................   Passed    0.00 sec
+    Start 2: autonomy_engine
+2/9 Test #2: autonomy_engine ..................   Passed    0.11 sec
+    Start 3: camera_input_formats
+3/9 Test #3: camera_input_formats .............   Passed    0.09 sec
+    Start 4: ert_guard
+4/9 Test #4: ert_guard ........................   Passed    0.00 sec
+    Start 5: point_tracker
+5/9 Test #5: point_tracker ....................   Passed    0.04 sec
+    Start 6: point_patch
+6/9 Test #6: point_patch ......................   Passed    0.00 sec
+    Start 7: contour_tracker
+7/9 Test #7: contour_tracker ..................   Passed    0.01 sec
+    Start 8: autonomy_camera_queue
+8/9 Test #8: autonomy_camera_queue ............   Passed    0.00 sec
+    Start 9: vision_roi_bounds
+9/9 Test #9: vision_roi_bounds ................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Total Test time (real) =   0.38 sec

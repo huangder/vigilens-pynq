@@ -1,0 +1,199 @@
+{
+  "kind": "synthetic_frequency_grid_comparison_NOT_real_HR_accuracy",
+  "source": "test_vital_c.rgb_stream; same deterministic RGB stimulus and nominal source timestamps",
+  "c_python_parity_verified": true,
+  "results": [
+    {
+      "window_s": 5,
+      "method": "pos",
+      "injected_synthetic_bpm": 69,
+      "output_bpm": 72.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 12.0
+    },
+    {
+      "window_s": 5,
+      "method": "pos",
+      "injected_synthetic_bpm": 75,
+      "output_bpm": 72.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 12.0
+    },
+    {
+      "window_s": 5,
+      "method": "pos",
+      "injected_synthetic_bpm": 90,
+      "output_bpm": 96.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 12.0
+    },
+    {
+      "window_s": 5,
+      "method": "green",
+      "injected_synthetic_bpm": 69,
+      "output_bpm": 72.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 12.0
+    },
+    {
+      "window_s": 5,
+      "method": "green",
+      "injected_synthetic_bpm": 75,
+      "output_bpm": 72.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 12.0
+    },
+    {
+      "window_s": 5,
+      "method": "green",
+      "injected_synthetic_bpm": 90,
+      "output_bpm": 84.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 12.0
+    },
+    {
+      "window_s": 6,
+      "method": "pos",
+      "injected_synthetic_bpm": 69,
+      "output_bpm": 70.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 10.0
+    },
+    {
+      "window_s": 6,
+      "method": "pos",
+      "injected_synthetic_bpm": 75,
+      "output_bpm": 70.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 10.0
+    },
+    {
+      "window_s": 6,
+      "method": "pos",
+      "injected_synthetic_bpm": 90,
+      "output_bpm": 90.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 10.0
+    },
+    {
+      "window_s": 6,
+      "method": "green",
+      "injected_synthetic_bpm": 69,
+      "output_bpm": 70.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 10.0
+    },
+    {
+      "window_s": 6,
+      "method": "green",
+      "injected_synthetic_bpm": 75,
+      "output_bpm": 70.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 10.0
+    },
+    {
+      "window_s": 6,
+      "method": "green",
+      "injected_synthetic_bpm": 90,
+      "output_bpm": 90.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 10.0
+    },
+    {
+      "window_s": 10,
+      "method": "pos",
+      "injected_synthetic_bpm": 69,
+      "output_bpm": 66.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 6.0
+    },
+    {
+      "window_s": 10,
+      "method": "pos",
+      "injected_synthetic_bpm": 75,
+      "output_bpm": 72.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 6.0
+    },
+    {
+      "window_s": 10,
+      "method": "pos",
+      "injected_synthetic_bpm": 90,
+      "output_bpm": 90.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 6.0
+    },
+    {
+      "window_s": 10,
+      "method": "green",
+      "injected_synthetic_bpm": 69,
+      "output_bpm": 66.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 6.0
+    },
+    {
+      "window_s": 10,
+      "method": "green",
+      "injected_synthetic_bpm": 75,
+      "output_bpm": 78.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 6.0
+    },
+    {
+      "window_s": 10,
+      "method": "green",
+      "injected_synthetic_bpm": 90,
+      "output_bpm": 90.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 6.0
+    },
+    {
+      "window_s": 20,
+      "method": "pos",
+      "injected_synthetic_bpm": 69,
+      "output_bpm": 69.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 3.0
+    },
+    {
+      "window_s": 20,
+      "method": "pos",
+      "injected_synthetic_bpm": 75,
+      "output_bpm": 75.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 3.0
+    },
+    {
+      "window_s": 20,
+      "method": "pos",
+      "injected_synthetic_bpm": 90,
+      "output_bpm": 90.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 3.0
+    },
+    {
+      "window_s": 20,
+      "method": "green",
+      "injected_synthetic_bpm": 69,
+      "output_bpm": 69.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 3.0
+    },
+    {
+      "window_s": 20,
+      "method": "green",
+      "injected_synthetic_bpm": 75,
+      "output_bpm": 75.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 3.0
+    },
+    {
+      "window_s": 20,
+      "method": "green",
+      "injected_synthetic_bpm": 90,
+      "output_bpm": 90.0,
+      "reject": null,
+      "nominal_bin_spacing_bpm": 3.0
+    }
+  ]
+}

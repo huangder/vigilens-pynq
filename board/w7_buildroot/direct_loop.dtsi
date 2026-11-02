@@ -1,0 +1,21 @@
+/* Experimental polling bring-up profile. The ordinary USB image is separate. */
+#include "system-user.dtsi"
+/ {
+    chosen {
+        vigilens,pl-profile = "720p-3of8";
+    };
+    reserved-memory {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+        vigilens_dma: vigilens-dma@12000000 {
+            reg = <0x12000000 0x01000000>;
+            no-map;
+        };
+    };
+};
+/* Current BD has no DMA IRQ wires. Do not invent interrupt IDs or allow a
+ * kernel DMA driver and the polling test to own these registers together. */
+&axi_dma_0 {
+    status = "disabled";
+};

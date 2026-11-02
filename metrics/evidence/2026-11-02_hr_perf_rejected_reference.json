@@ -1,0 +1,44 @@
+{
+  "calibration_frames": 40,
+  "calibration_last_frame": 604,
+  "same_clip_development_only": true,
+  "accuracy_verified": false,
+  "all": {
+    "frames": 611,
+    "old": {
+      "solved": 611,
+      "median_abs_difference_to_mediapipe": {
+        "yaw": 27.65,
+        "pitch": 4.99,
+        "roll": 3.5700000000000003
+      }
+    },
+    "adapted": {
+      "solved": 611,
+      "median_abs_difference_to_mediapipe": {
+        "yaw": 29.07,
+        "pitch": 5.550000000000001,
+        "roll": 3.9699999999999998
+      }
+    }
+  },
+  "later": {
+    "frames": 51,
+    "old": {
+      "solved": 51,
+      "median_abs_difference_to_mediapipe": {
+        "yaw": 8.389999999999999,
+        "pitch": 3.88,
+        "roll": 4.97
+      }
+    },
+    "adapted": {
+      "solved": 51,
+      "median_abs_difference_to_mediapipe": {
+        "yaw": 10.03,
+        "pitch": 6.28,
+        "roll": 1.5900000000000003
+      }
+    }
+  }
+}

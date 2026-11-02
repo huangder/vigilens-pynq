@@ -1,0 +1,29 @@
+{
+  "kind": "HR_stability_filter_candidate_delivery_NOT_stable_accuracy_certification",
+  "archive": ".tmp/autonomy/hr5_filter_20261102/vigilens_hr5_filter_candidate.zip",
+  "archive_sha256": "854cc0dc12915eeb4ea5e6c4f1b045d9ffdbf53120ea56d1f9bc49703a8e82c6",
+  "archive_bytes": 86483959,
+  "camera_sha256": "6b72869da8fb613db5b84ac357aeee5219a025302435ccf8f7f77c5dbd5b68e5",
+  "config_sha256": "d9baef2acbf6022f9c4564a899214f58c628bb7f45a4a2a161ab44806f5c6fcd",
+  "filter": {
+    "enabled": true,
+    "window": 3,
+    "alpha": 0.35,
+    "interval_s": 0.8,
+    "max_gap_s": 1.5,
+    "max_spread_bpm": 12.0
+  },
+  "targeted_tests_passed": 69,
+  "subtests_passed": 8,
+  "ctest_passed": 10,
+  "asan_ubsan_core_passed": true,
+  "offline_passed": 26,
+  "offline_failed": 0,
+  "same_run_raw_filter_c_python_parity": true,
+  "raw_estimate_events": 6,
+  "max_consecutive_raw_estimates": 2,
+  "real_filtered_output_frames": 0,
+  "real_HR_stability_verified": false,
+  "accuracy_verified": false,
+  "raw_face_media_saved_or_transferred": false
+}

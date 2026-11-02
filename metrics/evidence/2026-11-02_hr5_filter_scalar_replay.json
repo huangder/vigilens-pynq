@@ -1,0 +1,596 @@
+{
+  "kind": "historical_raw_estimate_and_gate_replay_NOT_new_person_measurement",
+  "assumption": "reconstruct raw-estimate ticks from valid update index modulo frozen VG_VITAL_EVERY=30",
+  "filter": {
+    "enabled": true,
+    "window": 3,
+    "alpha": 0.35,
+    "interval_s": 0.8,
+    "max_gap_s": 1.5,
+    "max_spread_bpm": 12.0
+  },
+  "accuracy_verified": false,
+  "results": [
+    {
+      "source": "2026-11-02_hr5_live",
+      "raw_nonnull_contract_frames": 30,
+      "replayed_filtered_nonnull_frames": 0,
+      "raw_max_adjacent_change": 0,
+      "filtered_max_adjacent_change": null,
+      "update_reasons": {
+        "invalid_input": 20,
+        "warming": 1
+      },
+      "updates": [
+        {
+          "frame_id": 2068,
+          "ts": 11786.315167,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2098,
+          "ts": 11787.315147,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2128,
+          "ts": 11788.315584,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2158,
+          "ts": 11789.315115,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2188,
+          "ts": 11790.319088,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2219,
+          "ts": 11791.35107,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2249,
+          "ts": 11792.351057,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2279,
+          "ts": 11793.355012,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2309,
+          "ts": 11794.355242,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2339,
+          "ts": 11795.354983,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2369,
+          "ts": 11796.35504,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2399,
+          "ts": 11797.358927,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2430,
+          "ts": 11798.391123,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2460,
+          "ts": 11799.390906,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2491,
+          "ts": 11800.426877,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2521,
+          "ts": 11801.427123,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2551,
+          "ts": 11802.430831,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2581,
+          "ts": 11803.4308,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2611,
+          "ts": 11804.430791,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 2641,
+          "ts": 11805.430807,
+          "raw": 48,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 2671,
+          "ts": 11806.434736,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        }
+      ]
+    },
+    {
+      "source": "2026-11-02_hr5_live2",
+      "raw_nonnull_contract_frames": 579,
+      "replayed_filtered_nonnull_frames": 120,
+      "raw_max_adjacent_change": 23.499999999999993,
+      "filtered_max_adjacent_change": 0.0,
+      "update_reasons": {
+        "invalid_input": 38,
+        "warming": 14,
+        "unstable": 2,
+        "accepted": 4
+      },
+      "updates": [
+        {
+          "frame_id": 31,
+          "ts": 11874.368305,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 61,
+          "ts": 11875.368314,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 92,
+          "ts": 11876.404411,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 123,
+          "ts": 11877.436244,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 154,
+          "ts": 11878.47221,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 184,
+          "ts": 11879.472192,
+          "raw": 47.1,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 214,
+          "ts": 11880.472178,
+          "raw": 70.6,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 244,
+          "ts": 11881.47226,
+          "raw": 59.2,
+          "filtered": null,
+          "reason": "unstable"
+        },
+        {
+          "frame_id": 275,
+          "ts": 11882.508263,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 305,
+          "ts": 11883.508118,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 335,
+          "ts": 11884.512092,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 365,
+          "ts": 11885.512058,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 395,
+          "ts": 11886.51205,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 426,
+          "ts": 11887.548012,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 456,
+          "ts": 11888.548088,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 487,
+          "ts": 11889.57999,
+          "raw": 59.2,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 517,
+          "ts": 11890.583949,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 548,
+          "ts": 11891.615944,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 578,
+          "ts": 11892.619901,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 609,
+          "ts": 11893.652043,
+          "raw": 82.4,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 640,
+          "ts": 11894.68786,
+          "raw": 82.4,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 671,
+          "ts": 11895.719857,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 702,
+          "ts": 11896.755928,
+          "raw": 70.1,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 733,
+          "ts": 11897.792133,
+          "raw": 69.7,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 764,
+          "ts": 11898.823826,
+          "raw": 81.3,
+          "filtered": 70.1,
+          "reason": "accepted"
+        },
+        {
+          "frame_id": 794,
+          "ts": 11899.823802,
+          "raw": 81.8,
+          "filtered": null,
+          "reason": "unstable"
+        },
+        {
+          "frame_id": 824,
+          "ts": 11900.827729,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 854,
+          "ts": 11901.827714,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 885,
+          "ts": 11902.859851,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 916,
+          "ts": 11903.895675,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 946,
+          "ts": 11904.895666,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 976,
+          "ts": 11905.899633,
+          "raw": 59.2,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 1006,
+          "ts": 11906.899596,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1037,
+          "ts": 11907.931601,
+          "raw": 82.9,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 1067,
+          "ts": 11908.935557,
+          "raw": 83.4,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 1097,
+          "ts": 11909.935548,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1128,
+          "ts": 11910.967533,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1159,
+          "ts": 11912.003506,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1190,
+          "ts": 11913.039471,
+          "raw": 82.4,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 1220,
+          "ts": 11914.039459,
+          "raw": 82.4,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 1250,
+          "ts": 11915.039484,
+          "raw": 82.4,
+          "filtered": 82.4,
+          "reason": "accepted"
+        },
+        {
+          "frame_id": 1281,
+          "ts": 11916.07541,
+          "raw": 82.4,
+          "filtered": 82.4,
+          "reason": "accepted"
+        },
+        {
+          "frame_id": 1312,
+          "ts": 11917.107593,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1343,
+          "ts": 11918.143374,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1374,
+          "ts": 11919.17935,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1404,
+          "ts": 11920.179322,
+          "raw": 70.1,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 1435,
+          "ts": 11921.211315,
+          "raw": 70.1,
+          "filtered": null,
+          "reason": "warming"
+        },
+        {
+          "frame_id": 1466,
+          "ts": 11922.247284,
+          "raw": 70.1,
+          "filtered": 70.1,
+          "reason": "accepted"
+        },
+        {
+          "frame_id": 1497,
+          "ts": 11923.283258,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1528,
+          "ts": 11924.315247,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1558,
+          "ts": 11925.315262,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1590,
+          "ts": 11926.383333,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1620,
+          "ts": 11927.387166,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1650,
+          "ts": 11928.387148,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1681,
+          "ts": 11929.419206,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1711,
+          "ts": 11930.423107,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1741,
+          "ts": 11931.423093,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        },
+        {
+          "frame_id": 1771,
+          "ts": 11932.423079,
+          "raw": null,
+          "filtered": null,
+          "reason": "invalid_input"
+        }
+      ]
+    }
+  ]
+}

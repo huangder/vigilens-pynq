@@ -1,0 +1,45 @@
+{
+  "kind": "native_board_camera_vision_contract",
+  "hardware_test": true,
+  "contract_frames": 31,
+  "face_frames": 31,
+  "status_counts": {
+    "normal": 2,
+    "adjust_posture": 29
+  },
+  "contract_valid": true,
+  "strictly_monotonic": true,
+  "autonomy": {
+    "submitted": "566",
+    "accepted": "32",
+    "skipped": "534",
+    "processed": "32",
+    "succeeded": "31",
+    "rejected": "1",
+    "failed": "0",
+    "rc": "0",
+    "camera_submit_fps": "16.969250",
+    "analysis_update_fps": "0.909534"
+  },
+  "pl_audit": {
+    "frames": "566",
+    "audits": "19",
+    "failures": "0",
+    "reference_ms_total": "1317"
+  },
+  "camera_sampling": {
+    "input": "600",
+    "kept": "566",
+    "dropped": "34",
+    "driver_sequence_gaps": "1378",
+    "empty_slots": "433",
+    "input_fps": "17.990408",
+    "output_fps": "16.969250",
+    "native_30fps": "no"
+  },
+  "measurement_on_pc": false,
+  "accuracy_verified": false,
+  "full_30fps_verified": false,
+  "cold_boot_verified": false,
+  "deployment_manifest_sha256": "5168b1d74671bcccd00ec7fa4f9b7f342ed28cd8468db4efa43233dde18b5bca"
+}

@@ -1,0 +1,19 @@
+
+# wget -q -O /tmp/verified_metrics_job.sh http://169.254.73.28:8095/verified_met
+rics_job.sh && sh /tmp/verified_metrics_job.sh
+intf '\nVIGI_COMMAND_DONE\n'
+autonomy_engine_arm_test: OK
+PASS pose failure rejected; image dimensions consumed
+PASS held HR cleared on face/ROI/motion/id/time/malformed/gap/posture/PnP/loss/quality refusal
+PASS slow analysis cadence names sampling_too_slow and recovers on a fast feed
+PASS source jitter uses window-rate gate; short quality pause recomputes HR; face loss clears history
+PASS synthetic metric stimuli produce blink/long-close/PERCLOS/yawn/HR and quality; physiological_accuracy_verified=0
+PASS autonomy native integration
+sample_gate_arm_test: OK
+SAMPLE_GATE_TEST_PASS fast=60/120 slow=11/11 empty_slots=20 native_jitter=900/900 invalid_time=rejected
+FINAL_METRIC_OBJECTS_VERIFIED_PASS
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

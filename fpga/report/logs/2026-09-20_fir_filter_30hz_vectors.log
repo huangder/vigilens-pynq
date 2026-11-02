@@ -1,0 +1,29 @@
+﻿== gen_fir_vectors: taps=63 shift=15 fs=30 Hz band=0.70~3.50 Hz (scale=1.00) ==
+   系数来源：D:\Desktop\AMD\fpga\src\fir_coeffs_q15.h
+   系数：偶对称 ✅  Σh=897  Σ|h|=55073  |acc|上界=1804632064 < 2^31=True
+已写 D:\Desktop\AMD\fpga\sim\data_fir\series.bin  (16 段 / 4036 样本 / 8072 B)
+已写 D:\Desktop\AMD\fpga\sim\data_fir\golden_fir.csv  (16 段)
+已写 D:\Desktop\AMD\fpga\sim\data_fir\golden_fir_out.csv  (4036 行)
+已写 D:\Desktop\AMD\fpga\sim\data_fir\meta.txt
+-- 冲激响应自检（与硬件/黄金参考无关的结构性质）--
+   峰值下标 = 31（期望群延迟 31）OK
+   偶对称 out[k]==out[N-1-k]：OK
+-- 各段实测增益（整数实现、跳过前 62 个瞬态样本）--
+   impulse          n=96    reset=1 增益=    n/a    饱和样本=0
+   dc_pos           n=240   reset=1 增益=  -31.3 dB 饱和样本=0
+   dc_neg           n=240   reset=1 增益=  -31.3 dB 饱和样本=0
+   nyquist_alt      n=240   reset=1 增益=  -87.3 dB 饱和样本=0
+   sine_1p5hz       n=300   reset=1 增益=   -0.1 dB 饱和样本=0
+   sine_0p8hz       n=300   reset=1 增益=   -4.5 dB 饱和样本=0
+   sine_3p2hz       n=300   reset=1 增益=   -1.9 dB 饱和样本=0
+   sine_0p2hz       n=300   reset=1 增益=  -22.8 dB 饱和样本=0
+   sine_8hz         n=300   reset=1 增益=  -79.4 dB 饱和样本=0
+   square_1hz_full  n=300   reset=1 增益=   -2.2 dB 饱和样本=33
+   saturate_matched n=96    reset=1 增益=   11.3 dB 饱和样本=7
+   sine_small_amp   n=300   reset=1 增益=   -0.1 dB 饱和样本=0
+   random_full      n=512   reset=1 增益=   -8.3 dB 饱和样本=0
+   split_part1      n=200   reset=1 增益=   -7.7 dB 饱和样本=0
+   split_part2      n=200   reset=0 增益=   -9.3 dB 饱和样本=0
+   split_part3      n=112   reset=0 增益=   -7.3 dB 饱和样本=0
+[numpy 对拍] PASS —— 4036 个样本与 numpy np.convolve 独立实现逐样本相等
+== 完成 ==

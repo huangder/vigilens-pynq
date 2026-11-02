@@ -1,0 +1,109 @@
+{
+  "accuracy_verified": false,
+  "full30_passed": false,
+  "board": {
+    "refined": {
+      "kind": "native_full_board_realtime_gate",
+      "passed": false,
+      "errors": [
+        "analysis 28.206889 fps below 30.0",
+        "no face-bearing workload",
+        "face-bearing coverage below configured face_visible_min",
+        "capture interval p95 exceeds configured jitter limit"
+      ],
+      "capture_fps": 28.538514,
+      "analysis_update_fps": 28.206889,
+      "capture_interval_p95_s": 0.052136500000010244,
+      "submitted": 197.0,
+      "processed": 197.0,
+      "contract_frames": 196,
+      "face_bearing_ratio": 0.0,
+      "face_bearing_frames": 0,
+      "face_bearing_update_fps": 0.0,
+      "native_camera_mode_verified": false,
+      "accuracy_verified": false,
+      "cold_boot_verified": false,
+      "background_model_frames": 2,
+      "detector_positive_frames": 0,
+      "model_geometry_failures": {
+        "-1": 2
+      },
+      "experimental_ert": true
+    },
+    "tiered": {
+      "kind": "native_full_board_realtime_gate",
+      "passed": false,
+      "errors": [
+        "analysis 29.191845 fps below 30.0",
+        "no face-bearing workload",
+        "face-bearing coverage below configured face_visible_min",
+        "capture interval p95 exceeds configured jitter limit"
+      ],
+      "capture_fps": 29.245863,
+      "analysis_update_fps": 29.191845,
+      "capture_interval_p95_s": 0.0519610000000057,
+      "submitted": 962.0,
+      "processed": 962.0,
+      "contract_frames": 961,
+      "face_bearing_ratio": 0.0,
+      "face_bearing_frames": 0,
+      "face_bearing_update_fps": 0.0,
+      "native_camera_mode_verified": false,
+      "accuracy_verified": false,
+      "cold_boot_verified": false,
+      "background_model_frames": 20,
+      "detector_positive_frames": 0,
+      "model_geometry_failures": {
+        "-1": 20
+      },
+      "experimental_ert": true
+    }
+  },
+  "offline": {
+    "initial": {
+      "contracts": 657,
+      "face_frames": 386,
+      "sha256": "e98d1c4856862ea6e696181d3bf30954824b44e888e5201881bb76c48a2303c7",
+      "known_absence_frames": null,
+      "known_absence_false_positive_frames": [],
+      "accuracy_verified": false
+    },
+    "adjacent": {
+      "contracts": 657,
+      "face_frames": 462,
+      "sha256": "14bffad5249cb701a76ba76fbd7c1dd720513eb106a6c02314e8fa3daeee2da7",
+      "known_absence_frames": null,
+      "known_absence_false_positive_frames": [],
+      "accuracy_verified": false
+    },
+    "tiered": {
+      "contracts": 657,
+      "face_frames": 461,
+      "sha256": "067af68170895ef1b8443c975df7f3903950b5f3bda40e29fa109821782390d2",
+      "known_absence_frames": null,
+      "known_absence_false_positive_frames": [],
+      "accuracy_verified": false,
+      "deterministic_two_runs": true
+    },
+    "negative": {
+      "contracts": 657,
+      "face_frames": 360,
+      "sha256": "ee33df75218a5b6a4d2ef9c6cc36bf949cfea1bbd6e836f2110f23f3c63f9f87",
+      "known_absence_frames": 45,
+      "known_absence_false_positive_frames": [],
+      "accuracy_verified": false
+    }
+  },
+  "default_native_frozen_sha256_unchanged": true,
+  "source_sha256": {
+    "config.yaml": "beed734d2f9a8606c23f4c2444d1a1a6cc0f44fc597525ea5cb8c5022bd50c59",
+    "board/autonomy/ert_runtime.cpp": "dad1d24fafe2a39e8570f90316fdda1d49cb40990bb920b1c83ad2389c9fefbc",
+    "board/autonomy/ert_guard.hpp": "b994a80f7bc705b9aa164a9b646477745108bcfe76fdb03bf8cc8ebb0bbc371f",
+    "board/autonomy/ert_landmark.hpp": "9c6813f78fa4dd8fd6dc48d2d8a9c8fdf44a9b33d6e2c4f464eb6a7253b5ea1a",
+    "board/autonomy/build_native_vision.sh": "675de4c1edb435b1a981fd669f3e2cedaca97ad1c07e37c2ac998ca3dcdbdad0",
+    "board/autonomy/export_vision_config.py": "2cdfac8d9ed74ffbec9f5b555e00711d96c963fdeae27131a9e5e0db7a31ba54",
+    "board/autonomy/tests/ert_detector_hint_test.cpp": "5535c705dd2c961dbe8453f2e0cf981a8f99fc058da1f78449f7633be90fb714",
+    "board/autonomy/tests/ert_borrowed_test.cpp": "d714d8604c78a79154bd5dc4f3af4988cc2d0ae014222b9806b89de02907d0d3",
+    "board/autonomy/tests/ert_guard_test.cpp": "d0fef8f1ef38eca2a2232a4bc5e3739362ee23a1f7c47dd724cd4257c773e830"
+  }
+}

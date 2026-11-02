@@ -1,0 +1,86 @@
+{
+  "kind": "HR20_real_board_verification_closeout",
+  "runs": [
+    {
+      "run": "live",
+      "summary": {
+        "submitted": "1800",
+        "accepted": "1754",
+        "skipped": "46",
+        "processed": "1754",
+        "succeeded": "1753",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "29.954009",
+        "analysis_update_fps": "29.204325"
+      },
+      "heart_rate_frames": 0,
+      "face_bearing_frames": 1484,
+      "contract_frames": 1753,
+      "max_retained_samples_upper_bound": 422,
+      "hardware_audits": {
+        "frames": "1800",
+        "audits": "60",
+        "failures": "0",
+        "reference_ms_total": "1062"
+      },
+      "strict_realtime_passed": false,
+      "scalar_monitor": {
+        "requests": 348,
+        "successful_requests": 300,
+        "distinct_frames": 300,
+        "observed_nonnull_hr_frames": 0,
+        "errors_include_startup_shutdown": true,
+        "monitor_is_scalar_only": true
+      },
+      "archive_sha256": "1418fcbde785e1b3fc99103cdc2ba6150f3e17c3ebea62a6e610251592ddd957"
+    },
+    {
+      "run": "live2",
+      "summary": {
+        "submitted": "2700",
+        "accepted": "2641",
+        "skipped": "59",
+        "processed": "2641",
+        "succeeded": "2640",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "29.960217",
+        "analysis_update_fps": "29.306612"
+      },
+      "heart_rate_frames": 0,
+      "face_bearing_frames": 2271,
+      "contract_frames": 2640,
+      "max_retained_samples_upper_bound": 592,
+      "hardware_audits": {
+        "frames": "2700",
+        "audits": "90",
+        "failures": "0",
+        "reference_ms_total": "1559"
+      },
+      "strict_realtime_passed": false,
+      "scalar_monitor": {
+        "requests": 499,
+        "successful_requests": 449,
+        "distinct_frames": 449,
+        "observed_nonnull_hr_frames": 0,
+        "errors_include_startup_shutdown": true,
+        "monitor_is_scalar_only": true
+      },
+      "archive_sha256": "cc177803287aaff35171b4b521da4797cd3bb4391029764967e03ab408e827db"
+    }
+  ],
+  "installed_and_executed_on_board": true,
+  "same_binary_and_config_both_runs": true,
+  "hr_output_verified": false,
+  "heart_rate_accuracy_verified": false,
+  "reference_measurement_collected": false,
+  "strict_all_board_30fps_verified": false,
+  "camera_and_http_processes_exited_after_both_runs": true,
+  "raw_face_media_saved_or_transferred": false,
+  "boot_media_written": false,
+  "config_sha256": "e21bf2b5a61f3c58b76f7eef87fd55d4578eea27b84ee061feafdf31225aff44",
+  "report": "docs/74_\u5fc3\u738720\u79d2\u77ed\u7a97\u771f\u4eba\u9a8c\u8bc1_20261102.md"
+}

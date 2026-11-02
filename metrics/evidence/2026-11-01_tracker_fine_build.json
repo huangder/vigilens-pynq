@@ -1,0 +1,8 @@
+{
+  "board/autonomy/tracked_runtime.cpp": "f740d7c2575b507bb45366980c70684bbaf8c76104fc48221fb5482cc79b3724",
+  "board/autonomy/point_tracker.cpp": "98cc08d107b08e6c6c0e32aaea549e208322bb03368ec0f6e544013b9c06f4bb",
+  "board/autonomy/track_history.hpp": "8311483b54e65671f2b5ed6c0cf107a96673249c042ea54a5398ef236634e3a2",
+  "board/autonomy/export_vision_config.py": "8d0866cfa6f40b2ff15c654cd284ad003c9874652b8dfcc1406e39b4b41b65ae",
+  ".tmp/autonomy/tracked30_20261101/history_r5.yaml": "9a91abd0b29f14508b7e086c0c65c1dfec018261fd318b3640871ac48cd848b0",
+  ".tmp/autonomy/tracked30_20261101/arm_history_fine/vigi_camera_autonomy": "941374a3bf51edd1badcf645b7048b89e5222378d4b46c07fb59d65f74b52b2f"
+}

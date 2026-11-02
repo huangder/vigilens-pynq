@@ -1,0 +1,7 @@
+sh /tmp/hr5_install.sh > /tmp/hr5_install.log 2>&1 &
+# echo HR5_INSTALL_PID=$!
+HR5_INSTALL_PID=726
+# printf '\nHR5_INSTALL_STARTED\n'
+
+HR5_INSTALL_STARTED
+# 

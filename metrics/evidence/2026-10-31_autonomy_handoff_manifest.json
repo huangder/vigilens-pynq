@@ -1,0 +1,87 @@
+{
+  "kind": "board_autonomy_handoff_evidence",
+  "archived_on": "2026-10-31",
+  "experiment_date": "2026-10-30",
+  "note": "Existing experiment files copied for handoff; no hardware execution or test rerun during handoff.",
+  "files": [
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_concurrent_board.log",
+      "bytes": 3201,
+      "sha256": "d7c6ecf4a7240ad89d04399de6695b8e212a24eacb7c5365425059fac519c0c3"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_concurrent_capture.json",
+      "bytes": 61596,
+      "sha256": "03ff427e1a4ad03f0550bb72ac603c08273b685f63b7f34362d5b0ae8c9ed5c2"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_arm_build.log",
+      "bytes": 8935,
+      "sha256": "7ff4e2e921cd3837f99deff4db720325ff981cc3668ad0dc890554aaf7c7feba"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_original_artifacts.json",
+      "bytes": 2261,
+      "sha256": "505922b9cb801e80962f3531646332961a219cb81c7e543076d347f1c91d0efb"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_original_development.json",
+      "bytes": 1294,
+      "sha256": "c46c558f46cc2c2724fdcca7ef0c05b66a1e6f325b666d109094ed7bee6e0f06"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_original_host_comparison.json",
+      "bytes": 1887,
+      "sha256": "d518eda5540b82424b092651e1ed526dd790f867047bafadbb782e2eb85e3793"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_original_storage.json",
+      "bytes": 257,
+      "sha256": "6e2302ad632e1da0734d83292e2ecc588574bbee310d0195ed01093a924a3f3f"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_original.log",
+      "bytes": 4413,
+      "sha256": "11110600ee7031c58a2796f4562c44207fb59b4dd3cb61d09bdd8d16b9af6c9e"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_pruned_artifacts.json",
+      "bytes": 2477,
+      "sha256": "a54f8340b21743fe5caad51597b6c43870ac7022db224e6e7c2db96ed5545110"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_pruned_development.json",
+      "bytes": 1292,
+      "sha256": "28c256cb6a5b12f57e228f34d0feb44b01ecd931c75b8f46512786b9871fd5da"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_pruned_export_audit.json",
+      "bytes": 15824,
+      "sha256": "848158ebf9b2a91a354375811f6c473642f191b181d7c77894d886ffce2bc6f1"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_pruned_host_comparison.json",
+      "bytes": 1058,
+      "sha256": "6233c6d8f90aae5ed6b62dfdaa8b0c212f4cd7a91ca1cd98214acfa4aef637e2"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_pruned_storage.json",
+      "bytes": 257,
+      "sha256": "bfe88a33fb7b286b5be1f19533ea3f38f3fe1a32177dab0fb27b539ff587f81d"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_pruned.log",
+      "bytes": 4053,
+      "sha256": "5fa7cc065c4bfaace0a8156d93d0bae380580c2d44c253ff356eead7bfa613ce"
+    },
+    {
+      "path": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_source.json",
+      "bytes": 370,
+      "sha256": "b03f62540d67a551598502d1e1f96358d75300d3a39f3c29b0fc8fec53fdcbd8"
+    }
+  ],
+  "handoff": {
+    "path": "docs/54_板端自治交接_handoff_20261031.md",
+    "sha256": "d0a8e4f332654dda62061b65e26760cecb6343d274833a86765806d9d98bb191"
+  }
+}

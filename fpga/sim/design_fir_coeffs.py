@@ -24,26 +24,55 @@
 #    这样"0.7~3.5 Hz"这句话在契约里指的是可实现、可复测的口径。
 #
 #  用法：
-#    python fpga/sim/design_fir_coeffs.py                 # 默认 63 阶、0.7~3.5 Hz @30fps
+#    python fpga/sim/design_fir_coeffs.py                 # fs 取 config.yaml 的 fps_nominal（现 30）
+#    python fpga/sim/design_fir_coeffs.py --fs 60         # 临时按 60 Hz 设计（会与 config 不一致并告警）
 #    python fpga/sim/design_fir_coeffs.py --taps 47       # 换个阶数看看代价
 #    python fpga/sim/design_fir_coeffs.py --band 0.1 0.5  # 呼吸带：看它为何不可行
 #    python fpga/sim/design_fir_coeffs.py --no-write      # 只评估，不写头文件
+#
+#  【换采样率 = 换契约，必须成套做】（契约 §0/§3.5）：
+#    1) 改仓库根 config.yaml 的 fps_nominal（**唯一来源**）
+#    2) python fpga/sim/design_fir_coeffs.py --d 0.0      → 重生成 fpga/src/fir_coeffs_q15.h
+#    3) python fpga/sim/gen_fir_vectors.py                → 重生成黄金参考（它从头部读 fs）
+#    4) 跑 host_model_fir.cpp + metrics/scripts/check_fir_golden.py + pytest
+#    5) 在**完整权限终端**重跑 csim / csynth / cosim（沙箱跑不了）
+#    6) 走契约变更流程：docs/interface.md §0/§3.5 + §6 变更记录 → 群公告 → A/B 确认 → 会签升级版本号
 # =============================================================================
 
 import argparse
 import math
 import os
+import re
 import sys
 
 DEF_TAPS = 63
-DEF_FS = 30.0
 DEF_F1 = 0.7
 DEF_F2 = 3.5
+# ⚠️ 采样率 DEF_FS **不在本文件写死**：它取仓库根 `config.yaml` 的 `fps_nominal`（契约 §0 的唯一来源）。
+#    见下方 HERE 之后的 _config_fps()。这样"升级到 60 fps"= 改 config.yaml + 重跑两个脚本，
+#    不依赖任何人记住数字，也不会出现"脚本里 30 / 契约里 45"这种双来源漂移。
 Q15 = 32768
 SHIFT = 15
 COEFF_MIN, COEFF_MAX = -32768, 32767
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def _config_fps():
+    """从仓库根 `config.yaml` 读 `fps_nominal`（契约 §0 的唯一来源）。
+
+    读不到时回退 30.0 —— 只是为了"脚本能独立跑"，**不是**第二份事实来源。
+    """
+    p = os.path.join(HERE, "..", "..", "config.yaml")
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            m = re.search(r"^fps_nominal:\s*([\d.]+)", f.read(), re.M)
+        return float(m.group(1)) if m else 30.0
+    except OSError:
+        return 30.0
+
+
+DEF_FS = _config_fps()
 
 # Windows 控制台默认 GBK，中文会乱码；固定成 UTF-8（与仓库其它脚本一致的可读性要求）
 try:
@@ -268,6 +297,12 @@ def scan_d(n_taps, fs, f1, f2, d_list):
 
 
 def write_header(path, h_q15, fs, f1, f2, d):
+    # include guard 必须**由文件名派生**，否则多张系数表会共用一个 guard：
+    # 先包含的那张表会让后一张被静默跳过（`#ifndef` 已定义）——那是最难查的一类 bug。
+    # fir_coeffs_q15.h -> FIR_COEFFS_Q15_H（与历史输出逐字节兼容）
+    # fir_coeffs_q15_60hz.h -> FIR_COEFFS_Q15_60HZ_H
+    guard = "".join(c if c.isalnum() else "_"
+                    for c in os.path.splitext(os.path.basename(path))[0]).upper() + "_H"
     lines = []
     lines.append("// =============================================================================")
     lines.append("//  %s —— fir_filter 的冻结系数表（**自动生成，请勿手改**）" % os.path.basename(path))
@@ -281,8 +316,8 @@ def write_header(path, h_q15, fs, f1, f2, d):
     lines.append("//  量化：int16 Q15，四舍五入远离零；运算约定见契约 3.5 节")
     lines.append("// =============================================================================")
     lines.append("")
-    lines.append("#ifndef FIR_COEFFS_Q15_H")
-    lines.append("#define FIR_COEFFS_Q15_H")
+    lines.append("#ifndef %s" % guard)
+    lines.append("#define %s" % guard)
     lines.append("")
     lines.append("#define FIR_NUM_TAPS    %d" % len(h_q15))
     lines.append("#define FIR_FS_HZ       %d" % int(fs))
@@ -296,7 +331,7 @@ def write_header(path, h_q15, fs, f1, f2, d):
         lines.append("    " + chunk + ("," if i + 8 < len(h_q15) else ""))
     lines.append("};")
     lines.append("")
-    lines.append("#endif  // FIR_COEFFS_Q15_H")
+    lines.append("#endif  // %s" % guard)
     lines.append("")
     with open(path, "w", newline="\n", encoding="utf-8") as f:
         f.write("\n".join(lines))
@@ -324,6 +359,12 @@ def main():
     f1, f2 = args.band
     print("== design_fir_coeffs: N=%d, fs=%.0f Hz, 目标 -3dB 带 %.2f~%.2f Hz =="
           % (args.taps, args.fs, f1, f2))
+    cfg_fs = _config_fps()
+    if abs(args.fs - cfg_fs) > 1e-9:
+        print("  ⚠️ --fs=%.0f 与 config.yaml 的 fps_nominal=%.0f **不一致**："
+              % (args.fs, cfg_fs))
+        print("     写出的系数表会与契约 §0 漂移（rPPG 频率轴错位）。"
+              "这种表只应用于评估/对比，**不要直接提交**。")
 
     if args.scan:
         print("")

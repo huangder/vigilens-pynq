@@ -33,6 +33,86 @@ MP_LEFT_EYE = (33, 160, 158, 133, 153, 144)
 MP_RIGHT_EYE = (362, 385, 387, 263, 373, 380)
 MP_MOUTH = (61, 291, 13, 14)
 
+# 面部轮廓（`FACEMESH_FACE_OVAL` 的 36 个端点，去重）。**人脸框按它取外接矩形**。
+#
+# 为什么不再用"眼角 + 嘴角"算框（BUG-010 的根因）：
+#   那 4 个点只框住"眼睛到嘴"，框高只有整张脸的约 63% —— 额头与下巴都在框外。
+#   界面画出来"没框住头"是观感问题；**rPPG 的额头 ROI 直接吃这个框**（BUG-011），
+#   于是取出来的是眼睛那一带，采到的绿通道被眨眼污染。台账把这两条记为 P2 + P1。
+#
+# 为什么用轮廓点而不是"按脸宽外推"：
+#   轮廓点是 mediapipe 在 478 点模型上标注的脸缘，跨表情/跨姿态都比几何外推稳，
+#   而且**可核对**（点号就在官方 FACEMESH_FACE_OVAL 的连接表里）。
+MP_FACE_OVAL = (
+    10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378,
+    400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21,
+    54, 103, 67, 109,
+)
+
+
+# rPPG 的额头区域（BUG-011 的真正修法）：
+#   从**人脸上的额头关键点**直接取外接框，而不是从"整脸框的上 30%"去猜。
+#   为什么必须这样：整脸框是**轴对齐**的，而头一偏（实测 blink.mp4 yaw≈50°）框顶就不再是额顶、
+#   框底也不再是下巴，"上 30%"会落回眼睛那一带 —— 实测 51/60 帧的 ROI 里有瞳孔点（468/473）。
+#   点集 = 额顶(10) + 眉间(9/151) + 两眉外端(107/336) + 眉内端(296/334)；
+#   实测 60/60 帧 ROI **不含**任何眼睛/瞳孔关键点，面积中位 4,964 px²（640×480 下的 218×294 脸）。
+MP_FOREHEAD = (10, 151, 9, 8, 107, 336, 296, 334)
+
+# 额头采样区的最小边长（px）。rPPG 靠空间平均压噪，太小的 patch 只是噪声。
+MIN_ROI_PX = 8
+
+
+def bbox_from_points(points, width: int, height: int, *, pad_frac: float = 0.02):
+    """一组像素点 → `[x, y, w, h]` 外接框（裁剪到画面内；半开区间，同 `img[y0:y1, x0:x1]`）。
+
+    · `pad_frac` 按**框的较大边**外扩。轮廓点本就贴在脸缘，只需很小的外扩（默认 2%）
+      吸收轮廓与皮肤之间的 1~2 像素差；
+    · 点集退化（空、或 x/y 跨度为 0）时返回 `(0, 0, 0, 0)` —— 与 `visible=0` 时的约定一致。
+    """
+    pts = [(float(p[0]), float(p[1])) for p in points]
+    if not pts:
+        return 0, 0, 0, 0
+    x0 = min(p[0] for p in pts)
+    x1 = max(p[0] for p in pts)
+    y0 = min(p[1] for p in pts)
+    y1 = max(p[1] for p in pts)
+    if x1 - x0 <= 0.0 or y1 - y0 <= 0.0:
+        return 0, 0, 0, 0
+    pad = int(round(pad_frac * max(x1 - x0, y1 - y0)))
+    x0 = max(0, int(x0) - pad)
+    y0 = max(0, int(y0) - pad)
+    x1 = min(int(width), int(x1) + pad)
+    y1 = min(int(height), int(y1) + pad)
+    if x1 <= x0 or y1 <= y0:
+        return 0, 0, 0, 0
+    return x0, y0, x1 - x0, y1 - y0
+
+
+def forehead_roi_from_points(points, width: int, height: int, *, shrink: float = 0.08):
+    """额头关键点 → rPPG 采样区 `(x0, y0, x1, y1)`（半开区间，裁剪到画面内）。
+
+    · 与 `bbox_from_points` 相反，这里**向内收** `shrink`（每边收缩宽/高的该比例）：
+      眉线外端紧挨眉毛，往里收一点才不会采到眉毛的黑色像素；
+    · 退化（空点集 / 宽或高为 0 / 收缩后为空 / 缩到 `MIN_ROI_PX` 以下）返回 `None` ——
+      调用方据此回退到"整脸框 + 上 30%"的近似，或按契约丢弃该帧（不补值）。
+      8 px 是下限：rPPG 要的是空间平均，比这更小的 patch 只会把传感器噪声当信号。
+    """
+    pts = [(float(p[0]), float(p[1])) for p in points]
+    if not pts:
+        return None
+    x0 = min(p[0] for p in pts)
+    x1 = max(p[0] for p in pts)
+    y0 = min(p[1] for p in pts)
+    y1 = max(p[1] for p in pts)
+    dw = (x1 - x0) * shrink
+    dh = (y1 - y0) * shrink
+    x0, x1 = int(round(x0 + dw)), int(round(x1 - dw))
+    y0, y1 = int(round(y0 + dh)), int(round(y1 - dh))
+    x0, y0 = max(0, x0), max(0, y0)
+    x1, y1 = min(int(width), x1), min(int(height), y1)
+    if x1 - x0 < MIN_ROI_PX or y1 - y0 < MIN_ROI_PX:
+        return None
+    return x0, y0, x1, y1
 # config.yaml 的读取缓存：`load_config()` 每次都读盘解析 YAML，
 # 而姿态是逐帧算的，不能每帧读一次配置。
 _CFG_CACHE: dict[str, float] = {}
@@ -60,6 +140,9 @@ class FaceObservation:
     eyes: dict[str, dict[str, tuple[float, float]]] = field(default_factory=dict)
     mouth: dict[str, tuple[float, float]] = field(default_factory=dict)
     source: str = "stub"                             # "mediapipe" | "stub"
+    # rPPG 的采样区（x0,y0,x1,y1）。None = 没算（stub 检测器 / 关键点退化），
+    # 调用方回退到 `vital.forehead_roi(bbox, ...)` 的近似。**不进契约帧**，只在本进程内用。
+    forehead: tuple[int, int, int, int] | None = None
 
 
 def _have_mediapipe() -> bool:
@@ -265,16 +348,16 @@ class MediaPipeLandmarker:
             eyes[name] = {k: pts[n] for n, k in enumerate(EYE_KEYS)}
         mouth = {k: px(i) for k, i in zip(MOUTH_KEYS, MP_MOUTH)}
 
-        xs = [p[0] for p in (eyes["left"]["p1"], eyes["right"]["p4"], mouth["left"], mouth["right"])]
-        ys = [p[1] for p in (eyes["left"]["p1"], eyes["right"]["p4"], mouth["top"], mouth["bottom"])]
-        x0, x1 = int(min(xs)), int(max(xs))
-        y0, y1 = int(min(ys)), int(max(ys))
-        pad = int(0.15 * max(x1 - x0, 1))
-        bbox = (max(0, x0 - pad), max(0, y0 - pad), min(w, x1 + pad) - max(0, x0 - pad),
-                min(h, y1 + pad) - max(0, y0 - pad))
+        # 人脸框 = **面部轮廓**的外接矩形（BUG-010 / BUG-011）。
+        # 旧写法只取"眼角 + 嘴角"四个点，框高只有整张脸的约 63%，额头在框外；
+        # 而 rPPG 的 forehead_roi 正是从框顶取 30% 高 —— 于是采到的是眼睛那一带。
+        bbox = bbox_from_points([px(i) for i in MP_FACE_OVAL], w, h)
+        # 额头采样区直接从额头关键点取（BUG-011）：头一偏，轴对齐框的"上 30%"就不是额头了。
+        forehead = forehead_roi_from_points([px(i) for i in MP_FOREHEAD], w, h)
 
         pose = self._pose_from_landmarks(lm, w, h)
-        return FaceObservation(visible=1.0, bbox=bbox, pose=pose, eyes=eyes, mouth=mouth, source="mediapipe")
+        return FaceObservation(visible=1.0, bbox=bbox, pose=pose, eyes=eyes, mouth=mouth, source="mediapipe",
+                               forehead=forehead)
 
     # ---- 头部姿态的 3D 参考模型（**相机坐标系**：X 右 / Y 下 / Z 朝前，与 OpenCV 一致）
     #

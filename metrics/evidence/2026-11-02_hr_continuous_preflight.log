@@ -1,0 +1,12 @@
+df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    236960      1472  99% /tmp
+# ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+# ls -l /tmp/hr5_filter_live_scalars.tar* /tmp/hr5_filter_live_scalars.b64
+-rw-r--r--    1 root     root        417296 Jan  1 03:35 [0;0m/tmp/hr5_filter_live_scalars.b64[m
+-rw-r--r--    1 root     root       2750976 Jan  1 03:35 [0;0m/tmp/hr5_filter_live_scalars.tar[m
+-rw-r--r--    1 root     root        308907 Jan  1 03:35 [0;0m/tmp/hr5_filter_live_scalars.tar.gz[m
+# printf '\nHR5_FILTER_COMMAND_END\n'
+
+HR5_FILTER_COMMAND_END
+# 

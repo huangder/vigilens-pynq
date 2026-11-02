@@ -1,0 +1,22 @@
+{
+  "kind": "hybrid_service_feed",
+  "frames_requested": 656,
+  "contract_frames": 655,
+  "status_counts": {
+    "normal": 588,
+    "adjust_posture": 67
+  },
+  "errors": [
+    {
+      "frame": 0,
+      "reply": "ERR -2"
+    }
+  ],
+  "stats": {
+    "service_error": 1,
+    "contract_frames": 655
+  },
+  "board_service": true,
+  "pose_source": "pc_pnp",
+  "accuracy_verified": false
+}

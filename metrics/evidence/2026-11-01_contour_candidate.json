@@ -1,0 +1,44 @@
+{
+  "hardware_test": false,
+  "accuracy_verified": false,
+  "default_promoted": false,
+  "candidate": "experimental contour-normal observations; same policy thresholds",
+  "candidate_contracts": 657,
+  "candidate_face_frames": 490,
+  "baseline_contracts": 657,
+  "baseline_face_frames": 493,
+  "black_clear": true,
+  "deterministic": true,
+  "sha256": "aac0b34e7b8a666a0480c1cff4cebc169f5e1c38c262fbc5f275e750408e06e5",
+  "same_frame_reference_errors": {
+    "baseline": {
+      "ear_left": {
+        "mean_absolute": 0.030790063424947146,
+        "p95_nearest_rank": 0.08659999999999995
+      },
+      "ear_right": {
+        "mean_absolute": 0.049560887949260043,
+        "p95_nearest_rank": 0.1629
+      },
+      "mar": {
+        "mean_absolute": 0.03065644820295983,
+        "p95_nearest_rank": 0.12529999999999997
+      }
+    },
+    "candidate": {
+      "ear_left": {
+        "mean_absolute": 0.03554186046511628,
+        "p95_nearest_rank": 0.09899999999999998
+      },
+      "ear_right": {
+        "mean_absolute": 0.04955116279069768,
+        "p95_nearest_rank": 0.16329999999999995
+      },
+      "mar": {
+        "mean_absolute": 0.030204439746300212,
+        "p95_nearest_rank": 0.1362
+      }
+    }
+  },
+  "common_reference_face_frames": 473
+}

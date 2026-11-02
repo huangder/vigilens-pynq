@@ -1,0 +1,71 @@
+
+# sh -c '
+> set -e
+> if [ -n "$(pidof vigi_camera_pl 2>/dev/null)" ]; then echo AUTONOMY_BUSY; exit
+ 10; fi
+> ifconfig eth0 169.254.73.29 netmask 255.255.0.0 up
+> i=0
+> while [ "$(cat /sys/class/net/eth0/carrier)" != 1 ] && [ "$i" -lt 15 ]; do i=$
+((i+1)); sleep 1; done
+> test "$(cat /sys/class/net/eth0/carrier)" = 1
+> wget -T 15 -O /tmp/vg_model_probe http://169.254.73.28:8093/vg_model_probe
+> wget -T 15 -O /tmp/attention.tflite http://169.254.73.28:8093/attention.tflite
+> wget -T 15 -O /tmp/detection.tflite http://169.254.73.28:8093/detection.tflite
+> echo "89768c0882a1b6040fc46084131783d61f25b15c17aea4214a799d61c66abc69  /tmp/v
+g_model_probe" | sha256sum -c -
+> echo "e06a804e0144f9929eda782122916b35d60c697c3c9344013ca2bbe76a6ce2b4  /tmp/a
+ttention.tflite" | sha256sum -c -
+> echo "bbff11cebd1eb27a1e004cae0b0e63ec8c551cbf34a4451148b4908b8db3eca8  /tmp/d
+etection.tflite" | sha256sum -c -
+> chmod 700 /tmp/vg_model_probe
+> echo AUTONOMY_BOARD_PROBE_BEGIN
+> uname -m
+> for n in 1 2; do
+>  echo ATTENTION_THREADS=$n
+>  /tmp/vg_model_probe /tmp/attention.tflite --zeros /tmp/attention_t$n 30 $n
+>  cat /tmp/attention_t$n.json
+>  echo DETECTION_THREADS=$n
+>  /tmp/vg_model_probe /tmp/detection.tflite --zeros /tmp/detection_t$n 30 $n
+>  cat /tmp/detection_t$n.json
+> done
+> grep -E "MemTotal|MemAvailable" /proc/meminfo
+> echo AUTONOMY_BOARD_PROBE_END
+> '
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/vg_model_probe'
+vg_model_probe        29% |*********                       | 4021k  0:00:02 ETAvg_model_probe       100% |********************************| 13.4M  0:00:00 ETA
+'/tmp/vg_model_probe' saved
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/attention.tflite'
+[  150.002032] random: crng init done
+attention.tflite      67% |*********************           | 1645k  0:00:00 ETAattention.tflite     100% |********************************| 2436k  0:00:00 ETA
+'/tmp/attention.tflite' saved
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/detection.tflite'
+detection.tflite     100% |********************************|  224k  0:00:00 ETA
+'/tmp/detection.tflite' saved
+/tmp/vg_model_probe: OK
+/tmp/attention.tflite: OK
+/tmp/detection.tflite: OK
+AUTONOMY_BOARD_PROBE_BEGIN
+armv7l
+ATTENTION_THREADS=1
+MODEL_PROBE_PASS outputs=7 synthetic=1 mean_ms=251.186
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":30,"threads":1,"input_bytes":442368,"mean_ms":251.18572650000004,"p50_ms":251.17265599999999,"p95_ms":251.43494699999999,"max_rss_kib":15232,"outputs":[{"slot":0,"elements":1404,"shape":[1,1,1,1404]},{"slot":1,"elements":160,"shape":[1,1,1,160]},{"slot":2,"elements":142,"shape":[1,1,1,142]},{"slot":3,"elements":142,"shape":[1,1,1,142]},{"slot":4,"elements":10,"shape":[1,1,1,10]},{"slot":5,"elements":10,"shape":[1,1,1,10]},{"slot":6,"elements":1,"shape":[1,1,1,1]}]}
+DETECTION_THREADS=1
+MODEL_PROBE_PASS outputs=2 synthetic=1 mean_ms=147.085
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":30,"threads":1,"input_bytes":196608,"mean_ms":147.08529046666666,"p50_ms":147.06707599999999,"p95_ms":147.235094,"max_rss_kib":7680,"outputs":[{"slot":0,"elements":14336,"shape":[1,896,16]},{"slot":1,"elements":896,"shape":[1,896,1]}]}
+ATTENTION_THREADS=2
+MODEL_PROBE_PASS outputs=7 synthetic=1 mean_ms=240.288
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":30,"threads":2,"input_bytes":442368,"mean_ms":240.28839140000002,"p50_ms":239.90903700000001,"p95_ms":253.043511,"max_rss_kib":21012,"outputs":[{"slot":0,"elements":1404,"shape":[1,1,1,1404]},{"slot":1,"elements":160,"shape":[1,1,1,160]},{"slot":2,"elements":142,"shape":[1,1,1,142]},{"slot":3,"elements":142,"shape":[1,1,1,142]},{"slot":4,"elements":10,"shape":[1,1,1,10]},{"slot":5,"elements":10,"shape":[1,1,1,10]},{"slot":6,"elements":1,"shape":[1,1,1,1]}]}
+DETECTION_THREADS=2
+MODEL_PROBE_PASS outputs=2 synthetic=1 mean_ms=147.631
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":30,"threads":2,"input_bytes":196608,"mean_ms":147.63118426666668,"p50_ms":140.61575500000001,"p95_ms":174.457268,"max_rss_kib":10288,"outputs":[{"slot":0,"elements":14336,"shape":[1,896,16]},{"slot":1,"elements":896,"shape":[1,896,1]}]}
+MemTotal:         476868 kB
+MemAvailable:     406092 kB
+AUTONOMY_BOARD_PROBE_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

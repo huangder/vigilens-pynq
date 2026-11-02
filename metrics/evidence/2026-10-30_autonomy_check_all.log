@@ -1,0 +1,83 @@
+==================================================================================
+VigiLens / 知倦 —— 项目总测试入口（只跑可离线执行的部分）
+时间：2026-10-30 19:39:33   解释器：D:\Desktop\AMD\.venv\Scripts\python.exe
+==================================================================================
+
+[0/6] 环境与依赖 ...
+[1/6] A 线总入口 check_a_line_all.py ...
+[2/6] B 线专项 ...
+[3/6] 工具自检 ...
+[4/6] 语法检查 ...
+[5/6] 就绪状态（只报告，不计失败）...
+
+[6/6] 需硬件 / 需人工的项（本机跑不了，命令已给全）
+    · Mizar-Z7020（板卡）
+        怎么做: python board/s4_bench/s4_run.py init（JTAG + xsdb；断电后先跑这一条）
+        能证明什么: PS/PL 是否活着、DDR 能否读写 —— S4 九道门限的第一步
+    · Mizar-Z7020（720p 档）
+        怎么做: python board/s4_bench/s4_720.py recm / stream
+        能证明什么: 720p 档灰度链路逐字节对拍 + 每帧耗时
+    · 真实摄像头（UVC）
+        怎么做: metrics/scripts/run_demo.py --list 找序号，再 --source <序号>
+        能证明什么: 真实帧喂 A 线；必须确认 landmark_source=mediapipe
+    · Vitis HLS
+        怎么做: call D:\Xilinx\2026.1\Vitis\settings64.bat；vitis-run --mode hls --tcl fpga\run_hls.tcl
+        能证明什么: 各 HLS IP 的 csim/csynth/cosim
+    · 板端 Buildroot Linux / USB→PL
+        怎么做: 见 board/w7_buildroot/DIRECT_LOOP.md；已有独立板端原始日志
+        能证明什么: 真实摄像头取帧、JPEG 解码、DMA/PL 对拍；不由本离线总入口重复操作硬件
+
+==================================================================================
+汇总
+==================================================================================
+
+[环境] 10/10 通过
+  [INFO] Python
+          3.12.13 @ D:\Desktop\AMD\.venv\Scripts\python.exe
+  [PASS] 依赖 cv2
+  [PASS] 依赖 numpy
+  [PASS] 依赖 mediapipe
+  [PASS] 依赖 yaml
+  [PASS] 依赖 fastapi
+  [PASS] 依赖 uvicorn
+  [PASS] 依赖 pytest
+  [INFO] 依赖 pyserial
+          未安装 —— Python 串口工具不可用；现有板端 PowerShell 串口工具不依赖它
+  [PASS] node
+
+[A 线] 1/1 通过
+  [PASS] check_a_line_all（A~E 五段）
+
+[B 线] 4/4 通过
+  [PASS] B 线门控阈值一处定义 → /api/status → 前端兜底三处一致
+  [PASS] B 线 /ws 断流兜底（发合法契约的 disconnected，序号不倒退）
+  [PASS] 旁路画面链路 + 契约未被污染（15 项）
+  [PASS] 年龄档案旁路（年龄档案/收录/同龄基线比对 + Python↔JS 校验一致）
+
+[工具自检] 10/10 通过
+  [PASS] backend/contract.py
+  [PASS] backend/config.py
+  [PASS] backend/publish.py
+  [PASS] board/regmap.py --selftest
+  [PASS] board/bringup_check.py --selftest
+  [PASS] board/hw_sw_compare.py --selftest
+  [PASS] board/dma_test.py --selftest
+  [PASS] board/overlay/mmap_overlay.py --selftest
+  [PASS] metrics/scripts/check_uvc_camera.py --selftest
+  [PASS] metrics/scripts/probe_rppg_timebase.py
+
+[语法] 3/3 通过
+  [PASS] 7 个 Python 目标可解析
+  [PASS] frontend/app.js（node --check）
+  [PASS] frontend/preview.js 坐标换算自检（含 720p）
+
+[就绪状态]（**不计入退出码**：缺素材/缺板卡是「还没到那一步」，不是「坏了」）
+  · P4 标定素材（4 视频 + 4 标注）: · turn.csv 标注不存在（放 data\annotations/，格式见 data/README.md） | → 补齐后重跑本脚本；再按 backend/P4_CALIBRATION_GUIDE.md 逐项标定。
+  · board/bitstream/ 里的 bitstream: 找到 2 个文件
+  · Vitis HLS 工具链: 已安装
+  · data/raw/ 真实视频: 3 个：['blink.mp4', 'blink_1080p_src.mp4', '_probe_rot90.mp4']
+
+==================================================================================
+回归结论：✅ 全部通过（PASS 26 / FAIL 0，用时 71.6s）
+提示：本次离线回归未执行硬件项；已有板端结论请查 metrics/evidence/ 与 fpga/report/，见 [6/6]。
+==================================================================================

@@ -1,0 +1,28 @@
+#!/bin/sh
+# Linux 6.6 chipidea can first probe before a GPIO-dependent legacy PHY.
+# Its global legacy-PHY fallback returns ENXIO instead of deferring. Bind the
+# unbound USB0 child ONCE after phy-generic is ready; never reset a bound host.
+case "${1:-start}" in start) ;; *) exit 0 ;; esac
+host=/sys/bus/platform/devices/ci_hdrc.0
+[ -d "$host" ] || exit 0
+case "$(readlink -f "$host/of_node")" in */usb@e0002000) ;; *) exit 0 ;; esac
+[ -L "$host/driver" ] && exit 0
+attempt=0
+while [ ! -L /sys/bus/platform/devices/phy0/driver ] && [ "$attempt" -lt 20 ]; do
+    sleep 0.1
+    attempt=$((attempt + 1))
+done
+if [ ! -L /sys/bus/platform/devices/phy0/driver ]; then
+    echo "USB_HOST_FAIL: PHY driver is not ready"
+    exit 1
+fi
+if ! echo ci_hdrc.0 > /sys/bus/platform/drivers/ci_hdrc/bind; then
+    echo "USB_HOST_FAIL: ci_hdrc bind failed"
+    exit 1
+fi
+if [ ! -L "$host/driver" ]; then
+    echo "USB_HOST_FAIL: ci_hdrc remains unbound"
+    exit 1
+fi
+echo "USB_HOST_READY: legacy PHY late-probe recovery"
+sleep 1

@@ -1,0 +1,25 @@
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: root
+Password: 
+# before=$(dmesg | grep -c 'new USB bus registered')
+init.d/S98usb_host start
+after=$(dmesg | grep -c 'new USB bus registered')
+echo "USB_HOST_REENTRY buses_before=$# /etc/init.d/S98usb_host start
+before buses_after=$after"
+[ "$before" = "$after" ] && echo USB_HOST_REENTRY_PASS
+ls -l /dev/video0
+
+printf '\nVIGI_COMMAND_DONE\n'
+# after=$(dmesg | grep -c 'new USB bus registered')
+# echo "USB_HOST_REENTRY buses_before=$before buses_after=$after"
+USB_HOST_REENTRY buses_before=1 buses_after=1
+# [ "$before" = "$after" ] && echo USB_HOST_REENTRY_PASS
+USB_HOST_REENTRY_PASS
+# ls -l /dev/video0
+crw-------    1 root     root       81,   0 Jan  1 00:00 [1;35m/dev/video0[m
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

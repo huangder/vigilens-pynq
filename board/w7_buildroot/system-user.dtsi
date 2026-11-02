@@ -1,0 +1,134 @@
+/*
+ * Board DTS overlay：Mizar-Z7 7020（W7 Buildroot 路线）
+ *
+ * ！！2026-10-25 第二次修正！！
+ *   ① PS7 的 SD0 / USB0 现在由 `ps7_w7.tcl` 打开（两类参数缺一不可，见该脚本头注释与 docs/42）：
+ *        PCW_EN_SDIO0 / PCW_EN_USB0        ← 决定**设备树**里 en-sdio0 / en-usb0
+ *        PCW_SD0_PERIPHERAL_ENABLE / ..._IO ← 决定 ps7_init 与引脚
+ *      所以本文件把 `&usb0` / `&sdhci0` 翻成 `status = "okay"`。
+ *   ② ⚠️ 前提是**已经**按顺序做过：ps7_w7.tcl → 重跑 synth_1 → 重导 XSA → sdtgen。
+ *      没做那四步（仓库里提交的 .xpr 仍是 SD0/USB0 关闭状态）时，下面两段必须退回
+ *      `status = "disabled"`，否则会得到"寄存器能读、时钟没有"的空壳节点。
+ *      sdtgen 产物的一票否决判据：`pcw.dtsi` 里必须能看到
+ *        `xlnx,pcw-en-sdio0 = <1>`、`xlnx,pcw-en-usb0 = <1>`、
+ *        `&usb0 { status = "okay"; phy_type = "ulpi"; }`、`&sdhci0 { status = "okay"; ... }`
+ *
+ * 用法：与 sdtgen 从 XSA 生成的 system-top.dts / pcw.dtsi 一起编：
+ *     #include "system-top.dts"     // 生成物，别手改
+ *     #include "system-user.dtsi"   // 本文件
+ * 依据：docs/37 §W7 表（厂商手册）+ docs/12 §3（引脚表）；标【待核对】的必须查 Mizar-Z7_R11 原理图。
+ *
+ * 【已验证】本文件与 sdtgen 四件套一起 `gcc -E` + `dtc -I dts -O dtb` 通过（check_dts.ps1，2026-10-25）。
+ */
+
+/ {
+	model = "MicroPhase Mizar-Z7 7020";
+
+	chosen {
+		/* cma=256M：uvcvideo 要连续内存；usbcore.autosuspend=-1：别让 UVC 相机休眠掉 */
+		bootargs = "console=ttyPS0,115200 root=/dev/mmcblk0p2 rw rootwait cma=256M usbcore.autosuspend=-1";
+	};
+
+	/*
+	 * serial0 必须指向**真正使能了**的那个控制器。
+	 * 现状：BD 开的是 UART1（build_bd.tcl:165-166）⇒ 这里写 uart1。
+	 * 注意：CH340 的引脚按手册是 MIO14/15，而 BD 填的是 MIO48/49 —— 二者矛盾，
+	 * 见 docs/41 §15.3；改的是 **MIO 号**，控制器仍是 UART1，本行不用改。
+	 */
+	aliases {
+		serial0 = &uart1;
+	};
+
+	/*
+	 * Zynq USB0 的 PHY 节点（**主线的写法**，2026-10-26 实测改正）。
+	 *
+	 * 先前写的是 Xilinx linux-xlnx 专有的 `compatible = "ulpi-phy"`；
+	 * 但 Buildroot 用的是**主线 6.6.158**，drivers/ 下根本没有 "ulpi-phy" 驱动
+	 * （grep 0 命中）⇒ phy 永远不注册 ⇒ chipidea 的 usb_phy 拿不到，
+	 * 表现就是 `ci_hdrc.0` 平台设备存在、却**不绑定** `ci_hdrc` 驱动，
+	 * root hub 不注册、/dev/video 永远不出现，且 dmesg 里**一句报错都没有**。
+	 * 主线 zynq-zed.dts 用的是 `usb-nop-xceiv`（drivers/usb/phy/phy-generic.c，
+	 * CONFIG_NOP_USB_XCEIV=y 已在 .config 里），照抄即可，不需要 view-port。
+	 */
+	usb_phy0: phy0 {
+		compatible = "usb-nop-xceiv";
+		#phy-cells = <0>;
+		/* R11 sheets 2/9: RESETB=MIO46, low asserted, VDDIO=1.8V.
+		 * Mainline phy-generic performs the reset BEFORE host initialization. */
+		reset-gpios = <&gpio0 46 1>; /* GPIO_ACTIVE_LOW */
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb0_reset_pins>;
+	};
+
+	/*
+	 * A5：DDR 容量修正 —— sdtgen 生成的 memory 节点是 reg = <0x00100000 0x3FF00000>（1 GiB），
+	 * 但 Mizar-Z7 **7020 版实物只有 512 MiB**（U-Boot 自报 `DRAM: ECC disabled 512 MiB`）。
+	 * 设备树按节点路径合并：这里用**同名节点** memory@00100000 覆盖 reg，是合法写法，
+	 * 不会产生第二个 memory 节点（dtc 走 -I dts 时按路径 merge）。
+	 * 不改的后果：内核会去摸 0x20000000 以上的不存在内存 —— 表现成随机 Oops / 页分配失败。
+	 * 7020 = 512 MiB ⇒ size = 0x20000000 - 0x00100000 = 0x1FF00000。
+	 */
+	memory@00100000 {
+		device_type = "memory";
+		reg = <0x00100000 0x1FF00000>;
+	};
+};
+
+/* ---- 已使能：UART1（console）---- */
+&uart1 {
+	status = "okay";
+};
+
+/*
+ * UART0 明确关掉。
+ * 2026-10-26 实测线索：最新的 XSA 里我把 UART0（MIO14/15）也打开过（`ps7_uart0.tcl`），
+ * 从那以后**内核在 ttyPS0 上不再输出**（U-Boot 仍正常，JTAG 读 PC 证明内核在跑）。
+ * 只用 UART1 做 console，UART0 没有存在的理由 ⇒ 关掉，把变量收窄。
+ */
+&uart0 {
+	status = "disabled";
+};
+
+/* ---- USB0：USB3320C（ULPI，Host），PS7 侧由 PCW_EN_USB0 + PCW_USB0_PERIPHERAL_ENABLE 打开 ---- */
+&usb0 {
+	status = "okay";
+	dr_mode = "host";
+	usb-phy = <&usb_phy0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_ulpi_pins>;
+};
+
+&pinctrl0 {
+	usb0_ulpi_pins: usb0-ulpi-default {
+		mux { groups = "usb0_0_grp"; function = "usb0"; };
+		conf { groups = "usb0_0_grp"; io-standard = <1>; slew-rate = <1>; };
+		/* DIR/NXT/CLK are PHY outputs into PS; retain input tri-state. */
+		rx { pins = "MIO29", "MIO31", "MIO36"; bias-high-impedance; };
+		tx { pins = "MIO28", "MIO30", "MIO32", "MIO33", "MIO34", "MIO35", "MIO37", "MIO38", "MIO39"; bias-disable; };
+	};
+	usb0_reset_pins: usb0-reset-default {
+		mux { groups = "gpio0_46_grp"; function = "gpio0"; };
+		conf { pins = "MIO46"; io-standard = <1>; bias-pull-up; };
+	};
+};
+
+/* ---- SD0：启动卡。sdhci0 是哪个实例以生成的 pcw.dtsi 为准（本工程 = ps7_sd_0）---- */
+/*
+ * ⚠️ 2026-10-26 实测：卡槽**空** + sdhci0 使能 时，内核每 ~2.5 s 打一次中断风暴
+ *    （`mmc0: Got command interrupt 0x00030000 ...` 加一整屏寄存器 dump），
+ *    把串口彻底刷满，`login:` 提示符看不见。这是"无卡 + 控制器使能"的组合问题。
+ *  ⇒ 默认关掉，保证串口可读、证据干净。
+ *  ⇒ 走 SD 卡启动时把它改回 "okay"（并保留 broken-cd）——那是唯一需要它的场景。
+ */
+&sdhci0 {
+	status = "disabled";
+	/* 恢复时用 broken-cd 让内核轮询（原理图未接 CD/WP，pcw.dtsi 里 has-cd/has-wp 都是 0） */
+	/* broken-cd; */
+};
+
+/* ---- GEM0：RTL8211E + RGMII。W7 不需要网口，先不做 ---- */
+&gem0 {
+	status = "disabled";
+	/* 要做时先开 PCW_EN_ENET0 + PCW_GEM0_GEM0_IO，再翻 okay；phy-mode 先试 "rgmii-id"，
+	 * ping 不通再换 "rgmii" / "rgmii-txid" */
+};

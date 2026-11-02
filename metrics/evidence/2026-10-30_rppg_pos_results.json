@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-30",
+  "scope": "RGB/POS method implementation and matched offline replay; no accuracy truth",
+  "source_wire_sha256": "ff124798174a6749bd37ff9af5872407373a22ac8dfda013fffe8fd483619169",
+  "frames": 7750,
+  "source_span_s": 259.815371,
+  "default_method": "green",
+  "experimental_method": "pos",
+  "methods": {
+    "pos": {
+      "spectral_windows": 1901,
+      "max_peak_fraction": 0.15412247882741817,
+      "median_peak_fraction": 0.11473328260237822,
+      "nonnull_hr_frames": 0,
+      "reject_counts": {
+        "quality_invalid": 257,
+        "window_not_full": 3084,
+        "pose_invalid": 224,
+        "recovering": 89,
+        "no_dominant_peak": 1901,
+        "fs_mismatch": 98,
+        "sampling_jitter": 1823,
+        "face_invalid": 274
+      }
+    },
+    "green": {
+      "spectral_windows": 1901,
+      "max_peak_fraction": 0.28393227182220937,
+      "median_peak_fraction": 0.15603686154734336,
+      "nonnull_hr_frames": 0,
+      "reject_counts": {
+        "quality_invalid": 257,
+        "window_not_full": 3084,
+        "pose_invalid": 224,
+        "recovering": 89,
+        "no_dominant_peak": 1901,
+        "fs_mismatch": 98,
+        "sampling_jitter": 1823,
+        "face_invalid": 274
+      }
+    }
+  },
+  "default_stream_equals_scheme_a": true,
+  "comparison_stream_equals_default": true,
+  "source_inputs_unchanged_during_runs_and_match_current_code": true,
+  "check_all": {
+    "passed": 26,
+    "failed": 0,
+    "elapsed_s": 66.7
+  },
+  "validation_exit_codes": {
+    "check_all": 0,
+    "q15": 0,
+    "fir": 0
+  },
+  "pos_specific_tests_passed": 16,
+  "golden": {
+    "samples": 120,
+    "sha256": "0a5b9ca60077b7003653a7b74150ab082122dbd564141b6074bb8d8653def339"
+  },
+  "human_hr_reference_available": false,
+  "manual_labels_required": false,
+  "pl_migration_verified": false,
+  "real_time_performance_evidence": false
+}

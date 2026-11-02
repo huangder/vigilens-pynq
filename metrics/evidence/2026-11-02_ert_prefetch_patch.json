@@ -1,0 +1,7 @@
+{
+  "source_before_sha256": "bc26beef755bfdbb45b18b4a91046111aecf78e12b5fd6e734e47a7f8a387128",
+  "source_after_sha256": "d4a7648f9a91b7c3f2723a8ba21baa059e72a69b6ad576f9897d8b57822c8440",
+  "original_operator_unchanged": true,
+  "upstream_license": "Boost Software License",
+  "target_parity_verified": false
+}

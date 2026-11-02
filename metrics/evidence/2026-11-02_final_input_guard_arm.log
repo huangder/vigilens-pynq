@@ -1,0 +1,2 @@
+CAMERA_GEOMETRY_PASS profiles=2 invalid_rejected=1 unaligned_960_rejected=1
+YUYV_RGB_PASS pixels=37748736 scalar_reference_parity=1 boundaries=1 RGB_order=1 implementation=neon

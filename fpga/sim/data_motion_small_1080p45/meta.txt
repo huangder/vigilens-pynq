@@ -1,0 +1,11 @@
+in_width=80
+in_height=64
+out_width=20
+out_height=16
+frames=10
+rgb_bytes=15360
+gray_bytes=320
+motion_thresh=16
+seed=20260910
+gray_formula=(77R+150G+29B+128)>>8
+decim=1/4 keep_x%4<1 keep_y%4<1

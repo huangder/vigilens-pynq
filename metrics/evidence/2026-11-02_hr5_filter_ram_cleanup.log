@@ -1,0 +1,15 @@
+test "$(sha256sum /tmp/hr20_live_scalars.tar.gz | cut -d ' ' -f 1)" = cc177803
+287aaff35171b4b521da4797cd3bb4391029764967e03ab408e827db && test "$(sha256sum /t
+mp/hr5_live_scalars.tar.gz | cut -d ' ' -f 1)" = 269730ceafbd170ae81da6570947ec1
+28af6bf8ab6f03d79fd849c7c011fb6e3 && rm -f /tmp/hr20_live_scalars.tar /tmp/hr20_
+live_scalars.b64 /tmp/hr5_live_scalars.tar /tmp/hr5_live_scalars.b64 && echo TRA
+NSFER_COPIES_REMOVED_ORIGINAL_LOGS_AND_GZ_RETAINED
+df -k /tmp
+TRANSFER_COPIES_REMOVED_ORIGINAL_LOGS_AND_GZ_RETAINED
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    209884     28548  88% /tmp
+# printf '\nHR5_FILTER_RAM_READY\n'
+
+HR5_FILTER_RAM_READY
+# 

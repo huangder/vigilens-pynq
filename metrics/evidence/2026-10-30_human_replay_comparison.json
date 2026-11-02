@@ -1,0 +1,19 @@
+{
+  "frames": 7750,
+  "frame_identity_or_timestamp_changes": 0,
+  "face_observation_changes": 0,
+  "ear_mar_changes": 0,
+  "counter_changes": 0,
+  "blink_state_changes": 235,
+  "decision_status_changes": 0,
+  "before_final_counts": {
+    "blink_count": 48,
+    "long_close_count": 11,
+    "yawn_count": 1
+  },
+  "after_final_counts": {
+    "blink_count": 48,
+    "long_close_count": 11,
+    "yawn_count": 1
+  }
+}

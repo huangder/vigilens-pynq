@@ -1,0 +1,27 @@
+#!/bin/sh
+# Runs after S98usb_host. Does not consume test frames or depend on a PC.
+set -eu
+. /etc/vigilens/boot.env
+case "${1:-start}" in
+ stop) exec /usr/sbin/vigilens-service stop;;
+ restart) exec /usr/sbin/vigilens-service restart;;
+ start) ;;
+ *) exit 2;;
+esac
+if ! grep -Eq '(^| )vigilens.autostart=1( |$)' /proc/cmdline;then
+    echo 'VIGILENS_AUTOSTART_DISABLED: explicit boot marker absent';exit 0
+fi
+[ "$VG_BOOT_ENABLED" = 1 ] || exit 0
+(
+    mkdir -p "$VG_BOOT_ROOT" "$VG_RUN_DIR"
+    remaining=$VG_MOUNT_WAIT_SECONDS
+    while [ ! -b "$VG_BOOT_DEVICE" ] && [ "$remaining" -gt 0 ];do sleep 1;remaining=$((remaining-1));done
+    if [ ! -b "$VG_BOOT_DEVICE" ];then echo 'VIGILENS_BOOT_FAIL SD_partition_missing';exit 1;fi
+    # Only an existing first partition is mounted; nothing is formatted/written.
+    if ! mount -t vfat -o ro,exec,nosuid,nodev "$VG_BOOT_DEVICE" "$VG_BOOT_ROOT";then
+        echo 'VIGILENS_BOOT_FAIL read_only_SD_mount_failed';exit 1
+    fi
+    modprobe uvcvideo 2>/dev/null || true
+    /usr/sbin/vigilens-service start
+) >> /run/vigilens-boot.log 2>&1 &
+echo "VIGILENS_AUTOSTART_SCHEDULED pid=$!"

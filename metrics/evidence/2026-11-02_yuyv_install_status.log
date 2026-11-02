@@ -1,0 +1,20 @@
+
+[1]+  Done                       sh /tmp/install_final_native.sh http://169.254.73.28:8095 /tmp/vigilens_final 1>/tmp/final_install.log 2>&1
+# tail -n 7 /tmp/final_install.log
+NSTALL_Sdet1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+NATIVE_INSTALL_PASS directory=/tmp/vigilens_final
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    121380    117052  51% /tmp
+# echo FINAL_INSTALL_STATUS_END
+FINAL_INSTALL_STATUS_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

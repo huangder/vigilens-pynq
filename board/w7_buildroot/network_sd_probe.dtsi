@@ -1,0 +1,9 @@
+/* Separate opt-in probe profile, not the release DT. Do not write the card.
+ * MIO40..45 electrical configuration still requires schematic review.
+ */
+#include "network_loop.dtsi"
+&sdhci0 {
+    status = "okay";
+    broken-cd;
+    disable-wp;
+};

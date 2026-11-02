@@ -1,0 +1,13 @@
+{
+  "kind": "synthetic_model_conversion_reference",
+  "runtime_version": "1.20.1",
+  "model_sha256": "74d1a83932af79c2689d9371b21f32d014552f089985f076e832e89cb18f41e8",
+  "input_sha256": "4496218ecb68f2c690cef27a4d19a9ba5960045f93e30f353c9a48e1dea7e682",
+  "output_shape": [
+    1,
+    196
+  ],
+  "finite": true,
+  "opencv_max_abs_difference": 4.76837158203125e-07,
+  "accuracy_verified": false
+}

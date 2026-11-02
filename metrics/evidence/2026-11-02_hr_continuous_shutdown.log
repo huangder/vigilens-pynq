@@ -1,0 +1,20 @@
+test "$(sha256sum /tmp/hr_continuous_live_scalars.tar.gz | cut -d ' ' -f 1)" =
+ 2796aba021d909cab29f039fc894855ca0caf73bdcf51c430ed80e1924137494 && test "$(sha
+256sum /tmp/hr_continuous_live2_scalars.tar.gz | cut -d ' ' -f 1)" = ac3d5e2d69d
+57c1365f32fde46a31a22e95ce97e485079ba1ce82664a3b69843 && rm -f /tmp/hr_continuou
+s_live_scalars.b64 /tmp/hr_continuous_live2_scalars.b64 && gzip /tmp/vigilens_hr
+_continuous/live1_camera.log /tmp/vigilens_hr_continuous/live1_contracts.jsonl /
+tmp/vigilens_hr_continuous/camera.log /tmp/vigilens_hr_continuous/contracts.json
+l && echo SCALAR_LOGS_RETAINED_COMPRESSED
+ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+df -k /tmp
+printf '\nHR5_FILTER_COMMAND_END\n'
+SCALAR_LOGS_RETAINED_COMPRESSED
+# ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    232520      5912  98% /tmp
+# printf '\nHR5_FILTER_COMMAND_END\n'
+
+HR5_FILTER_COMMAND_END
+# 

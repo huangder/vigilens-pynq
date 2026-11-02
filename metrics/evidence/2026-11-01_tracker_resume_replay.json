@@ -1,0 +1,19 @@
+{
+  "hardware_test": false,
+  "accuracy_verified": false,
+  "frozen_clip": true,
+  "runs": [
+    {
+      "contracts": 657,
+      "face_frames": 493,
+      "black_clear": true,
+      "sha256": "272688629039868520653f9e477a815aea7cb80b7e15c02da2e96794ea06c953"
+    },
+    {
+      "contracts": 657,
+      "face_frames": 493,
+      "black_clear": true,
+      "sha256": "272688629039868520653f9e477a815aea7cb80b7e15c02da2e96794ea06c953"
+    }
+  ]
+}

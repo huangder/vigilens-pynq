@@ -1,0 +1,20 @@
+{
+  "first": {
+    "contracts": 657,
+    "visible": 498,
+    "sha256": "18a80865625e98817617a83eba86d04ae7940533cc702277a8d507cc8d1868e0"
+  },
+  "repeat": {
+    "contracts": 657,
+    "visible": 498,
+    "sha256": "18a80865625e98817617a83eba86d04ae7940533cc702277a8d507cc8d1868e0"
+  },
+  "negative": {
+    "contracts": 657,
+    "visible": 409,
+    "sha256": "a053a517f191254ffb8475e55138dbe5e47a6ad3e000e3653064d56ac0a2636e",
+    "negative_face_and_vitals_clear": 45
+  },
+  "hardware_test": false,
+  "accuracy_verified": false
+}

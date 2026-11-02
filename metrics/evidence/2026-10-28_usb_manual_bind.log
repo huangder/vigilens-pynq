@@ -1,0 +1,89 @@
+
+# ls /sys/bus/platform/devices | grep -E 'ci_hdrc|phy0|usb'
+sys/bus/platform/devices/ci_hdrc.0/uevent
+cat /sys/kerneci_hdrc.0
+e0002000.usb
+phy0
+l/debug/devices_deferred
+echo ci_hdrc.0 > /sys/bus/platf# ls -l /sys/bus/platform/devices/ci_hdrc.0/driver
+orm/drivers/ci_hdrc/bind
+sleep 3
+ls /sys/bus/usb/devicesls: /sys/bus/platform/devices/ci_hdrc.0/driver: No such file or directory
+# cat /sys/bus/platform/devices/ci_hdrc.0/uevent
+
+ls -l /dev/video*
+dmesg | tail -45
+
+printf '\nVIGI_COMMAND_DONE\n'
+OF_NAME=usb
+OF_FULLNAME=/axi/usb@e0002000
+OF_COMPATIBLE_0=xlnx,zynq-usb-2.20a
+OF_COMPATIBLE_1=chipidea,usb2
+OF_COMPATIBLE_N=2
+MODALIAS=platform:ci_hdrc
+# cat /sys/kernel/debug/devices_deferred
+# echo ci_hdrc.0 > /sys/bus/pl[  304.793095] ci_hdrc ci_hdrc.0: EHCI Host Controller
+atform/drivers/ci_hdrc/bind
+[  304.801008] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[  304.832975] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[  304.839344] hub 1-0:1.0: USB hub found
+[  304.843205] hub 1-0:1.0: 1 port detected
+# sleep 3
+[  305.152989] usb 1-1: new high-speed USB device number 2 using ci_hdrc
+[  305.365627] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+# ls /sys/bus/usb/devices
+[1;36m1-0:1.0[m  [1;36m1-1[m      [1;36m1-1:1.0[m  [1;36m1-1:1.1[m  [1;36musb1[m
+# ls -l /dev/video*
+crw-------    1 root     root       81,   0 Jan  1 00:05 [1;35m/dev/video0[m
+crw-------    1 root     root       81,   1 Jan  1 00:05 [1;35m/dev/video1[m
+# dmesg | tail -45
+[    2.583713] ---[ end trace 0000000000000000 ]---
+[    2.588432] cpu cpu0: OPP table can't be empty
+[    2.594367] Xilinx Zynq CpuIdle Driver started
+[    2.598813] failed to register cpuidle driver
+[    2.605281] sdhci: Secure Digital Host Controller Interface driver
+[    2.611479] sdhci: Copyright(c) Pierre Ossman
+[    2.618916] Synopsys Designware Multimedia Card Interface Driver
+[    2.627683] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.638411] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.647141] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    2.656391] timer #0 at (ptrval), irq=39
+[    2.661076] usbcore: registered new interface driver usbhid
+[    2.666689] usbhid: USB HID core driver
+[    2.681168] NET: Registered PF_INET6 protocol family
+[    2.688633] Segment Routing with IPv6
+[    2.692358] In-situ OAM (IOAM) with IPv6
+[    2.696433] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.703093] NET: Registered PF_PACKET protocol family
+[    2.708146] can: controller area network core
+[    2.712541] NET: Registered PF_CAN protocol family
+[    2.717364] can: raw protocol
+[    2.720352] can: broadcast manager protocol
+[    2.724561] can: netlink gateway - max_hops=1
+[    2.729447] Key type dns_resolver registered
+[    2.734035] ThumbEE CPU extension supported.
+[    2.738308] Registering SWP/SWPB emulation handler
+[    2.754632] Loading compiled-in X.509 certificates
+[    2.776167] usb_phy_generic phy0: dummy supplies not allowed for exclusive requests
+[    2.785524] clk: Disabling unused clocks
+[    2.792606] Freeing unused kernel image (initmem) memory: 2048K
+[    2.800303] Run /init as init process
+[    2.803999]   with arguments:
+[    2.804006]     /init
+[    2.804013]   with environment:
+[    2.804018]     HOME=/
+[    2.804024]     TERM=linux
+[    3.268535] videodev: Linux video capture interface: v2.00
+[    3.281948] usbcore: registered new interface driver uvcvideo
+[  304.793095] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[  304.801008] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[  304.832975] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[  304.839344] hub 1-0:1.0: USB hub found
+[  304.843205] hub 1-0:1.0: 1 port detected
+[  305.152989] usb 1-1: new high-speed USB device number 2 using ci_hdrc
+[  305.365627] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

@@ -1,0 +1,207 @@
+{
+  "network_off_component_execution_verified": true,
+  "full_autonomy_verified": false,
+  "accuracy_verified": false,
+  "full_pipeline_realtime_verified": false,
+  "threshold_calibration_verified": false,
+  "human_intervals_available": false,
+  "source_files": {
+    "board/autonomy/armv7.cmake": "6536ebbc7b4738ef84995f214cad028fdad993e714b4210167e0008df6e3427e",
+    "board/autonomy/audit_models.py": "31d7211c432c8378c9a658639ee259664c9838b6e148a6334afd39ce0892d79e",
+    "board/autonomy/behavior.c": "b06d3aa063e00a6066ce8cf65b384b8395b8f74fd4de2724e1e44715f0f217bf",
+    "board/autonomy/behavior.h": "aaccffe446944b4275006ce22e81c5e7ecd325664ef8b83252da06b69e2d5d81",
+    "board/autonomy/build_optimized_tflite.sh": "d2c734b464116ccead6aefc9b975a8d2fc736cbdb1d4022e2c8508f0c741c3f0",
+    "board/autonomy/check_board_run.py": "16228e89059c865699002ef8a5736f32ad8081dfd7871752d5ec3b013c8627ca",
+    "board/autonomy/CMakeLists.txt": "814ddfa1fb50d2406948f88b83aad0a0215e481fb356374d66f647db5f05bb65",
+    "board/autonomy/compare_landmark_modes.py": "b34d8557bc6666b28b55bb58610800d4f795e6e9d4fe44e9a8c0087addfa679b",
+    "board/autonomy/compare_peppa_quantization.py": "2472b3663a7b6034123dd71b4e932cc416d5fba4316fe15c3436f6f6c8bafee3",
+    "board/autonomy/compare_probe.py": "d55b2eb7d7079be1b550d4c47f1f9919862c6125d132a2ec47b1401a6eadd079",
+    "board/autonomy/decision.c": "fb6a3b183b07c9c705069bc5d32ba4c1185e2796f2db5616e44c434d738f71ea",
+    "board/autonomy/decision.h": "dddf1e4cca66bbf9efcef644dcf10e2d0221a3e08341e32c151a83ad72ccfea8",
+    "board/autonomy/export_config.py": "f54c8a278b993009d5f238a17f114cff813caf284c3d80a7fbee2a5954bbf540",
+    "board/autonomy/fetch_tflite_deps.py": "5e8f0452d0a816f1e373dca29d4edc9b9f42fe04e915d7538d7d67f6d53eeb25",
+    "board/autonomy/make_replay_fixture.py": "71607df76b43e36ff4d30099e24a14791d31f8f740870c47629de1d21be51da7",
+    "board/autonomy/measure.c": "ebaff4f8e86c0998c2468abb04da620da4cea125d6391290be57e6b8a6ea9a25",
+    "board/autonomy/measure.h": "e37da0b9e5e2924a11c51742357b19ca0d2e36b8081cebbe2854c5c0af927575",
+    "board/autonomy/measure_replay.c": "07003e896c081ec3d0d5dba4291915961b032e3f760b6cdcc255140699aa610e",
+    "board/autonomy/mediapipe_ops.cmake": "eb2a2530051d6fa02d6ab7459aca8358da16a2b77bd57d6c7e63e860befe4922",
+    "board/autonomy/model_probe.cc": "d59945c3d706b56ce75de0ddae04a7391aaf5838afbaca772b5dd78e97b89f1f",
+    "board/autonomy/prepare_peppa_calibration.py": "3854496f5bd83234e140154eea6c84a2240607cc40cafb2b7e1cd6455230439c",
+    "board/autonomy/prepare_tf_ops.py": "0093c9a645f02bc6f9ddd270f990614158752b55e35f4e0695232de00e2a1f08",
+    "board/autonomy/prune_peppa_fp32.py": "37b1ed96a8cf14f7b7e0036fa1f77f3598f18368deaff966735aee78bd467bbb",
+    "board/autonomy/quality.c": "f693b95c843ac046ef53640633e4e1fe850dc1d7a71e80844da59d3b39318e64",
+    "board/autonomy/quality.h": "8a74b878d45c9d927c2f1d4379d873afbaedb26d968fd9b3b4caa47e13ac677e",
+    "board/autonomy/quantize_peppa.py": "5db0942ec2b30bd0a600d9847731a8e4584eaf48dd2d50845eb0efbd01736eba",
+    "board/autonomy/ncnn_probe/CMakeLists.txt": "4c8ab32e8c2bd4fd3cf63623fab099096adb26f3dc832e0ca1a29328ccaf328a",
+    "board/autonomy/ncnn_probe/model_probe.cc": "d186478171f3446e0ca202c93b7756330eabd5e88e9fa1ff02fe28dcb0885a08",
+    "board/autonomy/tests/test_audit_models.py": "303a96dc664853055d89146e56711ce13c36f2426d3b6ede6780ee032055495b",
+    "board/autonomy/tests/test_behavior.py": "707496069a4613e16ae8f0bd4016884058431351f9f59a8ddc51804b87f25049",
+    "board/autonomy/tests/test_board_run.py": "37530218e6045564ba3ffd725730d891be2eaf39912630989281b32ce497c360",
+    "board/autonomy/tests/test_compare_landmark_modes.py": "5407aee5c91a6dbb35dede6e9048fddd9ea4b35b18a77a62919d45ed31f5b688",
+    "board/autonomy/tests/test_compare_peppa_quantization.py": "587a9a5f3e122bb4625a21e693efd085c143979f8fc431dc6063b62bca753caf",
+    "board/autonomy/tests/test_compare_probe.py": "4bfdbbbbe22b1be34ee57c643b05c896948432f43f2ea76fe44988d1421c863a",
+    "board/autonomy/tests/test_decision.py": "3e8e6825c79ec53cbb6323fa0dabf35628444fd63dfe53a669c40f1129e2fc3d",
+    "board/autonomy/tests/test_export_config.py": "fe889024ea3c03367d909929ea9d18c0d40ba76d8cd5b344b877f10b7cc1466f",
+    "board/autonomy/tests/test_fetch_tflite_deps.py": "fa4600321255fba4fa2ca310bbdeebfe62a25dd21d13122eed0115acc56c46b6",
+    "board/autonomy/tests/test_measure.py": "e27e5f903a9d22a33c1355e995b7a32290cd0f6c1763fb2a1c12d2a23602627b",
+    "board/autonomy/tests/test_measure_replay.py": "1f35761efe57078fd58c6f756099d724b9f45f6dd4bcd5ec2e11bb8f1e101543",
+    "board/autonomy/tests/test_ncnn_probe_cli.py": "f909a7ac43843db0d653a8d20750bf15bb922eb29813eab23c3ef4c9b617a743",
+    "board/autonomy/tests/test_prepare_peppa_calibration.py": "569798c046c563159410dac8709defed5a4fc99ab075ad17c7a9e350f9713df0",
+    "board/autonomy/tests/test_prepare_tf_ops.py": "69c6255192fc036e31813908a550251c036aeb0dc8209b3f1389690cff675177",
+    "board/autonomy/tests/test_prune_peppa_fp32.py": "04032c38df9cacc0cf32946c46d282b3bcf6ae01a79c5ae7f69fa96bb714d688",
+    "board/autonomy/tests/test_quality.py": "0a2dd2641dfaaaf8f4f6c48082d86e0d73ba1f181291af17a527df8068cd699b",
+    "board/autonomy/tests/test_quantize_peppa.py": "4087248c1ad3f10d94bf16d5033b9b38bef965c1080324590c0ce60b4fa459f7"
+  },
+  "artifacts": {
+    "attention.tflite": {
+      "bytes": 2495106,
+      "sha256": "e06a804e0144f9929eda782122916b35d60c697c3c9344013ca2bbe76a6ce2b4"
+    },
+    "detection.tflite": {
+      "bytes": 229714,
+      "sha256": "bbff11cebd1eb27a1e004cae0b0e63ec8c551cbf34a4451148b4908b8db3eca8"
+    },
+    "ghostone.bin": {
+      "bytes": 2811664,
+      "sha256": "ab899aac0f681aca77390646184719958c3313242ea0dff6b2e719a800a25706"
+    },
+    "ghostone.param": {
+      "bytes": 11889,
+      "sha256": "4be7f1478d817f8c93dbc2a507da12af743aeda5038f7af2266c5879b7264ed1"
+    },
+    "ghostone_input.f32": {
+      "bytes": 150528,
+      "sha256": "4496218ecb68f2c690cef27a4d19a9ba5960045f93e30f353c9a48e1dea7e682"
+    },
+    "mesh468.tflite": {
+      "bytes": 1242398,
+      "sha256": "1055cb9d4a9ca8b8c688902a3a5194311138ba256bcc94e336d8373a5f30c814"
+    },
+    "peppa.bin": {
+      "bytes": 928676,
+      "sha256": "2c336fa2f1dc2b4ae339ddbba139408f2c590eabe64f8c580ccfa9946c5158c3"
+    },
+    "peppa.param": {
+      "bytes": 3259,
+      "sha256": "6735001ab4f53ff72fd315522e491f9a598701a63fd518a559b4a318f378f523"
+    },
+    "peppa_aciq.bin": {
+      "bytes": 249344,
+      "sha256": "b1b93d5190e6b54ba176c9dbcc4370324136694f133df427e76f193cb32f3b15"
+    },
+    "peppa_aciq.param": {
+      "bytes": 3407,
+      "sha256": "4922ede3e25d74445abb260bfbb7f0c7e907235f874187b000beac88c098f6cd"
+    },
+    "peppa_input.f32": {
+      "bytes": 307200,
+      "sha256": "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd"
+    },
+    "peppa_int8.bin": {
+      "bytes": 249344,
+      "sha256": "a0b31c49742c5b78824ab5b3adf4132b98e023b918103aca69b5649559f03a08"
+    },
+    "peppa_int8.param": {
+      "bytes": 3407,
+      "sha256": "4922ede3e25d74445abb260bfbb7f0c7e907235f874187b000beac88c098f6cd"
+    },
+    "peppa_mixed.bin": {
+      "bytes": 442184,
+      "sha256": "b027b57b4db3a3c7dd481ce2af8189d184b349568b4223e6b69918607ff88d15"
+    },
+    "peppa_mixed.param": {
+      "bytes": 3397,
+      "sha256": "db2a0448eee41fe104113306d7a0cf62b876d7f78bc0c56027319692dccd6e0c"
+    },
+    "peppa_pruned.bin": {
+      "bytes": 475524,
+      "sha256": "f9c76eee62232147f2e53a7bfd1d2033b9a3eac147ce0493869655131f83199b"
+    },
+    "peppa_pruned.param": {
+      "bytes": 2126,
+      "sha256": "223746b13c090a5f9efaa1a7e599fa15bdef17d8d1b52dd48b483b8f994b3976"
+    },
+    "synthetic_replay.txt": {
+      "bytes": 181015,
+      "sha256": "0334bad2f49fad65be0c9d6fda73cac96c2aa480d79394cbeb1e73421c06f3f9"
+    },
+    "vg_measure_replay": {
+      "bytes": 37812,
+      "sha256": "1ad3ff97f262dc4d31fa1fe333186effe24f001cd8562e541f05e5515e4e9621"
+    },
+    "vg_model_probe": {
+      "bytes": 14067312,
+      "sha256": "89768c0882a1b6040fc46084131783d61f25b15c17aea4214a799d61c66abc69"
+    },
+    "vg_model_probe_xnn": {
+      "bytes": 14644028,
+      "sha256": "039ba39321a76fbca5467dfcdba2e34064da0ad4f800e06db3a5e7dfb77ba34a"
+    },
+    "vg_ncnn_probe": {
+      "bytes": 10928444,
+      "sha256": "79a9df6640a0abe8ab8a80a843c00134be59d9eceebd6268f0a871906ce86592"
+    },
+    "vg_ncnn_probe_int8": {
+      "bytes": 11213780,
+      "sha256": "0b373e3f438e4c2cf4f1cfa48794997e8f9f6a50171eb999af8e26e0fc68dab3"
+    },
+    "vg_ncnn_probe_neutral": {
+      "bytes": 10932540,
+      "sha256": "ee3f49ee891226a0afcf638bd48b9460483480cb6cbdb264e5c2c3971557c7ec"
+    },
+    "vg_ncnn_probe_options": {
+      "bytes": 10932540,
+      "sha256": "fe16640233b21071af8eab6db6877b1a2efc72eda03bc66c796f063c8bb615f2"
+    }
+  },
+  "evidence_files": {
+    "2026-10-30_autonomy_attention_comparison.json": "5a8059774ce7e6cae20bf76dfddf206f52e814f4415e9a40506182508eacac85",
+    "2026-10-30_autonomy_base_build.log.gz": "10733a70a56f91c09ea9bda55a36c4c4f9a6f25d5e4e72fbc7fb6d9e366c2c76",
+    "2026-10-30_autonomy_board_checked.json": "d844842ddbe9c7559659735417a21a6aeabb4d199c1d2cde86c4c20521dbb059",
+    "2026-10-30_autonomy_boot.log": "450592b7da635683c8e4733d5541de087d9093bcdbac05e9b495a41a94589e77",
+    "2026-10-30_autonomy_boot_xsdb.log": "a60a6fb0beb022833294779e0b7567fb2b07df79d37eda8bf8480fb3d14e8973",
+    "2026-10-30_autonomy_calibration_kl.log.gz": "6c5bd8521a688a1c07c44df19ed633e5daa248580649050267d5692c10358c5c",
+    "2026-10-30_autonomy_calibration_preparation.log": "11f2ee4aaed5be8c9dca223f3611c66a90f48673e2124df918027bde8d87a394",
+    "2026-10-30_autonomy_check_all.log": "7e8fd9074b7a76b177c883f771ed56ec130a56094f0c16b569bdbc4033602a12",
+    "2026-10-30_autonomy_config.json": "114a102f01beb9d544a8eae6c9678c1806756fc039f6f062c6f8af93d8c1f6d8",
+    "2026-10-30_autonomy_core_replay.log": "6d8f9ecce3e8a2f1265d3cb2e79f43e732de9e88931a680d3767731b7a0b3684",
+    "2026-10-30_autonomy_c_tests.log": "61337fc592b1fde1c030a018d2659641edb97b58a00b8109211902d57dc0d906",
+    "2026-10-30_autonomy_ghostone.log": "b999e10016a6165f0f71de2cb4b0f04afbdc20560a12c81a9dcb13cd6a7ee76c",
+    "2026-10-30_autonomy_ghostone_comparison.json": "09b7292611bd363840eec249fe130c96075b9479d4b769fe3d9db33f9ce3d858",
+    "2026-10-30_autonomy_ghostone_ort_reference.json": "c2607741b45ae26b2f3b947e7dd088559a6b625e1d36e2f8c090de7561b8cf52",
+    "2026-10-30_autonomy_incomplete_mixed_quantizer.log.gz": "c7f87fd82ecc122f60ae0d791c6f74576318308619dbed0f89846667d3f3e879",
+    "2026-10-30_autonomy_invalid_long_norm.log.gz": "eaec7e9df26483c4a9cec43a9fc61743069805e8ca55f352778c2d3a71046aa3",
+    "2026-10-30_autonomy_inventory.log": "0899e71374a2bba4539d52d6aa524ad1d5c21b3fc1d48ab4a051fa160e053ee2",
+    "2026-10-30_autonomy_landmark_modes.json": "f405989a283eb02c1ec344dc7f2080b02336c712c21c2fcf00d741f2600ec566",
+    "2026-10-30_autonomy_mesh468.log": "c498cf24a475c4582d2004a8ed77ae32f878ea45fb344747fabde602b39a62d5",
+    "2026-10-30_autonomy_model_audit.json": "9b1e585c0170f9d23b4ce765e849f5a1556e0ecedcd367e692e62468bfbe3b59",
+    "2026-10-30_autonomy_model_baseline.log": "5509e10de91d2c966562aa7dc90cbd812a44b95d60ba232f27fdcd32c3511aa0",
+    "2026-10-30_autonomy_model_tensor_transfer.log": "6307638fb62d86d81aa4919a045925d0773d575cf669c43501a098fe3d6ee562",
+    "2026-10-30_autonomy_model_xnn.log": "3f7bf8c4202c6d6ee87d55b0009b966e4f686fa51aea295ed75c35fadacc6161",
+    "2026-10-30_autonomy_ncnn_build.log.gz": "42093356a3a83a49dbc5d788f73165647bc3e877458d2d2d4224dfe983ce1cef",
+    "2026-10-30_autonomy_ncnn_int8_build.log.gz": "b72a3ff4043c6a8a89941b9a2d34f3e41589088773d1d37dea785afc19c08ceb",
+    "2026-10-30_autonomy_network_off.log": "db7c5dab708cd1721bc30d6ba5ce670a3f8a43c4888b4dbe0386ffa97ebfcca1",
+    "2026-10-30_autonomy_peppa_aciq_development.json": "a80f79caece5d2ae4b71687073967fb380a1a46fe9e08ed274804cf8bcf9e77d",
+    "2026-10-30_autonomy_peppa_boot.log": "9da3ccbbcf2947917ca56e4f59df76d092a9daab74f31bc107c2193cf188f09d",
+    "2026-10-30_autonomy_peppa_boot_xsdb.log": "a60a6fb0beb022833294779e0b7567fb2b07df79d37eda8bf8480fb3d14e8973",
+    "2026-10-30_autonomy_peppa_fp32.log": "3c3a00b2e34a5085256e4aafad82b71417df0a454877b9315ee1c004344f9fcc",
+    "2026-10-30_autonomy_peppa_fp32_comparison.json": "25c869192d9ce83752874584ae4aa4eb515f912ce4db263ee7a962b3be7718b6",
+    "2026-10-30_autonomy_peppa_incomplete_mixed.log": "ac71291810dc71209286df47a087d4b377b33dcbdec0c25edb8f3646c0ea08cd",
+    "2026-10-30_autonomy_peppa_int8.log": "4930faff45140d7b2887ba0410b896de2c97c06fa399601aea1774583a5e5674",
+    "2026-10-30_autonomy_peppa_int8_development.json": "7093846a7ac19ba6447b965c809a4175ec8144ac41f290a5dc2599304d86ed71",
+    "2026-10-30_autonomy_peppa_int8_workflow.json": "d3ade8ea0b11eed738af635d407daab48ca21ce4f55a21abf0b8fa556eddbe6b",
+    "2026-10-30_autonomy_peppa_kernel_sweep.log": "2a87a9bd98cb35f85066f6313cafbb8a96aceaea8e11be7d4100535a24bc9d1c",
+    "2026-10-30_autonomy_peppa_mixed.log": "7bfcddfc0427772c974660a79a8a2475c6e98157cc04c539279b3268b85ff220",
+    "2026-10-30_autonomy_peppa_mixed_development.json": "3ff0f02a7073ed846756fca6453d77ea3007aeff4cd83947d83d54df9fcbfc62",
+    "2026-10-30_autonomy_peppa_mixed_workflow.json": "6d6c95e4c544506c7176a342c4c248136b6d6d34208e25f64a66f42f6757fba5",
+    "2026-10-30_autonomy_peppa_ort_reference.json": "0c26d78cb02c4d597fae2e576e6649f36e74861090be300ae1018be683b216ee",
+    "2026-10-30_autonomy_peppa_pruned.log": "1994b11f406c3ae5bbd50a6b9bd8de2bef6ee36fbc507ef5e2af7e26fd198bd0",
+    "2026-10-30_autonomy_peppa_pruned_board.json": "b768bc18980b29d5b51d994aaf09181af63e2dc52b6051e7a83a099ca701e972",
+    "2026-10-30_autonomy_peppa_pruned_development.json": "ee9dc81baa1e72f56b37ba9542f46c5cef5b57cd93347f9763fca8be60560de2",
+    "2026-10-30_autonomy_peppa_pruning_audit.json": "6435becf26f9219a8b8e419c38d386ccc4395fe501e9b65b52ab11351397edb1",
+    "2026-10-30_autonomy_peppa_quantized_board.json": "e3bd263b2bdedccf7228f579773488ae7876732a4aa0865c6f3378d82ef51dad",
+    "2026-10-30_autonomy_pruning_tests.log": "4a36bc9a8c5be6d83063ae8950d5b9b59a473379c6296d9cf800accdc6c878ca",
+    "2026-10-30_autonomy_tool_tests.log": "5761f31c6a690bc8b0cd9c747d90dd041aab74b6117e39e511d142e934069773",
+    "2026-10-30_autonomy_xnn_build.log.gz": "50b1e7f90b76c2dcc2f23df9a342725fe9d08764375f53bc88174229ea00bb32"
+  }
+}

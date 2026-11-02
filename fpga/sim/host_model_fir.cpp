@@ -27,7 +27,13 @@
 #include <string>
 #include <vector>
 
+// 系数表选择：与 fpga/src/fir_filter.cpp 完全一致（默认 30 Hz；定义 FIR_FS_60HZ 用 60 Hz）
+// 配套黄金参考：30 Hz -> data_fir/ ；60 Hz -> data_fir_60hz/
+#if defined(FIR_FS_60HZ)
+#include "../src/fir_coeffs_q15_60hz.h"
+#else
 #include "../src/fir_coeffs_q15.h"
+#endif
 
 static const int N_TAPS = FIR_NUM_TAPS;
 static const int N_HALF = (FIR_NUM_TAPS - 1) / 2;   // 成对抽头数

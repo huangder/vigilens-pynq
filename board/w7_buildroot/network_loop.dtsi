@@ -1,0 +1,33 @@
+/* Opt-in RAM-only USB/PL + GEM0 profile. R11 sheets 2 and 8. */
+#include "direct_loop.dtsi"
+/ {
+    aliases { ethernet0 = &gem0; };
+};
+&gem0 {
+    status = "okay";
+    phy-mode = "rgmii-id";
+    phy-handle = <&mizar_phy0>;
+    /* Preserve the validated 1600 MHz IO PLL. 25 MHz is exactly /8 /8.
+     * 1000 Mbps needs a separate clock-profile qualification. */
+    local-mac-address = [02 56 49 47 49 01]; /* local experimental MAC */
+    pinctrl-names = "default";
+    pinctrl-0 = <&gem0_rgmii_pins &gem0_mdio_pins>;
+    mizar_phy0: ethernet-phy@1 {
+        reg = <1>;
+        /* phy-core.c reads max-speed from the PHY node. Putting it only
+         * on this kernel's GEM MAC node did not constrain advertisement. */
+        max-speed = <100>;
+        /* RESET_N is PS_POR_B via D12/R68, NOT a PS GPIO. */
+    };
+};
+&pinctrl0 {
+    gem0_rgmii_pins: gem0-rgmii-default {
+        mux { groups = "ethernet0_0_grp"; function = "ethernet0"; };
+        conf { groups = "ethernet0_0_grp"; io-standard = <1>; slew-rate = <1>; bias-disable; };
+        rx { pins = "MIO22", "MIO23", "MIO24", "MIO25", "MIO26", "MIO27"; bias-high-impedance; };
+    };
+    gem0_mdio_pins: gem0-mdio-default {
+        mux { groups = "mdio0_0_grp"; function = "mdio0"; };
+        conf { groups = "mdio0_0_grp"; io-standard = <1>; slew-rate = <1>; bias-disable; };
+    };
+};

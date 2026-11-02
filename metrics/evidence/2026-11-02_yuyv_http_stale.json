@@ -1,0 +1,18 @@
+{
+  "url": "http://169.254.73.29:8080",
+  "metrics_only": true,
+  "samples": [
+    {
+      "elapsed_s": 0.09748919999765349,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "elapsed_s": 1.1008832000006805,
+      "http_error_status": 503,
+      "body": "{\"error\":\"measurement_stale\"}\n",
+      "error": "HTTP Error 503: Service Unavailable"
+    }
+  ]
+}

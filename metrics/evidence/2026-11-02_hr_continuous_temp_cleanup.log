@@ -1,0 +1,23 @@
+set -e
+# test "$(sha256sum /tmp/hr5_filter_live_scalars.tar.gz | cut -d ' ' -f 1)" = 73
+36531c907d9dfa80f04704288b8bf5fe70fdb1c31c62890414927675c61a26
+# test "$(sha256sum /tmp/vigilens_hr5/vg_vision_replay_arm | cut -d ' ' -f 1)" =
+ 8836cf708c8ee589b3ac78d8fbd748dadcb0f46269bec5516df346d6b54cd18a
+test "$(sha256sum /tmp/vigilens_hr20/vg_vision_replay_arm | cut -d ' ' -f 1)" = d77b71ac2e7b45b85c106d69d0f304c8eaaeac6270f6a7b391b734ae50720570
+rm -f /tmp/hr5_filter_live_scalars.tar /tmp/hr5_filter_live_scalars.b64 /tmp/vigilens_hr5/vg_vision_replay_arm /tmp/vigilens_hr20/vg_vision_replay_arm
+echo VERIFIED_RECOVERABLE_TEMPORARY_COPIES_REMOVED_LOGS_MODELS_RETAINED
+df -k /tmp
+printf '\nHR5_FILTER_COMMAND_END\n'
+# test "$(sha256sum /tmp/vigilens_hr20/vg_vision_replay_arm | cut -d ' ' -f 1)" 
+= d77b71ac2e7b45b85c106d69d0f304c8eaaeac6270f6a7b391b734ae50720570
+# rm -f /tmp/hr5_filter_live_scalars.tar /tmp/hr5_filter_live_scalars.b64 /tmp/v
+igilens_hr5/vg_vision_replay_arm /tmp/vigilens_hr20/vg_vision_replay_arm
+# echo VERIFIED_RECOVERABLE_TEMPORARY_COPIES_REMOVED_LOGS_MODELS_RETAINED
+VERIFIED_RECOVERABLE_TEMPORARY_COPIES_REMOVED_LOGS_MODELS_RETAINED
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    213160     25272  89% /tmp
+# printf '\nHR5_FILTER_COMMAND_END\n'
+
+HR5_FILTER_COMMAND_END
+# 

@@ -1,0 +1,26 @@
+
+# echo FINAL_LIVE_PREFLIGHT_BEGIN
+FINAL_LIVE_PREFLIGHT_BEGIN
+# uptime
+ 03:44:29 up  3:44,  load average: 0.00, 0.01, 0.00
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    200572     37860  84% /tmp
+# ls -l /dev/video0 /tmp/vigilens_final/run_native.sh
+ra_autoncrw-------    1 root     root       81,   0 Jan  1 03:23 [1;35m/dev/video0[m
+-rwxr-xr-x    1 root     root          1696 Jan  1 03:36 [1;32m/tmp/vigilens_final/run_native.sh[m
+# if pidof vigi_camera_autonomy >/dev/null; then
+>     echo FINAL_LIVE_NOT_STARTED_CAMERA_BUSY
+> else
+>     sh /tmp/vigilens_final/run_native.sh /tmp/vigilens_final 1800 > /tmp/vigil
+ens_final/run.log 2>&1 &
+NAL_LIVE>     echo FINAL_LIVE_RUN_PID=$!
+> fi
+VIGI_COMFINAL_LIVE_RUN_PID=645
+# echo FINAL_LIVE_PREFLIGHT_END
+FINAL_LIVE_PREFLIGHT_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

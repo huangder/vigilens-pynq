@@ -1,0 +1,31 @@
+# XSim RTL simulation evidence - PL chain (ROI -> rgb2gray -> motion_quality)
+# Date: 2026-10-26 (Asia/Shanghai)
+# Simulator: Vivado Simulator v2026.1 (xsim)
+# Command: powershell -NoProfile -ExecutionPolicy Bypass -File .\board\sim\run_xsim_chain.ps1 -WorkDir %TEMP%\vigilens_xsim_e2e
+# Input: 3 frames 640x480 RGB888, frames.bin 2764800 B,
+#        sha256 e589dd6cc96f98132fcce62e6968fff5f755f4b5fbc8f44c81a5adeaaf36d5c2
+# Result: PASS (3 frames; ROI / gray sum / size / motion / frame_id all match)
+# NOTE: This is RTL simulation, NOT a board run. No DMA/PS7/JTAG/timing.
+#
+****** xsim v2026.1 (64-bit)
+  **** SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+  **** IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+  **** SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+  **** Start of session at: Mon Oct 26 22:18:27 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/tb_pl_chain/xsim_script.tcl
+# xsim {tb_pl_chain} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+SIM loaded bytes=2764800 (expect 2764800)
+SIM f=1 roi_sum_r=58909920 roi_sum_g=41857021 roi_sum_b=45262560 roi_count=307200 rgb_pixels=110592 rgb_sum=17055721 mot_diff=17055721 mot_pixels=110592 mot_ratio=65536 mot_count=110592 roi_fid=1 rgb_fid=1 mot_fid=1
+SIM f=2 roi_sum_r=58914240 roi_sum_g=42029242 roi_sum_b=45590400 roi_count=307200 rgb_pixels=110592 rgb_sum=17055814 mot_diff=167643 mot_pixels=1728 mot_ratio=1024 mot_count=110592 roi_fid=2 rgb_fid=2 mot_fid=2
+SIM f=3 roi_sum_r=58920480 roi_sum_g=42029242 roi_sum_b=45577920 roi_count=307200 rgb_pixels=110592 rgb_sum=17055959 mot_diff=167881 mot_pixels=1728 mot_ratio=1024 mot_count=110592 roi_fid=3 rgb_fid=3 mot_fid=3
+SIM done
+$finish called at time : 9219275 ns : File "D:/Desktop/AMD/board/sim/tb_pl_chain.v" Line 353
+run: Time (s): cpu = 00:00:00 ; elapsed = 00:00:20 . Memory (MB): peak = 238.980 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 28508 KB (Peak: 28508 KB), Simulation CPU Usage: 19202 ms
+INFO: [Common 17-206] Exiting xsim at Mon Oct 26 22:18:49 2026...

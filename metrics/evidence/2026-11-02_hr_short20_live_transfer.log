@@ -1,0 +1,13 @@
+(cd /tmp/vigilens_hr20 && tar -cf /tmp/hr20_live_scalars.tar camera.log contra
+cts.jsonl http.log run.log package.json manifest.sha256 runtime.env && gzip -c /
+tmp/hr20_live_scalars.tar > /tmp/hr20_live_scalars.tar.gz && base64 /tmp/hr20_li
+ve_scalars.tar.gz > /tmp/hr20_live_scalars.b64 && wget -q -Y off -T 15 -O /tmp/h
+r20_live_upload_reply.json --post-file /tmp/hr20_live_scalars.b64 http://169.254
+.73.28:8096/scalar-archive && cat /tmp/hr20_live_upload_reply.json && sha256sum 
+/tmp/hr20_live_scalars.tar.gz)
+printf '\nHR20_SCALARS_UPLOAD_END\n'
+{"wire_bytes": 370735, "bytes": 274438, "sha256": "1418fcbde785e1b3fc99103cdc2ba6150f3e17c3ebea62a6e610251592ddd957"}1418fcbde785e1b3fc99103cdc2ba6150f3e17c3ebea62a6e610251592ddd957  /tmp/hr20_live_scalars.tar.gz
+# printf '\nHR20_SCALARS_UPLOAD_END\n'
+
+HR20_SCALARS_UPLOAD_END
+# 

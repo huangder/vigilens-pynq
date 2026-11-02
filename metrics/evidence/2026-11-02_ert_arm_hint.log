@@ -1,0 +1,13 @@
+ERT_READY mode=offline_synchronous config_sha256=beed734d2f9a8606c23f4c2444d1a1a6cc0f44fc597525ea5cb8c5022bd50c59 accuracy_verified=0
+ERT_MODEL_FRAME frame_id=1 ts=1.100000000 visible=0 detector_ms=0.004 landmark_ms=21.734 detections=1 geometry_failure=2 detector_path=4
+ERT_MODEL_FRAME frame_id=2 ts=2.200000000 visible=0 detector_ms=0.002 landmark_ms=21.609 detections=1 geometry_failure=2 detector_path=2
+ERT_MODEL_FRAME frame_id=3 ts=3.300000000 visible=0 detector_ms=0.004 landmark_ms=0.001 detections=0 geometry_failure=-1 detector_path=1
+ERT_MODEL_FRAME frame_id=4 ts=4.400000000 visible=0 detector_ms=0.003 landmark_ms=0.001 detections=0 geometry_failure=-1 detector_path=1
+ERT_SUMMARY observations=4 visible=0 lost=4 model_submitted=4 model_completed=4
+ERT_READY mode=offline_synchronous config_sha256=beed734d2f9a8606c23f4c2444d1a1a6cc0f44fc597525ea5cb8c5022bd50c59 accuracy_verified=0
+ERT_MODEL_FRAME frame_id=1 ts=1.100000000 visible=0 detector_ms=0.004 landmark_ms=0.001 detections=0 geometry_failure=-1 detector_path=4
+ERT_MODEL_FRAME frame_id=2 ts=2.200000000 visible=0 detector_ms=0.003 landmark_ms=0.001 detections=0 geometry_failure=-1 detector_path=1
+ERT_MODEL_FRAME frame_id=27 ts=29.700000000 visible=0 detector_ms=0.002 landmark_ms=0.001 detections=0 geometry_failure=-1 detector_path=1
+ERT_MODEL_FRAME frame_id=30 ts=33.000000000 visible=0 detector_ms=0.002 landmark_ms=0.001 detections=0 geometry_failure=-1 detector_path=4
+ERT_SUMMARY observations=4 visible=0 lost=4 model_submitted=4 model_completed=4
+ERT_DETECTOR_HINT_PASS retained_after_landmark_rejection cleared_after_detector_loss no_false_visible=1

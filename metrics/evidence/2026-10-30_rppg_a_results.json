@@ -1,0 +1,75 @@
+{
+  "scheme": "A",
+  "frames": 7750,
+  "pipeline_exit": 0,
+  "transport_errors": [],
+  "source_unchanged_during_replay": true,
+  "frame_alignment": true,
+  "contract_errors": {},
+  "vital_gate_violations": [],
+  "nonnull_hr_frames": 0,
+  "full_replay_diagnostics": {
+    "estimate_calls": 7750,
+    "reject_counts": {
+      "quality_invalid": 257,
+      "window_not_full": 3084,
+      "pose_invalid": 224,
+      "recovering": 89,
+      "no_dominant_peak": 1901,
+      "fs_mismatch": 98,
+      "sampling_jitter": 1823,
+      "face_invalid": 274
+    },
+    "reset_counts": {
+      "pose_invalid": 13,
+      "source_gap": 18,
+      "quality_invalid": 25,
+      "face_invalid": 8
+    },
+    "invalid_counts": {
+      "quality_invalid": 257,
+      "pose_invalid": 224,
+      "face_invalid": 274
+    },
+    "raw_samples_total": 6995,
+    "max_segment_samples": 2804,
+    "max_window_samples": 900,
+    "soft_pause_frames": 179,
+    "resumed_segments": 52,
+    "resample_calls": 1901,
+    "last_uniform_samples": 0,
+    "last_spectral_fs": null,
+    "raw_history_samples": 962,
+    "last_harmonic_ratio": null,
+    "last_reset_reason": "quality_invalid",
+    "recovery_samples_remaining": 0
+  },
+  "feature_replay_matches_full_diagnostics": true,
+  "recorded_feature_max_conf_before": 0.15748637455764442,
+  "recorded_feature_max_conf_after": 0.28393227182220937,
+  "spectral_calls_before": 243,
+  "spectral_calls_after": 1901,
+  "source_wire_sha256": "ff124798174a6749bd37ff9af5872407373a22ac8dfda013fffe8fd483619169",
+  "check_all": {
+    "passed": 26,
+    "failed": 0,
+    "elapsed_s": 63.6
+  },
+  "focused_test_result": "88 passed in 1.18s (terminal)",
+  "golden_exit_codes": {
+    "check_all": 0,
+    "q15": 0,
+    "fir": 0
+  },
+  "source_files": {
+    "backend/vital.py": "32690a0ad54b34b6fff944ae6338980e1cafb17740d02faf0f245cc90ae9bda6",
+    "backend/run_pipeline.py": "4351bfcdb29cfe2c4cf6e10a4d649313799dcd98190eb5044ffc52510208768d",
+    "backend/config.py": "2e1a2f3431a495c045a85056ab767f7b906fd14b6f5e1320e8573b0bdc641964",
+    "config.yaml": "9e4eff505f4aac36c7f22c23f3c70d0e32e9e14b5d0377a58bc55657621be5d8",
+    "backend/tests/test_rppg_reliability.py": "64d162493db030d741a66d370df2cae20e6b438ecfc379f9f03a8cc328cbcdc1",
+    "fpga/src/fir_coeffs_q15.h": "5e7368ab99fbbea8b7ade5c60c4de29690fd7ba585981245dfe13e50d8749d09"
+  },
+  "accuracy_validated": false,
+  "human_annotation_required": false,
+  "limitation": "Current recorded data remains below the original spectral confidence requirement. No synchronous human HR reference."
+}

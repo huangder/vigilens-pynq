@@ -1,0 +1,19 @@
+
+# wget -q -T 15 -O /tmp/vigilens_ert/uvc_modes http://169.254.73.28:8094/uvc_mod
+es
+mp/vigilens_ert/uvc_modes /dev/video0
+
+printf '\nVIGI_COMMAND_DONE\n'
+# chmod +x /tmp/vigilens_ert/uvc_modes
+# /tmp/vigilens_ert/uvc_modes /dev/video0
+UVC_MODE format=0x47504a4d width=1280 height=720 interval=1/60
+UVC_MODE format=0x47504a4d width=640 height=480 interval=1/60
+UVC_MODE format=0x47504a4d width=960 height=720 interval=1/60
+UVC_MODE format=0x56595559 width=1280 height=720 interval=1/10
+UVC_MODE format=0x56595559 width=640 height=480 interval=1/30
+UVC_MODE format=0x56595559 width=960 height=720 interval=1/10
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

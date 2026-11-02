@@ -1,0 +1,6 @@
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+W0000 00:00:1793359584.840495   22036 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1793359584.854279   23940 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1793359584.856808   38120 landmark_projection_calculator.cc:186] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.
+{"output": ".tmp\\autonomy\\calibration\\peppa", "counts": {"decoded_frames": 600, "selected_frames": 200, "calibration_samples": 90, "holdout_samples": 99, "skipped_face_not_visible": 11, "skipped_invalid_bbox": 0}, "accuracy_verified": false}

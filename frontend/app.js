@@ -18,12 +18,14 @@
   var U = window.VigiLensUIState;
   var T = window.VigiLensTrends;
   var A = window.VigiLensAlerts;
+  var R = window.VigiLensRecording;
   // 客户端看门狗：**故意比服务端的 ws_disconnect_timeout_s（3.0 s）慢 1 秒**。
   // 断流的权威来源是服务端 —— api.py 的 /ws 在超时后会下发一帧契约合法的 `disconnected`
   // （见 backend/api.py 的 disconnect_frame 与 backend/A_LINE_DEV_STEPS.md §9 第 8 条）。
   // 客户端看门狗只在"服务端整个挂掉、连断开帧都发不出来"时兜底，所以必须比服务端晚触发；
   // 同刻触发会让两边抢着宣布断流，日志里多一条误导性的"超过 Ns 未收到帧"。
   var WS_TIMEOUT_MS = 4000;
+  var hrDisplay = window.VigiLensHrDisplay.create({freshMs:WS_TIMEOUT_MS}), hrSourceContext="";
   var MAX_POINTS = 120;              // 趋势曲线保留点数（1 Hz → 120 秒）
   var HISTORY_SECONDS = 120;          // 卡片共用时间窗口；只保留本次连接的历史
   var MOCK_PERIOD_MS = 1000;         // 与契约 1 帧/秒一致
@@ -132,7 +134,11 @@
     serverSource: "",      // 当前连接的 /api/status.source；独立 WS 时为空
     hostedServerSource: "",// 托管本页的 api.py 来源，供同源 /ws 连接时使用
     usesApiStatus: false,   // 当前 WS 是否就是托管页面的同源 /ws
-    alertTracker: A.createTracker()
+    alertTracker: A.createTracker(),
+    recording: null,
+    recordingScene: null,
+    recordingNextId: 120,
+    recordingCamera: null
   };
 
   /* ---------------------------------------------------------------- 工具 */
@@ -214,6 +220,12 @@
   }
 
   /* ------------------------------------------------------- 同源视频预览 */
+  function updateCameraAspect(width, height) {
+    if (typeof width !== "number" || typeof height !== "number" ||
+        !isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) return;
+    document.querySelector(".preview-stage").style.setProperty("--camera-aspect", String(width / height));
+  }
+
   function setPreviewBadge(kind, text) {
     el.videoBadge.className = "badge" + (kind ? " " + kind : "");
     el.videoBadge.textContent = text;
@@ -260,7 +272,7 @@
     }
     if (!list.length) {
       var li = document.createElement("li");
-      li.textContent = frame
+      li.textContent = state.mode === "recording" && frame ? frame.reason : frame
         ? "（暂无判定证据链：需 A 线推送时带上 triggers，见 docs/08_B线给A线的接口请求.md）"
         : "—";
       el.triggers.appendChild(li);
@@ -296,12 +308,15 @@
   }
 
   function renderGate(frame) {
+    document.querySelector(".quality-note").textContent = "质量门控未通过时不产生新测量；心率卡可保留带更新时间的历史值。";
     var failed = [];
     var measurement = U.measurementState(frame);
     var measured = measurement === U.MEASUREMENT.MEASURED;
     GATE_DEFS.forEach(function (g) {
       var row = $("gate_" + g.key);
       if (!row) return;
+      var compactLabels = { light: "光照", motion: "运动", visible: "可见率", overall: "质量", vital: "心率门控" };
+      row.querySelector(".top span").textContent = state.mode === "recording" ? compactLabels[g.key] : g.label;
       var v = measured ? g.get(frame) : null;
       var ok = gatePass(g, v);
       var has = !(v === null || v === undefined || !isFinite(v));
@@ -335,7 +350,7 @@
     } else if (failed.length === 0) {
       el.gateVerdictText.textContent = "可以测量";
       el.gateVerdictText.style.color = STATUS_COLOR.normal;
-      el.gateVerdictSub.textContent = "四项基础门控通过；心率与呼吸率另有门控";
+      el.gateVerdictSub.textContent = state.mode === "recording" ? "四项基础门控通过；心率另有门控" : "四项基础门控通过；心率与呼吸率另有门控";
     } else {
       el.gateVerdictText.textContent = "测不准，别采信";
       el.gateVerdictText.style.color = STATUS_COLOR.disconnected;
@@ -396,8 +411,8 @@
     return value;
   }
 
-  /* 生理指标的三态显示。这是本项目最核心的产品承诺：
-     测不准时宁可说"没有"，也绝不沿用上一个数字、更不写 0。*/
+  /* 当前生理测量的三态显示，不把缺测写成 0。
+     心率卡另由 hrDisplay 保留明确标注年龄的历史值；曲线/告警只用当前契约。 */
   function vitalDisplay(frame, value, conf) {
     if (value !== null && value !== undefined && isFinite(value)) {
       return { text: value.toFixed(1),
@@ -428,6 +443,7 @@
   }
 
   function renderCards(frame) {
+    el.measurementLive.hidden = false;
     var measurement = U.measurementState(frame);
     var measured = measurement === U.MEASUREMENT.MEASURED;
     el.measurementLiveText.textContent = !frame ? "等待数据" : (frame.status === "done" ? "本次监测已结束" :
@@ -442,7 +458,11 @@
       var v = cardValue(frame, d);
       var text, isMsg = false, isWarn = false, noteText = "";
 
-      if (measurement !== U.MEASUREMENT.MEASURED) {
+      if (d.key === "hr") {
+        var hrView=hrDisplay.view(Date.now(),state.mode!=="stopped"&&frame&&frame.status!=="disconnected");
+        text=hrView.text;isMsg=hrView.kind==="waiting";noteText=hrView.note;
+        card.classList.toggle("historical",hrView.kind==="history");
+      } else if (measurement !== U.MEASUREMENT.MEASURED) {
         text = U.placeholder(frame);
         isMsg = true;
       } else if (d.gate && frame) {
@@ -466,7 +486,7 @@
       if (unit) unit.textContent = isMsg ? "" : (d.unit || "");
       card.querySelector(".card-secondary").textContent = !isMsg && d.secondary
         ? "俯仰 " + fmt(d.secondary(frame), d.digits) + "°" : "";
-      card.querySelector(".card-meta").textContent = isMsg ? "当前暂无有效值" : "当前测量";
+      card.querySelector(".card-meta").textContent = d.key==="hr"?hrView.label:(isMsg ? "当前暂无有效值" : "当前测量");
       // 静态说明只在"没有数值"时拼进去：否则会出现"卡上有数字、备注却说这个指标出不来"
       // 这种自相矛盾（Mock 数据下呼吸率是有值的）。
       var parts = [];
@@ -484,7 +504,7 @@
       var card = $("card_" + d.key);
       var canvas = card.querySelector(".metric-chart");
       var c = fitCanvas(canvas), ctx = c.ctx, w = c.w, h = c.h;
-      var padL = 4, padR = 9, padT = 18, padB = 12;
+      var padL = 4, padR = 9, padT = h < 70 ? 12 : 18, padB = h < 70 ? 9 : 12;
       ctx.clearRect(0, 0, w, h);
       var primary = T.series(state.points, function (frame) { return cardValue(frame, d); }, 2 * MOCK_PERIOD_MS / 1000);
       var secondary = d.secondary ? T.series(state.points, d.secondary, 2 * MOCK_PERIOD_MS / 1000) : [];
@@ -577,6 +597,9 @@
     el.validPill.style.borderColor = "#cce8dd";
 
     state.lastFrame = frame;
+    var nextHrContext=state.mode+"|"+state.serverSource;
+    if(nextHrContext!==hrSourceContext){hrDisplay.reset();hrSourceContext=nextHrContext;}
+    hrDisplay.accept(frame,Date.now(),cardValue(frame,CARD_DEFS.filter(function(d){return d.key==="hr";})[0])!==null);
     state.frameId = frame.frame_id;
     updateAlert(frame);
 
@@ -593,8 +616,10 @@
     el.measurementTime.textContent = "已接收 " + state.valid + " 帧";
 
     renderSource();
-    el.modeName.textContent = "软件模式";
-    if (state.mode !== "ws") {
+    el.modeName.textContent = state.mode === "recording" ? "拍摄播放" : "软件模式";
+    if (state.mode === "recording") {
+      renderRecordingProgress();
+    } else if (state.mode !== "ws") {
       setPreviewBadge("warn", "离线 Mock · 非真实视频");
       el.previewFreshness.textContent = "离线 Mock";
       el.previewSync.textContent = "离线演示";
@@ -608,6 +633,7 @@
     renderGate(frame);
     renderBlink(frame);
     renderCharts();
+    if (state.mode === "recording") renderRecordingProgress();
   }
 
   function synthesizeDisconnected() {
@@ -737,6 +763,7 @@
       state.previewMeta = meta;
       state.previewEtag = etag || "";
       state.previewLastRxAt = Date.now();
+      updateCameraAspect(probe.naturalWidth, probe.naturalHeight);
       el.previewImage.src = nextUrl;
       el.previewImage.classList.add("ready");
       el.videoPlaceholder.hidden = true;
@@ -799,6 +826,7 @@
 
   /* ---------------------------------------------------------------- WS 客户端 */
   function setConn(kind, text) {
+    el.connPill.hidden = !text;
     el.connPill.className = "pill " + kind;
     el.connName.textContent = text;
   }
@@ -825,7 +853,7 @@
     }, 1000);
   }
 
-  function stopAll(silent) {
+  function stopAll(silent, keepCamera) {
     if (state.ws) {
       try { state.ws.onclose = null; state.ws.close(); } catch (e) { /* ignore */ }
       state.ws = null;
@@ -836,6 +864,14 @@
     state.triggers = null;
     state.usesApiStatus = false;
     state.mode = "stopped";
+    state.recording = null;
+    if (el.recordingControls) el.recordingControls.hidden = true;
+    setRecordingOptions(false);
+    document.body.classList.remove("recording-diagnostics-open");
+    if (el.recordingDiagnostics) el.recordingDiagnostics.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("recording-mode");
+    if (!keepCamera) stopRecordingCamera();
+    document.querySelector(".video-note").textContent = "显示当前视频源画面。";
     resetAlert();
     renderSource();
     if (!silent) log("系统", "已停止数据源", "#5d6b85");
@@ -845,6 +881,7 @@
     stopAll(true);
     state.points.length = 0;
     state.lastFrame = null;
+    hrDisplay.reset();
     renderState(null);
     renderGate(null);
     renderBlink(null);
@@ -911,6 +948,7 @@
           onFrame(synthesizeDisconnected());
         }
       }
+      renderCards(state.lastFrame); // Keep the age of historical HR advancing during outages.
     }, 500);
   }
 
@@ -928,6 +966,7 @@
     stopAll(true);
     state.points.length = 0;
     state.lastFrame = null;
+    hrDisplay.reset();
     clearPreviewImage("离线 Mock · 非真实视频");
     state.mode = "offline";
     state.serverSource = "";
@@ -947,7 +986,118 @@
     state.timer = setInterval(tick, MOCK_PERIOD_MS);
   }
 
+  /* ------------------------------------------------------ 拍摄控制折叠 */
+  function setRecordingOptions(open) {
+    if (!el.recordingOptions || !el.recordingToggle) return;
+    el.recordingOptions.hidden = !open;
+    el.recordingToggle.setAttribute("aria-expanded", String(open));
+  }
+
   /* ---------------------------------------------------------------- 契约自检 */
+  function renderRecordingProgress() {
+    if (!state.recording) return;
+    var current = state.recording.current();
+    el.recordingScene.textContent = R.LABELS[current.scene];
+    el.recordingProgress.textContent = "第 " + current.group + " / " + current.groups + " 组 · " +
+      (current.second + 1) + " / " + current.seconds + " 秒";
+    el.recordingPause.textContent = current.paused ? "继续" : "暂停";
+    el.recordingPause.disabled = current.finished;
+    var label = current.finished ? "" : current.paused ? "已暂停" : "播放中";
+    setConn(current.finished || current.paused ? "" : "live", label);
+    el.measurementLiveText.textContent = label;
+    el.measurementLive.hidden = current.finished;
+  }
+
+  function startRecording() {
+    var seconds;
+    try {
+      seconds = Number(el.recordingSeconds.value);
+      var player = R.createPlayer(el.recordingSelection.value, seconds, el.recordingLoop.checked);
+    } catch (error) {
+      el.recordingHint.textContent = error.message;
+      return;
+    }
+    var optionsWereOpen = !el.recordingOptions.hidden;
+    stopAll(true, true);
+    state.mode = "recording";
+    state.recording = player;
+    state.recordingScene = null;
+    state.serverSource = "";
+    state.lastStatus = null;
+    state.valid = state.invalid = 0;
+    state.points.length = 0;
+    el.recordingControls.hidden = false;
+    setRecordingOptions(optionsWereOpen);
+    document.body.classList.add("recording-mode");
+    clearPreviewImage("打开本机画面可取景");
+    el.recordingHint.textContent = "1 / 2 / 3 选组 · 空格暂停 / 继续 · R 重播";
+    document.querySelector(".video-note").textContent = "本机画面仅用于取景；指标按所选分组播放。";
+    function tick(first) {
+      if (state.mode !== "recording" || !state.recording) return;
+      var previous = player.current();
+      var current = first ? previous : player.advance();
+      if (current.finished || current.paused) {
+        renderRecordingProgress();
+        if (current.finished) { clearInterval(state.timer); state.timer = null; }
+        return;
+      }
+      // Each group has its own prepared history. Only newly played samples feed
+      // alerts, so opening a group never immediately raises a sustained warning.
+      if (state.recordingScene !== current.scene || (current.second === 0 && !first)) {
+        state.points.length = 0;
+        resetAlert();
+        state.recordingScene = current.scene;
+        for (var i = -MAX_POINTS + 1; i < 0; i++) {
+          var historyId = state.recordingNextId++;
+          T.append(state.points, R.makeFrame(current.scene, i, { seconds: seconds,
+            frameId: historyId, ts: historyId }), HISTORY_SECONDS, MAX_POINTS);
+        }
+      }
+      var id = state.recordingNextId++;
+      onFrame(R.makeFrame(current.scene, current.second, { seconds: seconds, frameId: id, ts: id }));
+      renderRecordingProgress();
+    }
+    tick(true);
+    state.timer = setInterval(function () { tick(false); }, MOCK_PERIOD_MS);
+  }
+
+  function toggleRecordingPause() {
+    if (!state.recording) return;
+    state.recording.togglePause();
+    renderRecordingProgress();
+  }
+
+  function stopRecordingCamera() {
+    if (state.recordingCamera) state.recordingCamera.getTracks().forEach(function (track) { track.stop(); });
+    state.recordingCamera = null;
+    document.querySelector(".preview-stage").style.removeProperty("--camera-aspect");
+    if (el.recordingVideo) { el.recordingVideo.srcObject = null; el.recordingVideo.hidden = true; }
+    if (el.recordingCamera) el.recordingCamera.textContent = "打开本机画面";
+  }
+
+  async function toggleRecordingCamera() {
+    if (state.recordingCamera) { stopRecordingCamera(); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setRecordingOptions(true);
+      el.recordingHint.textContent = "浏览器无法打开相机；可从本机 localhost 服务打开此页，或检查相机权限。";
+      return;
+    }
+    el.recordingCamera.disabled = true;
+    try {
+      var stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      if (state.mode !== "recording") { stream.getTracks().forEach(function (track) { track.stop(); }); return; }
+      state.recordingCamera = stream;
+      el.recordingVideo.srcObject = stream;
+      el.recordingVideo.hidden = false;
+      await el.recordingVideo.play();
+      el.recordingCamera.textContent = "关闭本机画面";
+    } catch (error) {
+      stopRecordingCamera();
+      setRecordingOptions(true);
+      el.recordingHint.textContent = "本机画面未开启：" + error.message;
+    } finally { el.recordingCamera.disabled = false; }
+  }
+
   function runSelftest() {
     var res = M.selfTest(20260910);
     var uiRes = U.selfTest();
@@ -971,6 +1121,12 @@
       fatigueAlert: $("fatigueAlert"), alertTitle: $("alertTitle"), alertMessage: $("alertMessage"),
       alertAdvice: $("alertAdvice"), alertDismiss: $("alertDismiss"),
       alertDetail: $("alertDetail"),
+      recordingControls: $("recordingControls"), recordingSelection: $("recordingSelection"),
+      recordingToggle: $("recordingToggle"), recordingOptions: $("recordingOptions"), recordingDiagnostics: $("recordingDiagnostics"),
+      recordingSeconds: $("recordingSeconds"), recordingLoop: $("recordingLoop"),
+      recordingPause: $("recordingPause"), recordingScene: $("recordingScene"),
+      recordingProgress: $("recordingProgress"), recordingHint: $("recordingHint"),
+      recordingVideo: $("recordingVideo"), recordingCamera: $("recordingCamera"),
       measurementLive: $("measurementLive"), measurementLiveText: $("measurementLiveText"),
       stateLamp: $("stateLamp"), stateName: $("stateName"), stateEn: $("stateEn"),
       advice: $("advice"), reason: $("reason"), triggers: $("triggers"),
@@ -1008,6 +1164,42 @@
     };
     $("btnSelftest").onclick = runSelftest;
     $("btnClear").onclick = function () { el.log.innerHTML = ""; };
+    $("recordingRestart").onclick = startRecording;
+    el.recordingSelection.onchange = startRecording;
+    el.recordingSeconds.onchange = startRecording;
+    el.recordingLoop.onchange = startRecording;
+    el.recordingPause.onclick = toggleRecordingPause;
+    el.recordingCamera.onclick = toggleRecordingCamera;
+    el.recordingVideo.addEventListener("resize", function () {
+      updateCameraAspect(el.recordingVideo.videoWidth, el.recordingVideo.videoHeight);
+    });
+    el.recordingToggle.onclick = function () { setRecordingOptions(el.recordingOptions.hidden); };
+    el.recordingDiagnostics.onclick = function () {
+      var open = !document.body.classList.contains("recording-diagnostics-open");
+      document.body.classList.toggle("recording-diagnostics-open", open);
+      $("developerTools").open = open;
+      el.recordingDiagnostics.setAttribute("aria-expanded", String(open));
+      setRecordingOptions(false);
+    };
+    document.addEventListener("click", function (event) {
+      if (!el.recordingControls.contains(event.target)) setRecordingOptions(false);
+    });
+    window.addEventListener("pagehide", stopRecordingCamera);
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !el.recordingOptions.hidden) {
+        setRecordingOptions(false);
+        el.recordingToggle.focus();
+        return;
+      }
+      if (state.mode !== "recording" || !el.fatigueAlert.hidden ||
+          /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(event.target.tagName) || event.target.isContentEditable) return;
+      if (event.code === "Space") { event.preventDefault(); toggleRecordingPause(); }
+      else if (event.key.toLowerCase() === "r") startRecording();
+      else if (/^[123]$/.test(event.key)) {
+        el.recordingSelection.value = R.SCENES[Number(event.key) - 1];
+        startRecording();
+      }
+    });
     $("alertDismiss").onclick = function () {
       A.dismiss(state.alertTracker);
       hideAlert();
@@ -1039,6 +1231,13 @@
     log("系统", "页面就绪。点\"离线 Mock 演示\"即可看六态；填好地址后点\"连接 WebSocket\"接后端。", "#007aff");
 
     syncWithServer();
+
+    var requestedScene = new URLSearchParams(location.search).get("recording");
+    if (requestedScene === "all" || R.SCENES.indexOf(requestedScene) >= 0) {
+      el.recordingSelection.value = requestedScene;
+      startRecording();
+      return;
+    }
 
     // file:// 离线打开时自动演示；由 api.py 托管时必须等待用户主动连接，
     // 避免把 Mock 六态误认为摄像头/后端的实时数据。

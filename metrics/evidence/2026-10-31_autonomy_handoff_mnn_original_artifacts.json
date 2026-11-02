@@ -1,0 +1,66 @@
+{
+  "kind": "mnn_probe_frozen_artifacts",
+  "mnn_tag": "3.6.1",
+  "mnn_commit": "d407447ed56c4121a11ccbd266dc184ca1ead0c2",
+  "files": {
+    "vg_mnn_probe": {
+      "sha256": "3d42f95f68c13c0599e1547a919bd404a62983454ec5f4d735aa27f221790ad9",
+      "bytes": 11211040
+    },
+    "peppa.mnn": {
+      "sha256": "2a22689a611d4d4b17da3f5e6824508d2e9ea0d08b197ce1fdc30836b8a683fc",
+      "bytes": 936144
+    },
+    "peppa_host.output0.f32": {
+      "sha256": "651e37f6baff23f66e828641bd291ebc6e0c5fe669f2cdabe624fbf2da07d20d",
+      "bytes": 572
+    },
+    "peppa_host.json": {
+      "sha256": "83b2a71c76c4879d4cee7d0bd5b0dd69ecc98446114fd4fc811fc25ad4a4343c",
+      "bytes": 800
+    },
+    "source-manifest.json": {
+      "sha256": "b03f62540d67a551598502d1e1f96358d75300d3a39f3c29b0fc8fec53fdcbd8",
+      "bytes": 370
+    },
+    "model-storage-audit.json": {
+      "sha256": "6e2302ad632e1da0734d83292e2ecc588574bbee310d0195ed01093a924a3f3f",
+      "bytes": 257
+    },
+    "host-comparison.json": {
+      "sha256": "d518eda5540b82424b092651e1ed526dd790f867047bafadbb782e2eb85e3793",
+      "bytes": 1887
+    },
+    "conversion.log": {
+      "sha256": "c2113217dbd8719877ec28789e5280a04c39e7f1ad96824c44dc270af245c937",
+      "bytes": 469
+    },
+    "arm-cpu-flags.txt": {
+      "sha256": "7a5ecde9951e231821e86105a9be74208336d5035bc401b915be2ea1c35ef670",
+      "bytes": 1520
+    },
+    "arm-probe-flags.txt": {
+      "sha256": "26d2ea2202a67c97a6e1759e81b8ab55076e9233d30ba17325cc2833263b4f8d",
+      "bytes": 479
+    },
+    "arm-elf.txt": {
+      "sha256": "56ebf03a5bddc09c173c9193ce0da883cb72dfc5354f52ecd285e4c12c1c3b0d",
+      "bytes": 3191
+    },
+    "arm-glibc-versions.txt": {
+      "sha256": "8df2595c6783f1fcb6a3f1bad7d4554f3a5dd1e5b7ccd8d8a07cf7c4a39898af",
+      "bytes": 4309
+    },
+    "host-build-final.log": {
+      "sha256": "ce31243e1ee6b66a6a20e0f02dede7c36963022a68b7032b68e27efeb1171c61",
+      "bytes": 2264
+    },
+    "arm-build.log": {
+      "sha256": "7ff4e2e921cd3837f99deff4db720325ff981cc3668ad0dc890554aaf7c7feba",
+      "bytes": 8935
+    }
+  },
+  "host_tests": "4 passed, 7 subtests passed",
+  "accuracy_verified": false,
+  "full_pipeline_realtime_verified": false
+}

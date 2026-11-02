@@ -1,0 +1,38 @@
+
+[1]+  Done                       sh /tmp/final_prepare_package.sh 1>/tmp/final_prepare_package.log 2>&1
+# echo FINAL_CLOSEOUT_BEGIN
+FINAL_CLOSEOUT_BEGIN
+# cat /tmp/final_guard_run.log
+FINAL_GUARD_SYNTHETIC_ALL_PASS
+# cat /tmp/final_prepare_package.log
+_final|pvigi_camera_autonomy: OK
+vg_vision_replay_arm: OK
+vg_metrics_http: OK
+shape_predictor_68_face_landmarks.dat: OK
+libgomp.so.1: OK
+display.html: OK
+install_native.sh: OK
+run_native.sh: OK
+det1.param: OK
+det1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+FINAL_PACKAGE_READY_CAMERA_NOT_STARTED
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    211148     27284  89% /tmp
+# ps | grep -E 'vigi_camera|vigi_final|pl_input|camera_input|vg_metrics|vg_live'
+ | grep -v grep
+# df -k /tmp
+n'
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    211148     27284  89% /tmp
+# echo FINAL_CLOSEOUT_END
+FINAL_CLOSEOUT_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

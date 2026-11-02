@@ -1,0 +1,33 @@
+{
+  "frames": 24,
+  "point_parity": "exact",
+  "supplied_roi": true,
+  "full_pipeline": false,
+  "accuracy_verified": false,
+  "variants": [
+    {
+      "prefetch_ahead": -1,
+      "cpu_ms_mean": 23.364347,
+      "cpu_ms_p95": 23.461475,
+      "cpu_ms_max": 23.479812
+    },
+    {
+      "prefetch_ahead": 0,
+      "cpu_ms_mean": 23.267401,
+      "cpu_ms_p95": 23.342258,
+      "cpu_ms_max": 23.410266
+    },
+    {
+      "prefetch_ahead": 4,
+      "cpu_ms_mean": 24.242129,
+      "cpu_ms_p95": 24.329704,
+      "cpu_ms_max": 24.342042
+    },
+    {
+      "prefetch_ahead": 8,
+      "cpu_ms_mean": 24.681966,
+      "cpu_ms_p95": 24.768523,
+      "cpu_ms_max": 24.769476
+    }
+  ]
+}

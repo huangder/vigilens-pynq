@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "device_tree": {
+    "sd_status": "okay",
+    "sd_bus_width": "4",
+    "sd_max_frequency": "25000000",
+    "sd_broken_cd": "",
+    "sd_disable_wp": "",
+    "usb_status": "okay",
+    "usb_role": "host",
+    "gem_status": "okay",
+    "phy_max_speed": "100",
+    "dram": "100000 1ff00000",
+    "dma_reservation": "12000000 1000000",
+    "pl_profile": "720p-3of8"
+  },
+  "kernel_builtins": [
+    "CONFIG_MMC",
+    "CONFIG_MMC_BLOCK",
+    "CONFIG_MMC_SDHCI",
+    "CONFIG_MMC_SDHCI_OF_ARASAN",
+    "CONFIG_FAT_FS",
+    "CONFIG_VFAT_FS",
+    "CONFIG_BLK_DEV_INITRD",
+    "CONFIG_DEVTMPFS"
+  ],
+  "uvc_driver": {
+    "state": "module",
+    "files": [
+      "lib/modules/6.6.158/kernel/drivers/media/usb/uvc/uvcvideo.ko"
+    ]
+  },
+  "rootfs_uncompressed_bytes": 32705536,
+  "rootfs_sha256": "debbbfabb0170af028984a24d9bd6996bc31281ac1c7e8f76b3a721dd00ff38c",
+  "contains_autostart_service": true,
+  "contains_model_weights": false,
+  "hardware_sd_boot_verified": false
+}

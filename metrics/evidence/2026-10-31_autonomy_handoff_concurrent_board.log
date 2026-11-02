@@ -1,0 +1,63 @@
+
+# sh -c '
+> set -e
+> if [ -n "$(pidof vigi_camera_pl_autonomy 2>/dev/null)" ]; then echo ALREADY_RU
+NNING; exit 1; fi
+> wget -T 15 -O /tmp/vigi_camera_pl_autonomy http://169.254.73.28:8093/vigi_came
+ra_pl_autonomy
+> echo "fcefa3e04b96925105aa87c7cb379a7d0e741cda02c6033964052594a31870a1  /tmp/v
+igi_camera_pl_autonomy" | sha256sum -c -
+> echo "3d42f95f68c13c0599e1547a919bd404a62983454ec5f4d735aa27f221790ad9  /tmp/v
+g_mnn_probe_v361" | sha256sum -c -
+> echo "be908e37a2dba5fb1b43fcf242f54db5290800f999ff18c2406432726f19b138  /tmp/p
+eppa_pruned_mnn_v361.mnn" | sha256sum -c -
+> chmod 700 /tmp/vigi_camera_pl_autonomy
+> echo PEPPA_MNN_CAMERA_CONCURRENCY_BEGIN
+> env VIGI_STREAM_BIND=169.254.73.29:9007 VIGI_STREAM_CODEC=jpeg VIGI_JPEG_FAST=
+1 VIGI_VERIFY=0 VIGI_AUDIT_EVERY=30 VIGI_PIPELINE=threaded VIGI_DECODE_WORKERS=2
+ VIGI_PL_WAIT=yield /tmp/vigi_camera_pl_autonomy /dev/video0 1280 720 600 30 16 
+> /tmp/autonomy_camera_concurrent.log 2>&1 < /dev/null &
+> cam=$!
+> trap "kill $cam 2>/dev/null || true; wait $cam 2>/dev/null || true" EXIT
+> i=0
+> while ! grep -q CAMERA_PL_FRAME /tmp/autonomy_camera_concurrent.log; do
+>  if ! kill -0 $cam 2>/dev/null; then cat /tmp/autonomy_camera_concurrent.log; 
+exit 1; fi
+>  i=$((i+1)); if [ $i -gt 30 ]; then echo CAMERA_START_TIMEOUT; exit 1; fi
+>  sleep 1
+> done
+> echo MODEL_OVERLAP_UPTIME_BEGIN
+> cat /proc/uptime
+> /tmp/vg_mnn_probe_v361 /tmp/peppa_pruned_mnn_v361.mnn /tmp/peppa_input.f32 /tm
+p/peppa_mnn_concurrent 300 2
+> echo MODEL_OVERLAP_UPTIME_END
+> cat /proc/uptime
+> cat /tmp/peppa_mnn_concurrent.json
+> wait $cam
+> trap - EXIT
+> echo CAMERA_COMPONENT_LOG_BEGIN
+> cat /tmp/autonomy_camera_concurrent.log
+> echo CAMERA_COMPONENT_LOG_END
+> echo PEPPA_MNN_CAMERA_CONCURRENCY_END
+> '
+I_COMMAND_DONE\n'
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/vigi_camera_pl_autonomy'
+vigi_camera_pl_auton 100% |********************************|  237k  0:00:00 ETA
+'/tmp/vigi_camera_pl_autonomy' saved
+/tmp/vigi_camera_pl_autonomy: OK
+/tmp/vg_mnn_probe_v361: OK
+/tmp/peppa_pruned_mnn_v361.mnn: OK
+PEPPA_MNN_CAMERA_CONCURRENCY_BEGIN
+MODEL_OVERLAP_UPTIME_BEGIN
+4188.52 8144.49
+The device supports: i8sdot:0, fp16:0, i8mm: 0, sve2: 0, sme2: 0
+MNN_MODEL_PROBE_PASS output_elements=143
+MODEL_OVERLAP_UPTIME_END
+4215.77 8144.98
+{"kind":"mnn_model_tensor_probe","mnn_version":"3.6.1","backend":"CPU","precision":"Precision_High","fp16":false,"int8":false,"input_kind":"file","input_provenance_verified":false,"channel_order_verified":false,"landmark_pipeline_verified":false,"full_pipeline_realtime_verified":false,"accuracy_verified":false,"input_layout":"NCHW","input_shape":[1,3,160,160],"input_blob":"input1","output_blob":"output1","input_copy_each_iteration":true,"run_session_each_iteration":true,"timing_scope":"runSession_only","warmup_iterations":1,"iterations":300,"threads_requested":2,"mean_ms":88.45806153999996,"p50_ms":28.089661,"p95_ms":278.633601,"max_rss_kib":7040,"outputs":[{"elements":143,"host_layout":"CAFFE","host_element_count":143,"shape":[1,143],"storage":"little_endian_float32"}]}
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

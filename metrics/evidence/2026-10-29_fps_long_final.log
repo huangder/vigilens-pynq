@@ -1,0 +1,1026 @@
+SAMPLE_REQUEST target_fps=30 time_base=v4l2_buffer no_padding=1
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=300
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+PL_READY profile=720p-3of8 ram=0x12000000 bytes=16777216 fid0=319 motion_threshold=16 pipeline=threaded audit_every=30 codec=jpeg
+JPEG_CONFIG method=IFAST fancy_upsampling=0 cpu_reference=audit
+BOARD_STREAM_LISTEN bind=169.254.73.29:9000 protocol=VLP2 rgb=jpeg_decoded_on_pc codec=jpeg-mjpeg strategy=default
+BOARD_STREAM_CONNECTED pixels=local_ram_only
+CAPTURE_FRAME n=1 sequence=0 bytes=99735 ts=824.939725
+SAMPLE_FRAME n=1 source_sequence=0 ts_us=824939725
+CAPTURE_FRAME n=2 sequence=1 bytes=99722 ts=824.975735
+SAMPLE_FRAME n=2 source_sequence=1 ts_us=824975735
+CAPTURE_FRAME n=3 sequence=2 bytes=99382 ts=824.991854
+CAPTURE_FRAME n=4 sequence=3 bytes=99753 ts=825.007766
+SAMPLE_FRAME n=3 source_sequence=3 ts_us=825007766
+CAPTURE_FRAME n=5 sequence=4 bytes=99776 ts=825.023873
+CAMERA_PL_FRAME n=1 seq=0 ts_us=824939725 mismatch=0 audit=1 roi_g=130726511 roi_count=921600 motion_valid=0 motion_ratio_q16=2830 decode_ms=41.830 reference_ms=14.296 transfer_pl_ms=21.382
+CAPTURE_FRAME n=6 sequence=5 bytes=99416 ts=825.043798
+SAMPLE_FRAME n=4 source_sequence=5 ts_us=825043798
+BOARD_STREAM_FRAME n=1 codec=jpeg-mjpeg jpeg_bytes=99735 wire_bytes=99735 send_ms=3.981
+CAPTURE_FRAME n=7 sequence=6 bytes=99085 ts=825.059841
+CAPTURE_FRAME n=8 sequence=7 bytes=99507 ts=825.075757
+SAMPLE_FRAME n=5 source_sequence=7 ts_us=825075757
+CAMERA_PL_FRAME n=2 seq=1 ts_us=824975735 mismatch=0 audit=0 roi_g=130698655 roi_count=921600 motion_valid=1 motion_ratio_q16=2834 decode_ms=55.116 reference_ms=0.000 transfer_pl_ms=17.816
+BOARD_STREAM_FRAME n=2 codec=jpeg-mjpeg jpeg_bytes=99722 wire_bytes=99722 send_ms=1.668
+CAPTURE_FRAME n=9 sequence=8 bytes=99497 ts=825.092386
+CAPTURE_FRAME n=10 sequence=9 bytes=99371 ts=825.107762
+SAMPLE_FRAME n=6 source_sequence=9 ts_us=825107762
+CAPTURE_FRAME n=11 sequence=10 bytes=99317 ts=825.127750
+CAMERA_PL_FRAME n=3 seq=3 ts_us=825007766 mismatch=0 audit=0 roi_g=130831707 roi_count=921600 motion_valid=1 motion_ratio_q16=2825 decode_ms=53.463 reference_ms=0.000 transfer_pl_ms=17.651
+BOARD_STREAM_FRAME n=3 codec=jpeg-mjpeg jpeg_bytes=99753 wire_bytes=99753 send_ms=1.361
+CAPTURE_FRAME n=12 sequence=11 bytes=99516 ts=825.144388
+SAMPLE_FRAME n=7 source_sequence=11 ts_us=825144388
+CAPTURE_FRAME n=13 sequence=12 bytes=99333 ts=825.159758
+CAPTURE_FRAME n=14 sequence=13 bytes=99578 ts=825.175813
+SAMPLE_FRAME n=8 source_sequence=13 ts_us=825175813
+CAMERA_PL_FRAME n=4 seq=5 ts_us=825043798 mismatch=0 audit=0 roi_g=130867390 roi_count=921600 motion_valid=1 motion_ratio_q16=2825 decode_ms=48.707 reference_ms=0.000 transfer_pl_ms=18.518
+BOARD_STREAM_FRAME n=4 codec=jpeg-mjpeg jpeg_bytes=99416 wire_bytes=99416 send_ms=1.457
+CAPTURE_FRAME n=15 sequence=14 bytes=99082 ts=825.191777
+CAPTURE_FRAME n=16 sequence=15 bytes=99473 ts=825.211748
+SAMPLE_FRAME n=9 source_sequence=15 ts_us=825211748
+CAMERA_PL_FRAME n=5 seq=7 ts_us=825075757 mismatch=0 audit=0 roi_g=130859133 roi_count=921600 motion_valid=1 motion_ratio_q16=2775 decode_ms=41.709 reference_ms=0.000 transfer_pl_ms=16.105
+BOARD_STREAM_FRAME n=5 codec=jpeg-mjpeg jpeg_bytes=99507 wire_bytes=99507 send_ms=2.551
+CAPTURE_FRAME n=17 sequence=16 bytes=99659 ts=825.227847
+CAPTURE_FRAME n=18 sequence=17 bytes=99337 ts=825.243830
+SAMPLE_FRAME n=10 source_sequence=17 ts_us=825243830
+CAMERA_PL_FRAME n=6 seq=9 ts_us=825107762 mismatch=0 audit=0 roi_g=130778854 roi_count=921600 motion_valid=1 motion_ratio_q16=2894 decode_ms=41.550 reference_ms=0.000 transfer_pl_ms=15.497
+BOARD_STREAM_FRAME n=6 codec=jpeg-mjpeg jpeg_bytes=99371 wire_bytes=99371 send_ms=2.253
+CAPTURE_FRAME n=19 sequence=18 bytes=99164 ts=825.259780
+CAPTURE_FRAME n=20 sequence=19 bytes=99673 ts=825.275875
+SAMPLE_FRAME n=11 source_sequence=19 ts_us=825275875
+CAMERA_PL_FRAME n=7 seq=11 ts_us=825144388 mismatch=0 audit=0 roi_g=130751796 roi_count=921600 motion_valid=1 motion_ratio_q16=2875 decode_ms=36.417 reference_ms=0.000 transfer_pl_ms=16.132
+BOARD_STREAM_FRAME n=7 codec=jpeg-mjpeg jpeg_bytes=99516 wire_bytes=99516 send_ms=1.514
+CAPTURE_FRAME n=21 sequence=20 bytes=99632 ts=825.295760
+CAPTURE_FRAME n=22 sequence=21 bytes=99390 ts=825.311781
+SAMPLE_FRAME n=12 source_sequence=21 ts_us=825311781
+CAMERA_PL_FRAME n=8 seq=13 ts_us=825175813 mismatch=0 audit=0 roi_g=130875113 roi_count=921600 motion_valid=1 motion_ratio_q16=2835 decode_ms=36.125 reference_ms=0.000 transfer_pl_ms=16.465
+BOARD_STREAM_FRAME n=8 codec=jpeg-mjpeg jpeg_bytes=99578 wire_bytes=99578 send_ms=1.660
+CAPTURE_FRAME n=23 sequence=22 bytes=99398 ts=825.327851
+CAPTURE_FRAME n=24 sequence=24 bytes=99660 ts=825.359762
+SAMPLE_FRAME n=13 source_sequence=24 ts_us=825359762
+CAMERA_PL_FRAME n=9 seq=15 ts_us=825211748 mismatch=0 audit=0 roi_g=130898627 roi_count=921600 motion_valid=1 motion_ratio_q16=2803 decode_ms=36.462 reference_ms=0.000 transfer_pl_ms=15.971
+BOARD_STREAM_FRAME n=9 codec=jpeg-mjpeg jpeg_bytes=99473 wire_bytes=99473 send_ms=1.597
+CAPTURE_FRAME n=25 sequence=25 bytes=99263 ts=825.379881
+SAMPLE_FRAME n=14 source_sequence=25 ts_us=825379881
+CAMERA_PL_FRAME n=10 seq=17 ts_us=825243830 mismatch=0 audit=0 roi_g=130928781 roi_count=921600 motion_valid=1 motion_ratio_q16=2760 decode_ms=36.336 reference_ms=0.000 transfer_pl_ms=17.552
+BOARD_STREAM_FRAME n=10 codec=jpeg-mjpeg jpeg_bytes=99337 wire_bytes=99337 send_ms=2.694
+CAPTURE_FRAME n=26 sequence=26 bytes=99280 ts=825.395755
+CAPTURE_FRAME n=27 sequence=27 bytes=99642 ts=825.411766
+SAMPLE_FRAME n=15 source_sequence=27 ts_us=825411766
+CAMERA_PL_FRAME n=11 seq=19 ts_us=825275875 mismatch=0 audit=0 roi_g=130824730 roi_count=921600 motion_valid=1 motion_ratio_q16=2702 decode_ms=36.556 reference_ms=0.000 transfer_pl_ms=16.765
+BOARD_STREAM_FRAME n=11 codec=jpeg-mjpeg jpeg_bytes=99673 wire_bytes=99673 send_ms=2.705
+CAPTURE_FRAME n=28 sequence=28 bytes=99667 ts=825.427769
+CAPTURE_FRAME n=29 sequence=30 bytes=99603 ts=825.463755
+SAMPLE_FRAME n=16 source_sequence=30 ts_us=825463755
+CAMERA_PL_FRAME n=12 seq=21 ts_us=825311781 mismatch=0 audit=0 roi_g=130851722 roi_count=921600 motion_valid=1 motion_ratio_q16=2809 decode_ms=36.072 reference_ms=0.000 transfer_pl_ms=16.240
+BOARD_STREAM_FRAME n=12 codec=jpeg-mjpeg jpeg_bytes=99390 wire_bytes=99390 send_ms=1.337
+CAPTURE_FRAME n=30 sequence=31 bytes=99182 ts=825.479745
+SAMPLE_FRAME n=17 source_sequence=31 ts_us=825479745
+CAMERA_PL_FRAME n=13 seq=24 ts_us=825359762 mismatch=0 audit=0 roi_g=130899173 roi_count=921600 motion_valid=1 motion_ratio_q16=2839 decode_ms=36.316 reference_ms=0.000 transfer_pl_ms=16.340
+BOARD_STREAM_FRAME n=13 codec=jpeg-mjpeg jpeg_bytes=99660 wire_bytes=99660 send_ms=2.844
+CAPTURE_FRAME n=31 sequence=32 bytes=99405 ts=825.495785
+CAPTURE_FRAME n=32 sequence=33 bytes=99505 ts=825.511885
+SAMPLE_FRAME n=18 source_sequence=33 ts_us=825511885
+CAMERA_PL_FRAME n=14 seq=25 ts_us=825379881 mismatch=0 audit=0 roi_g=130917295 roi_count=921600 motion_valid=1 motion_ratio_q16=2836 decode_ms=36.243 reference_ms=0.000 transfer_pl_ms=16.129
+BOARD_STREAM_FRAME n=14 codec=jpeg-mjpeg jpeg_bytes=99263 wire_bytes=99263 send_ms=2.927
+CAPTURE_FRAME n=33 sequence=34 bytes=99295 ts=825.531756
+CAPTURE_FRAME n=34 sequence=36 bytes=99466 ts=825.563760
+SAMPLE_FRAME n=19 source_sequence=36 ts_us=825563760
+CAMERA_PL_FRAME n=15 seq=27 ts_us=825411766 mismatch=0 audit=0 roi_g=130953489 roi_count=921600 motion_valid=1 motion_ratio_q16=2876 decode_ms=36.600 reference_ms=0.000 transfer_pl_ms=16.414
+BOARD_STREAM_FRAME n=15 codec=jpeg-mjpeg jpeg_bytes=99642 wire_bytes=99642 send_ms=1.409
+CAPTURE_FRAME n=35 sequence=37 bytes=99062 ts=825.579816
+SAMPLE_FRAME n=20 source_sequence=37 ts_us=825579816
+CAMERA_PL_FRAME n=16 seq=30 ts_us=825463755 mismatch=0 audit=0 roi_g=130907430 roi_count=921600 motion_valid=1 motion_ratio_q16=2887 decode_ms=36.665 reference_ms=0.000 transfer_pl_ms=18.164
+BOARD_STREAM_FRAME n=16 codec=jpeg-mjpeg jpeg_bytes=99603 wire_bytes=99603 send_ms=2.837
+CAPTURE_FRAME n=36 sequence=39 bytes=99342 ts=825.615844
+SAMPLE_FRAME n=21 source_sequence=39 ts_us=825615844
+CAMERA_PL_FRAME n=17 seq=31 ts_us=825479745 mismatch=0 audit=0 roi_g=130869098 roi_count=921600 motion_valid=1 motion_ratio_q16=2706 decode_ms=36.662 reference_ms=0.000 transfer_pl_ms=15.656
+BOARD_STREAM_FRAME n=17 codec=jpeg-mjpeg jpeg_bytes=99182 wire_bytes=99182 send_ms=2.468
+CAPTURE_FRAME n=37 sequence=40 bytes=99467 ts=825.631752
+CAPTURE_FRAME n=38 sequence=41 bytes=99124 ts=825.647771
+SAMPLE_FRAME n=22 source_sequence=41 ts_us=825647771
+CAMERA_PL_FRAME n=18 seq=33 ts_us=825511885 mismatch=0 audit=0 roi_g=130893653 roi_count=921600 motion_valid=1 motion_ratio_q16=2682 decode_ms=36.214 reference_ms=0.000 transfer_pl_ms=15.764
+BOARD_STREAM_FRAME n=18 codec=jpeg-mjpeg jpeg_bytes=99505 wire_bytes=99505 send_ms=2.004
+CAPTURE_FRAME n=39 sequence=43 bytes=99692 ts=825.679754
+SAMPLE_FRAME n=23 source_sequence=43 ts_us=825679754
+CAMERA_PL_FRAME n=19 seq=36 ts_us=825563760 mismatch=0 audit=0 roi_g=130889174 roi_count=921600 motion_valid=1 motion_ratio_q16=2779 decode_ms=36.368 reference_ms=0.000 transfer_pl_ms=16.316
+BOARD_STREAM_FRAME n=19 codec=jpeg-mjpeg jpeg_bytes=99466 wire_bytes=99466 send_ms=1.409
+CAPTURE_FRAME n=40 sequence=45 bytes=99292 ts=825.715742
+SAMPLE_FRAME n=24 source_sequence=45 ts_us=825715742
+CAMERA_PL_FRAME n=20 seq=37 ts_us=825579816 mismatch=0 audit=0 roi_g=130948226 roi_count=921600 motion_valid=1 motion_ratio_q16=2748 decode_ms=36.145 reference_ms=0.000 transfer_pl_ms=16.427
+BOARD_STREAM_FRAME n=20 codec=jpeg-mjpeg jpeg_bytes=99062 wire_bytes=99062 send_ms=2.454
+CAPTURE_FRAME n=41 sequence=46 bytes=99118 ts=825.731743
+CAPTURE_FRAME n=42 sequence=47 bytes=99278 ts=825.747781
+SAMPLE_FRAME n=25 source_sequence=47 ts_us=825747781
+CAMERA_PL_FRAME n=21 seq=39 ts_us=825615844 mismatch=0 audit=0 roi_g=130941208 roi_count=921600 motion_valid=1 motion_ratio_q16=2771 decode_ms=36.245 reference_ms=0.000 transfer_pl_ms=16.404
+BOARD_STREAM_FRAME n=21 codec=jpeg-mjpeg jpeg_bytes=99342 wire_bytes=99342 send_ms=1.424
+CAPTURE_FRAME n=43 sequence=49 bytes=99543 ts=825.783749
+SAMPLE_FRAME n=26 source_sequence=49 ts_us=825783749
+CAMERA_PL_FRAME n=22 seq=41 ts_us=825647771 mismatch=0 audit=0 roi_g=130905977 roi_count=921600 motion_valid=1 motion_ratio_q16=2824 decode_ms=36.477 reference_ms=0.000 transfer_pl_ms=17.466
+BOARD_STREAM_FRAME n=22 codec=jpeg-mjpeg jpeg_bytes=99124 wire_bytes=99124 send_ms=1.981
+CAPTURE_FRAME n=44 sequence=52 bytes=99623 ts=825.831760
+SAMPLE_FRAME n=27 source_sequence=52 ts_us=825831760
+CAMERA_PL_FRAME n=23 seq=43 ts_us=825679754 mismatch=0 audit=0 roi_g=130963683 roi_count=921600 motion_valid=1 motion_ratio_q16=2846 decode_ms=36.245 reference_ms=0.000 transfer_pl_ms=16.207
+BOARD_STREAM_FRAME n=23 codec=jpeg-mjpeg jpeg_bytes=99692 wire_bytes=99692 send_ms=2.843
+CAPTURE_FRAME n=45 sequence=53 bytes=99347 ts=825.851737
+SAMPLE_FRAME n=28 source_sequence=53 ts_us=825851737
+CAMERA_PL_FRAME n=24 seq=45 ts_us=825715742 mismatch=0 audit=0 roi_g=130957666 roi_count=921600 motion_valid=1 motion_ratio_q16=2915 decode_ms=36.350 reference_ms=0.000 transfer_pl_ms=16.459
+BOARD_STREAM_FRAME n=24 codec=jpeg-mjpeg jpeg_bytes=99292 wire_bytes=99292 send_ms=2.249
+CAPTURE_FRAME n=46 sequence=54 bytes=99412 ts=825.867728
+CAPTURE_FRAME n=47 sequence=56 bytes=99385 ts=825.899835
+SAMPLE_FRAME n=29 source_sequence=56 ts_us=825899835
+CAMERA_PL_FRAME n=25 seq=47 ts_us=825747781 mismatch=0 audit=0 roi_g=130942645 roi_count=921600 motion_valid=1 motion_ratio_q16=2878 decode_ms=36.408 reference_ms=0.000 transfer_pl_ms=16.619
+BOARD_STREAM_FRAME n=25 codec=jpeg-mjpeg jpeg_bytes=99278 wire_bytes=99278 send_ms=3.249
+CAPTURE_FRAME n=48 sequence=58 bytes=99047 ts=825.935763
+SAMPLE_FRAME n=30 source_sequence=58 ts_us=825935763
+CAMERA_PL_FRAME n=26 seq=49 ts_us=825783749 mismatch=0 audit=0 roi_g=130962457 roi_count=921600 motion_valid=1 motion_ratio_q16=2824 decode_ms=36.548 reference_ms=0.000 transfer_pl_ms=16.000
+BOARD_STREAM_FRAME n=26 codec=jpeg-mjpeg jpeg_bytes=99543 wire_bytes=99543 send_ms=1.968
+CAPTURE_FRAME n=49 sequence=60 bytes=99506 ts=825.967741
+SAMPLE_FRAME n=31 source_sequence=60 ts_us=825967741
+CAMERA_PL_FRAME n=27 seq=52 ts_us=825831760 mismatch=0 audit=0 roi_g=130932926 roi_count=921600 motion_valid=1 motion_ratio_q16=2822 decode_ms=36.484 reference_ms=0.000 transfer_pl_ms=15.895
+BOARD_STREAM_FRAME n=27 codec=jpeg-mjpeg jpeg_bytes=99623 wire_bytes=99623 send_ms=2.007
+CAPTURE_FRAME n=50 sequence=61 bytes=99227 ts=825.983807
+SAMPLE_FRAME n=32 source_sequence=61 ts_us=825983807
+CAMERA_PL_FRAME n=28 seq=53 ts_us=825851737 mismatch=0 audit=0 roi_g=130978462 roi_count=921600 motion_valid=1 motion_ratio_q16=2752 decode_ms=36.808 reference_ms=0.000 transfer_pl_ms=17.676
+BOARD_STREAM_FRAME n=28 codec=jpeg-mjpeg jpeg_bytes=99347 wire_bytes=99347 send_ms=2.289
+CAPTURE_FRAME n=51 sequence=62 bytes=99520 ts=825.999791
+CAPTURE_FRAME n=52 sequence=65 bytes=99474 ts=826.051843
+SAMPLE_FRAME n=33 source_sequence=65 ts_us=826051843
+CAMERA_PL_FRAME n=29 seq=56 ts_us=825899835 mismatch=0 audit=0 roi_g=130928417 roi_count=921600 motion_valid=1 motion_ratio_q16=2802 decode_ms=36.243 reference_ms=0.000 transfer_pl_ms=16.234
+BOARD_STREAM_FRAME n=29 codec=jpeg-mjpeg jpeg_bytes=99385 wire_bytes=99385 send_ms=2.388
+CAPTURE_FRAME n=53 sequence=67 bytes=99953 ts=826.083779
+SAMPLE_FRAME n=34 source_sequence=67 ts_us=826083779
+CAMERA_PL_FRAME n=30 seq=58 ts_us=825935763 mismatch=0 audit=0 roi_g=130926667 roi_count=921600 motion_valid=1 motion_ratio_q16=2685 decode_ms=36.685 reference_ms=0.000 transfer_pl_ms=16.348
+BOARD_STREAM_FRAME n=30 codec=jpeg-mjpeg jpeg_bytes=99047 wire_bytes=99047 send_ms=2.871
+CAPTURE_FRAME n=54 sequence=69 bytes=99213 ts=826.119849
+SAMPLE_FRAME n=35 source_sequence=69 ts_us=826119849
+CAPTURE_FRAME n=55 sequence=70 bytes=99570 ts=826.135761
+CAPTURE_FRAME n=56 sequence=71 bytes=99253 ts=826.151855
+SAMPLE_FRAME n=36 source_sequence=71 ts_us=826151855
+CAMERA_PL_FRAME n=31 seq=60 ts_us=825967741 mismatch=0 audit=1 roi_g=130960538 roi_count=921600 motion_valid=1 motion_ratio_q16=2756 decode_ms=36.623 reference_ms=27.113 transfer_pl_ms=20.068
+BOARD_STREAM_FRAME n=31 codec=jpeg-mjpeg jpeg_bytes=99506 wire_bytes=99506 send_ms=1.974
+CAPTURE_FRAME n=57 sequence=73 bytes=98965 ts=826.187840
+SAMPLE_FRAME n=37 source_sequence=73 ts_us=826187840
+CAMERA_PL_FRAME n=32 seq=61 ts_us=825983807 mismatch=0 audit=0 roi_g=130989289 roi_count=921600 motion_valid=1 motion_ratio_q16=2802 decode_ms=35.975 reference_ms=0.000 transfer_pl_ms=18.672
+BOARD_STREAM_FRAME n=32 codec=jpeg-mjpeg jpeg_bytes=99227 wire_bytes=99227 send_ms=2.682
+CAMERA_PL_FRAME n=33 seq=65 ts_us=826051843 mismatch=0 audit=0 roi_g=130965520 roi_count=921600 motion_valid=1 motion_ratio_q16=2836 decode_ms=36.424 reference_ms=0.000 transfer_pl_ms=18.450
+BOARD_STREAM_FRAME n=33 codec=jpeg-mjpeg jpeg_bytes=99474 wire_bytes=99474 send_ms=2.035
+CAPTURE_FRAME n=58 sequence=75 bytes=99274 ts=826.219837
+SAMPLE_FRAME n=38 source_sequence=75 ts_us=826219837
+CAMERA_PL_FRAME n=34 seq=67 ts_us=826083779 mismatch=0 audit=0 roi_g=130974650 roi_count=921600 motion_valid=1 motion_ratio_q16=2850 decode_ms=36.682 reference_ms=0.000 transfer_pl_ms=17.636
+BOARD_STREAM_FRAME n=34 codec=jpeg-mjpeg jpeg_bytes=99953 wire_bytes=99953 send_ms=2.846
+CAPTURE_FRAME n=59 sequence=76 bytes=99400 ts=826.235816
+CAPTURE_FRAME n=60 sequence=77 bytes=99580 ts=826.255733
+SAMPLE_FRAME n=39 source_sequence=77 ts_us=826255733
+CAMERA_PL_FRAME n=35 seq=69 ts_us=826119849 mismatch=0 audit=0 roi_g=130962662 roi_count=921600 motion_valid=1 motion_ratio_q16=2841 decode_ms=36.239 reference_ms=0.000 transfer_pl_ms=15.749
+BOARD_STREAM_FRAME n=35 codec=jpeg-mjpeg jpeg_bytes=99213 wire_bytes=99213 send_ms=1.950
+CAPTURE_FRAME n=61 sequence=80 bytes=99522 ts=826.303742
+SAMPLE_FRAME n=40 source_sequence=80 ts_us=826303742
+CAMERA_PL_FRAME n=36 seq=71 ts_us=826151855 mismatch=0 audit=0 roi_g=130974004 roi_count=921600 motion_valid=1 motion_ratio_q16=2737 decode_ms=36.427 reference_ms=0.000 transfer_pl_ms=15.995
+BOARD_STREAM_FRAME n=36 codec=jpeg-mjpeg jpeg_bytes=99253 wire_bytes=99253 send_ms=1.954
+CAPTURE_FRAME n=62 sequence=82 bytes=99503 ts=826.339753
+SAMPLE_FRAME n=41 source_sequence=82 ts_us=826339753
+CAMERA_PL_FRAME n=37 seq=73 ts_us=826187840 mismatch=0 audit=0 roi_g=130970497 roi_count=921600 motion_valid=1 motion_ratio_q16=2765 decode_ms=37.120 reference_ms=0.000 transfer_pl_ms=16.567
+BOARD_STREAM_FRAME n=37 codec=jpeg-mjpeg jpeg_bytes=98965 wire_bytes=98965 send_ms=3.544
+CAPTURE_FRAME n=63 sequence=83 bytes=99481 ts=826.355725
+CAPTURE_FRAME n=64 sequence=84 bytes=99124 ts=826.371740
+CAPTURE_FRAME n=65 sequence=86 bytes=98932 ts=826.403762
+SAMPLE_FRAME n=42 source_sequence=86 ts_us=826403762
+CAMERA_PL_FRAME n=38 seq=75 ts_us=826219837 mismatch=0 audit=0 roi_g=131019738 roi_count=921600 motion_valid=1 motion_ratio_q16=2756 decode_ms=38.073 reference_ms=0.000 transfer_pl_ms=15.759
+BOARD_STREAM_FRAME n=38 codec=jpeg-mjpeg jpeg_bytes=99274 wire_bytes=99274 send_ms=1.997
+CAPTURE_FRAME n=66 sequence=89 bytes=99069 ts=826.455749
+SAMPLE_FRAME n=43 source_sequence=89 ts_us=826455749
+CAMERA_PL_FRAME n=39 seq=77 ts_us=826255733 mismatch=0 audit=0 roi_g=130983327 roi_count=921600 motion_valid=1 motion_ratio_q16=2765 decode_ms=36.386 reference_ms=0.000 transfer_pl_ms=16.402
+BOARD_STREAM_FRAME n=39 codec=jpeg-mjpeg jpeg_bytes=99580 wire_bytes=99580 send_ms=2.878
+CAPTURE_FRAME n=67 sequence=90 bytes=99083 ts=826.471735
+CAPTURE_FRAME n=68 sequence=91 bytes=99245 ts=826.487817
+SAMPLE_FRAME n=44 source_sequence=91 ts_us=826487817
+CAMERA_PL_FRAME n=40 seq=80 ts_us=826303742 mismatch=0 audit=0 roi_g=130924919 roi_count=921600 motion_valid=1 motion_ratio_q16=2785 decode_ms=37.222 reference_ms=0.000 transfer_pl_ms=18.877
+BOARD_STREAM_FRAME n=40 codec=jpeg-mjpeg jpeg_bytes=99522 wire_bytes=99522 send_ms=2.954
+CAPTURE_FRAME n=69 sequence=92 bytes=99267 ts=826.507730
+SAMPLE_FRAME n=45 source_sequence=92 ts_us=826507730
+CAMERA_PL_FRAME n=41 seq=82 ts_us=826339753 mismatch=0 audit=0 roi_g=130968092 roi_count=921600 motion_valid=1 motion_ratio_q16=2781 decode_ms=37.580 reference_ms=0.000 transfer_pl_ms=15.802
+BOARD_STREAM_FRAME n=41 codec=jpeg-mjpeg jpeg_bytes=99503 wire_bytes=99503 send_ms=2.120
+CAPTURE_FRAME n=70 sequence=93 bytes=99423 ts=826.523738
+CAPTURE_FRAME n=71 sequence=94 bytes=99274 ts=826.539757
+SAMPLE_FRAME n=46 source_sequence=94 ts_us=826539757
+CAMERA_PL_FRAME n=42 seq=86 ts_us=826403762 mismatch=0 audit=0 roi_g=130908155 roi_count=921600 motion_valid=1 motion_ratio_q16=2797 decode_ms=36.318 reference_ms=0.000 transfer_pl_ms=16.336
+BOARD_STREAM_FRAME n=42 codec=jpeg-mjpeg jpeg_bytes=98932 wire_bytes=98932 send_ms=2.916
+CAPTURE_FRAME n=72 sequence=95 bytes=99517 ts=826.555770
+CAPTURE_FRAME n=73 sequence=97 bytes=99409 ts=826.591760
+SAMPLE_FRAME n=47 source_sequence=97 ts_us=826591760
+CAMERA_PL_FRAME n=43 seq=89 ts_us=826455749 mismatch=0 audit=0 roi_g=130959698 roi_count=921600 motion_valid=1 motion_ratio_q16=2674 decode_ms=37.239 reference_ms=0.000 transfer_pl_ms=17.202
+BOARD_STREAM_FRAME n=43 codec=jpeg-mjpeg jpeg_bytes=99069 wire_bytes=99069 send_ms=2.015
+CAPTURE_FRAME n=74 sequence=98 bytes=99493 ts=826.607854
+SAMPLE_FRAME n=48 source_sequence=98 ts_us=826607854
+CAMERA_PL_FRAME n=44 seq=91 ts_us=826487817 mismatch=0 audit=0 roi_g=130949014 roi_count=921600 motion_valid=1 motion_ratio_q16=2739 decode_ms=37.305 reference_ms=0.000 transfer_pl_ms=16.737
+BOARD_STREAM_FRAME n=44 codec=jpeg-mjpeg jpeg_bytes=99245 wire_bytes=99245 send_ms=2.006
+CAPTURE_FRAME n=75 sequence=100 bytes=99216 ts=826.639749
+SAMPLE_FRAME n=49 source_sequence=100 ts_us=826639749
+CAMERA_PL_FRAME n=45 seq=92 ts_us=826507730 mismatch=0 audit=0 roi_g=130948581 roi_count=921600 motion_valid=1 motion_ratio_q16=2734 decode_ms=37.474 reference_ms=0.000 transfer_pl_ms=16.531
+BOARD_STREAM_FRAME n=45 codec=jpeg-mjpeg jpeg_bytes=99267 wire_bytes=99267 send_ms=3.765
+CAPTURE_FRAME n=76 sequence=101 bytes=99109 ts=826.659840
+CAPTURE_FRAME n=77 sequence=102 bytes=99772 ts=826.675727
+SAMPLE_FRAME n=50 source_sequence=102 ts_us=826675727
+CAMERA_PL_FRAME n=46 seq=94 ts_us=826539757 mismatch=0 audit=0 roi_g=130898458 roi_count=921600 motion_valid=1 motion_ratio_q16=2764 decode_ms=36.951 reference_ms=0.000 transfer_pl_ms=18.795
+BOARD_STREAM_FRAME n=46 codec=jpeg-mjpeg jpeg_bytes=99274 wire_bytes=99274 send_ms=2.968
+CAPTURE_FRAME n=78 sequence=104 bytes=99199 ts=826.707728
+SAMPLE_FRAME n=51 source_sequence=104 ts_us=826707728
+CAMERA_PL_FRAME n=47 seq=97 ts_us=826591760 mismatch=0 audit=0 roi_g=130933375 roi_count=921600 motion_valid=1 motion_ratio_q16=2719 decode_ms=37.885 reference_ms=0.000 transfer_pl_ms=16.499
+BOARD_STREAM_FRAME n=47 codec=jpeg-mjpeg jpeg_bytes=99409 wire_bytes=99409 send_ms=2.904
+CAPTURE_FRAME n=79 sequence=106 bytes=99971 ts=826.743736
+SAMPLE_FRAME n=52 source_sequence=106 ts_us=826743736
+CAMERA_PL_FRAME n=48 seq=98 ts_us=826607854 mismatch=0 audit=0 roi_g=130981583 roi_count=921600 motion_valid=1 motion_ratio_q16=2791 decode_ms=37.052 reference_ms=0.000 transfer_pl_ms=16.543
+BOARD_STREAM_FRAME n=48 codec=jpeg-mjpeg jpeg_bytes=99493 wire_bytes=99493 send_ms=2.322
+CAPTURE_FRAME n=80 sequence=107 bytes=99230 ts=826.759782
+CAPTURE_FRAME n=81 sequence=109 bytes=99034 ts=826.791716
+SAMPLE_FRAME n=53 source_sequence=109 ts_us=826791716
+CAMERA_PL_FRAME n=49 seq=100 ts_us=826639749 mismatch=0 audit=0 roi_g=131026224 roi_count=921600 motion_valid=1 motion_ratio_q16=2841 decode_ms=36.717 reference_ms=0.000 transfer_pl_ms=15.804
+BOARD_STREAM_FRAME n=49 codec=jpeg-mjpeg jpeg_bytes=99216 wire_bytes=99216 send_ms=2.066
+CAPTURE_FRAME n=82 sequence=111 bytes=99264 ts=826.827819
+SAMPLE_FRAME n=54 source_sequence=111 ts_us=826827819
+CAMERA_PL_FRAME n=50 seq=102 ts_us=826675727 mismatch=0 audit=0 roi_g=130961445 roi_count=921600 motion_valid=1 motion_ratio_q16=2878 decode_ms=36.859 reference_ms=0.000 transfer_pl_ms=16.466
+BOARD_STREAM_FRAME n=50 codec=jpeg-mjpeg jpeg_bytes=99772 wire_bytes=99772 send_ms=2.906
+CAPTURE_FRAME n=83 sequence=114 bytes=99213 ts=826.875719
+SAMPLE_FRAME n=55 source_sequence=114 ts_us=826875719
+CAMERA_PL_FRAME n=51 seq=104 ts_us=826707728 mismatch=0 audit=0 roi_g=130994552 roi_count=921600 motion_valid=1 motion_ratio_q16=2830 decode_ms=37.213 reference_ms=0.000 transfer_pl_ms=16.828
+BOARD_STREAM_FRAME n=51 codec=jpeg-mjpeg jpeg_bytes=99199 wire_bytes=99199 send_ms=2.038
+CAPTURE_FRAME n=84 sequence=115 bytes=99368 ts=826.891739
+CAPTURE_FRAME n=85 sequence=116 bytes=99553 ts=826.911835
+SAMPLE_FRAME n=56 source_sequence=116 ts_us=826911835
+CAMERA_PL_FRAME n=52 seq=106 ts_us=826743736 mismatch=0 audit=0 roi_g=130975509 roi_count=921600 motion_valid=1 motion_ratio_q16=2726 decode_ms=37.486 reference_ms=0.000 transfer_pl_ms=17.766
+BOARD_STREAM_FRAME n=52 codec=jpeg-mjpeg jpeg_bytes=99971 wire_bytes=99971 send_ms=2.865
+CAPTURE_FRAME n=86 sequence=117 bytes=99336 ts=826.927757
+CAPTURE_FRAME n=87 sequence=120 bytes=99130 ts=826.975805
+SAMPLE_FRAME n=57 source_sequence=120 ts_us=826975805
+CAMERA_PL_FRAME n=53 seq=109 ts_us=826791716 mismatch=0 audit=0 roi_g=130996970 roi_count=921600 motion_valid=1 motion_ratio_q16=2694 decode_ms=36.554 reference_ms=0.000 transfer_pl_ms=16.334
+BOARD_STREAM_FRAME n=53 codec=jpeg-mjpeg jpeg_bytes=99034 wire_bytes=99034 send_ms=2.479
+CAPTURE_FRAME n=88 sequence=121 bytes=99664 ts=826.995715
+CAPTURE_FRAME n=89 sequence=122 bytes=99539 ts=827.011720
+SAMPLE_FRAME n=58 source_sequence=122 ts_us=827011720
+CAMERA_PL_FRAME n=54 seq=111 ts_us=826827819 mismatch=0 audit=0 roi_g=131008867 roi_count=921600 motion_valid=1 motion_ratio_q16=2790 decode_ms=37.548 reference_ms=0.000 transfer_pl_ms=17.093
+BOARD_STREAM_FRAME n=54 codec=jpeg-mjpeg jpeg_bytes=99264 wire_bytes=99264 send_ms=2.974
+CAPTURE_FRAME n=90 sequence=123 bytes=99549 ts=827.027733
+CAPTURE_FRAME n=91 sequence=124 bytes=99619 ts=827.043756
+SAMPLE_FRAME n=59 source_sequence=124 ts_us=827043756
+CAMERA_PL_FRAME n=55 seq=114 ts_us=826875719 mismatch=0 audit=0 roi_g=130911986 roi_count=921600 motion_valid=1 motion_ratio_q16=2708 decode_ms=36.534 reference_ms=0.000 transfer_pl_ms=16.457
+BOARD_STREAM_FRAME n=55 codec=jpeg-mjpeg jpeg_bytes=99213 wire_bytes=99213 send_ms=2.783
+CAPTURE_FRAME n=92 sequence=125 bytes=99204 ts=827.063821
+CAPTURE_FRAME n=93 sequence=126 bytes=99348 ts=827.079764
+SAMPLE_FRAME n=60 source_sequence=126 ts_us=827079764
+CAMERA_PL_FRAME n=56 seq=116 ts_us=826911835 mismatch=0 audit=0 roi_g=131010382 roi_count=921600 motion_valid=1 motion_ratio_q16=2716 decode_ms=37.541 reference_ms=0.000 transfer_pl_ms=17.185
+BOARD_STREAM_FRAME n=56 codec=jpeg-mjpeg jpeg_bytes=99553 wire_bytes=99553 send_ms=1.954
+CAPTURE_FRAME n=94 sequence=127 bytes=98996 ts=827.095961
+CAPTURE_FRAME n=95 sequence=129 bytes=99195 ts=827.127715
+SAMPLE_FRAME n=61 source_sequence=129 ts_us=827127715
+CAMERA_PL_FRAME n=57 seq=120 ts_us=826975805 mismatch=0 audit=0 roi_g=130967526 roi_count=921600 motion_valid=1 motion_ratio_q16=2795 decode_ms=37.261 reference_ms=0.000 transfer_pl_ms=15.864
+BOARD_STREAM_FRAME n=57 codec=jpeg-mjpeg jpeg_bytes=99130 wire_bytes=99130 send_ms=2.101
+CAPTURE_FRAME n=96 sequence=130 bytes=99344 ts=827.147715
+SAMPLE_FRAME n=62 source_sequence=130 ts_us=827147715
+CAMERA_PL_FRAME n=58 seq=122 ts_us=827011720 mismatch=0 audit=0 roi_g=131065565 roi_count=921600 motion_valid=1 motion_ratio_q16=2719 decode_ms=36.251 reference_ms=0.000 transfer_pl_ms=17.533
+BOARD_STREAM_FRAME n=58 codec=jpeg-mjpeg jpeg_bytes=99539 wire_bytes=99539 send_ms=2.150
+CAPTURE_FRAME n=97 sequence=131 bytes=99321 ts=827.163717
+CAPTURE_FRAME n=98 sequence=132 bytes=98997 ts=827.179714
+SAMPLE_FRAME n=63 source_sequence=132 ts_us=827179714
+CAMERA_PL_FRAME n=59 seq=124 ts_us=827043756 mismatch=0 audit=0 roi_g=131052112 roi_count=921600 motion_valid=1 motion_ratio_q16=2701 decode_ms=36.933 reference_ms=0.000 transfer_pl_ms=17.578
+BOARD_STREAM_FRAME n=59 codec=jpeg-mjpeg jpeg_bytes=99619 wire_bytes=99619 send_ms=1.984
+CAPTURE_FRAME n=99 sequence=134 bytes=98940 ts=827.211758
+SAMPLE_FRAME n=64 source_sequence=134 ts_us=827211758
+CAMERA_PL_FRAME n=60 seq=126 ts_us=827079764 mismatch=0 audit=0 roi_g=130987662 roi_count=921600 motion_valid=1 motion_ratio_q16=2738 decode_ms=37.857 reference_ms=0.000 transfer_pl_ms=15.936
+BOARD_STREAM_FRAME n=60 codec=jpeg-mjpeg jpeg_bytes=99348 wire_bytes=99348 send_ms=1.947
+CAPTURE_FRAME n=100 sequence=135 bytes=99419 ts=827.231727
+CAPTURE_FRAME n=101 sequence=136 bytes=99560 ts=827.247763
+SAMPLE_FRAME n=65 source_sequence=136 ts_us=827247763
+CAPTURE_FRAME n=102 sequence=138 bytes=99530 ts=827.279702
+SAMPLE_FRAME n=66 source_sequence=138 ts_us=827279702
+CAMERA_PL_FRAME n=61 seq=129 ts_us=827127715 mismatch=0 audit=1 roi_g=130999755 roi_count=921600 motion_valid=1 motion_ratio_q16=2791 decode_ms=37.329 reference_ms=25.354 transfer_pl_ms=20.715
+BOARD_STREAM_FRAME n=61 codec=jpeg-mjpeg jpeg_bytes=99195 wire_bytes=99195 send_ms=2.678
+CAMERA_PL_FRAME n=62 seq=130 ts_us=827147715 mismatch=0 audit=0 roi_g=131057722 roi_count=921600 motion_valid=1 motion_ratio_q16=2773 decode_ms=36.855 reference_ms=0.000 transfer_pl_ms=18.537
+BOARD_STREAM_FRAME n=62 codec=jpeg-mjpeg jpeg_bytes=99344 wire_bytes=99344 send_ms=2.031
+CAPTURE_FRAME n=103 sequence=140 bytes=99841 ts=827.315768
+SAMPLE_FRAME n=67 source_sequence=140 ts_us=827315768
+CAMERA_PL_FRAME n=63 seq=132 ts_us=827179714 mismatch=0 audit=0 roi_g=131032504 roi_count=921600 motion_valid=1 motion_ratio_q16=2609 decode_ms=36.579 reference_ms=0.000 transfer_pl_ms=18.137
+BOARD_STREAM_FRAME n=63 codec=jpeg-mjpeg jpeg_bytes=98997 wire_bytes=98997 send_ms=2.555
+CAPTURE_FRAME n=104 sequence=141 bytes=99617 ts=827.331713
+CAPTURE_FRAME n=105 sequence=142 bytes=99320 ts=827.347715
+SAMPLE_FRAME n=68 source_sequence=142 ts_us=827347715
+CAMERA_PL_FRAME n=64 seq=134 ts_us=827211758 mismatch=0 audit=0 roi_g=131032223 roi_count=921600 motion_valid=1 motion_ratio_q16=2738 decode_ms=37.287 reference_ms=0.000 transfer_pl_ms=18.044
+BOARD_STREAM_FRAME n=64 codec=jpeg-mjpeg jpeg_bytes=98940 wire_bytes=98940 send_ms=0.880
+CAPTURE_FRAME n=106 sequence=144 bytes=98691 ts=827.379784
+SAMPLE_FRAME n=69 source_sequence=144 ts_us=827379784
+CAMERA_PL_FRAME n=65 seq=136 ts_us=827247763 mismatch=0 audit=0 roi_g=131013075 roi_count=921600 motion_valid=1 motion_ratio_q16=2775 decode_ms=37.152 reference_ms=0.000 transfer_pl_ms=16.817
+CAPTURE_FRAME n=107 sequence=146 bytes=99401 ts=827.415751
+SAMPLE_FRAME n=70 source_sequence=146 ts_us=827415751
+BOARD_STREAM_FRAME n=65 codec=jpeg-mjpeg jpeg_bytes=99560 wire_bytes=99560 send_ms=23.835
+CAMERA_PL_FRAME n=66 seq=138 ts_us=827279702 mismatch=0 audit=0 roi_g=131066508 roi_count=921600 motion_valid=1 motion_ratio_q16=2759 decode_ms=36.772 reference_ms=0.000 transfer_pl_ms=21.485
+BOARD_STREAM_FRAME n=66 codec=jpeg-mjpeg jpeg_bytes=99530 wire_bytes=99530 send_ms=2.907
+CAPTURE_FRAME n=108 sequence=147 bytes=99512 ts=827.431760
+CAPTURE_FRAME n=109 sequence=149 bytes=99480 ts=827.467782
+SAMPLE_FRAME n=71 source_sequence=149 ts_us=827467782
+CAMERA_PL_FRAME n=67 seq=140 ts_us=827315768 mismatch=0 audit=0 roi_g=131050610 roi_count=921600 motion_valid=1 motion_ratio_q16=2785 decode_ms=37.063 reference_ms=0.000 transfer_pl_ms=16.458
+BOARD_STREAM_FRAME n=67 codec=jpeg-mjpeg jpeg_bytes=99841 wire_bytes=99841 send_ms=2.839
+CAPTURE_FRAME n=110 sequence=151 bytes=99082 ts=827.499716
+SAMPLE_FRAME n=72 source_sequence=151 ts_us=827499716
+CAMERA_PL_FRAME n=68 seq=142 ts_us=827347715 mismatch=0 audit=0 roi_g=131044740 roi_count=921600 motion_valid=1 motion_ratio_q16=2902 decode_ms=37.309 reference_ms=0.000 transfer_pl_ms=16.039
+BOARD_STREAM_FRAME n=68 codec=jpeg-mjpeg jpeg_bytes=99320 wire_bytes=99320 send_ms=1.967
+CAPTURE_FRAME n=111 sequence=153 bytes=99436 ts=827.531741
+SAMPLE_FRAME n=73 source_sequence=153 ts_us=827531741
+CAMERA_PL_FRAME n=69 seq=144 ts_us=827379784 mismatch=0 audit=0 roi_g=131093024 roi_count=921600 motion_valid=1 motion_ratio_q16=2665 decode_ms=37.322 reference_ms=0.000 transfer_pl_ms=16.350
+BOARD_STREAM_FRAME n=69 codec=jpeg-mjpeg jpeg_bytes=98691 wire_bytes=98691 send_ms=0.982
+CAPTURE_FRAME n=112 sequence=154 bytes=99191 ts=827.551778
+SAMPLE_FRAME n=74 source_sequence=154 ts_us=827551778
+CAMERA_PL_FRAME n=70 seq=146 ts_us=827415751 mismatch=0 audit=0 roi_g=131096272 roi_count=921600 motion_valid=1 motion_ratio_q16=2679 decode_ms=36.829 reference_ms=0.000 transfer_pl_ms=17.904
+BOARD_STREAM_FRAME n=70 codec=jpeg-mjpeg jpeg_bytes=99401 wire_bytes=99401 send_ms=0.829
+CAPTURE_FRAME n=113 sequence=155 bytes=99418 ts=827.567712
+CAPTURE_FRAME n=114 sequence=158 bytes=99280 ts=827.615755
+SAMPLE_FRAME n=75 source_sequence=158 ts_us=827615755
+CAMERA_PL_FRAME n=71 seq=149 ts_us=827467782 mismatch=0 audit=0 roi_g=131147462 roi_count=921600 motion_valid=1 motion_ratio_q16=2795 decode_ms=37.149 reference_ms=0.000 transfer_pl_ms=16.767
+BOARD_STREAM_FRAME n=71 codec=jpeg-mjpeg jpeg_bytes=99480 wire_bytes=99480 send_ms=0.867
+CAPTURE_FRAME n=115 sequence=160 bytes=99281 ts=827.651693
+SAMPLE_FRAME n=76 source_sequence=160 ts_us=827651693
+CAMERA_PL_FRAME n=72 seq=151 ts_us=827499716 mismatch=0 audit=0 roi_g=131062517 roi_count=921600 motion_valid=1 motion_ratio_q16=2757 decode_ms=37.111 reference_ms=0.000 transfer_pl_ms=15.989
+CAPTURE_FRAME n=116 sequence=162 bytes=99508 ts=827.683711
+SAMPLE_FRAME n=77 source_sequence=162 ts_us=827683711
+CAPTURE_FRAME n=117 sequence=163 bytes=99570 ts=827.699826
+CAPTURE_FRAME n=118 sequence=164 bytes=98979 ts=827.719705
+SAMPLE_FRAME n=78 source_sequence=164 ts_us=827719705
+BOARD_STREAM_FRAME n=72 codec=jpeg-mjpeg jpeg_bytes=99082 wire_bytes=99082 send_ms=65.678
+CAMERA_PL_FRAME n=73 seq=153 ts_us=827531741 mismatch=0 audit=0 roi_g=131096567 roi_count=921600 motion_valid=1 motion_ratio_q16=2703 decode_ms=36.701 reference_ms=0.000 transfer_pl_ms=21.898
+BOARD_STREAM_FRAME n=73 codec=jpeg-mjpeg jpeg_bytes=99436 wire_bytes=99436 send_ms=1.955
+CAPTURE_FRAME n=119 sequence=166 bytes=98868 ts=827.751744
+SAMPLE_FRAME n=79 source_sequence=166 ts_us=827751744
+CAMERA_PL_FRAME n=74 seq=154 ts_us=827551778 mismatch=0 audit=0 roi_g=131134528 roi_count=921600 motion_valid=1 motion_ratio_q16=2821 decode_ms=36.300 reference_ms=0.000 transfer_pl_ms=19.968
+BOARD_STREAM_FRAME n=74 codec=jpeg-mjpeg jpeg_bytes=99191 wire_bytes=99191 send_ms=2.168
+CAMERA_PL_FRAME n=75 seq=158 ts_us=827615755 mismatch=0 audit=0 roi_g=131109179 roi_count=921600 motion_valid=1 motion_ratio_q16=2769 decode_ms=37.199 reference_ms=0.000 transfer_pl_ms=17.072
+CAPTURE_FRAME n=120 sequence=169 bytes=99343 ts=827.803720
+SAMPLE_FRAME n=80 source_sequence=169 ts_us=827803720
+BOARD_STREAM_FRAME n=75 codec=jpeg-mjpeg jpeg_bytes=99280 wire_bytes=99280 send_ms=2.107
+CAMERA_PL_FRAME n=76 seq=160 ts_us=827651693 mismatch=0 audit=0 roi_g=131122998 roi_count=921600 motion_valid=1 motion_ratio_q16=2789 decode_ms=36.199 reference_ms=0.000 transfer_pl_ms=17.502
+BOARD_STREAM_FRAME n=76 codec=jpeg-mjpeg jpeg_bytes=99281 wire_bytes=99281 send_ms=0.869
+CAPTURE_FRAME n=121 sequence=170 bytes=99078 ts=827.819720
+SAMPLE_FRAME n=81 source_sequence=170 ts_us=827819720
+CAMERA_PL_FRAME n=77 seq=162 ts_us=827683711 mismatch=0 audit=0 roi_g=131106349 roi_count=921600 motion_valid=1 motion_ratio_q16=2758 decode_ms=36.389 reference_ms=0.000 transfer_pl_ms=15.744
+BOARD_STREAM_FRAME n=77 codec=jpeg-mjpeg jpeg_bytes=99508 wire_bytes=99508 send_ms=0.842
+CAPTURE_FRAME n=122 sequence=171 bytes=99588 ts=827.835758
+CAPTURE_FRAME n=123 sequence=173 bytes=99424 ts=827.871803
+SAMPLE_FRAME n=82 source_sequence=173 ts_us=827871803
+CAMERA_PL_FRAME n=78 seq=164 ts_us=827719705 mismatch=0 audit=0 roi_g=131114789 roi_count=921600 motion_valid=1 motion_ratio_q16=2688 decode_ms=36.104 reference_ms=0.000 transfer_pl_ms=15.713
+CAPTURE_FRAME n=124 sequence=175 bytes=99512 ts=827.903719
+SAMPLE_FRAME n=83 source_sequence=175 ts_us=827903719
+BOARD_STREAM_FRAME n=78 codec=jpeg-mjpeg jpeg_bytes=98979 wire_bytes=98979 send_ms=45.519
+CAPTURE_FRAME n=125 sequence=177 bytes=99112 ts=827.935712
+SAMPLE_FRAME n=84 source_sequence=177 ts_us=827935712
+CAMERA_PL_FRAME n=79 seq=166 ts_us=827751744 mismatch=0 audit=0 roi_g=131064176 roi_count=921600 motion_valid=1 motion_ratio_q16=2742 decode_ms=36.056 reference_ms=0.000 transfer_pl_ms=23.566
+BOARD_STREAM_FRAME n=79 codec=jpeg-mjpeg jpeg_bytes=98868 wire_bytes=98868 send_ms=2.373
+CAMERA_PL_FRAME n=80 seq=169 ts_us=827803720 mismatch=0 audit=0 roi_g=131125490 roi_count=921600 motion_valid=1 motion_ratio_q16=2711 decode_ms=37.089 reference_ms=0.000 transfer_pl_ms=18.314
+BOARD_STREAM_FRAME n=80 codec=jpeg-mjpeg jpeg_bytes=99343 wire_bytes=99343 send_ms=1.539
+CAPTURE_FRAME n=126 sequence=178 bytes=99340 ts=827.955724
+SAMPLE_FRAME n=85 source_sequence=178 ts_us=827955724
+CAMERA_PL_FRAME n=81 seq=170 ts_us=827819720 mismatch=0 audit=0 roi_g=131011189 roi_count=921600 motion_valid=1 motion_ratio_q16=2730 decode_ms=36.593 reference_ms=0.000 transfer_pl_ms=16.121
+BOARD_STREAM_FRAME n=81 codec=jpeg-mjpeg jpeg_bytes=99078 wire_bytes=99078 send_ms=0.832
+CAPTURE_FRAME n=127 sequence=179 bytes=99547 ts=827.971706
+CAPTURE_FRAME n=128 sequence=182 bytes=98921 ts=828.019751
+SAMPLE_FRAME n=86 source_sequence=182 ts_us=828019751
+CAMERA_PL_FRAME n=82 seq=173 ts_us=827871803 mismatch=0 audit=0 roi_g=131021212 roi_count=921600 motion_valid=1 motion_ratio_q16=2781 decode_ms=36.117 reference_ms=0.000 transfer_pl_ms=17.666
+BOARD_STREAM_FRAME n=82 codec=jpeg-mjpeg jpeg_bytes=99424 wire_bytes=99424 send_ms=0.859
+CAPTURE_FRAME n=129 sequence=184 bytes=99035 ts=828.055741
+SAMPLE_FRAME n=87 source_sequence=184 ts_us=828055741
+CAMERA_PL_FRAME n=83 seq=175 ts_us=827903719 mismatch=0 audit=0 roi_g=131070836 roi_count=921600 motion_valid=1 motion_ratio_q16=2858 decode_ms=36.239 reference_ms=0.000 transfer_pl_ms=16.504
+CAPTURE_FRAME n=130 sequence=186 bytes=99292 ts=828.087707
+SAMPLE_FRAME n=88 source_sequence=186 ts_us=828087707
+BOARD_STREAM_FRAME n=83 codec=jpeg-mjpeg jpeg_bytes=99512 wire_bytes=99512 send_ms=50.768
+CAPTURE_FRAME n=131 sequence=187 bytes=99195 ts=828.103789
+CAPTURE_FRAME n=132 sequence=188 bytes=99365 ts=828.123709
+SAMPLE_FRAME n=89 source_sequence=188 ts_us=828123709
+CAMERA_PL_FRAME n=84 seq=177 ts_us=827935712 mismatch=0 audit=0 roi_g=131122969 roi_count=921600 motion_valid=1 motion_ratio_q16=2696 decode_ms=35.955 reference_ms=0.000 transfer_pl_ms=21.961
+BOARD_STREAM_FRAME n=84 codec=jpeg-mjpeg jpeg_bytes=99112 wire_bytes=99112 send_ms=2.059
+CAPTURE_FRAME n=133 sequence=190 bytes=99308 ts=828.155689
+SAMPLE_FRAME n=90 source_sequence=190 ts_us=828155689
+CAMERA_PL_FRAME n=85 seq=178 ts_us=827955724 mismatch=0 audit=0 roi_g=131100972 roi_count=921600 motion_valid=1 motion_ratio_q16=2817 decode_ms=36.247 reference_ms=0.000 transfer_pl_ms=20.830
+BOARD_STREAM_FRAME n=85 codec=jpeg-mjpeg jpeg_bytes=99340 wire_bytes=99340 send_ms=0.851
+CAMERA_PL_FRAME n=86 seq=182 ts_us=828019751 mismatch=0 audit=0 roi_g=131043121 roi_count=921600 motion_valid=1 motion_ratio_q16=2791 decode_ms=37.755 reference_ms=0.000 transfer_pl_ms=16.584
+BOARD_STREAM_FRAME n=86 codec=jpeg-mjpeg jpeg_bytes=98921 wire_bytes=98921 send_ms=0.839
+CAPTURE_FRAME n=134 sequence=193 bytes=99175 ts=828.207687
+SAMPLE_FRAME n=91 source_sequence=193 ts_us=828207687
+CAMERA_PL_FRAME n=87 seq=184 ts_us=828055741 mismatch=0 audit=0 roi_g=131091280 roi_count=921600 motion_valid=1 motion_ratio_q16=2645 decode_ms=36.114 reference_ms=0.000 transfer_pl_ms=16.334
+BOARD_STREAM_FRAME n=87 codec=jpeg-mjpeg jpeg_bytes=99035 wire_bytes=99035 send_ms=0.851
+CAPTURE_FRAME n=135 sequence=194 bytes=99116 ts=828.223692
+CAPTURE_FRAME n=136 sequence=195 bytes=99301 ts=828.239717
+CAPTURE_FRAME n=137 sequence=197 bytes=99267 ts=828.275716
+SAMPLE_FRAME n=92 source_sequence=197 ts_us=828275716
+CAMERA_PL_FRAME n=88 seq=186 ts_us=828087707 mismatch=0 audit=0 roi_g=131029736 roi_count=921600 motion_valid=1 motion_ratio_q16=2671 decode_ms=36.925 reference_ms=0.000 transfer_pl_ms=17.849
+BOARD_STREAM_FRAME n=88 codec=jpeg-mjpeg jpeg_bytes=99292 wire_bytes=99292 send_ms=0.862
+CAPTURE_FRAME n=138 sequence=199 bytes=99315 ts=828.307704
+SAMPLE_FRAME n=93 source_sequence=199 ts_us=828307704
+CAMERA_PL_FRAME n=89 seq=188 ts_us=828123709 mismatch=0 audit=0 roi_g=131047651 roi_count=921600 motion_valid=1 motion_ratio_q16=2841 decode_ms=37.215 reference_ms=0.000 transfer_pl_ms=17.934
+CAPTURE_FRAME n=139 sequence=200 bytes=99555 ts=828.323696
+CAPTURE_FRAME n=140 sequence=201 bytes=99575 ts=828.339711
+CAPTURE_FRAME n=141 sequence=202 bytes=98946 ts=828.359771
+SAMPLE_FRAME n=94 source_sequence=202 ts_us=828359771
+BOARD_STREAM_FRAME n=89 codec=jpeg-mjpeg jpeg_bytes=99365 wire_bytes=99365 send_ms=31.236
+CAMERA_PL_FRAME n=90 seq=190 ts_us=828155689 mismatch=0 audit=0 roi_g=131068632 roi_count=921600 motion_valid=1 motion_ratio_q16=2827 decode_ms=37.237 reference_ms=0.000 transfer_pl_ms=22.006
+BOARD_STREAM_FRAME n=90 codec=jpeg-mjpeg jpeg_bytes=99308 wire_bytes=99308 send_ms=2.354
+CAPTURE_FRAME n=142 sequence=203 bytes=98777 ts=828.375684
+SAMPLE_FRAME n=95 source_sequence=203 ts_us=828375684
+CAPTURE_FRAME n=143 sequence=204 bytes=99537 ts=828.391692
+CAPTURE_FRAME n=144 sequence=205 bytes=99187 ts=828.407807
+SAMPLE_FRAME n=96 source_sequence=205 ts_us=828407807
+CAMERA_PL_FRAME n=91 seq=193 ts_us=828207687 mismatch=0 audit=1 roi_g=131094042 roi_count=921600 motion_valid=1 motion_ratio_q16=2819 decode_ms=37.978 reference_ms=30.039 transfer_pl_ms=19.009
+BOARD_STREAM_FRAME n=91 codec=jpeg-mjpeg jpeg_bytes=99175 wire_bytes=99175 send_ms=1.652
+CAMERA_PL_FRAME n=92 seq=197 ts_us=828275716 mismatch=0 audit=0 roi_g=131058552 roi_count=921600 motion_valid=1 motion_ratio_q16=2814 decode_ms=36.307 reference_ms=0.000 transfer_pl_ms=15.871
+BOARD_STREAM_FRAME n=92 codec=jpeg-mjpeg jpeg_bytes=99267 wire_bytes=99267 send_ms=0.862
+CAPTURE_FRAME n=145 sequence=206 bytes=99332 ts=828.423736
+CAPTURE_FRAME n=146 sequence=208 bytes=99254 ts=828.459756
+SAMPLE_FRAME n=97 source_sequence=208 ts_us=828459756
+CAMERA_PL_FRAME n=93 seq=199 ts_us=828307704 mismatch=0 audit=0 roi_g=131060269 roi_count=921600 motion_valid=1 motion_ratio_q16=2810 decode_ms=36.267 reference_ms=0.000 transfer_pl_ms=16.431
+BOARD_STREAM_FRAME n=93 codec=jpeg-mjpeg jpeg_bytes=99315 wire_bytes=99315 send_ms=0.863
+CAPTURE_FRAME n=147 sequence=209 bytes=99027 ts=828.475687
+SAMPLE_FRAME n=98 source_sequence=209 ts_us=828475687
+CAMERA_PL_FRAME n=94 seq=202 ts_us=828359771 mismatch=0 audit=0 roi_g=131099285 roi_count=921600 motion_valid=1 motion_ratio_q16=2701 decode_ms=37.226 reference_ms=0.000 transfer_pl_ms=18.996
+BOARD_STREAM_FRAME n=94 codec=jpeg-mjpeg jpeg_bytes=98946 wire_bytes=98946 send_ms=0.840
+CAPTURE_FRAME n=148 sequence=210 bytes=99166 ts=828.491701
+CAPTURE_FRAME n=149 sequence=211 bytes=99469 ts=828.507765
+SAMPLE_FRAME n=99 source_sequence=211 ts_us=828507765
+CAMERA_PL_FRAME n=95 seq=203 ts_us=828375684 mismatch=0 audit=0 roi_g=131103378 roi_count=921600 motion_valid=1 motion_ratio_q16=2609 decode_ms=37.457 reference_ms=0.000 transfer_pl_ms=15.898
+CAPTURE_FRAME n=150 sequence=213 bytes=99089 ts=828.543698
+SAMPLE_FRAME n=100 source_sequence=213 ts_us=828543698
+CAPTURE_FRAME n=151 sequence=215 bytes=99178 ts=828.575709
+SAMPLE_FRAME n=101 source_sequence=215 ts_us=828575709
+BOARD_STREAM_FRAME n=95 codec=jpeg-mjpeg jpeg_bytes=98777 wire_bytes=98777 send_ms=70.011
+CAMERA_PL_FRAME n=96 seq=205 ts_us=828407807 mismatch=0 audit=0 roi_g=131058994 roi_count=921600 motion_valid=1 motion_ratio_q16=2662 decode_ms=36.010 reference_ms=0.000 transfer_pl_ms=22.080
+BOARD_STREAM_FRAME n=96 codec=jpeg-mjpeg jpeg_bytes=99187 wire_bytes=99187 send_ms=1.449
+CAPTURE_FRAME n=152 sequence=216 bytes=99578 ts=828.591753
+CAPTURE_FRAME n=153 sequence=217 bytes=99274 ts=828.611680
+SAMPLE_FRAME n=102 source_sequence=217 ts_us=828611680
+CAMERA_PL_FRAME n=97 seq=208 ts_us=828459756 mismatch=0 audit=0 roi_g=131078420 roi_count=921600 motion_valid=1 motion_ratio_q16=2769 decode_ms=36.336 reference_ms=0.000 transfer_pl_ms=19.121
+BOARD_STREAM_FRAME n=97 codec=jpeg-mjpeg jpeg_bytes=99254 wire_bytes=99254 send_ms=0.961
+CAMERA_PL_FRAME n=98 seq=209 ts_us=828475687 mismatch=0 audit=0 roi_g=131129318 roi_count=921600 motion_valid=1 motion_ratio_q16=2793 decode_ms=37.811 reference_ms=0.000 transfer_pl_ms=16.580
+BOARD_STREAM_FRAME n=98 codec=jpeg-mjpeg jpeg_bytes=99027 wire_bytes=99027 send_ms=0.863
+CAPTURE_FRAME n=154 sequence=219 bytes=99308 ts=828.644251
+SAMPLE_FRAME n=103 source_sequence=219 ts_us=828644251
+CAMERA_PL_FRAME n=99 seq=211 ts_us=828507765 mismatch=0 audit=0 roi_g=131091130 roi_count=921600 motion_valid=1 motion_ratio_q16=2848 decode_ms=36.355 reference_ms=0.000 transfer_pl_ms=16.561
+BOARD_STREAM_FRAME n=99 codec=jpeg-mjpeg jpeg_bytes=99469 wire_bytes=99469 send_ms=1.607
+CAPTURE_FRAME n=155 sequence=221 bytes=99694 ts=828.679685
+SAMPLE_FRAME n=104 source_sequence=221 ts_us=828679685
+CAMERA_PL_FRAME n=100 seq=213 ts_us=828543698 mismatch=0 audit=0 roi_g=131135706 roi_count=921600 motion_valid=1 motion_ratio_q16=2752 decode_ms=36.589 reference_ms=0.000 transfer_pl_ms=18.488
+BOARD_STREAM_FRAME n=100 codec=jpeg-mjpeg jpeg_bytes=99089 wire_bytes=99089 send_ms=0.853
+CAPTURE_FRAME n=156 sequence=222 bytes=99388 ts=828.695763
+CAPTURE_FRAME n=157 sequence=223 bytes=98804 ts=828.711714
+SAMPLE_FRAME n=105 source_sequence=223 ts_us=828711714
+CAMERA_PL_FRAME n=101 seq=215 ts_us=828575709 mismatch=0 audit=0 roi_g=131153230 roi_count=921600 motion_valid=1 motion_ratio_q16=2858 decode_ms=36.919 reference_ms=0.000 transfer_pl_ms=16.069
+CAPTURE_FRAME n=158 sequence=226 bytes=98868 ts=828.763766
+SAMPLE_FRAME n=106 source_sequence=226 ts_us=828763766
+CAPTURE_FRAME n=159 sequence=228 bytes=99385 ts=828.795741
+SAMPLE_FRAME n=107 source_sequence=228 ts_us=828795741
+BOARD_STREAM_FRAME n=101 codec=jpeg-mjpeg jpeg_bytes=99178 wire_bytes=99178 send_ms=122.606
+CAPTURE_FRAME n=160 sequence=229 bytes=100060 ts=828.811687
+SAMPLE_FRAME n=108 source_sequence=229 ts_us=828811687
+CAMERA_PL_FRAME n=102 seq=217 ts_us=828611680 mismatch=0 audit=0 roi_g=131068625 roi_count=921600 motion_valid=1 motion_ratio_q16=2794 decode_ms=37.096 reference_ms=0.000 transfer_pl_ms=23.450
+BOARD_STREAM_FRAME n=102 codec=jpeg-mjpeg jpeg_bytes=99274 wire_bytes=99274 send_ms=1.877
+CAPTURE_FRAME n=161 sequence=230 bytes=99507 ts=828.827734
+CAPTURE_FRAME n=162 sequence=232 bytes=99179 ts=828.863672
+SAMPLE_FRAME n=109 source_sequence=232 ts_us=828863672
+CAMERA_PL_FRAME n=103 seq=219 ts_us=828644251 mismatch=0 audit=0 roi_g=131082883 roi_count=921600 motion_valid=1 motion_ratio_q16=2705 decode_ms=35.799 reference_ms=0.000 transfer_pl_ms=16.467
+BOARD_STREAM_FRAME n=103 codec=jpeg-mjpeg jpeg_bytes=99308 wire_bytes=99308 send_ms=0.844
+CAMERA_PL_FRAME n=104 seq=221 ts_us=828679685 mismatch=0 audit=0 roi_g=131105182 roi_count=921600 motion_valid=1 motion_ratio_q16=2639 decode_ms=36.425 reference_ms=0.000 transfer_pl_ms=16.650
+BOARD_STREAM_FRAME n=104 codec=jpeg-mjpeg jpeg_bytes=99694 wire_bytes=99694 send_ms=1.631
+CAPTURE_FRAME n=163 sequence=236 bytes=99795 ts=828.931689
+SAMPLE_FRAME n=110 source_sequence=236 ts_us=828931689
+CAMERA_PL_FRAME n=105 seq=223 ts_us=828711714 mismatch=0 audit=0 roi_g=131148042 roi_count=921600 motion_valid=1 motion_ratio_q16=2690 decode_ms=38.073 reference_ms=0.000 transfer_pl_ms=16.560
+BOARD_STREAM_FRAME n=105 codec=jpeg-mjpeg jpeg_bytes=98804 wire_bytes=98804 send_ms=0.843
+CAMERA_PL_FRAME n=106 seq=226 ts_us=828763766 mismatch=0 audit=0 roi_g=131129106 roi_count=921600 motion_valid=1 motion_ratio_q16=2739 decode_ms=36.324 reference_ms=0.000 transfer_pl_ms=17.714
+CAPTURE_FRAME n=164 sequence=238 bytes=98908 ts=828.963697
+SAMPLE_FRAME n=111 source_sequence=238 ts_us=828963697
+CAPTURE_FRAME n=165 sequence=239 bytes=99095 ts=828.979687
+SAMPLE_FRAME n=112 source_sequence=239 ts_us=828979687
+BOARD_STREAM_FRAME n=106 codec=jpeg-mjpeg jpeg_bytes=98868 wire_bytes=98868 send_ms=188.079
+CAPTURE_FRAME n=166 sequence=241 bytes=99125 ts=829.015761
+SAMPLE_FRAME n=113 source_sequence=241 ts_us=829015761
+CAMERA_PL_FRAME n=107 seq=228 ts_us=828795741 mismatch=0 audit=0 roi_g=131105204 roi_count=921600 motion_valid=1 motion_ratio_q16=2834 decode_ms=36.482 reference_ms=0.000 transfer_pl_ms=23.864
+BOARD_STREAM_FRAME n=107 codec=jpeg-mjpeg jpeg_bytes=99385 wire_bytes=99385 send_ms=1.256
+CAPTURE_FRAME n=167 sequence=243 bytes=99277 ts=829.047665
+SAMPLE_FRAME n=114 source_sequence=243 ts_us=829047665
+CAMERA_PL_FRAME n=108 seq=229 ts_us=828811687 mismatch=0 audit=0 roi_g=131096305 roi_count=921600 motion_valid=1 motion_ratio_q16=2904 decode_ms=36.091 reference_ms=0.000 transfer_pl_ms=16.392
+BOARD_STREAM_FRAME n=108 codec=jpeg-mjpeg jpeg_bytes=100060 wire_bytes=100060 send_ms=0.843
+CAMERA_PL_FRAME n=109 seq=232 ts_us=828863672 mismatch=0 audit=0 roi_g=131061552 roi_count=921600 motion_valid=1 motion_ratio_q16=2883 decode_ms=35.935 reference_ms=0.000 transfer_pl_ms=15.969
+BOARD_STREAM_FRAME n=109 codec=jpeg-mjpeg jpeg_bytes=99179 wire_bytes=99179 send_ms=0.856
+CAMERA_PL_FRAME n=110 seq=236 ts_us=828931689 mismatch=0 audit=0 roi_g=131090221 roi_count=921600 motion_valid=1 motion_ratio_q16=2839 decode_ms=37.620 reference_ms=0.000 transfer_pl_ms=16.335
+BOARD_STREAM_FRAME n=110 codec=jpeg-mjpeg jpeg_bytes=99795 wire_bytes=99795 send_ms=0.856
+CAPTURE_FRAME n=168 sequence=245 bytes=99515 ts=829.083650
+SAMPLE_FRAME n=115 source_sequence=245 ts_us=829083650
+CAMERA_PL_FRAME n=111 seq=238 ts_us=828963697 mismatch=0 audit=0 roi_g=131129185 roi_count=921600 motion_valid=1 motion_ratio_q16=2868 decode_ms=36.339 reference_ms=0.000 transfer_pl_ms=16.426
+CAPTURE_FRAME n=169 sequence=253 bytes=99277 ts=829.215677
+SAMPLE_FRAME n=116 source_sequence=253 ts_us=829215677
+CAPTURE_FRAME n=170 sequence=255 bytes=99217 ts=829.251696
+SAMPLE_FRAME n=117 source_sequence=255 ts_us=829251696
+BOARD_STREAM_FRAME n=111 codec=jpeg-mjpeg jpeg_bytes=98908 wire_bytes=98908 send_ms=142.297
+CAPTURE_FRAME n=171 sequence=258 bytes=99177 ts=829.299742
+SAMPLE_FRAME n=118 source_sequence=258 ts_us=829299742
+CAMERA_PL_FRAME n=112 seq=239 ts_us=828979687 mismatch=0 audit=0 roi_g=131142827 roi_count=921600 motion_valid=1 motion_ratio_q16=2706 decode_ms=37.067 reference_ms=0.000 transfer_pl_ms=24.798
+BOARD_STREAM_FRAME n=112 codec=jpeg-mjpeg jpeg_bytes=99095 wire_bytes=99095 send_ms=1.845
+CAPTURE_FRAME n=172 sequence=260 bytes=99431 ts=829.335762
+SAMPLE_FRAME n=119 source_sequence=260 ts_us=829335762
+CAMERA_PL_FRAME n=113 seq=241 ts_us=829015761 mismatch=0 audit=0 roi_g=131080215 roi_count=921600 motion_valid=1 motion_ratio_q16=2765 decode_ms=35.941 reference_ms=0.000 transfer_pl_ms=15.729
+BOARD_STREAM_FRAME n=113 codec=jpeg-mjpeg jpeg_bytes=99125 wire_bytes=99125 send_ms=0.861
+CAMERA_PL_FRAME n=114 seq=243 ts_us=829047665 mismatch=0 audit=0 roi_g=131066952 roi_count=921600 motion_valid=1 motion_ratio_q16=2679 decode_ms=36.266 reference_ms=0.000 transfer_pl_ms=16.284
+BOARD_STREAM_FRAME n=114 codec=jpeg-mjpeg jpeg_bytes=99277 wire_bytes=99277 send_ms=0.859
+CAPTURE_FRAME n=173 sequence=262 bytes=99194 ts=829.367706
+SAMPLE_FRAME n=120 source_sequence=262 ts_us=829367706
+CAMERA_PL_FRAME n=115 seq=245 ts_us=829083650 mismatch=0 audit=0 roi_g=131096899 roi_count=921600 motion_valid=1 motion_ratio_q16=2787 decode_ms=37.553 reference_ms=0.000 transfer_pl_ms=17.123
+BOARD_STREAM_FRAME n=115 codec=jpeg-mjpeg jpeg_bytes=99515 wire_bytes=99515 send_ms=0.856
+CAMERA_PL_FRAME n=116 seq=253 ts_us=829215677 mismatch=0 audit=0 roi_g=131119749 roi_count=921600 motion_valid=1 motion_ratio_q16=2773 decode_ms=36.609 reference_ms=0.000 transfer_pl_ms=16.362
+CAPTURE_FRAME n=174 sequence=267 bytes=99407 ts=829.451671
+SAMPLE_FRAME n=121 source_sequence=267 ts_us=829451671
+CAPTURE_FRAME n=175 sequence=270 bytes=99335 ts=829.503654
+SAMPLE_FRAME n=122 source_sequence=270 ts_us=829503654
+BOARD_STREAM_FRAME n=116 codec=jpeg-mjpeg jpeg_bytes=99277 wire_bytes=99277 send_ms=140.615
+CAPTURE_FRAME n=176 sequence=272 bytes=99288 ts=829.535746
+SAMPLE_FRAME n=123 source_sequence=272 ts_us=829535746
+CAMERA_PL_FRAME n=117 seq=255 ts_us=829251696 mismatch=0 audit=0 roi_g=131105759 roi_count=921600 motion_valid=1 motion_ratio_q16=2648 decode_ms=36.256 reference_ms=0.000 transfer_pl_ms=21.871
+BOARD_STREAM_FRAME n=117 codec=jpeg-mjpeg jpeg_bytes=99217 wire_bytes=99217 send_ms=1.281
+CAPTURE_FRAME n=177 sequence=274 bytes=99629 ts=829.571749
+SAMPLE_FRAME n=124 source_sequence=274 ts_us=829571749
+CAMERA_PL_FRAME n=118 seq=258 ts_us=829299742 mismatch=0 audit=0 roi_g=131173497 roi_count=921600 motion_valid=1 motion_ratio_q16=2732 decode_ms=35.781 reference_ms=0.000 transfer_pl_ms=20.410
+BOARD_STREAM_FRAME n=118 codec=jpeg-mjpeg jpeg_bytes=99177 wire_bytes=99177 send_ms=0.858
+CAMERA_PL_FRAME n=119 seq=260 ts_us=829335762 mismatch=0 audit=0 roi_g=131062531 roi_count=921600 motion_valid=1 motion_ratio_q16=2741 decode_ms=35.962 reference_ms=0.000 transfer_pl_ms=16.284
+BOARD_STREAM_FRAME n=119 codec=jpeg-mjpeg jpeg_bytes=99431 wire_bytes=99431 send_ms=0.859
+CAPTURE_FRAME n=178 sequence=276 bytes=98845 ts=829.603705
+SAMPLE_FRAME n=125 source_sequence=276 ts_us=829603705
+CAMERA_PL_FRAME n=120 seq=262 ts_us=829367706 mismatch=0 audit=0 roi_g=131082802 roi_count=921600 motion_valid=1 motion_ratio_q16=2694 decode_ms=37.757 reference_ms=0.000 transfer_pl_ms=16.956
+BOARD_STREAM_FRAME n=120 codec=jpeg-mjpeg jpeg_bytes=99194 wire_bytes=99194 send_ms=0.851
+CAPTURE_FRAME n=179 sequence=282 bytes=99197 ts=829.703706
+SAMPLE_FRAME n=126 source_sequence=282 ts_us=829703706
+CAMERA_PL_FRAME n=121 seq=267 ts_us=829451671 mismatch=0 audit=1 roi_g=131050555 roi_count=921600 motion_valid=1 motion_ratio_q16=2778 decode_ms=36.530 reference_ms=26.636 transfer_pl_ms=19.004
+BOARD_STREAM_FRAME n=121 codec=jpeg-mjpeg jpeg_bytes=99407 wire_bytes=99407 send_ms=1.595
+CAMERA_PL_FRAME n=122 seq=270 ts_us=829503654 mismatch=0 audit=0 roi_g=131053454 roi_count=921600 motion_valid=1 motion_ratio_q16=2775 decode_ms=36.256 reference_ms=0.000 transfer_pl_ms=16.458
+CAPTURE_FRAME n=180 sequence=284 bytes=99234 ts=829.739708
+SAMPLE_FRAME n=127 source_sequence=284 ts_us=829739708
+CAPTURE_FRAME n=181 sequence=286 bytes=99012 ts=829.771661
+SAMPLE_FRAME n=128 source_sequence=286 ts_us=829771661
+BOARD_STREAM_FRAME n=122 codec=jpeg-mjpeg jpeg_bytes=99335 wire_bytes=99335 send_ms=64.068
+CAPTURE_FRAME n=182 sequence=288 bytes=98981 ts=829.803740
+SAMPLE_FRAME n=129 source_sequence=288 ts_us=829803740
+CAMERA_PL_FRAME n=123 seq=272 ts_us=829535746 mismatch=0 audit=0 roi_g=131084539 roi_count=921600 motion_valid=1 motion_ratio_q16=2817 decode_ms=36.259 reference_ms=0.000 transfer_pl_ms=21.338
+BOARD_STREAM_FRAME n=123 codec=jpeg-mjpeg jpeg_bytes=99288 wire_bytes=99288 send_ms=2.266
+CAMERA_PL_FRAME n=124 seq=274 ts_us=829571749 mismatch=0 audit=0 roi_g=131100220 roi_count=921600 motion_valid=1 motion_ratio_q16=2792 decode_ms=35.969 reference_ms=0.000 transfer_pl_ms=18.357
+BOARD_STREAM_FRAME n=124 codec=jpeg-mjpeg jpeg_bytes=99629 wire_bytes=99629 send_ms=0.836
+CAPTURE_FRAME n=183 sequence=290 bytes=99196 ts=829.839686
+SAMPLE_FRAME n=130 source_sequence=290 ts_us=829839686
+CAMERA_PL_FRAME n=125 seq=276 ts_us=829603705 mismatch=0 audit=0 roi_g=131075770 roi_count=921600 motion_valid=1 motion_ratio_q16=2773 decode_ms=37.148 reference_ms=0.000 transfer_pl_ms=16.325
+BOARD_STREAM_FRAME n=125 codec=jpeg-mjpeg jpeg_bytes=98845 wire_bytes=98845 send_ms=0.860
+CAMERA_PL_FRAME n=126 seq=282 ts_us=829703706 mismatch=0 audit=0 roi_g=131118008 roi_count=921600 motion_valid=1 motion_ratio_q16=2767 decode_ms=37.286 reference_ms=0.000 transfer_pl_ms=16.349
+BOARD_STREAM_FRAME n=126 codec=jpeg-mjpeg jpeg_bytes=99197 wire_bytes=99197 send_ms=1.535
+CAPTURE_FRAME n=184 sequence=292 bytes=98947 ts=829.871713
+SAMPLE_FRAME n=131 source_sequence=292 ts_us=829871713
+CAMERA_PL_FRAME n=127 seq=284 ts_us=829739708 mismatch=0 audit=0 roi_g=131078021 roi_count=921600 motion_valid=1 motion_ratio_q16=2712 decode_ms=36.157 reference_ms=0.000 transfer_pl_ms=16.496
+CAPTURE_FRAME n=185 sequence=294 bytes=99203 ts=829.907722
+SAMPLE_FRAME n=132 source_sequence=294 ts_us=829907722
+CAPTURE_FRAME n=186 sequence=297 bytes=98924 ts=829.955670
+SAMPLE_FRAME n=133 source_sequence=297 ts_us=829955670
+BOARD_STREAM_FRAME n=127 codec=jpeg-mjpeg jpeg_bytes=99234 wire_bytes=99234 send_ms=198.885
+CAPTURE_FRAME n=187 sequence=299 bytes=99331 ts=829.991652
+SAMPLE_FRAME n=134 source_sequence=299 ts_us=829991652
+CAMERA_PL_FRAME n=128 seq=286 ts_us=829771661 mismatch=0 audit=0 roi_g=131106636 roi_count=921600 motion_valid=1 motion_ratio_q16=2740 decode_ms=36.976 reference_ms=0.000 transfer_pl_ms=22.100
+BOARD_STREAM_FRAME n=128 codec=jpeg-mjpeg jpeg_bytes=99012 wire_bytes=99012 send_ms=2.433
+CAPTURE_FRAME n=188 sequence=301 bytes=99294 ts=830.023648
+SAMPLE_FRAME n=135 source_sequence=301 ts_us=830023648
+CAMERA_PL_FRAME n=129 seq=288 ts_us=829803740 mismatch=0 audit=0 roi_g=131077161 roi_count=921600 motion_valid=1 motion_ratio_q16=2742 decode_ms=35.793 reference_ms=0.000 transfer_pl_ms=16.497
+BOARD_STREAM_FRAME n=129 codec=jpeg-mjpeg jpeg_bytes=98981 wire_bytes=98981 send_ms=0.840
+CAMERA_PL_FRAME n=130 seq=290 ts_us=829839686 mismatch=0 audit=0 roi_g=131064101 roi_count=921600 motion_valid=1 motion_ratio_q16=2763 decode_ms=36.028 reference_ms=0.000 transfer_pl_ms=18.279
+BOARD_STREAM_FRAME n=130 codec=jpeg-mjpeg jpeg_bytes=99196 wire_bytes=99196 send_ms=0.852
+CAPTURE_FRAME n=189 sequence=303 bytes=99111 ts=830.059731
+SAMPLE_FRAME n=136 source_sequence=303 ts_us=830059731
+CAMERA_PL_FRAME n=131 seq=292 ts_us=829871713 mismatch=0 audit=0 roi_g=131109367 roi_count=921600 motion_valid=1 motion_ratio_q16=2838 decode_ms=37.718 reference_ms=0.000 transfer_pl_ms=16.468
+BOARD_STREAM_FRAME n=131 codec=jpeg-mjpeg jpeg_bytes=98947 wire_bytes=98947 send_ms=1.356
+CAMERA_PL_FRAME n=132 seq=294 ts_us=829907722 mismatch=0 audit=0 roi_g=131031362 roi_count=921600 motion_valid=1 motion_ratio_q16=2743 decode_ms=36.654 reference_ms=0.000 transfer_pl_ms=15.945
+CAPTURE_FRAME n=190 sequence=312 bytes=99212 ts=830.207693
+SAMPLE_FRAME n=137 source_sequence=312 ts_us=830207693
+CAPTURE_FRAME n=191 sequence=314 bytes=99165 ts=830.243676
+SAMPLE_FRAME n=138 source_sequence=314 ts_us=830243676
+BOARD_STREAM_FRAME n=132 codec=jpeg-mjpeg jpeg_bytes=99203 wire_bytes=99203 send_ms=144.820
+CAPTURE_FRAME n=192 sequence=316 bytes=99081 ts=830.275664
+SAMPLE_FRAME n=139 source_sequence=316 ts_us=830275664
+CAMERA_PL_FRAME n=133 seq=297 ts_us=829955670 mismatch=0 audit=0 roi_g=131058497 roi_count=921600 motion_valid=1 motion_ratio_q16=2644 decode_ms=35.985 reference_ms=0.000 transfer_pl_ms=22.569
+BOARD_STREAM_FRAME n=133 codec=jpeg-mjpeg jpeg_bytes=98924 wire_bytes=98924 send_ms=1.224
+CAPTURE_FRAME n=193 sequence=318 bytes=99475 ts=830.311677
+SAMPLE_FRAME n=140 source_sequence=318 ts_us=830311677
+CAMERA_PL_FRAME n=134 seq=299 ts_us=829991652 mismatch=0 audit=0 roi_g=130999330 roi_count=921600 motion_valid=1 motion_ratio_q16=2670 decode_ms=36.047 reference_ms=0.000 transfer_pl_ms=16.699
+BOARD_STREAM_FRAME n=134 codec=jpeg-mjpeg jpeg_bytes=99331 wire_bytes=99331 send_ms=1.690
+CAMERA_PL_FRAME n=135 seq=301 ts_us=830023648 mismatch=0 audit=0 roi_g=131075127 roi_count=921600 motion_valid=1 motion_ratio_q16=2699 decode_ms=35.884 reference_ms=0.000 transfer_pl_ms=15.818
+BOARD_STREAM_FRAME n=135 codec=jpeg-mjpeg jpeg_bytes=99294 wire_bytes=99294 send_ms=0.849
+CAPTURE_FRAME n=194 sequence=321 bytes=99174 ts=830.359632
+SAMPLE_FRAME n=141 source_sequence=321 ts_us=830359632
+CAMERA_PL_FRAME n=136 seq=303 ts_us=830059731 mismatch=0 audit=0 roi_g=131091632 roi_count=921600 motion_valid=1 motion_ratio_q16=2715 decode_ms=37.434 reference_ms=0.000 transfer_pl_ms=17.518
+BOARD_STREAM_FRAME n=136 codec=jpeg-mjpeg jpeg_bytes=99111 wire_bytes=99111 send_ms=1.389
+CAMERA_PL_FRAME n=137 seq=312 ts_us=830207693 mismatch=0 audit=0 roi_g=131102734 roi_count=921600 motion_valid=1 motion_ratio_q16=2854 decode_ms=36.647 reference_ms=0.000 transfer_pl_ms=15.676
+CAPTURE_FRAME n=195 sequence=326 bytes=99867 ts=830.443654
+SAMPLE_FRAME n=142 source_sequence=326 ts_us=830443654
+CAPTURE_FRAME n=196 sequence=328 bytes=99631 ts=830.479731
+SAMPLE_FRAME n=143 source_sequence=328 ts_us=830479731
+BOARD_STREAM_FRAME n=137 codec=jpeg-mjpeg jpeg_bytes=99212 wire_bytes=99212 send_ms=119.013
+CAPTURE_FRAME n=197 sequence=331 bytes=99144 ts=830.527748
+SAMPLE_FRAME n=144 source_sequence=331 ts_us=830527748
+CAMERA_PL_FRAME n=138 seq=314 ts_us=830243676 mismatch=0 audit=0 roi_g=131133213 roi_count=921600 motion_valid=1 motion_ratio_q16=2742 decode_ms=36.003 reference_ms=0.000 transfer_pl_ms=22.005
+BOARD_STREAM_FRAME n=138 codec=jpeg-mjpeg jpeg_bytes=99165 wire_bytes=99165 send_ms=1.244
+CAPTURE_FRAME n=198 sequence=333 bytes=99138 ts=830.563688
+SAMPLE_FRAME n=145 source_sequence=333 ts_us=830563688
+CAMERA_PL_FRAME n=139 seq=316 ts_us=830275664 mismatch=0 audit=0 roi_g=131018722 roi_count=921600 motion_valid=1 motion_ratio_q16=2693 decode_ms=35.793 reference_ms=0.000 transfer_pl_ms=17.102
+BOARD_STREAM_FRAME n=139 codec=jpeg-mjpeg jpeg_bytes=99081 wire_bytes=99081 send_ms=0.850
+CAMERA_PL_FRAME n=140 seq=318 ts_us=830311677 mismatch=0 audit=0 roi_g=131103976 roi_count=921600 motion_valid=1 motion_ratio_q16=2759 decode_ms=35.874 reference_ms=0.000 transfer_pl_ms=16.505
+BOARD_STREAM_FRAME n=140 codec=jpeg-mjpeg jpeg_bytes=99475 wire_bytes=99475 send_ms=1.607
+CAPTURE_FRAME n=199 sequence=335 bytes=99342 ts=830.595696
+SAMPLE_FRAME n=146 source_sequence=335 ts_us=830595696
+CAMERA_PL_FRAME n=141 seq=321 ts_us=830359632 mismatch=0 audit=0 roi_g=131057166 roi_count=921600 motion_valid=1 motion_ratio_q16=2684 decode_ms=37.780 reference_ms=0.000 transfer_pl_ms=16.366
+BOARD_STREAM_FRAME n=141 codec=jpeg-mjpeg jpeg_bytes=99174 wire_bytes=99174 send_ms=0.899
+CAMERA_PL_FRAME n=142 seq=326 ts_us=830443654 mismatch=0 audit=0 roi_g=131031734 roi_count=921600 motion_valid=1 motion_ratio_q16=2754 decode_ms=36.411 reference_ms=0.000 transfer_pl_ms=17.790
+CAPTURE_FRAME n=200 sequence=339 bytes=99096 ts=830.663737
+SAMPLE_FRAME n=147 source_sequence=339 ts_us=830663737
+CAPTURE_FRAME n=201 sequence=341 bytes=99218 ts=830.695732
+SAMPLE_FRAME n=148 source_sequence=341 ts_us=830695732
+BOARD_STREAM_FRAME n=142 codec=jpeg-mjpeg jpeg_bytes=99867 wire_bytes=99867 send_ms=81.685
+CAPTURE_FRAME n=202 sequence=343 bytes=99411 ts=830.731649
+SAMPLE_FRAME n=149 source_sequence=343 ts_us=830731649
+CAMERA_PL_FRAME n=143 seq=328 ts_us=830479731 mismatch=0 audit=0 roi_g=131080492 roi_count=921600 motion_valid=1 motion_ratio_q16=2805 decode_ms=36.478 reference_ms=0.000 transfer_pl_ms=22.030
+BOARD_STREAM_FRAME n=143 codec=jpeg-mjpeg jpeg_bytes=99631 wire_bytes=99631 send_ms=1.236
+CAMERA_PL_FRAME n=144 seq=331 ts_us=830527748 mismatch=0 audit=0 roi_g=131091727 roi_count=921600 motion_valid=1 motion_ratio_q16=2762 decode_ms=35.801 reference_ms=0.000 transfer_pl_ms=17.998
+BOARD_STREAM_FRAME n=144 codec=jpeg-mjpeg jpeg_bytes=99144 wire_bytes=99144 send_ms=0.856
+CAPTURE_FRAME n=203 sequence=346 bytes=99394 ts=830.783644
+SAMPLE_FRAME n=150 source_sequence=346 ts_us=830783644
+CAMERA_PL_FRAME n=145 seq=333 ts_us=830563688 mismatch=0 audit=0 roi_g=131080414 roi_count=921600 motion_valid=1 motion_ratio_q16=2786 decode_ms=36.752 reference_ms=0.000 transfer_pl_ms=16.670
+BOARD_STREAM_FRAME n=145 codec=jpeg-mjpeg jpeg_bytes=99138 wire_bytes=99138 send_ms=0.933
+CAMERA_PL_FRAME n=146 seq=335 ts_us=830595696 mismatch=0 audit=0 roi_g=131072856 roi_count=921600 motion_valid=1 motion_ratio_q16=2806 decode_ms=37.093 reference_ms=0.000 transfer_pl_ms=17.003
+BOARD_STREAM_FRAME n=146 codec=jpeg-mjpeg jpeg_bytes=99342 wire_bytes=99342 send_ms=0.882
+CAPTURE_FRAME n=204 sequence=348 bytes=99350 ts=830.815689
+SAMPLE_FRAME n=151 source_sequence=348 ts_us=830815689
+CAMERA_PL_FRAME n=147 seq=339 ts_us=830663737 mismatch=0 audit=0 roi_g=131096373 roi_count=921600 motion_valid=1 motion_ratio_q16=2757 decode_ms=36.362 reference_ms=0.000 transfer_pl_ms=16.553
+BOARD_STREAM_FRAME n=147 codec=jpeg-mjpeg jpeg_bytes=99096 wire_bytes=99096 send_ms=0.827
+CAPTURE_FRAME n=205 sequence=350 bytes=98802 ts=830.847644
+SAMPLE_FRAME n=152 source_sequence=350 ts_us=830847644
+CAMERA_PL_FRAME n=148 seq=341 ts_us=830695732 mismatch=0 audit=0 roi_g=131108007 roi_count=921600 motion_valid=1 motion_ratio_q16=2703 decode_ms=37.084 reference_ms=0.000 transfer_pl_ms=17.396
+CAPTURE_FRAME n=206 sequence=352 bytes=99331 ts=830.883638
+SAMPLE_FRAME n=153 source_sequence=352 ts_us=830883638
+CAPTURE_FRAME n=207 sequence=354 bytes=98863 ts=830.915647
+SAMPLE_FRAME n=154 source_sequence=354 ts_us=830915647
+BOARD_STREAM_FRAME n=148 codec=jpeg-mjpeg jpeg_bytes=99218 wire_bytes=99218 send_ms=85.979
+CAPTURE_FRAME n=208 sequence=356 bytes=99234 ts=830.951933
+SAMPLE_FRAME n=155 source_sequence=356 ts_us=830951933
+CAMERA_PL_FRAME n=149 seq=343 ts_us=830731649 mismatch=0 audit=0 roi_g=131115935 roi_count=921600 motion_valid=1 motion_ratio_q16=2798 decode_ms=37.135 reference_ms=0.000 transfer_pl_ms=23.369
+BOARD_STREAM_FRAME n=149 codec=jpeg-mjpeg jpeg_bytes=99411 wire_bytes=99411 send_ms=1.231
+CAMERA_PL_FRAME n=150 seq=346 ts_us=830783644 mismatch=0 audit=0 roi_g=131112490 roi_count=921600 motion_valid=1 motion_ratio_q16=2813 decode_ms=36.208 reference_ms=0.000 transfer_pl_ms=18.072
+BOARD_STREAM_FRAME n=150 codec=jpeg-mjpeg jpeg_bytes=99394 wire_bytes=99394 send_ms=0.864
+CAPTURE_FRAME n=209 sequence=359 bytes=99341 ts=830.999726
+SAMPLE_FRAME n=156 source_sequence=359 ts_us=830999726
+CAPTURE_FRAME n=210 sequence=361 bytes=99479 ts=831.035701
+SAMPLE_FRAME n=157 source_sequence=361 ts_us=831035701
+CAMERA_PL_FRAME n=151 seq=348 ts_us=830815689 mismatch=0 audit=1 roi_g=131100755 roi_count=921600 motion_valid=1 motion_ratio_q16=2707 decode_ms=36.820 reference_ms=26.447 transfer_pl_ms=19.097
+BOARD_STREAM_FRAME n=151 codec=jpeg-mjpeg jpeg_bytes=99350 wire_bytes=99350 send_ms=1.471
+CAMERA_PL_FRAME n=152 seq=350 ts_us=830847644 mismatch=0 audit=0 roi_g=131083914 roi_count=921600 motion_valid=1 motion_ratio_q16=2678 decode_ms=37.091 reference_ms=0.000 transfer_pl_ms=15.864
+BOARD_STREAM_FRAME n=152 codec=jpeg-mjpeg jpeg_bytes=98802 wire_bytes=98802 send_ms=0.843
+CAPTURE_FRAME n=211 sequence=363 bytes=99443 ts=831.067743
+SAMPLE_FRAME n=158 source_sequence=363 ts_us=831067743
+CAMERA_PL_FRAME n=153 seq=352 ts_us=830883638 mismatch=0 audit=0 roi_g=131041567 roi_count=921600 motion_valid=1 motion_ratio_q16=2690 decode_ms=35.947 reference_ms=0.000 transfer_pl_ms=16.461
+CAPTURE_FRAME n=212 sequence=366 bytes=99741 ts=831.119627
+SAMPLE_FRAME n=159 source_sequence=366 ts_us=831119627
+BOARD_STREAM_FRAME n=153 codec=jpeg-mjpeg jpeg_bytes=99331 wire_bytes=99331 send_ms=102.349
+CAPTURE_FRAME n=213 sequence=368 bytes=99289 ts=831.151640
+SAMPLE_FRAME n=160 source_sequence=368 ts_us=831151640
+CAMERA_PL_FRAME n=154 seq=354 ts_us=830915647 mismatch=0 audit=0 roi_g=131093318 roi_count=921600 motion_valid=1 motion_ratio_q16=2609 decode_ms=36.686 reference_ms=0.000 transfer_pl_ms=23.092
+BOARD_STREAM_FRAME n=154 codec=jpeg-mjpeg jpeg_bytes=98863 wire_bytes=98863 send_ms=1.028
+CAPTURE_FRAME n=214 sequence=370 bytes=99238 ts=831.187700
+SAMPLE_FRAME n=161 source_sequence=370 ts_us=831187700
+CAMERA_PL_FRAME n=155 seq=356 ts_us=830951933 mismatch=0 audit=0 roi_g=131050887 roi_count=921600 motion_valid=1 motion_ratio_q16=2713 decode_ms=35.812 reference_ms=0.000 transfer_pl_ms=16.629
+BOARD_STREAM_FRAME n=155 codec=jpeg-mjpeg jpeg_bytes=99234 wire_bytes=99234 send_ms=0.835
+CAMERA_PL_FRAME n=156 seq=359 ts_us=830999726 mismatch=0 audit=0 roi_g=131046236 roi_count=921600 motion_valid=1 motion_ratio_q16=2815 decode_ms=35.741 reference_ms=0.000 transfer_pl_ms=16.780
+BOARD_STREAM_FRAME n=156 codec=jpeg-mjpeg jpeg_bytes=99341 wire_bytes=99341 send_ms=0.873
+CAPTURE_FRAME n=215 sequence=372 bytes=99221 ts=831.219613
+SAMPLE_FRAME n=162 source_sequence=372 ts_us=831219613
+CAMERA_PL_FRAME n=157 seq=361 ts_us=831035701 mismatch=0 audit=0 roi_g=131081689 roi_count=921600 motion_valid=1 motion_ratio_q16=2778 decode_ms=37.663 reference_ms=0.000 transfer_pl_ms=16.748
+BOARD_STREAM_FRAME n=157 codec=jpeg-mjpeg jpeg_bytes=99479 wire_bytes=99479 send_ms=0.840
+CAMERA_PL_FRAME n=158 seq=363 ts_us=831067743 mismatch=0 audit=0 roi_g=131052273 roi_count=921600 motion_valid=1 motion_ratio_q16=2742 decode_ms=36.509 reference_ms=0.000 transfer_pl_ms=16.210
+CAPTURE_FRAME n=216 sequence=377 bytes=99404 ts=831.303660
+SAMPLE_FRAME n=163 source_sequence=377 ts_us=831303660
+CAPTURE_FRAME n=217 sequence=379 bytes=99430 ts=831.335649
+SAMPLE_FRAME n=164 source_sequence=379 ts_us=831335649
+BOARD_STREAM_FRAME n=158 codec=jpeg-mjpeg jpeg_bytes=99443 wire_bytes=99443 send_ms=125.840
+CAPTURE_FRAME n=218 sequence=381 bytes=99150 ts=831.371622
+SAMPLE_FRAME n=165 source_sequence=381 ts_us=831371622
+CAMERA_PL_FRAME n=159 seq=366 ts_us=831119627 mismatch=0 audit=0 roi_g=131013364 roi_count=921600 motion_valid=1 motion_ratio_q16=2810 decode_ms=36.078 reference_ms=0.000 transfer_pl_ms=21.412
+BOARD_STREAM_FRAME n=159 codec=jpeg-mjpeg jpeg_bytes=99741 wire_bytes=99741 send_ms=2.237
+CAPTURE_FRAME n=219 sequence=383 bytes=99705 ts=831.403619
+SAMPLE_FRAME n=166 source_sequence=383 ts_us=831403619
+CAMERA_PL_FRAME n=160 seq=368 ts_us=831151640 mismatch=0 audit=0 roi_g=130988226 roi_count=921600 motion_valid=1 motion_ratio_q16=2864 decode_ms=36.064 reference_ms=0.000 transfer_pl_ms=18.607
+BOARD_STREAM_FRAME n=160 codec=jpeg-mjpeg jpeg_bytes=99289 wire_bytes=99289 send_ms=0.864
+CAMERA_PL_FRAME n=161 seq=370 ts_us=831187700 mismatch=0 audit=0 roi_g=131031337 roi_count=921600 motion_valid=1 motion_ratio_q16=2822 decode_ms=36.010 reference_ms=0.000 transfer_pl_ms=16.451
+BOARD_STREAM_FRAME n=161 codec=jpeg-mjpeg jpeg_bytes=99238 wire_bytes=99238 send_ms=0.843
+CAPTURE_FRAME n=220 sequence=385 bytes=99364 ts=831.439607
+SAMPLE_FRAME n=167 source_sequence=385 ts_us=831439607
+CAMERA_PL_FRAME n=162 seq=372 ts_us=831219613 mismatch=0 audit=0 roi_g=131024542 roi_count=921600 motion_valid=1 motion_ratio_q16=2847 decode_ms=37.611 reference_ms=0.000 transfer_pl_ms=16.615
+BOARD_STREAM_FRAME n=162 codec=jpeg-mjpeg jpeg_bytes=99221 wire_bytes=99221 send_ms=1.356
+CAMERA_PL_FRAME n=163 seq=377 ts_us=831303660 mismatch=0 audit=0 roi_g=131082129 roi_count=921600 motion_valid=1 motion_ratio_q16=2723 decode_ms=36.655 reference_ms=0.000 transfer_pl_ms=15.890
+BOARD_STREAM_FRAME n=163 codec=jpeg-mjpeg jpeg_bytes=99404 wire_bytes=99404 send_ms=0.861
+CAPTURE_FRAME n=221 sequence=390 bytes=99324 ts=831.523619
+SAMPLE_FRAME n=168 source_sequence=390 ts_us=831523619
+CAMERA_PL_FRAME n=164 seq=379 ts_us=831335649 mismatch=0 audit=0 roi_g=131082353 roi_count=921600 motion_valid=1 motion_ratio_q16=2740 decode_ms=36.407 reference_ms=0.000 transfer_pl_ms=16.514
+CAPTURE_FRAME n=222 sequence=392 bytes=99092 ts=831.555675
+SAMPLE_FRAME n=169 source_sequence=392 ts_us=831555675
+CAPTURE_FRAME n=223 sequence=394 bytes=99680 ts=831.591614
+SAMPLE_FRAME n=170 source_sequence=394 ts_us=831591614
+BOARD_STREAM_FRAME n=164 codec=jpeg-mjpeg jpeg_bytes=99430 wire_bytes=99430 send_ms=92.932
+CAPTURE_FRAME n=224 sequence=396 bytes=99193 ts=831.623636
+SAMPLE_FRAME n=171 source_sequence=396 ts_us=831623636
+CAMERA_PL_FRAME n=165 seq=381 ts_us=831371622 mismatch=0 audit=0 roi_g=131059083 roi_count=921600 motion_valid=1 motion_ratio_q16=2757 decode_ms=36.570 reference_ms=0.000 transfer_pl_ms=22.221
+BOARD_STREAM_FRAME n=165 codec=jpeg-mjpeg jpeg_bytes=99150 wire_bytes=99150 send_ms=1.397
+CAPTURE_FRAME n=225 sequence=398 bytes=99393 ts=831.655653
+SAMPLE_FRAME n=172 source_sequence=398 ts_us=831655653
+CAMERA_PL_FRAME n=166 seq=383 ts_us=831403619 mismatch=0 audit=0 roi_g=131025079 roi_count=921600 motion_valid=1 motion_ratio_q16=2802 decode_ms=35.739 reference_ms=0.000 transfer_pl_ms=19.375
+BOARD_STREAM_FRAME n=166 codec=jpeg-mjpeg jpeg_bytes=99705 wire_bytes=99705 send_ms=1.401
+CAMERA_PL_FRAME n=167 seq=385 ts_us=831439607 mismatch=0 audit=0 roi_g=131029305 roi_count=921600 motion_valid=1 motion_ratio_q16=2828 decode_ms=36.953 reference_ms=0.000 transfer_pl_ms=15.945
+BOARD_STREAM_FRAME n=167 codec=jpeg-mjpeg jpeg_bytes=99364 wire_bytes=99364 send_ms=0.843
+CAPTURE_FRAME n=226 sequence=400 bytes=99412 ts=831.691767
+SAMPLE_FRAME n=173 source_sequence=400 ts_us=831691767
+CAMERA_PL_FRAME n=168 seq=390 ts_us=831523619 mismatch=0 audit=0 roi_g=131127790 roi_count=921600 motion_valid=1 motion_ratio_q16=2862 decode_ms=37.103 reference_ms=0.000 transfer_pl_ms=16.444
+BOARD_STREAM_FRAME n=168 codec=jpeg-mjpeg jpeg_bytes=99324 wire_bytes=99324 send_ms=0.838
+CAMERA_PL_FRAME n=169 seq=392 ts_us=831555675 mismatch=0 audit=0 roi_g=131067884 roi_count=921600 motion_valid=1 motion_ratio_q16=2832 decode_ms=36.410 reference_ms=0.000 transfer_pl_ms=16.594
+CAPTURE_FRAME n=227 sequence=403 bytes=99016 ts=831.739631
+SAMPLE_FRAME n=174 source_sequence=403 ts_us=831739631
+CAPTURE_FRAME n=228 sequence=405 bytes=99239 ts=831.775718
+SAMPLE_FRAME n=175 source_sequence=405 ts_us=831775718
+BOARD_STREAM_FRAME n=169 codec=jpeg-mjpeg jpeg_bytes=99092 wire_bytes=99092 send_ms=78.009
+CAPTURE_FRAME n=229 sequence=407 bytes=99177 ts=831.807635
+SAMPLE_FRAME n=176 source_sequence=407 ts_us=831807635
+CAMERA_PL_FRAME n=170 seq=394 ts_us=831591614 mismatch=0 audit=0 roi_g=131098789 roi_count=921600 motion_valid=1 motion_ratio_q16=2848 decode_ms=36.475 reference_ms=0.000 transfer_pl_ms=21.839
+BOARD_STREAM_FRAME n=170 codec=jpeg-mjpeg jpeg_bytes=99680 wire_bytes=99680 send_ms=1.287
+CAMERA_PL_FRAME n=171 seq=396 ts_us=831623636 mismatch=0 audit=0 roi_g=131120132 roi_count=921600 motion_valid=1 motion_ratio_q16=2803 decode_ms=35.636 reference_ms=0.000 transfer_pl_ms=17.750
+BOARD_STREAM_FRAME n=171 codec=jpeg-mjpeg jpeg_bytes=99193 wire_bytes=99193 send_ms=0.844
+CAPTURE_FRAME n=230 sequence=409 bytes=99139 ts=831.843636
+SAMPLE_FRAME n=177 source_sequence=409 ts_us=831843636
+CAMERA_PL_FRAME n=172 seq=398 ts_us=831655653 mismatch=0 audit=0 roi_g=131043885 roi_count=921600 motion_valid=1 motion_ratio_q16=2749 decode_ms=37.197 reference_ms=0.000 transfer_pl_ms=17.572
+BOARD_STREAM_FRAME n=172 codec=jpeg-mjpeg jpeg_bytes=99393 wire_bytes=99393 send_ms=1.519
+CAMERA_PL_FRAME n=173 seq=400 ts_us=831691767 mismatch=0 audit=0 roi_g=131116397 roi_count=921600 motion_valid=1 motion_ratio_q16=2766 decode_ms=37.102 reference_ms=0.000 transfer_pl_ms=15.983
+BOARD_STREAM_FRAME n=173 codec=jpeg-mjpeg jpeg_bytes=99412 wire_bytes=99412 send_ms=0.828
+CAPTURE_FRAME n=231 sequence=412 bytes=99374 ts=831.891618
+SAMPLE_FRAME n=178 source_sequence=412 ts_us=831891618
+CAMERA_PL_FRAME n=174 seq=403 ts_us=831739631 mismatch=0 audit=0 roi_g=131106219 roi_count=921600 motion_valid=1 motion_ratio_q16=2820 decode_ms=36.545 reference_ms=0.000 transfer_pl_ms=17.224
+BOARD_STREAM_FRAME n=174 codec=jpeg-mjpeg jpeg_bytes=99016 wire_bytes=99016 send_ms=0.853
+CAPTURE_FRAME n=232 sequence=414 bytes=99260 ts=831.927615
+SAMPLE_FRAME n=179 source_sequence=414 ts_us=831927615
+CAMERA_PL_FRAME n=175 seq=405 ts_us=831775718 mismatch=0 audit=0 roi_g=131083014 roi_count=921600 motion_valid=1 motion_ratio_q16=2725 decode_ms=37.423 reference_ms=0.000 transfer_pl_ms=16.082
+CAPTURE_FRAME n=233 sequence=416 bytes=99280 ts=831.959604
+SAMPLE_FRAME n=180 source_sequence=416 ts_us=831959604
+BOARD_STREAM_FRAME n=175 codec=jpeg-mjpeg jpeg_bytes=99239 wire_bytes=99239 send_ms=50.677
+CAPTURE_FRAME n=234 sequence=418 bytes=98640 ts=831.995634
+SAMPLE_FRAME n=181 source_sequence=418 ts_us=831995634
+CAMERA_PL_FRAME n=176 seq=407 ts_us=831807635 mismatch=0 audit=0 roi_g=131146985 roi_count=921600 motion_valid=1 motion_ratio_q16=2749 decode_ms=37.173 reference_ms=0.000 transfer_pl_ms=22.492
+BOARD_STREAM_FRAME n=176 codec=jpeg-mjpeg jpeg_bytes=99177 wire_bytes=99177 send_ms=2.254
+CAMERA_PL_FRAME n=177 seq=409 ts_us=831843636 mismatch=0 audit=0 roi_g=131112399 roi_count=921600 motion_valid=1 motion_ratio_q16=2692 decode_ms=37.079 reference_ms=0.000 transfer_pl_ms=16.476
+BOARD_STREAM_FRAME n=177 codec=jpeg-mjpeg jpeg_bytes=99139 wire_bytes=99139 send_ms=0.847
+CAPTURE_FRAME n=235 sequence=421 bytes=99253 ts=832.043608
+SAMPLE_FRAME n=182 source_sequence=421 ts_us=832043608
+CAMERA_PL_FRAME n=178 seq=412 ts_us=831891618 mismatch=0 audit=0 roi_g=131086717 roi_count=921600 motion_valid=1 motion_ratio_q16=2836 decode_ms=36.698 reference_ms=0.000 transfer_pl_ms=17.761
+BOARD_STREAM_FRAME n=178 codec=jpeg-mjpeg jpeg_bytes=99374 wire_bytes=99374 send_ms=1.651
+CAPTURE_FRAME n=236 sequence=423 bytes=99137 ts=832.079605
+SAMPLE_FRAME n=183 source_sequence=423 ts_us=832079605
+CAMERA_PL_FRAME n=179 seq=414 ts_us=831927615 mismatch=0 audit=0 roi_g=131180797 roi_count=921600 motion_valid=1 motion_ratio_q16=2827 decode_ms=36.905 reference_ms=0.000 transfer_pl_ms=16.717
+BOARD_STREAM_FRAME n=179 codec=jpeg-mjpeg jpeg_bytes=99260 wire_bytes=99260 send_ms=1.587
+CAPTURE_FRAME n=237 sequence=425 bytes=99346 ts=832.111646
+SAMPLE_FRAME n=184 source_sequence=425 ts_us=832111646
+CAMERA_PL_FRAME n=180 seq=416 ts_us=831959604 mismatch=0 audit=0 roi_g=131212571 roi_count=921600 motion_valid=1 motion_ratio_q16=2698 decode_ms=36.963 reference_ms=0.000 transfer_pl_ms=15.741
+CAPTURE_FRAME n=238 sequence=427 bytes=99425 ts=832.143634
+SAMPLE_FRAME n=185 source_sequence=427 ts_us=832143634
+CAPTURE_FRAME n=239 sequence=429 bytes=99268 ts=832.179634
+SAMPLE_FRAME n=186 source_sequence=429 ts_us=832179634
+BOARD_STREAM_FRAME n=180 codec=jpeg-mjpeg jpeg_bytes=99280 wire_bytes=99280 send_ms=109.543
+CAPTURE_FRAME n=240 sequence=432 bytes=99207 ts=832.227607
+SAMPLE_FRAME n=187 source_sequence=432 ts_us=832227607
+CAMERA_PL_FRAME n=181 seq=418 ts_us=831995634 mismatch=0 audit=1 roi_g=131145898 roi_count=921600 motion_valid=1 motion_ratio_q16=2653 decode_ms=36.180 reference_ms=35.212 transfer_pl_ms=18.401
+BOARD_STREAM_FRAME n=181 codec=jpeg-mjpeg jpeg_bytes=98640 wire_bytes=98640 send_ms=0.755
+CAPTURE_FRAME n=241 sequence=434 bytes=99453 ts=832.263592
+SAMPLE_FRAME n=188 source_sequence=434 ts_us=832263592
+CAMERA_PL_FRAME n=182 seq=421 ts_us=832043608 mismatch=0 audit=0 roi_g=131144825 roi_count=921600 motion_valid=1 motion_ratio_q16=2745 decode_ms=35.667 reference_ms=0.000 transfer_pl_ms=16.802
+BOARD_STREAM_FRAME n=182 codec=jpeg-mjpeg jpeg_bytes=99253 wire_bytes=99253 send_ms=0.849
+CAMERA_PL_FRAME n=183 seq=423 ts_us=832079605 mismatch=0 audit=0 roi_g=131119850 roi_count=921600 motion_valid=1 motion_ratio_q16=2784 decode_ms=36.649 reference_ms=0.000 transfer_pl_ms=16.592
+BOARD_STREAM_FRAME n=183 codec=jpeg-mjpeg jpeg_bytes=99137 wire_bytes=99137 send_ms=0.849
+CAPTURE_FRAME n=242 sequence=436 bytes=99693 ts=832.295717
+SAMPLE_FRAME n=189 source_sequence=436 ts_us=832295717
+CAMERA_PL_FRAME n=184 seq=425 ts_us=832111646 mismatch=0 audit=0 roi_g=131145537 roi_count=921600 motion_valid=1 motion_ratio_q16=2729 decode_ms=37.319 reference_ms=0.000 transfer_pl_ms=17.814
+BOARD_STREAM_FRAME n=184 codec=jpeg-mjpeg jpeg_bytes=99346 wire_bytes=99346 send_ms=0.856
+CAMERA_PL_FRAME n=185 seq=427 ts_us=832143634 mismatch=0 audit=0 roi_g=131162887 roi_count=921600 motion_valid=1 motion_ratio_q16=2781 decode_ms=37.627 reference_ms=0.000 transfer_pl_ms=16.528
+BOARD_STREAM_FRAME n=185 codec=jpeg-mjpeg jpeg_bytes=99425 wire_bytes=99425 send_ms=0.857
+CAPTURE_FRAME n=243 sequence=440 bytes=99275 ts=832.363646
+SAMPLE_FRAME n=190 source_sequence=440 ts_us=832363646
+CAMERA_PL_FRAME n=186 seq=429 ts_us=832179634 mismatch=0 audit=0 roi_g=131075899 roi_count=921600 motion_valid=1 motion_ratio_q16=2750 decode_ms=36.346 reference_ms=0.000 transfer_pl_ms=16.460
+CAPTURE_FRAME n=244 sequence=443 bytes=99047 ts=832.415633
+SAMPLE_FRAME n=191 source_sequence=443 ts_us=832415633
+BOARD_STREAM_FRAME n=186 codec=jpeg-mjpeg jpeg_bytes=99268 wire_bytes=99268 send_ms=54.548
+CAPTURE_FRAME n=245 sequence=445 bytes=99086 ts=832.447617
+SAMPLE_FRAME n=192 source_sequence=445 ts_us=832447617
+CAMERA_PL_FRAME n=187 seq=432 ts_us=832227607 mismatch=0 audit=0 roi_g=131098746 roi_count=921600 motion_valid=1 motion_ratio_q16=2810 decode_ms=37.001 reference_ms=0.000 transfer_pl_ms=21.538
+BOARD_STREAM_FRAME n=187 codec=jpeg-mjpeg jpeg_bytes=99207 wire_bytes=99207 send_ms=1.139
+CAMERA_PL_FRAME n=188 seq=434 ts_us=832263592 mismatch=0 audit=0 roi_g=131124252 roi_count=921600 motion_valid=1 motion_ratio_q16=2723 decode_ms=36.897 reference_ms=0.000 transfer_pl_ms=16.905
+CAPTURE_FRAME n=246 sequence=447 bytes=99473 ts=832.483599
+SAMPLE_FRAME n=193 source_sequence=447 ts_us=832483599
+BOARD_STREAM_FRAME n=188 codec=jpeg-mjpeg jpeg_bytes=99453 wire_bytes=99453 send_ms=1.734
+CAMERA_PL_FRAME n=189 seq=436 ts_us=832295717 mismatch=0 audit=0 roi_g=131086617 roi_count=921600 motion_valid=1 motion_ratio_q16=2748 decode_ms=36.736 reference_ms=0.000 transfer_pl_ms=15.672
+BOARD_STREAM_FRAME n=189 codec=jpeg-mjpeg jpeg_bytes=99693 wire_bytes=99693 send_ms=0.832
+CAPTURE_FRAME n=247 sequence=449 bytes=99322 ts=832.515589
+SAMPLE_FRAME n=194 source_sequence=449 ts_us=832515589
+CAMERA_PL_FRAME n=190 seq=440 ts_us=832363646 mismatch=0 audit=0 roi_g=131168543 roi_count=921600 motion_valid=1 motion_ratio_q16=2721 decode_ms=36.635 reference_ms=0.000 transfer_pl_ms=17.691
+BOARD_STREAM_FRAME n=190 codec=jpeg-mjpeg jpeg_bytes=99275 wire_bytes=99275 send_ms=0.860
+CAPTURE_FRAME n=248 sequence=452 bytes=99517 ts=832.567616
+SAMPLE_FRAME n=195 source_sequence=452 ts_us=832567616
+CAMERA_PL_FRAME n=191 seq=443 ts_us=832415633 mismatch=0 audit=0 roi_g=131081753 roi_count=921600 motion_valid=1 motion_ratio_q16=2666 decode_ms=36.957 reference_ms=0.000 transfer_pl_ms=16.483
+CAPTURE_FRAME n=249 sequence=454 bytes=99470 ts=832.599652
+SAMPLE_FRAME n=196 source_sequence=454 ts_us=832599652
+BOARD_STREAM_FRAME n=191 codec=jpeg-mjpeg jpeg_bytes=99047 wire_bytes=99047 send_ms=56.260
+CAPTURE_FRAME n=250 sequence=456 bytes=99430 ts=832.631651
+SAMPLE_FRAME n=197 source_sequence=456 ts_us=832631651
+CAMERA_PL_FRAME n=192 seq=445 ts_us=832447617 mismatch=0 audit=0 roi_g=131141866 roi_count=921600 motion_valid=1 motion_ratio_q16=2781 decode_ms=36.986 reference_ms=0.000 transfer_pl_ms=21.563
+BOARD_STREAM_FRAME n=192 codec=jpeg-mjpeg jpeg_bytes=99086 wire_bytes=99086 send_ms=0.849
+CAMERA_PL_FRAME n=193 seq=447 ts_us=832483599 mismatch=0 audit=0 roi_g=131106344 roi_count=921600 motion_valid=1 motion_ratio_q16=2756 decode_ms=37.307 reference_ms=0.000 transfer_pl_ms=16.789
+CAPTURE_FRAME n=251 sequence=458 bytes=99511 ts=832.667597
+SAMPLE_FRAME n=198 source_sequence=458 ts_us=832667597
+BOARD_STREAM_FRAME n=193 codec=jpeg-mjpeg jpeg_bytes=99473 wire_bytes=99473 send_ms=0.954
+CAMERA_PL_FRAME n=194 seq=449 ts_us=832515589 mismatch=0 audit=0 roi_g=131094530 roi_count=921600 motion_valid=1 motion_ratio_q16=2786 decode_ms=36.773 reference_ms=0.000 transfer_pl_ms=16.561
+BOARD_STREAM_FRAME n=194 codec=jpeg-mjpeg jpeg_bytes=99322 wire_bytes=99322 send_ms=0.848
+CAPTURE_FRAME n=252 sequence=460 bytes=99249 ts=832.699639
+SAMPLE_FRAME n=199 source_sequence=460 ts_us=832699639
+CAMERA_PL_FRAME n=195 seq=452 ts_us=832567616 mismatch=0 audit=0 roi_g=131069202 roi_count=921600 motion_valid=1 motion_ratio_q16=2763 decode_ms=36.320 reference_ms=0.000 transfer_pl_ms=16.275
+BOARD_STREAM_FRAME n=195 codec=jpeg-mjpeg jpeg_bytes=99517 wire_bytes=99517 send_ms=1.739
+CAPTURE_FRAME n=253 sequence=463 bytes=99462 ts=832.751592
+SAMPLE_FRAME n=200 source_sequence=463 ts_us=832751592
+CAMERA_PL_FRAME n=196 seq=454 ts_us=832599652 mismatch=0 audit=0 roi_g=131110623 roi_count=921600 motion_valid=1 motion_ratio_q16=2799 decode_ms=36.059 reference_ms=0.000 transfer_pl_ms=17.622
+CAPTURE_FRAME n=254 sequence=465 bytes=99490 ts=832.783608
+SAMPLE_FRAME n=201 source_sequence=465 ts_us=832783608
+CAPTURE_FRAME n=255 sequence=467 bytes=99407 ts=832.819590
+SAMPLE_FRAME n=202 source_sequence=467 ts_us=832819590
+BOARD_STREAM_FRAME n=196 codec=jpeg-mjpeg jpeg_bytes=99470 wire_bytes=99470 send_ms=158.787
+CAPTURE_FRAME n=256 sequence=469 bytes=99491 ts=832.851688
+SAMPLE_FRAME n=203 source_sequence=469 ts_us=832851688
+CAMERA_PL_FRAME n=197 seq=456 ts_us=832631651 mismatch=0 audit=0 roi_g=131155092 roi_count=921600 motion_valid=1 motion_ratio_q16=2823 decode_ms=37.269 reference_ms=0.000 transfer_pl_ms=21.696
+BOARD_STREAM_FRAME n=197 codec=jpeg-mjpeg jpeg_bytes=99430 wire_bytes=99430 send_ms=0.844
+CAPTURE_FRAME n=257 sequence=472 bytes=99179 ts=832.903591
+SAMPLE_FRAME n=204 source_sequence=472 ts_us=832903591
+CAMERA_PL_FRAME n=198 seq=458 ts_us=832667597 mismatch=0 audit=0 roi_g=131144324 roi_count=921600 motion_valid=1 motion_ratio_q16=2903 decode_ms=36.019 reference_ms=0.000 transfer_pl_ms=16.447
+BOARD_STREAM_FRAME n=198 codec=jpeg-mjpeg jpeg_bytes=99511 wire_bytes=99511 send_ms=0.845
+CAMERA_PL_FRAME n=199 seq=460 ts_us=832699639 mismatch=0 audit=0 roi_g=131048463 roi_count=921600 motion_valid=1 motion_ratio_q16=2779 decode_ms=36.003 reference_ms=0.000 transfer_pl_ms=16.484
+BOARD_STREAM_FRAME n=199 codec=jpeg-mjpeg jpeg_bytes=99249 wire_bytes=99249 send_ms=1.623
+CAPTURE_FRAME n=258 sequence=474 bytes=99148 ts=832.935640
+SAMPLE_FRAME n=205 source_sequence=474 ts_us=832935640
+CAMERA_PL_FRAME n=200 seq=463 ts_us=832751592 mismatch=0 audit=0 roi_g=131138309 roi_count=921600 motion_valid=1 motion_ratio_q16=2788 decode_ms=37.419 reference_ms=0.000 transfer_pl_ms=16.563
+BOARD_STREAM_FRAME n=200 codec=jpeg-mjpeg jpeg_bytes=99462 wire_bytes=99462 send_ms=0.837
+CAMERA_PL_FRAME n=201 seq=465 ts_us=832783608 mismatch=0 audit=0 roi_g=131138894 roi_count=921600 motion_valid=1 motion_ratio_q16=2747 decode_ms=36.510 reference_ms=0.000 transfer_pl_ms=16.395
+BOARD_STREAM_FRAME n=201 codec=jpeg-mjpeg jpeg_bytes=99490 wire_bytes=99490 send_ms=1.769
+CAPTURE_FRAME n=259 sequence=480 bytes=99426 ts=833.035693
+SAMPLE_FRAME n=206 source_sequence=480 ts_us=833035693
+CAMERA_PL_FRAME n=202 seq=467 ts_us=832819590 mismatch=0 audit=0 roi_g=131067599 roi_count=921600 motion_valid=1 motion_ratio_q16=2731 decode_ms=36.282 reference_ms=0.000 transfer_pl_ms=18.520
+CAPTURE_FRAME n=260 sequence=482 bytes=99284 ts=833.071591
+SAMPLE_FRAME n=207 source_sequence=482 ts_us=833071591
+BOARD_STREAM_FRAME n=202 codec=jpeg-mjpeg jpeg_bytes=99407 wire_bytes=99407 send_ms=48.607
+CAPTURE_FRAME n=261 sequence=484 bytes=99586 ts=833.103604
+SAMPLE_FRAME n=208 source_sequence=484 ts_us=833103604
+CAMERA_PL_FRAME n=203 seq=469 ts_us=832851688 mismatch=0 audit=0 roi_g=131193411 roi_count=921600 motion_valid=1 motion_ratio_q16=2726 decode_ms=37.355 reference_ms=0.000 transfer_pl_ms=21.546
+BOARD_STREAM_FRAME n=203 codec=jpeg-mjpeg jpeg_bytes=99491 wire_bytes=99491 send_ms=1.237
+CAMERA_PL_FRAME n=204 seq=472 ts_us=832903591 mismatch=0 audit=0 roi_g=131111496 roi_count=921600 motion_valid=1 motion_ratio_q16=2710 decode_ms=37.292 reference_ms=0.000 transfer_pl_ms=17.268
+BOARD_STREAM_FRAME n=204 codec=jpeg-mjpeg jpeg_bytes=99179 wire_bytes=99179 send_ms=0.850
+CAPTURE_FRAME n=262 sequence=486 bytes=99147 ts=833.139594
+SAMPLE_FRAME n=209 source_sequence=486 ts_us=833139594
+CAMERA_PL_FRAME n=205 seq=474 ts_us=832935640 mismatch=0 audit=0 roi_g=131145339 roi_count=921600 motion_valid=1 motion_ratio_q16=2795 decode_ms=36.778 reference_ms=0.000 transfer_pl_ms=17.296
+BOARD_STREAM_FRAME n=205 codec=jpeg-mjpeg jpeg_bytes=99148 wire_bytes=99148 send_ms=0.845
+CAPTURE_FRAME n=263 sequence=489 bytes=99430 ts=833.187653
+SAMPLE_FRAME n=210 source_sequence=489 ts_us=833187653
+CAMERA_PL_FRAME n=206 seq=480 ts_us=833035693 mismatch=0 audit=0 roi_g=131137635 roi_count=921600 motion_valid=1 motion_ratio_q16=2704 decode_ms=37.118 reference_ms=0.000 transfer_pl_ms=16.099
+BOARD_STREAM_FRAME n=206 codec=jpeg-mjpeg jpeg_bytes=99426 wire_bytes=99426 send_ms=0.867
+CAPTURE_FRAME n=264 sequence=491 bytes=99297 ts=833.223586
+SAMPLE_FRAME n=211 source_sequence=491 ts_us=833223586
+CAMERA_PL_FRAME n=207 seq=482 ts_us=833071591 mismatch=0 audit=0 roi_g=131136721 roi_count=921600 motion_valid=1 motion_ratio_q16=2778 decode_ms=36.446 reference_ms=0.000 transfer_pl_ms=16.536
+CAPTURE_FRAME n=265 sequence=493 bytes=99063 ts=833.255601
+SAMPLE_FRAME n=212 source_sequence=493 ts_us=833255601
+BOARD_STREAM_FRAME n=207 codec=jpeg-mjpeg jpeg_bytes=99284 wire_bytes=99284 send_ms=40.414
+CAPTURE_FRAME n=266 sequence=495 bytes=99169 ts=833.291650
+SAMPLE_FRAME n=213 source_sequence=495 ts_us=833291650
+CAMERA_PL_FRAME n=208 seq=484 ts_us=833103604 mismatch=0 audit=0 roi_g=131113297 roi_count=921600 motion_valid=1 motion_ratio_q16=2795 decode_ms=37.070 reference_ms=0.000 transfer_pl_ms=25.257
+BOARD_STREAM_FRAME n=208 codec=jpeg-mjpeg jpeg_bytes=99586 wire_bytes=99586 send_ms=0.855
+CAMERA_PL_FRAME n=209 seq=486 ts_us=833139594 mismatch=0 audit=0 roi_g=131144550 roi_count=921600 motion_valid=1 motion_ratio_q16=2733 decode_ms=37.499 reference_ms=0.000 transfer_pl_ms=16.626
+BOARD_STREAM_FRAME n=209 codec=jpeg-mjpeg jpeg_bytes=99147 wire_bytes=99147 send_ms=0.864
+CAPTURE_FRAME n=267 sequence=498 bytes=99232 ts=833.339624
+SAMPLE_FRAME n=214 source_sequence=498 ts_us=833339624
+CAMERA_PL_FRAME n=210 seq=489 ts_us=833187653 mismatch=0 audit=0 roi_g=131128340 roi_count=921600 motion_valid=1 motion_ratio_q16=2753 decode_ms=36.258 reference_ms=0.000 transfer_pl_ms=16.599
+BOARD_STREAM_FRAME n=210 codec=jpeg-mjpeg jpeg_bytes=99430 wire_bytes=99430 send_ms=1.686
+CAPTURE_FRAME n=268 sequence=500 bytes=99677 ts=833.375573
+SAMPLE_FRAME n=215 source_sequence=500 ts_us=833375573
+CAPTURE_FRAME n=269 sequence=502 bytes=99252 ts=833.407696
+SAMPLE_FRAME n=216 source_sequence=502 ts_us=833407696
+CAMERA_PL_FRAME n=211 seq=491 ts_us=833223586 mismatch=0 audit=1 roi_g=131139537 roi_count=921600 motion_valid=1 motion_ratio_q16=2713 decode_ms=36.984 reference_ms=27.119 transfer_pl_ms=19.234
+BOARD_STREAM_FRAME n=211 codec=jpeg-mjpeg jpeg_bytes=99297 wire_bytes=99297 send_ms=0.835
+CAMERA_PL_FRAME n=212 seq=493 ts_us=833255601 mismatch=0 audit=0 roi_g=131121876 roi_count=921600 motion_valid=1 motion_ratio_q16=2739 decode_ms=36.828 reference_ms=0.000 transfer_pl_ms=16.860
+BOARD_STREAM_FRAME n=212 codec=jpeg-mjpeg jpeg_bytes=99063 wire_bytes=99063 send_ms=2.053
+CAPTURE_FRAME n=270 sequence=504 bytes=99197 ts=833.439601
+CAPTURE_FRAME n=271 sequence=506 bytes=99141 ts=833.475974
+SAMPLE_FRAME n=217 source_sequence=506 ts_us=833475974
+CAMERA_PL_FRAME n=213 seq=495 ts_us=833291650 mismatch=0 audit=0 roi_g=131133074 roi_count=921600 motion_valid=1 motion_ratio_q16=2777 decode_ms=36.598 reference_ms=0.000 transfer_pl_ms=21.891
+BOARD_STREAM_FRAME n=213 codec=jpeg-mjpeg jpeg_bytes=99169 wire_bytes=99169 send_ms=1.145
+CAPTURE_FRAME n=272 sequence=509 bytes=99109 ts=833.523693
+SAMPLE_FRAME n=218 source_sequence=509 ts_us=833523693
+CAMERA_PL_FRAME n=214 seq=498 ts_us=833339624 mismatch=0 audit=0 roi_g=131170021 roi_count=921600 motion_valid=1 motion_ratio_q16=2845 decode_ms=36.703 reference_ms=0.000 transfer_pl_ms=19.050
+BOARD_STREAM_FRAME n=214 codec=jpeg-mjpeg jpeg_bytes=99232 wire_bytes=99232 send_ms=0.864
+CAPTURE_FRAME n=273 sequence=511 bytes=99383 ts=833.559689
+SAMPLE_FRAME n=219 source_sequence=511 ts_us=833559689
+CAMERA_PL_FRAME n=215 seq=500 ts_us=833375573 mismatch=0 audit=0 roi_g=131164516 roi_count=921600 motion_valid=1 motion_ratio_q16=2847 decode_ms=37.363 reference_ms=0.000 transfer_pl_ms=16.779
+BOARD_STREAM_FRAME n=215 codec=jpeg-mjpeg jpeg_bytes=99677 wire_bytes=99677 send_ms=0.873
+CAPTURE_FRAME n=274 sequence=512 bytes=99250 ts=833.575622
+SAMPLE_FRAME n=220 source_sequence=512 ts_us=833575622
+CAMERA_PL_FRAME n=216 seq=502 ts_us=833407696 mismatch=0 audit=0 roi_g=131128824 roi_count=921600 motion_valid=1 motion_ratio_q16=2848 decode_ms=37.043 reference_ms=0.000 transfer_pl_ms=16.315
+BOARD_STREAM_FRAME n=216 codec=jpeg-mjpeg jpeg_bytes=99252 wire_bytes=99252 send_ms=0.853
+CAPTURE_FRAME n=275 sequence=513 bytes=99562 ts=833.591639
+CAPTURE_FRAME n=276 sequence=515 bytes=99146 ts=833.627584
+SAMPLE_FRAME n=221 source_sequence=515 ts_us=833627584
+CAMERA_PL_FRAME n=217 seq=506 ts_us=833475974 mismatch=0 audit=0 roi_g=131090603 roi_count=921600 motion_valid=1 motion_ratio_q16=2771 decode_ms=36.660 reference_ms=0.000 transfer_pl_ms=16.648
+CAPTURE_FRAME n=277 sequence=518 bytes=99256 ts=833.675620
+SAMPLE_FRAME n=222 source_sequence=518 ts_us=833675620
+CAPTURE_FRAME n=278 sequence=520 bytes=99284 ts=833.711606
+SAMPLE_FRAME n=223 source_sequence=520 ts_us=833711606
+BOARD_STREAM_FRAME n=217 codec=jpeg-mjpeg jpeg_bytes=99141 wire_bytes=99141 send_ms=91.825
+CAPTURE_FRAME n=279 sequence=521 bytes=99066 ts=833.727593
+CAPTURE_FRAME n=280 sequence=522 bytes=99437 ts=833.743588
+SAMPLE_FRAME n=224 source_sequence=522 ts_us=833743588
+CAMERA_PL_FRAME n=218 seq=509 ts_us=833523693 mismatch=0 audit=0 roi_g=131160421 roi_count=921600 motion_valid=1 motion_ratio_q16=2810 decode_ms=36.824 reference_ms=0.000 transfer_pl_ms=21.243
+BOARD_STREAM_FRAME n=218 codec=jpeg-mjpeg jpeg_bytes=99109 wire_bytes=99109 send_ms=1.225
+CAMERA_PL_FRAME n=219 seq=511 ts_us=833559689 mismatch=0 audit=0 roi_g=131095022 roi_count=921600 motion_valid=1 motion_ratio_q16=2759 decode_ms=37.026 reference_ms=0.000 transfer_pl_ms=17.216
+CAPTURE_FRAME n=281 sequence=524 bytes=98812 ts=833.779553
+SAMPLE_FRAME n=225 source_sequence=524 ts_us=833779553
+BOARD_STREAM_FRAME n=219 codec=jpeg-mjpeg jpeg_bytes=99383 wire_bytes=99383 send_ms=1.995
+CAMERA_PL_FRAME n=220 seq=512 ts_us=833575622 mismatch=0 audit=0 roi_g=131133603 roi_count=921600 motion_valid=1 motion_ratio_q16=2818 decode_ms=36.762 reference_ms=0.000 transfer_pl_ms=17.454
+BOARD_STREAM_FRAME n=220 codec=jpeg-mjpeg jpeg_bytes=99250 wire_bytes=99250 send_ms=1.648
+CAMERA_PL_FRAME n=221 seq=515 ts_us=833627584 mismatch=0 audit=0 roi_g=131156403 roi_count=921600 motion_valid=1 motion_ratio_q16=2749 decode_ms=36.457 reference_ms=0.000 transfer_pl_ms=15.906
+CAPTURE_FRAME n=282 sequence=526 bytes=99188 ts=833.811580
+SAMPLE_FRAME n=226 source_sequence=526 ts_us=833811580
+BOARD_STREAM_FRAME n=221 codec=jpeg-mjpeg jpeg_bytes=99146 wire_bytes=99146 send_ms=0.951
+CAMERA_PL_FRAME n=222 seq=518 ts_us=833675620 mismatch=0 audit=0 roi_g=131121046 roi_count=921600 motion_valid=1 motion_ratio_q16=2709 decode_ms=36.517 reference_ms=0.000 transfer_pl_ms=16.249
+BOARD_STREAM_FRAME n=222 codec=jpeg-mjpeg jpeg_bytes=99256 wire_bytes=99256 send_ms=0.846
+CAPTURE_FRAME n=283 sequence=527 bytes=99333 ts=833.827583
+CAPTURE_FRAME n=284 sequence=529 bytes=99313 ts=833.863601
+SAMPLE_FRAME n=227 source_sequence=529 ts_us=833863601
+CAMERA_PL_FRAME n=223 seq=520 ts_us=833711606 mismatch=0 audit=0 roi_g=131075936 roi_count=921600 motion_valid=1 motion_ratio_q16=2798 decode_ms=36.218 reference_ms=0.000 transfer_pl_ms=16.356
+CAPTURE_FRAME n=285 sequence=531 bytes=99012 ts=833.895572
+SAMPLE_FRAME n=228 source_sequence=531 ts_us=833895572
+CAPTURE_FRAME n=286 sequence=534 bytes=99247 ts=833.947566
+SAMPLE_FRAME n=229 source_sequence=534 ts_us=833947566
+BOARD_STREAM_FRAME n=223 codec=jpeg-mjpeg jpeg_bytes=99284 wire_bytes=99284 send_ms=84.957
+CAPTURE_FRAME n=287 sequence=535 bytes=99539 ts=833.963619
+CAPTURE_FRAME n=288 sequence=536 bytes=99450 ts=833.979623
+SAMPLE_FRAME n=230 source_sequence=536 ts_us=833979623
+CAMERA_PL_FRAME n=224 seq=522 ts_us=833743588 mismatch=0 audit=0 roi_g=131088193 roi_count=921600 motion_valid=1 motion_ratio_q16=2694 decode_ms=35.971 reference_ms=0.000 transfer_pl_ms=22.111
+BOARD_STREAM_FRAME n=224 codec=jpeg-mjpeg jpeg_bytes=99437 wire_bytes=99437 send_ms=1.637
+CAPTURE_FRAME n=289 sequence=537 bytes=99392 ts=833.995614
+CAPTURE_FRAME n=290 sequence=540 bytes=99328 ts=834.047686
+SAMPLE_FRAME n=231 source_sequence=540 ts_us=834047686
+CAMERA_PL_FRAME n=225 seq=524 ts_us=833779553 mismatch=0 audit=0 roi_g=131077279 roi_count=921600 motion_valid=1 motion_ratio_q16=2761 decode_ms=35.972 reference_ms=0.000 transfer_pl_ms=15.889
+BOARD_STREAM_FRAME n=225 codec=jpeg-mjpeg jpeg_bytes=98812 wire_bytes=98812 send_ms=0.812
+CAMERA_PL_FRAME n=226 seq=526 ts_us=833811580 mismatch=0 audit=0 roi_g=131072824 roi_count=921600 motion_valid=1 motion_ratio_q16=2732 decode_ms=36.820 reference_ms=0.000 transfer_pl_ms=18.602
+BOARD_STREAM_FRAME n=226 codec=jpeg-mjpeg jpeg_bytes=99188 wire_bytes=99188 send_ms=0.819
+CAPTURE_FRAME n=291 sequence=541 bytes=99634 ts=834.063596
+CAPTURE_FRAME n=292 sequence=542 bytes=99496 ts=834.079658
+SAMPLE_FRAME n=232 source_sequence=542 ts_us=834079658
+CAMERA_PL_FRAME n=227 seq=529 ts_us=833863601 mismatch=0 audit=0 roi_g=131058769 roi_count=921600 motion_valid=1 motion_ratio_q16=2724 decode_ms=36.725 reference_ms=0.000 transfer_pl_ms=16.456
+BOARD_STREAM_FRAME n=227 codec=jpeg-mjpeg jpeg_bytes=99313 wire_bytes=99313 send_ms=0.905
+CAMERA_PL_FRAME n=228 seq=531 ts_us=833895572 mismatch=0 audit=0 roi_g=131079390 roi_count=921600 motion_valid=1 motion_ratio_q16=2717 decode_ms=36.815 reference_ms=0.000 transfer_pl_ms=16.530
+CAPTURE_FRAME n=293 sequence=543 bytes=99270 ts=834.099567
+CAPTURE_FRAME n=294 sequence=544 bytes=99062 ts=834.115647
+SAMPLE_FRAME n=233 source_sequence=544 ts_us=834115647
+CAPTURE_FRAME n=295 sequence=545 bytes=99114 ts=834.131670
+CAPTURE_FRAME n=296 sequence=546 bytes=99257 ts=834.147578
+SAMPLE_FRAME n=234 source_sequence=546 ts_us=834147578
+BOARD_STREAM_FRAME n=228 codec=jpeg-mjpeg jpeg_bytes=99012 wire_bytes=99012 send_ms=97.442
+CAPTURE_FRAME n=297 sequence=547 bytes=98758 ts=834.163581
+CAPTURE_FRAME n=298 sequence=548 bytes=99748 ts=834.183562
+SAMPLE_FRAME n=235 source_sequence=548 ts_us=834183562
+CAMERA_PL_FRAME n=229 seq=534 ts_us=833947566 mismatch=0 audit=0 roi_g=131103889 roi_count=921600 motion_valid=1 motion_ratio_q16=2726 decode_ms=36.628 reference_ms=0.000 transfer_pl_ms=21.780
+BOARD_STREAM_FRAME n=229 codec=jpeg-mjpeg jpeg_bytes=99247 wire_bytes=99247 send_ms=1.522
+CAPTURE_FRAME n=299 sequence=549 bytes=98980 ts=834.199584
+CAPTURE_FRAME n=300 sequence=551 bytes=98908 ts=834.231579
+SAMPLE_FRAME n=236 source_sequence=551 ts_us=834231579
+CAMERA_PL_FRAME n=230 seq=536 ts_us=833979623 mismatch=0 audit=0 roi_g=131084269 roi_count=921600 motion_valid=1 motion_ratio_q16=2815 decode_ms=35.910 reference_ms=0.000 transfer_pl_ms=15.951
+BOARD_STREAM_FRAME n=230 codec=jpeg-mjpeg jpeg_bytes=99450 wire_bytes=99450 send_ms=0.849
+CAMERA_PL_FRAME n=231 seq=540 ts_us=834047686 mismatch=0 audit=0 roi_g=131030052 roi_count=921600 motion_valid=1 motion_ratio_q16=2815 decode_ms=36.333 reference_ms=0.000 transfer_pl_ms=16.593
+BOARD_STREAM_FRAME n=231 codec=jpeg-mjpeg jpeg_bytes=99328 wire_bytes=99328 send_ms=0.867
+SAMPLE_RESULT input=300 kept=236 dropped=64 driver_sequence_gaps=252 empty_slots=43 input_fps=32.178723 output_fps=25.290970 native_30fps=no
+CAMERA_PL_FRAME n=232 seq=542 ts_us=834079658 mismatch=0 audit=0 roi_g=131094816 roi_count=921600 motion_valid=1 motion_ratio_q16=2805 decode_ms=37.821 reference_ms=0.000 transfer_pl_ms=18.567
+BOARD_STREAM_FRAME n=232 codec=jpeg-mjpeg jpeg_bytes=99496 wire_bytes=99496 send_ms=0.851
+CAMERA_PL_FRAME n=233 seq=544 ts_us=834115647 mismatch=0 audit=0 roi_g=131111198 roi_count=921600 motion_valid=1 motion_ratio_q16=2769 decode_ms=36.830 reference_ms=0.000 transfer_pl_ms=16.255
+BOARD_STREAM_FRAME n=233 codec=jpeg-mjpeg jpeg_bytes=99062 wire_bytes=99062 send_ms=137.170
+CAMERA_PL_FRAME n=234 seq=546 ts_us=834147578 mismatch=0 audit=0 roi_g=131011892 roi_count=921600 motion_valid=1 motion_ratio_q16=2696 decode_ms=36.017 reference_ms=0.000 transfer_pl_ms=18.966
+BOARD_STREAM_FRAME n=234 codec=jpeg-mjpeg jpeg_bytes=99257 wire_bytes=99257 send_ms=1.188
+CAMERA_PL_FRAME n=235 seq=548 ts_us=834183562 mismatch=0 audit=0 roi_g=131141822 roi_count=921600 motion_valid=1 motion_ratio_q16=2877 decode_ms=35.736 reference_ms=0.000 transfer_pl_ms=15.903
+BOARD_STREAM_FRAME n=235 codec=jpeg-mjpeg jpeg_bytes=99748 wire_bytes=99748 send_ms=0.757
+CAMERA_PL_FRAME n=236 seq=551 ts_us=834231579 mismatch=0 audit=0 roi_g=131071112 roi_count=921600 motion_valid=1 motion_ratio_q16=2700 decode_ms=35.593 reference_ms=0.000 transfer_pl_ms=15.453
+BOARD_STREAM_FRAME n=236 codec=jpeg-mjpeg jpeg_bytes=98908 wire_bytes=98908 send_ms=0.810
+AUDIT_SUMMARY frames=236 audits=8 failures=0 reference_ms_total=210
+BOARD_STREAM_PASS sent_frames=236
+BOARD_STREAM_TOTAL frames=236 compressed_frames=0 strategy=default raw_bytes=652492800 wire_bytes=23436080 compress_ms=0.000 send_ms=3219.960
+CAMERA_PL_PASS compared_frames=236 native_camera_mode_verified=0
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=300 requested_mode=unmet
+CAMERA_PL_EXIT=2
+

@@ -42,6 +42,14 @@ class DecisionEngine:
         self.long_close_warn = int(c.get("fatigue_long_close_count", 1))
         self.blink_rate_low = float(c.get("fatigue_blink_rate_low", 10.0))
         self.vital_require_quality = float(c.get("vital_require_quality", 0.75))
+        # 姿态抖动抑制（BUG-009 成因 B）：单帧越界不翻状态，连续 N 帧才翻。
+        # 6 点位近似共面模型的 yaw 本来就抖（实测真实素材 656 帧里相邻跳变 >10° 有 44 次），
+        # 逐帧判决会让 adjust_posture 与 normal 反复横跳。
+        self.pose_hold_frames = max(1, int(c.get("pose_hold_frames", 3)))
+        self._pose_out_streak = 0
+        self._pose_in_streak = 0
+        self._pose_flagged = False
+        self._pose_last: tuple[str, float, float] | None = None
 
     # ------------------------------------------------------------------
     def decide(self, *, frame_id: int, behavior: dict, quality: dict, face: dict) -> dict[str, Any]:
@@ -54,7 +62,9 @@ class DecisionEngine:
                 (("light_score", quality["light_score"], "光照"),
                  ("motion_score", quality["motion_score"], "运动"),
                  ("face_visible", face["visible"], "人脸可见率")),
-                key=lambda t: t[1],
+                # Motion is a penalty; compare its complement, while keeping
+                # the original measurement for the explanation below.
+                key=lambda t: 1.0 - t[1] if t[0] == "motion_score" else t[1],
             )
             triggers.append({
                 "rule": "quality_gate",
@@ -88,17 +98,34 @@ class DecisionEngine:
                 "reason": f"人脸可见率 {face['visible']:.2f} 低于下限 {self.face_visible_min:.2f}",
                 "triggers": triggers,
             }
-        if abs(pose["yaw"]) > self.yaw_max or abs(pose["pitch"]) > self.pitch_max:
+        # 姿态越界带迟滞：连续 pose_hold_frames 帧才置位，连续同样多帧回到范围内才复位。
+        # 这样"单帧抖到 ±50° 又跳回来"不会把网页状态刷成一直跳变（BUG-009）。
+        pose_out = abs(pose["yaw"]) > self.yaw_max or abs(pose["pitch"]) > self.pitch_max
+        if pose_out:
+            self._pose_out_streak += 1
+            self._pose_in_streak = 0
             axis = "yaw" if abs(pose["yaw"]) > self.yaw_max else "pitch"
             limit = self.yaw_max if axis == "yaw" else self.pitch_max
+            self._pose_last = (axis, float(pose[axis]), limit)
+        else:
+            self._pose_out_streak = 0
+            self._pose_in_streak += 1
+        if pose_out and self._pose_out_streak >= self.pose_hold_frames:
+            self._pose_flagged = True
+        elif not pose_out and self._pose_in_streak >= self.pose_hold_frames:
+            self._pose_flagged = False
+        if self._pose_flagged and self._pose_last is not None:
+            axis, value, limit = self._pose_last
+            streak = (f"连续 {self._pose_out_streak} 帧越界" if pose_out
+                      else f"已连续 {self._pose_in_streak}/{self.pose_hold_frames} 帧回到范围内")
             triggers.append({
                 "rule": "pose_range", "metric": f"face.pose.{axis}",
-                "value": pose[axis], "threshold": limit, "verdict": "fail",
+                "value": value, "threshold": limit, "verdict": "fail",
             })
             return {
                 "status": "adjust_posture",
                 "advice": "头部偏离过大，请调整姿势正对摄像头",
-                "reason": f"头部 {axis} = {pose[axis]:.1f}° 超出 ±{limit:.0f}°",
+                "reason": f"头部 {axis} = {value:.1f}° 超出 ±{limit:.0f}°（{streak}）",
                 "triggers": triggers,
             }
 
@@ -140,7 +167,18 @@ class DecisionEngine:
         }
 
     # ------------------------------------------------------------------
-    def gate_vitals(self, quality_overall: float, vital: dict | None) -> dict:
+    def vitals_allowed(self, quality_overall: float, face: dict,
+                       status: str | None = None) -> bool:
+        """Reject invalid face samples even during pose-status hysteresis."""
+        pose = face["pose"]
+        return (quality_overall >= max(self.quality_min, self.vital_require_quality)
+                and face["visible"] >= self.face_visible_min
+                and abs(pose["yaw"]) <= self.yaw_max
+                and abs(pose["pitch"]) <= self.pitch_max
+                and status not in ("unreliable", "adjust_posture", "disconnected"))
+
+    def gate_vitals(self, quality_overall: float, vital: dict | None,
+                    *, face: dict | None = None, status: str | None = None) -> dict:
         """质量不够时**不允许**输出心率/呼吸数值（vital.* 输出 null）。
 
         这条是产品承诺，不是可选项：门控不过还报数字，就退化成"黑盒乱报"了。
@@ -148,7 +186,9 @@ class DecisionEngine:
         empty = {"hr_bpm": None, "hr_conf": None, "rr_per_min": None, "rr_conf": None}
         if not vital:
             return empty
-        if quality_overall < self.vital_require_quality:
+        if quality_overall < max(self.quality_min, self.vital_require_quality):
+            return empty
+        if face is not None and not self.vitals_allowed(quality_overall, face, status):
             return empty
         return {**empty, **vital}
 

@@ -1,0 +1,186 @@
+{
+  "kind": "native_full_board_realtime_gate",
+  "passed": false,
+  "errors": [
+    "capture 23.746488 fps below 28.5",
+    "analysis 17.535633 fps below 30.0",
+    "AUTONOMY_SUMMARY.skipped=306.0, required 0",
+    "AUTONOMY_SUMMARY.accepted=879.0, required 1185.0",
+    "AUTONOMY_SUMMARY.processed=879.0, required 1185.0",
+    "face-bearing coverage below configured face_visible_min",
+    "raw capture timestamps fail configured throughput",
+    "capture interval p95 exceeds configured jitter limit"
+  ],
+  "capture_fps": 23.746488,
+  "analysis_update_fps": 17.535633,
+  "capture_interval_p95_s": 0.08399199999985285,
+  "submitted": 1185.0,
+  "processed": 879.0,
+  "contract_frames": 878,
+  "face_bearing_ratio": 0.26993166287015946,
+  "face_bearing_frames": 237,
+  "face_bearing_update_fps": 4.733422575170843,
+  "native_camera_mode_verified": false,
+  "accuracy_verified": false,
+  "cold_boot_verified": false,
+  "background_model_frames": 39,
+  "background_detector_positive_frames": 39,
+  "background_valid_ert_frames": 38,
+  "source_geometry_failures": {
+    "0": 38,
+    "107": 1
+  },
+  "foreground_loss_categories": {
+    "not_reached_patch_check": 223,
+    "patch_error_above_limit": 418
+  },
+  "analysis_timings_ms": {
+    "total_ms": {
+      "n": 878,
+      "mean": 43.9349874715262,
+      "p50": 44.016000000000005,
+      "p95": 97.72055,
+      "max": 132.862
+    },
+    "landmark_ms": {
+      "n": 878,
+      "mean": 36.611652619589975,
+      "p50": 35.1995,
+      "p95": 78.5881,
+      "max": 106.644
+    },
+    "landmark_caller_cpu_ms": {
+      "n": 878,
+      "mean": 23.505422551252845,
+      "p50": 29.4655,
+      "p95": 33.34775,
+      "max": 38.637
+    },
+    "detector_caller_cpu_ms": {
+      "n": 878,
+      "mean": 0.7623075170842825,
+      "p50": 0.008,
+      "p95": 0.06809999999999969,
+      "max": 21.265
+    }
+  },
+  "camera_timings_ms": {
+    "decode_ms": {
+      "n": 1185,
+      "mean": 72.05526751054852,
+      "p50": 71.832,
+      "p95": 99.8416,
+      "max": 126.239
+    },
+    "decode_cpu_ms": {
+      "n": 1185,
+      "mean": 37.378681856540084,
+      "p50": 35.92,
+      "p95": 43.5996,
+      "max": 49.652
+    },
+    "transfer_pl_ms": {
+      "n": 1185,
+      "mean": 24.963581434599156,
+      "p50": 22.146,
+      "p95": 38.7826,
+      "max": 73.829
+    },
+    "transfer_pl_cpu_ms": {
+      "n": 1185,
+      "mean": 8.90290464135021,
+      "p50": 8.631,
+      "p95": 11.0412,
+      "max": 14.116
+    },
+    "reference_ms": {
+      "n": 1185,
+      "mean": 2.5359291139240505,
+      "p50": 0.0,
+      "p95": 0.0,
+      "max": 110.811
+    }
+  },
+  "visible_frame_landmark_cpu_ms": {
+    "n": 237,
+    "mean": 30.792084388185653,
+    "p50": 30.369,
+    "p95": 33.849,
+    "max": 38.637
+  },
+  "paired_visible_frame_stage_cpu_ms": {
+    "n": 237,
+    "mean": 75.97061603375528,
+    "p50": 75.55799999999999,
+    "p95": 81.0974,
+    "max": 86.101
+  },
+  "cpu_budget_estimate": {
+    "cores": 2,
+    "nominal_fps": 30,
+    "available_cpu_ms_per_nominal_frame": 66.66666666666667,
+    "measured_paired_mean_ms": 75.97061603375528,
+    "excludes": "background detection/model, gray snapshot, audit reference, publishing, kernel/USB and other work",
+    "kind": "inference from this trial; not a universal throughput bound"
+  },
+  "visible_pose_degrees": {
+    "yaw": {
+      "n": 237,
+      "mean": -6.088201084716615,
+      "p50": -6.150487570081482,
+      "p95": -1.5301822058222982,
+      "max": 0.5546051145562767
+    },
+    "pitch": {
+      "n": 237,
+      "mean": -35.71243391164973,
+      "p50": -36.6881834613309,
+      "p95": -26.118593624825493,
+      "max": -22.323979246347573
+    },
+    "roll": {
+      "n": 237,
+      "mean": 4.89676230926911,
+      "p50": 5.027447451748734,
+      "p95": 8.258826317400176,
+      "max": 11.4953794567868
+    }
+  },
+  "status_counts": {
+    "adjust_posture": 870,
+    "unreliable": 6,
+    "normal": 2
+  },
+  "blink_states_on_visible_frames": {
+    "OPEN": 227,
+    "CLOSING": 3,
+    "OPENING": 7
+  },
+  "behavior_extrema_on_visible_frames": {
+    "ear_left": {
+      "min": 0.1667,
+      "max": 0.4473
+    },
+    "ear_right": {
+      "min": 0.1744,
+      "max": 0.5093
+    },
+    "mar": {
+      "min": 0.3281,
+      "max": 0.5127
+    },
+    "blink_count": {
+      "min": 0,
+      "max": 0
+    },
+    "yawn_count": {
+      "min": 0,
+      "max": 0
+    }
+  },
+  "null_vitals_when_invisible": true,
+  "current_fix_executed_on_board": true,
+  "camera_sha256": "9f1e208a1ef0eb70ad65dc7b1b82daab801c27a46eadbffc0cef901258119b57",
+  "raw_face_video_saved_or_transferred": false,
+  "action_accuracy_verified": false
+}

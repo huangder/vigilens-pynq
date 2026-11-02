@@ -1,0 +1,66 @@
+{
+  "kind": "ERT 68 point model-only supplied ROI probe",
+  "full_pipeline": false,
+  "camera_concurrency": false,
+  "accuracy_verified": false,
+  "host": {
+    "frames": 60,
+    "wall_ms": {
+      "mean": 1.4007599166666667,
+      "p95_nearest_rank": 1.927111,
+      "maximum": 2.563646
+    },
+    "cpu_ms": {
+      "mean": 1.3943616,
+      "p95_nearest_rank": 1.925261,
+      "maximum": 2.395838
+    }
+  },
+  "arm": {
+    "1": {
+      "frames": 12,
+      "wall_ms": {
+        "mean": 23.49823025,
+        "p95_nearest_rank": 23.608116,
+        "maximum": 23.608116
+      },
+      "cpu_ms": {
+        "mean": 23.478112,
+        "p95_nearest_rank": 23.587956,
+        "maximum": 23.587956
+      },
+      "host_point_values_exact": true,
+      "peak_rss_kib": 70656
+    },
+    "2": {
+      "frames": 12,
+      "wall_ms": {
+        "mean": 23.47652325,
+        "p95_nearest_rank": 23.556402,
+        "maximum": 23.556402
+      },
+      "cpu_ms": {
+        "mean": 23.4593595,
+        "p95_nearest_rank": 23.541552,
+        "maximum": 23.541552
+      },
+      "host_point_values_exact": true,
+      "peak_rss_kib": 70784
+    },
+    "3": {
+      "frames": 12,
+      "wall_ms": {
+        "mean": 23.47037525,
+        "p95_nearest_rank": 23.539219,
+        "maximum": 23.539219
+      },
+      "cpu_ms": {
+        "mean": 23.4528465,
+        "p95_nearest_rank": 23.525196,
+        "maximum": 23.525196
+      },
+      "host_point_values_exact": true,
+      "peak_rss_kib": 70784
+    }
+  }
+}

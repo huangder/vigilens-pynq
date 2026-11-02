@@ -1,0 +1,116 @@
+-- The C compiler identification is GNU 15.2.0
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Configuring done (5.9s)
+-- Generating done (3.8s)
+-- Build files have been written to: /mnt/d/Desktop/AMD/.tmp/autonomy/hr5_filter_20261102/ctest
+[  4%] Building C object CMakeFiles/vg_quality.dir/quality.c.o
+[  4%] Building C object CMakeFiles/vg_behavior.dir/behavior.c.o
+[  6%] Linking C static library libvg_quality.a
+[  8%] Linking C static library libvg_behavior.a
+[  8%] Built target vg_behavior
+[  8%] Built target vg_quality
+[ 12%] Building C object CMakeFiles/vg_detect_policy.dir/detect_policy.c.o
+[ 12%] Building C object CMakeFiles/vg_decision.dir/decision.c.o
+[ 14%] Linking C static library libvg_detect_policy.a
+[ 16%] Linking C static library libvg_decision.a
+[ 16%] Built target vg_detect_policy
+[ 16%] Built target vg_decision
+[ 18%] Building C object CMakeFiles/vg_vital.dir/vital.c.o
+[ 20%] Building C object CMakeFiles/vg_pose.dir/pose_pnp.c.o
+[ 24%] Linking C static library libvg_pose.a
+[ 24%] Linking C static library libvg_vital.a
+[ 24%] Built target vg_pose
+[ 24%] Built target vg_vital
+[ 28%] Building C object CMakeFiles/vg_metrics_http.dir/metrics_http.c.o
+[ 28%] Building C object CMakeFiles/vg_detect_policy_test.dir/tests/detect_policy_test.c.o
+[ 30%] Linking C executable vg_detect_policy_test
+[ 32%] Linking C executable vg_metrics_http
+[ 32%] Built target vg_detect_policy_test
+[ 32%] Built target vg_metrics_http
+[ 34%] Building C object CMakeFiles/vg_camera_input_test.dir/mnt/d/Desktop/AMD/board/w7_buildroot/tests/camera_input_test.c.o
+[ 36%] Building C object CMakeFiles/vg_sample_gate_test.dir/mnt/d/Desktop/AMD/board/w7_buildroot/tests/sample_gate_test.c.o
+[ 38%] Linking C executable vg_sample_gate_test
+[ 40%] Linking C executable vg_camera_input_test
+[ 40%] Built target vg_sample_gate_test
+[ 40%] Built target vg_camera_input_test
+[ 44%] Building CXX object CMakeFiles/vg_ert_guard_test.dir/tests/ert_guard_test.cpp.o
+[ 44%] Building CXX object CMakeFiles/vg_point_tracker_test.dir/tests/point_tracker_test.cpp.o
+[ 46%] Linking CXX executable vg_ert_guard_test
+[ 46%] Built target vg_ert_guard_test
+[ 48%] Building CXX object CMakeFiles/vg_point_tracker_test.dir/point_tracker.cpp.o
+[ 51%] Building CXX object CMakeFiles/vg_point_patch_test.dir/tests/point_patch_test.cpp.o
+[ 53%] Linking CXX executable vg_point_tracker_test
+[ 55%] Linking CXX executable vg_point_patch_test
+[ 55%] Built target vg_point_patch_test
+[ 57%] Building CXX object CMakeFiles/vg_contour_tracker_test.dir/tests/contour_tracker_test.cpp.o
+[ 57%] Built target vg_point_tracker_test
+[ 59%] Building C object CMakeFiles/vg_autonomy_camera_test.dir/tests/autonomy_camera_test.c.o
+[ 61%] Building C object CMakeFiles/vg_autonomy_camera_test.dir/autonomy_camera.c.o
+[ 63%] Building CXX object CMakeFiles/vg_contour_tracker_test.dir/point_tracker.cpp.o
+[ 65%] Linking C executable vg_autonomy_camera_test
+[ 65%] Built target vg_autonomy_camera_test
+[ 67%] Building CXX object CMakeFiles/vg_vision_roi_test.dir/tests/vision_roi_test.cpp.o
+[ 69%] Linking CXX executable vg_contour_tracker_test
+[ 71%] Linking CXX executable vg_vision_roi_test
+[ 71%] Built target vg_contour_tracker_test
+[ 73%] Building C object CMakeFiles/vg_measure.dir/measure.c.o
+[ 75%] Linking C static library libvg_measure.a
+[ 75%] Built target vg_vision_roi_test
+[ 75%] Built target vg_measure
+[ 77%] Building C object CMakeFiles/vg_pose_cli.dir/pose_cli.c.o
+[ 79%] Building C object CMakeFiles/vg_contract.dir/contract_json.c.o
+[ 81%] Linking C executable vg_pose_cli
+[ 83%] Linking C static library libvg_contract.a
+[ 83%] Built target vg_contract
+[ 85%] Building C object CMakeFiles/vg_measure_replay.dir/measure_replay.c.o
+[ 85%] Built target vg_pose_cli
+[ 87%] Building C object CMakeFiles/vg_autonomy.dir/autonomy_engine.c.o
+[ 89%] Linking C executable vg_measure_replay
+[ 91%] Linking C static library libvg_autonomy.a
+[ 91%] Built target vg_autonomy
+[ 93%] Building C object CMakeFiles/vg_autonomy_service.dir/autonomy_service.c.o
+[ 93%] Built target vg_measure_replay
+[ 95%] Building C object CMakeFiles/vg_autonomy_test.dir/tests/autonomy_engine_test.c.o
+[ 97%] Linking C executable vg_autonomy_service
+[100%] Linking C executable vg_autonomy_test
+[100%] Built target vg_autonomy_service
+[100%] Built target vg_autonomy_test
+Internal ctest changing into directory: /mnt/d/Desktop/AMD/.tmp/autonomy/hr5_filter_20261102/ctest
+Test project /mnt/d/Desktop/AMD/.tmp/autonomy/hr5_filter_20261102/ctest
+      Start  1: detect_policy
+ 1/10 Test  #1: detect_policy ....................   Passed    0.00 sec
+      Start  2: autonomy_engine
+ 2/10 Test  #2: autonomy_engine ..................   Passed    0.11 sec
+      Start  3: camera_input_formats
+ 3/10 Test  #3: camera_input_formats .............   Passed    0.41 sec
+      Start  4: native_capture_sampling
+ 4/10 Test  #4: native_capture_sampling ..........   Passed    0.00 sec
+      Start  5: ert_guard
+ 5/10 Test  #5: ert_guard ........................   Passed    0.00 sec
+      Start  6: point_tracker
+ 6/10 Test  #6: point_tracker ....................   Passed    0.33 sec
+      Start  7: point_patch
+ 7/10 Test  #7: point_patch ......................   Passed    0.01 sec
+      Start  8: contour_tracker
+ 8/10 Test  #8: contour_tracker ..................   Passed    0.03 sec
+      Start  9: autonomy_camera_queue
+ 9/10 Test  #9: autonomy_camera_queue ............   Passed    0.00 sec
+      Start 10: vision_roi_bounds
+10/10 Test #10: vision_roi_bounds ................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 10
+
+Total Test time (real) =   1.03 sec

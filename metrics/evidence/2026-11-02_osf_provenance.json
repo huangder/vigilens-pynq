@@ -1,0 +1,32 @@
+{
+  "repo": "https://github.com/emilianavt/OpenSeeFace",
+  "commit": "50c09741897010faad721a218b2bbe14ecad6251",
+  "scope": "local evaluation only",
+  "files": {
+    "LICENSE": {
+      "url": "https://raw.githubusercontent.com/emilianavt/OpenSeeFace/50c09741897010faad721a218b2bbe14ecad6251/LICENSE",
+      "bytes": 1364,
+      "sha256": "28612834d7ca038a9009550e3869a67e6be3a87c238d997f58c0907e08744146"
+    },
+    "README.md": {
+      "url": "https://raw.githubusercontent.com/emilianavt/OpenSeeFace/50c09741897010faad721a218b2bbe14ecad6251/README.md",
+      "bytes": 17940,
+      "sha256": "4dacb968bfad08b8ca5ee2a2725b761624609f0f397d083a87404aa55ce8d095"
+    },
+    "tracker.py": {
+      "url": "https://raw.githubusercontent.com/emilianavt/OpenSeeFace/50c09741897010faad721a218b2bbe14ecad6251/tracker.py",
+      "bytes": 54827,
+      "sha256": "1d2d42b4b5d7c56799d2f3aeb5eb76473683c2b9d5da991cea8ba7ccbcedde69"
+    },
+    "models/lm_modelU_opt.onnx": {
+      "url": "https://raw.githubusercontent.com/emilianavt/OpenSeeFace/50c09741897010faad721a218b2bbe14ecad6251/models/lm_modelU_opt.onnx",
+      "bytes": 4843555,
+      "sha256": "53aeb0ad17638089faac5e7969931b269eaa5be9ccf67d354776d9b301d81c7b"
+    },
+    "models/lm_modelV_opt.onnx": {
+      "url": "https://raw.githubusercontent.com/emilianavt/OpenSeeFace/50c09741897010faad721a218b2bbe14ecad6251/models/lm_modelV_opt.onnx",
+      "bytes": 13501412,
+      "sha256": "2cf5a9f2219660c5b6319ca46d45f1c2eff6df09aabbd21727f1d96f5877952c"
+    }
+  }
+}

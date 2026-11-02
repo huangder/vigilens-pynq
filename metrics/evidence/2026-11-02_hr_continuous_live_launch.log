@@ -1,0 +1,10 @@
+if ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep; then echo HR_CONTINUO
+US_REFUSE_CONCURRENT; elif grep -q '^HR_CONTINUOUS_INSTALL_VERIFIED$' /tmp/hr_co
+ntinuous_install.log; then sh /tmp/vigilens_hr_continuous/run_native.sh /tmp/vig
+ilens_hr_continuous 1800 > /tmp/vigilens_hr_continuous/run.log 2>&1 & echo HR_CO
+NTINUOUS_LIVE_PID=$!; else echo HR_CONTINUOUS_INSTALL_NOT_VERIFIED; fi
+HR_CONTINUOUS_LIVE_PID=961
+# printf '\nHR5_FILTER_COMMAND_END\n'
+
+HR5_FILTER_COMMAND_END
+# 

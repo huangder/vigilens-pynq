@@ -1,0 +1,22 @@
+{
+  "files": {
+    "vigi_camera_autonomy": "3e64ee872b6fc5f9d7b0ebb0215f10a9d862cf64049307870251f483068bb436",
+    "vg_vision_replay_arm": "767d7a945180892b320b89b7870d53a8f2b57ecb2e82c63c768d88d43428ab2c",
+    "vg_metrics_http": "ec24e3e0f3faf48484f20031c19d84e3b5a258b2f7c45af02cdf85b27316e785",
+    "peppa_pruned.mnn": "be908e37a2dba5fb1b43fcf242f54db5290800f999ff18c2406432726f19b138",
+    "libgomp.so.1": "2d25b3b1e4a3d8ac657c406a888395eda289cbeef85a13f94dadca0452922ac2",
+    "display.html": "d26ba34cea9b9e38bd216806327d1c69b7cf1322c8e3df11292ce8d236565f33",
+    "run_native.sh": "f5fc21db45a24ef678f908e18bb99f4811006a7cf28f078263dbda84fc8ab87a",
+    "det1.param": "a9338e207dbbaa7ad56625492b551aeb4ecaf10ac279d098b02f17b0a62b1e0b",
+    "det1.bin": "8dedfdc5e37378d23131a6cb91d1e0a446ecb7751e2d3eadd5f086fdf18b5cec",
+    "det2.param": "e9f614c923b3fede02c236be0246465e83a34b37ceed0bc2bcb6bfda32461d25",
+    "det2.bin": "15a3f7df9dc7cc1ec0976fad36ef58128bf1b5de8c2abfb42ae722e803dbd842",
+    "det3.param": "b7fe7677d4840677aa0ea5690c7018630cc8d4a661be95290fe26814920bfad4",
+    "det3.bin": "93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962",
+    "runtime.env": "feebda8a0fd1d00f6b6500736494c4453d742bc5e980a77864d914a05c6b4cba"
+  },
+  "config_sha256": "25626b95042d1e59b7e91db6447419068ac0ebe31659d7f7239ddcab183e315b",
+  "local_only": true,
+  "hardware_boot_verified": false,
+  "accuracy_verified": false
+}

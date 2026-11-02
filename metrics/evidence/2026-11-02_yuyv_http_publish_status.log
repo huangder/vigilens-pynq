@@ -1,0 +1,19 @@
+
+# echo HTTP_FRESH_STATUS_BEGIN
+HTTP_FRESH_STATUS_BEGIN
+# date +%s
+863
+# stat -c '%Y %s' /tmp/vigilens_final/latest.json
+-sh: stat: not found
+# tail -n 1 /tmp/vigilens_final/contracts.jsonl
+cho HTTP{"ts":863.69210799999996,"frame_id":253,"face":{"visible":1,"bbox":[159,182,203,247],"pose":{"yaw":-8.4922010896384243,"pitch":-38.143958707808139,"roll":0.20616073970561777}},"behavior":{"ear_left":0.32279999999999998,"ear_right":0.3498,"blink_state":"OPEN","blink_count":0,"blink_rate_per_min":0,"perclos":0,"long_close_count":0,"mar":0.59470000000000001,"yawn_count":0},"vital":{"hr_bpm":null,"hr_conf":null,"rr_per_min":null,"rr_conf":null},"quality":{"light_score":0.76029999999999998,"motion_score":0.0785,"overall":0.85660000000000003},"status":"adjust_posture","advice":"头部偏离过大，请调整姿势正对摄像头","reason":"头部 pitch = -38.1° 超出 ±25°（连续 115 帧越界）"}
+# tail -n 2 /tmp/vigilens_final/http_publish_run.log
+runtime.env: OK
+NATIVE_RUN camera_pid=258 http_pid=257 frames=600
+# echo HTTP_FRESH_STATUS_END
+HTTP_FRESH_STATUS_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

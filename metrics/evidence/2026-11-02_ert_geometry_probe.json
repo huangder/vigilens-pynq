@@ -1,0 +1,31 @@
+{
+  "full_pipeline": false,
+  "accuracy_verified": false,
+  "reference": "same-frame native CNN, not human labels",
+  "samples": 60,
+  "layout_checks_passed": {
+    "eyes_side_by_side": 60,
+    "eye_a_loop": 60,
+    "eye_b_loop": 60,
+    "jaw_arc": 60,
+    "mouth_loop": 60,
+    "nose_below_eyes": 60
+  },
+  "metric_differences": {
+    "ear_left": {
+      "mean_absolute": 0.09095520559411888,
+      "p95_nearest_rank": 0.17601815010206484,
+      "maximum": 0.7041667263582111
+    },
+    "ear_right": {
+      "mean_absolute": 0.08935459126746728,
+      "p95_nearest_rank": 0.1715137077097145,
+      "maximum": 0.2800251429686602
+    },
+    "mar": {
+      "mean_absolute": 0.06722116293591891,
+      "p95_nearest_rank": 0.23627101794387317,
+      "maximum": 0.7392055626404906
+    }
+  }
+}

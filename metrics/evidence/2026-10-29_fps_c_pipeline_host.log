@@ -1,0 +1,8 @@
+JPEG_DECODE_FAIL sequence=2
+CAMERA_PL_FAIL incomplete_pipeline submitted=5 processed=2
+CAMERA_PL_FAIL incomplete_pipeline submitted=8 processed=2
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+AUDIT_SUMMARY frames=60 audits=0 failures=0 reference_ms_total=0
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+CAMERA_PIPELINE_HOST_PASS drain=2,60 worker_failures=2 startup_failures=2 config=10

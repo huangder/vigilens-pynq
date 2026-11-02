@@ -1,0 +1,20 @@
+{
+  "all_valid": {
+    "subset": "all_valid",
+    "paired_frames": 618,
+    "pearson": 0.5926,
+    "median_abs_diff": 0.0409,
+    "p95_abs_diff": 0.1472,
+    "mediapipe_median": 0.3485,
+    "peppa_median": 0.3873
+  },
+  "frontal": {
+    "subset": "frontal_|yaw_proxy|<0.30",
+    "paired_frames": 567,
+    "pearson": 0.6225,
+    "median_abs_diff": 0.0392,
+    "p95_abs_diff": 0.114,
+    "mediapipe_median": 0.3453,
+    "peppa_median": 0.3849
+  }
+}

@@ -1,0 +1,22 @@
+
+# /tmp/vigi_camera_pl /dev/video0 1280 720 30 30 16; printf 'CAMERA_PL_EXIT=%s\n
+' "$?"
+E\n'
+SAMPLE_REQUEST target_fps=30 time_base=v4l2_buffer no_padding=1
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=30
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+PL_READY profile=720p-3of8 ram=0x12000000 bytes=16777216 fid0=0 motion_threshold=16
+CAPTURE_FRAME n=1 sequence=0 bytes=30490 ts=176.892288
+SAMPLE_FRAME n=1 source_sequence=0 ts_us=176892288
+PL_TIMEOUT offset=0x34 value=0x0
+CAMERA_PL_FAIL done_mask=7 mm2s=0x1002 s2mm=0x0
+CAPTURE_FAIL /dev/video0 frames=1 errno=5 (Input/output error)
+CAMERA_PL_EXIT=1
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

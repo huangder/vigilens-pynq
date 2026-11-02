@@ -1,0 +1,19 @@
+tail -n 4 /tmp/vigilens_hr20/run.log
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+NATIVE_RUN camera_pid=658 http_pid=657 frames=1800
+# tail -n 4 /tmp/vigilens_hr20/camera.log
+AUTONOMY_HANDOFF frame_id=1654 gray_ms=0.298 submit_ms=0.018 accepted=1
+AUTONOMY_SAMPLE frame_id=1654 ts=10432.634015000 rc=0 detections=1 visible=1 detector_ms=0.009 landmark_ms=8.790 total_ms=10.478 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=8.759 vital_hz=31.287 vital_reject=window_not_full
+CAPTURE_FRAME n=1656 sequence=1655 bytes=614400 ts=10432.666212
+SAMPLE_FRAME n=1656 source_sequence=1655 ts_us=10432666212
+# tail -n 1 /tmp/vigilens_hr20/contracts.jsonl
+{"ts":10432.734037,"frame_id":1657,"face":{"visible":1,"bbox":[194,85,242,312],"pose":{"yaw":0.49867444998293664,"pitch":6.5226021199361606,"roll":2.970673218343999}},"behavior":{"ear_left":0.31,"ear_right":0.34050000000000002,"blink_state":"OPEN","blink_count":1,"blink_rate_per_min":2,"perclos":0.0091999999999999998,"long_close_count":0,"mar":0.36980000000000002,"yawn_count":0},"vital":{"hr_bpm":null,"hr_conf":null,"rr_per_min":null,"rr_conf":null},"quality":{"light_score":0.76439999999999997,"motion_score":0.038300000000000001,"overall":0.87070000000000003},"status":"fatigue_risk","advice":"????????????????????????????????? 5 ?????????????????????","reason":"?????????????????? 2.0/min < 10"}
+# ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+  657 root     ./vg_metrics_http --bind 0.0.0.0 --port 8080 --latest /tmp/vigilens_hr20/latest.json --display /tmp/vigilens_hr20/display.html --stale-seconds 3.0
+  658 root     ./vigi_camera_autonomy /dev/video0 640 480 1800 30 16
+# printf '\nHR20_RUNNING_STATUS_END\n'
+
+HR20_RUNNING_STATUS_END
+# 

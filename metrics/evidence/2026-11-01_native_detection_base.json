@@ -1,0 +1,23 @@
+{
+  "source": "metrics\\evidence\\2026-11-01_native_detection_base.log",
+  "frames": 658,
+  "rc0_frames": 605,
+  "detect_ms": {
+    "sum": 581.823,
+    "mean": 0.884,
+    "median": 0.434,
+    "max": 11.766
+  },
+  "total_ms": {
+    "sum": 1099.461,
+    "mean": 1.671
+  },
+  "by_path": {
+    "-": {
+      "frames": 658,
+      "detect_ms_sum": 581.823,
+      "detect_ms_mean": 0.884,
+      "landmark_ms_sum": 441.72
+    }
+  }
+}

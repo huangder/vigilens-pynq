@@ -1,0 +1,10 @@
+if ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep; then echo REFUSE_CONC
+URRENT; else (cd /tmp/vigilens_hr_continuous && for file in camera.log contracts
+.jsonl http.log run.log; do test ! -e live1_$file || exit 1; mv $file live1_$fil
+e || exit 1; done && sh run_native.sh /tmp/vigilens_hr_continuous 900 > run.log 
+2>&1) & echo HR_CONTINUOUS_LIVE2_PID=$!; fi
+HR_CONTINUOUS_LIVE2_PID=988
+# printf '\nHR5_FILTER_COMMAND_END\n'
+
+HR5_FILTER_COMMAND_END
+# 

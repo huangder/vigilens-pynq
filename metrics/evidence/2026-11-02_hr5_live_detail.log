@@ -1,0 +1,20 @@
+tail -n 2 /tmp/vigilens_hr5/run.log
+runtime.env: OK
+NATIVE_RUN camera_pid=765 http_pid=764 frames=2700
+# grep '^ERT_MODEL_FRAME ' /tmp/vigilens_hr5/camera.log | tail -n 3
+grep '^AUTONOMY_SAMPLE ' /tmp/vigilens_hr5/camera.log | tail -n 2
+ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+ERT_MODEL_FRAME frame_id=2343 ts=11795.487434000 visible=1 detector_ms=50.906 landmark_ms=44.220 detections=1 geometry_failure=0 detector_path=2
+ERT_MODEL_FRAME frame_id=2373 ts=11796.490953000 visible=1 detector_ms=68.074 landmark_ms=41.530 detections=1 geometry_failure=0 detector_path=2
+ERT_MODEL_FRAME frame_id=2404 ts=11797.522972000 visible=1 detector_ms=74.333 landmark_ms=35.873 detections=1 geometry_failure=0 detector_path=2
+# grep '^AUTONOMY_SAMPLE ' /tmp/vigilens_hr5/camera.log | tail -n 2
+printf '\nHR5_DETAIL_STATUS_END\n'
+AUTONOMY_SAMPLE frame_id=2420 ts=11798.058954000 rc=0 detections=1 visible=1 detector_ms=0.009 landmark_ms=20.097 total_ms=21.916 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=8.786 vital_hz=27.796 vital_reject=no_dominant_peak roi_pixels=5848 vital_samples=150 vital_gate=accepted
+AUTONOMY_SAMPLE frame_id=2421 ts=11798.091373000 rc=0 detections=1 visible=1 detector_ms=0.009 landmark_ms=12.335 total_ms=19.734 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=8.584 vital_hz=30.846 vital_reject=no_dominant_peak roi_pixels=5848 vital_samples=150 vital_gate=accepted
+# ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+  764 root     ./vg_metrics_http --bind 0.0.0.0 --port 8080 --latest /tmp/vigilens_hr5/latest.json --display /tmp/vigilens_hr5/display.html --stale-seconds 3.0
+  765 root     ./vigi_camera_autonomy /dev/video0 640 480 2700 30 16
+# printf '\nHR5_DETAIL_STATUS_END\n'
+
+HR5_DETAIL_STATUS_END
+# 

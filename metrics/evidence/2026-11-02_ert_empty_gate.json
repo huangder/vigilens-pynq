@@ -1,0 +1,31 @@
+{
+  "kind": "native_full_board_realtime_gate",
+  "passed": false,
+  "errors": [
+    "capture 26.630536 fps below 28.5",
+    "analysis 25.953445 fps below 30.0",
+    "AUTONOMY_SUMMARY.skipped=28.0, required 0",
+    "AUTONOMY_SUMMARY.accepted=1048.0, required 1076.0",
+    "AUTONOMY_SUMMARY.processed=1048.0, required 1076.0",
+    "no face-bearing workload",
+    "face-bearing coverage below configured face_visible_min",
+    "raw capture timestamps fail configured throughput",
+    "capture interval p95 exceeds configured jitter limit"
+  ],
+  "capture_fps": 26.630536,
+  "analysis_update_fps": 25.953445,
+  "capture_interval_p95_s": 0.06793379999980971,
+  "submitted": 1076.0,
+  "processed": 1048.0,
+  "contract_frames": 1047,
+  "face_bearing_ratio": 0.0,
+  "face_bearing_frames": 0,
+  "face_bearing_update_fps": 0.0,
+  "native_camera_mode_verified": false,
+  "accuracy_verified": false,
+  "cold_boot_verified": false,
+  "background_model_observations": 14,
+  "background_model_faces": 1,
+  "background_inference_frames": 1,
+  "experimental_ert": true
+}

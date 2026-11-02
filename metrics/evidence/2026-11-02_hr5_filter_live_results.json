@@ -1,0 +1,155 @@
+{
+  "kind": "real_board_5s_candidate_NOT_accuracy_validation",
+  "package": {
+    "files": {
+      "vigi_camera_autonomy": "6b72869da8fb613db5b84ac357aeee5219a025302435ccf8f7f77c5dbd5b68e5",
+      "vg_vision_replay_arm": "b134d773cd5997f8a92acb802c7879eb4b8f0b9c48ae2379b0a4cece73f911f6",
+      "vg_metrics_http": "ec24e3e0f3faf48484f20031c19d84e3b5a258b2f7c45af02cdf85b27316e785",
+      "shape_predictor_68_face_landmarks.dat": "fbdc2cb80eb9aa7a758672cbfdda32ba6300efe9b6e6c7a299ff7e736b11b92f",
+      "libgomp.so.1": "2d25b3b1e4a3d8ac657c406a888395eda289cbeef85a13f94dadca0452922ac2",
+      "display.html": "d26ba34cea9b9e38bd216806327d1c69b7cf1322c8e3df11292ce8d236565f33",
+      "install_native.sh": "e55da5159a1d71ec5279de4430ff0da306384c79f8fe5da8f0f483bb195c4733",
+      "run_native.sh": "d611b34060b659e9e3d2998cab56fac09d4a0ed2e451b4263ff16e89ebb20b4e",
+      "det1.param": "a9338e207dbbaa7ad56625492b551aeb4ecaf10ac279d098b02f17b0a62b1e0b",
+      "det1.bin": "8dedfdc5e37378d23131a6cb91d1e0a446ecb7751e2d3eadd5f086fdf18b5cec",
+      "det2.param": "e9f614c923b3fede02c236be0246465e83a34b37ceed0bc2bcb6bfda32461d25",
+      "det2.bin": "15a3f7df9dc7cc1ec0976fad36ef58128bf1b5de8c2abfb42ae722e803dbd842",
+      "det3.param": "b7fe7677d4840677aa0ea5690c7018630cc8d4a661be95290fe26814920bfad4",
+      "det3.bin": "93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962",
+      "runtime.env": "a08abe6cd2272ca911534f8e391af5f9fbad1c6386f3ac1df2ba22d27d66042a"
+    },
+    "config_sha256": "d9baef2acbf6022f9c4564a899214f58c628bb7f45a4a2a161ab44806f5c6fcd",
+    "runtime": "ert_temporal",
+    "heart_rate_window_seconds": 5.0,
+    "required_hr_samples": 150,
+    "hr_filter": {
+      "enabled": true,
+      "window": 3,
+      "alpha": 0.35,
+      "interval_s": 0.8,
+      "max_gap_s": 1.5,
+      "max_spread_bpm": 12.0
+    },
+    "capture": {
+      "width": 640,
+      "height": 480,
+      "format": "yuyv"
+    },
+    "full30_verified": false,
+    "local_only": true,
+    "hardware_boot_verified": false,
+    "accuracy_verified": false
+  },
+  "contract_valid": true,
+  "contract_frames": 1771,
+  "face_bearing_frames": 1669,
+  "heart_rate_nonnull_frames": 0,
+  "output_hr_values_NOT_reference": {},
+  "hr_conf_range": null,
+  "first_nonnull_hr_frame_id": null,
+  "first_nonnull_hr_seconds_from_first_contract": null,
+  "actual_retained_sample_max": 150,
+  "actual_full_window_frames": 825,
+  "first_full_window_frame_id": 399,
+  "roi_pixel_range_when_visible": [
+    0,
+    7544
+  ],
+  "current_vital_gates": {
+    "face_missing": 102,
+    "roi_empty": 87,
+    "accepted": 1579,
+    "quality_or_pose": 3
+  },
+  "last_estimate_reject_tags": {
+    "vitals_blocked": 294,
+    "window_not_full": 711,
+    "no_dominant_peak": 462,
+    "warming": 153,
+    "harmonic_ambiguity": 151
+  },
+  "track_rejects": {
+    "no_anchor": 56,
+    "appearance_or_transform": 30,
+    "geometry": 16
+  },
+  "geometry_failures": {
+    "119": 1,
+    "118": 2,
+    "2": 13
+  },
+  "correction_fallback_attempts": 8,
+  "fallback_current_frame_visible": 8,
+  "longest_visible_segment": {
+    "frames": 1044,
+    "span_s": 35.26727700000083,
+    "first_id": 151,
+    "last_id": 1208
+  },
+  "longest_nonnull_hr_segment": {
+    "frames": 0,
+    "span_s": 0,
+    "first_id": null,
+    "last_id": null
+  },
+  "sampling": [
+    {
+      "input": "1800",
+      "kept": "1800",
+      "dropped": "0",
+      "driver_sequence_gaps": "0",
+      "empty_slots": "0",
+      "input_fps": "29.954006",
+      "output_fps": "29.954006",
+      "native_30fps": "yes"
+    }
+  ],
+  "analysis": [
+    {
+      "submitted": "1800",
+      "accepted": "1772",
+      "skipped": "28",
+      "processed": "1772",
+      "succeeded": "1771",
+      "rejected": "1",
+      "failed": "0",
+      "rc": "0",
+      "camera_submit_fps": "29.954006",
+      "analysis_update_fps": "29.505572"
+    }
+  ],
+  "audits": [
+    {
+      "frames": "1800",
+      "audits": "60",
+      "failures": "0",
+      "reference_ms_total": "1053"
+    }
+  ],
+  "realtime_gate": {
+    "kind": "native_full_board_realtime_gate",
+    "passed": false,
+    "errors": [
+      "analysis 29.505572 fps below 30.0",
+      "AUTONOMY_SUMMARY.skipped=28.0, required 0",
+      "AUTONOMY_SUMMARY.accepted=1772.0, required 1800.0",
+      "AUTONOMY_SUMMARY.processed=1772.0, required 1800.0"
+    ],
+    "capture_fps": 29.954006,
+    "analysis_update_fps": 29.505572,
+    "capture_interval_p95_s": 0.0360194999993837,
+    "submitted": 1800.0,
+    "processed": 1772.0,
+    "contract_frames": 1771,
+    "face_bearing_ratio": 0.9424054206662902,
+    "face_bearing_frames": 1669,
+    "face_bearing_update_fps": 27.806210992659512,
+    "native_camera_mode_verified": true,
+    "accuracy_verified": false,
+    "cold_boot_verified": false
+  },
+  "archive_sha256": "7336531c907d9dfa80f04704288b8bf5fe70fdb1c31c62890414927675c61a26",
+  "raw_face_media_transferred": false,
+  "synchronous_reference_heart_rate_collected": false,
+  "heart_rate_accuracy_verified": false
+}

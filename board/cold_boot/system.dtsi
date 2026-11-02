@@ -1,0 +1,9 @@
+/* SD appliance: same validated USB/GEM/PL profile, plus an inserted SD card. */
+#include "../w7_buildroot/network_loop.dtsi"
+&sdhci0 {
+    status = "okay";
+    bus-width = <4>;
+    broken-cd;
+    disable-wp;
+    max-frequency = <25000000>;
+};

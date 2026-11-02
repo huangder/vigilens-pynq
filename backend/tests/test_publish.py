@@ -293,6 +293,42 @@ def test_run_pipeline_posts_real_frames_and_done(ingest: _Server, workdir: Path)
     assert summary["done_frame"]["written_to"] == "jsonl+post"
 
 
+def test_triggers_survive_the_real_pipeline_path(ingest: _Server, workdir: Path) -> None:
+    """BUG-030 回归：证据链必须活过**生产路径**（`run_pipeline → strip_internal → push`）。
+
+    为什么之前 18 项全绿的 `check_a_line_p5_m2.py` 和第 9 步没发现这个问题：
+    那条检查自己造了一帧、直接调 `FramePoster.post(frame)`；而真正跑测量时是
+    `clean = strip_internal(full)` 之后才 push —— `_triggers` 在**上线前**就已经被剥掉，
+    `publish.py` 里"必须从原始 frame 取"的注释根本没有机会执行。
+    所以这条测试必须走 `run_pipeline_main`，**不许**自己拼帧。
+    """
+    rc = run_pipeline_main([
+        "--source", "synthetic", "--pattern", "blink", "--seconds", "3", "--stub", "--quiet",
+        "--json", str(workdir / "last.json"),
+        "--summary", str(workdir / "summary.json"),
+        "--post", ingest.url, "--post-hz", "1.0",
+    ])
+    assert rc == 0
+    assert ingest.received, "对面一帧都没收到 = 这条测试没有覆盖到任何东西"
+
+    for p in ingest.received:
+        frame = p["frame"]
+        assert validate_frame(frame) == [], "帧本身仍必须是合法契约帧"
+        assert "_triggers" not in frame, "内部字段不许进契约帧"
+        items = p.get("triggers")
+        assert isinstance(items, list) and items, \
+            f"frame_id={frame['frame_id']} 的 triggers 没被发出去（BUG-030 复发）"
+        for t in items:
+            assert set(t) == {"rule", "metric", "value", "threshold", "verdict"}, \
+                f"证据链形状由 docs/08 冻结，实际键 {sorted(t)}"
+
+    # 收尾帧要带**它自己的**证据链：不带的话 /api/status 的 triggers 会停在前一帧，
+    # 前端按 frame_id 一致才显示（app.js 的护栏），于是 status=done 时又退回占位文字。
+    last = ingest.received[-1]
+    assert last["frame"]["status"] == "done"
+    assert last["triggers"][0]["rule"] == "done", "收尾帧不许沿用上一帧的证据链"
+
+
 def test_done_frame_goes_to_stream_but_not_csv(workdir: Path) -> None:
     """CSV 是逐帧测量表（P4 标定按行数算），收尾帧只进时间流。"""
     import csv
@@ -434,7 +470,8 @@ def test_preview_poster_uses_logical_timestamps_and_same_frame_metadata() -> Non
     assert headers["x-vigilens-detector"] == "mediapipe"
 
 
-def test_preview_failure_is_nonfatal_and_recorded(workdir: Path) -> None:
+@pytest.mark.parametrize("async_preview", [False, True])
+def test_preview_failure_is_nonfatal_and_recorded(workdir: Path, async_preview: bool) -> None:
     import cv2
     import numpy as np
 
@@ -450,6 +487,7 @@ def test_preview_failure_is_nonfatal_and_recorded(workdir: Path) -> None:
         "--width", "64", "--height", "48", "--json", str(workdir / "last.json"),
         "--summary", str(summary), "--preview-post",
         f"http://127.0.0.1:{_free_port()}/api/preview",
+        *(["--preview-async"] if async_preview else []),
     ])
     assert rc == 0, "预览旁路失败不应改变测量退出码"
     result = json.loads(summary.read_text(encoding="utf-8"))

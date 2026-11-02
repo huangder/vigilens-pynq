@@ -1,0 +1,9 @@
+test_frozen_frames_restart_and_logs_stay_bounded (__main__.Service.test_frozen_frames_restart_and_logs_stay_bounded) ... ok
+test_null_measurement_is_healthy_and_duplicate_start_is_single_owner (__main__.Service.test_null_measurement_is_healthy_and_duplicate_start_is_single_owner) ... ok
+test_package_corruption_fails_before_executing_camera (__main__.Service.test_package_corruption_fails_before_executing_camera) ... ok
+test_process_failure_and_unplug_recover_without_another_owner (__main__.Service.test_process_failure_and_unplug_recover_without_another_owner) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 22.509s
+
+OK

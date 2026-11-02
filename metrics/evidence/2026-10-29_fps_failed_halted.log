@@ -1,0 +1,34 @@
+SAMPLE_REQUEST target_fps=30 time_base=v4l2_buffer no_padding=1
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=60
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+PL_READY profile=720p-3of8 ram=0x12000000 bytes=16777216 fid0=0 motion_threshold=16 pipeline=threaded audit_every=5 codec=jpeg
+JPEG_CONFIG method=IFAST fancy_upsampling=0 cpu_reference=audit
+BOARD_STREAM_LISTEN bind=169.254.73.29:9000 protocol=VLP2 rgb=jpeg_decoded_on_pc codec=jpeg-mjpeg strategy=default
+BOARD_STREAM_CONNECTED pixels=local_ram_only
+CAPTURE_FRAME n=1 sequence=0 bytes=99184 ts=51.428392
+SAMPLE_FRAME n=1 source_sequence=0 ts_us=51428392
+CAPTURE_FRAME n=2 sequence=1 bytes=99198 ts=51.464400
+SAMPLE_FRAME n=2 source_sequence=1 ts_us=51464400
+CAPTURE_FRAME n=3 sequence=2 bytes=98791 ts=51.480423
+CAPTURE_FRAME n=4 sequence=3 bytes=98558 ts=51.496428
+SAMPLE_FRAME n=3 source_sequence=3 ts_us=51496428
+CAPTURE_FRAME n=5 sequence=4 bytes=98627 ts=51.512430
+CAPTURE_FRAME n=6 sequence=5 bytes=98263 ts=51.528441
+SAMPLE_FRAME n=4 source_sequence=5 ts_us=51528441
+CAPTURE_FRAME n=7 sequence=6 bytes=98347 ts=51.548510
+CAPTURE_FRAME n=8 sequence=7 bytes=98618 ts=51.564445
+SAMPLE_FRAME n=5 source_sequence=7 ts_us=51564445
+CAPTURE_FRAME n=9 sequence=8 bytes=98622 ts=51.580439
+CAPTURE_FRAME n=10 sequence=9 bytes=98607 ts=51.596513
+SAMPLE_FRAME n=6 source_sequence=9 ts_us=51596513
+CAPTURE_FRAME n=11 sequence=10 bytes=98688 ts=51.616461
+CAPTURE_FRAME n=12 sequence=11 bytes=98592 ts=51.632416
+SAMPLE_FRAME n=7 source_sequence=11 ts_us=51632416
+PL_TIMEOUT offset=0x34 value=0x0
+CAMERA_PL_FAIL done_mask=7 mm2s=0x1002 s2mm=0x0
+CAPTURE_FAIL /dev/video0 frames=12 errno=5 (Input/output error)
+CAMERA_PL_EXIT=1
+

@@ -1,0 +1,96 @@
+prog words 1562 frame words 230400 gold words 27648
+tcl long 2860408 bytes
+xsdb exit 0
+  | RSTDAP_ERR i=0 Invalid target. Use "targets" command to select a target
+  | PRE_SIL=813695232 PRE_PLL=63
+  | FPGA_BEGIN
+  | FPGA_ERR=
+  | STATE=Stopped: (Suspended)
+  | SRC_ERR=
+  | PS7_BEGIN
+  | POLLOK 0XF800010C 0x00000001 i=0
+  | POLLOK 0XF800010C 0x00000002 i=0
+  | POLLOK 0XF800010C 0x00000004 i=0
+  | POLLOK 0XF8000B74 0x00002000 i=0
+  | POLLOK 0XF8006054 0x00000007 i=0
+  | PS7_ERR=
+  | PS7_DONE
+  | SIL=F8007080:   30800100
+  | DDRREAD= 8000000:   EF91F174
+  | PS7_STAGE_END
+  | LOADED
+  | PC=pc: 00100000
+  | STOPPED pc=pc: 001012f8
+  | RESHDR= A000000:   600D600D
+  | DUMPED
+magic=0x600D600D loglen=1380 status=0
+---- log ----
+S4 bench start
+phase=0x00000008
+pre_mm2s_cr=0x00010002
+pre_mm2s_sr=0x00000001
+pre_s2mm_cr=0x00010002
+pre_s2mm_sr=0x00000001
+mm2s_reset_loops=0
+s2mm_reset_loops=0
+cfg_w=640
+cfg_h=480
+cfg_gw=384
+cfg_gh=288
+roi_x1_rb=0x00000280
+mot_w_rb=0x00000180
+roi_ctrl_started=0x00000001
+rgb_ctrl_started=0x00000001
+mot_ctrl_started=0x00000001
+mm2s_pre_main_reset_loops=0
+s2mm_pre_main_reset_loops=0
+order=0x00000000
+s2mm_da_rb=0x09000000
+s2mm_len_rb=0x0001B180
+s2mm_armed_cr=0x00010003
+s2mm_armed_sr=0x00000000
+mm2s_len_rb=0x000E1000
+mm2s_armed_cr=0x00010003
+mm2s_armed_sr=0x00000000
+mm2s_idle_loops=25873
+mm2s_sr_after=0x00001002
+roi_wait_loops=0
+roi_ctrl=0x00000004
+rgb_wait_loops=0
+rgb_ctrl=0x00000004
+mot_wait_loops=0
+mot_ctrl=0x00000004
+s2mm_stopped_cr=0x00010002
+s2mm_stopped_sr=0x00000000
+ROI 39235654 39134742 39146537 307200 1
+RGB 384 288 110592 14112238 1
+MOT 14112238 110313 65370 110592 1
+done
+post_roi_ctrl=0x00000004
+post_rgb_ctrl=0x00000004
+post_mot_ctrl=0x00000004
+post_roi_fid=1
+post_roi_cnt=307200
+post_rgb_fid=1
+post_rgb_pc=110592
+post_mot_fid=1
+post_mot_cnt=110592
+post_mm2s_sr=0x00001002
+post_s2mm_sr=0x00000000
+long_frames=300
+long_fid0=1
+long_ok_frames=300
+long_fails=0
+long_first_fail=0
+long_gt_ticks=922187934
+long_roi_fid=301
+long_rgb_fid=301
+long_mot_fid=301
+long_roi_sum_r=39235654
+long_roi_cnt=307200
+long_rgb_pc=110592
+long_mot_cnt=110592
+long_s2mm_sr=0
+done_long
+
+---- end log ----

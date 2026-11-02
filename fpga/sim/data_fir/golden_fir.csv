@@ -11,8 +11,8 @@ sine_0p8hz,6,300,1,0,300
 sine_3p2hz,7,300,1,0,300
 sine_0p2hz,8,300,1,0,300
 sine_8hz,9,300,1,0,300
-square_1hz_full,10,300,1,0,300
-saturate_matched,11,96,1,5,96
+square_1hz_full,10,300,1,33,300
+saturate_matched,11,96,1,7,96
 sine_small_amp,12,300,1,0,300
 random_full,13,512,1,0,512
 split_part1,14,200,1,0,200

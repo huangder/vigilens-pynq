@@ -1,0 +1,176 @@
+{
+  "pipeline_exit": 0,
+  "transport_errors": [],
+  "frames": 7750,
+  "ready_frames": 586,
+  "max_samples": 900,
+  "required_samples": 900,
+  "all_frame_reject_counts": {
+    "window_not_full": 5763,
+    "fs_mismatch": 40,
+    "sampling_jitter": 1704,
+    "no_dominant_peak": 243
+  },
+  "full_window_reject_counts": {
+    "no_dominant_peak": 243,
+    "sampling_jitter": 343
+  },
+  "reset_causes": {
+    "gate": 755
+  },
+  "spectral_estimation_frames": 243,
+  "spectral_conf_min": 0.06564808013973508,
+  "spectral_conf_max": 0.15748637455764442,
+  "spectral_conf_median": 0.10719851197411367,
+  "nongated_estimates": 0,
+  "top_spectral_windows": [
+    {
+      "frame_id": 2565,
+      "conf": 0.15748637455764442,
+      "filtered_min": -6210,
+      "filtered_max": 5758
+    },
+    {
+      "frame_id": 2566,
+      "conf": 0.15727518618897673,
+      "filtered_min": -6210,
+      "filtered_max": 5758
+    },
+    {
+      "frame_id": 2567,
+      "conf": 0.15705934945769925,
+      "filtered_min": -6210,
+      "filtered_max": 5758
+    },
+    {
+      "frame_id": 2568,
+      "conf": 0.15683905470172,
+      "filtered_min": -6210,
+      "filtered_max": 5758
+    },
+    {
+      "frame_id": 2569,
+      "conf": 0.1566144849185958,
+      "filtered_min": -6210,
+      "filtered_max": 5758
+    }
+  ],
+  "wire_sha256": "ff124798174a6749bd37ff9af5872407373a22ac8dfda013fffe8fd483619169",
+  "source_before": {
+    "backend\\vital.py": "f2dc536826e7db80b3aa6c4b1e0789a759307352c8af901ae8510c344deda827",
+    "backend\\run_pipeline.py": "bd494c9c8c7b3a95a9d3df911ee2ea1df3be721391ababd6b3441c9c6a3e0918",
+    "backend\\decision.py": "f9938b5ce87a7ad0ad804d29cc82a6b38aa46b55d65c450ea012299266d3b824",
+    "backend\\face_landmark.py": "c9c93a1e9ab91add694951f277ae4da1af388cf69e211293394d5fda531c1357",
+    "fpga\\src\\fir_coeffs_q15.h": "5e7368ab99fbbea8b7ade5c60c4de29690fd7ba585981245dfe13e50d8749d09",
+    "config.yaml": "f607323c303e04d74a0d15a7ce894fe6b23b99381353b67f6e973486aa6c8c41"
+  },
+  "source_unchanged": true,
+  "observation_only": true,
+  "roi": {
+    "pushed_samples": 6995,
+    "empty_roi_resets": 0,
+    "count_min": 1020,
+    "count_max": 9164,
+    "q15_min": -20768,
+    "q15_max": 22248
+  },
+  "output_jsonl_sha256": "dfef8136de6554c1ba29b60282bbc9ebb4e851b744df90919d3537cbdfed5cd1",
+  "reference_jsonl_sha256": "dfef8136de6554c1ba29b60282bbc9ebb4e851b744df90919d3537cbdfed5cd1",
+  "output_byte_equal_to_previous_replay": true,
+  "gate_reasons_overlapping": {
+    "quality_below_vital_min": 531,
+    "yaw_out_of_range": 217,
+    "pitch_out_of_range": 28,
+    "face_not_visible": 274
+  },
+  "gate_valid_segments": 117,
+  "longest_gate_valid_segments": [
+    {
+      "start_frame": 6371,
+      "end_frame": 7612,
+      "samples": 1242,
+      "start_s": 213.103929,
+      "end_s": 255.13473,
+      "span_s": 42.030801
+    },
+    {
+      "start_frame": 1666,
+      "end_frame": 2807,
+      "samples": 1142,
+      "start_s": 55.667516,
+      "end_s": 93.810241,
+      "span_s": 38.142725000000006
+    },
+    {
+      "start_frame": 462,
+      "end_frame": 1331,
+      "samples": 870,
+      "start_s": 15.403735,
+      "end_s": 44.371144,
+      "span_s": 28.967409000000004
+    },
+    {
+      "start_frame": 1,
+      "end_frame": 460,
+      "samples": 460,
+      "start_s": 0.03601,
+      "end_s": 15.335727,
+      "span_s": 15.299717000000001
+    },
+    {
+      "start_frame": 1333,
+      "end_frame": 1664,
+      "samples": 332,
+      "start_s": 44.43914,
+      "end_s": 55.614908,
+      "span_s": 11.175767999999998
+    },
+    {
+      "start_frame": 5124,
+      "end_frame": 5453,
+      "samples": 330,
+      "start_s": 171.440409,
+      "end_s": 182.400892,
+      "span_s": 10.96048300000001
+    },
+    {
+      "start_frame": 3707,
+      "end_frame": 3943,
+      "samples": 237,
+      "start_s": 123.805933,
+      "end_s": 131.685121,
+      "span_s": 7.879188000000013
+    },
+    {
+      "start_frame": 3133,
+      "end_frame": 3355,
+      "samples": 223,
+      "start_s": 104.681947,
+      "end_s": 112.073868,
+      "span_s": 7.391921000000011
+    }
+  ],
+  "validation": {
+    "heart_and_timebase_tests": {
+      "passed": 39,
+      "command": "python -m pytest backend/tests/test_vital.py backend/tests/test_vital_timebase.py -q"
+    },
+    "gate_and_live_sampling_tests": {
+      "passed": 36,
+      "command": "python -m pytest backend/tests/test_decision_quality_gate.py backend/tests/test_live_sampling.py -q"
+    },
+    "q15_golden": {
+      "combinations_equal": 393222,
+      "actual_roi_samples_equal": 35,
+      "command": "python metrics/scripts/check_q15_golden.py"
+    },
+    "fir_golden": {
+      "segments_equal": 16,
+      "samples_equal": 4036,
+      "tolerance": 0,
+      "command": "python metrics/scripts/check_fir_golden.py"
+    }
+  },
+  "audit_scope": "Diagnosis only. No production code, thresholds, coefficients or tests modified.",
+  "next_turn": "Await user choice before implementing changes."
+}

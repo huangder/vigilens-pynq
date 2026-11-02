@@ -1,0 +1,22 @@
+{
+  "kind": "native_full_board_realtime_gate",
+  "passed": false,
+  "errors": [
+    "capture 20.365191 fps below 28.5",
+    "analysis 4.170614 fps below 30.0",
+    "AUTONOMY_SUMMARY.skipped=390.0, required 0",
+    "AUTONOMY_SUMMARY.accepted=104.0, required 494.0",
+    "AUTONOMY_SUMMARY.processed=104.0, required 494.0",
+    "raw capture timestamps fail configured throughput",
+    "capture interval p95 exceeds configured jitter limit"
+  ],
+  "capture_fps": 20.365191,
+  "analysis_update_fps": 4.170614,
+  "capture_interval_p95_s": 0.08458640000005743,
+  "submitted": 494.0,
+  "processed": 104.0,
+  "contract_frames": 103,
+  "native_camera_mode_verified": false,
+  "accuracy_verified": false,
+  "cold_boot_verified": false
+}

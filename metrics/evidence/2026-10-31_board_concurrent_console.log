@@ -1,0 +1,40 @@
+
+# echo CC_BEGIN
+CC_BEGIN
+# (/usr/bin/uvc_probe /dev/video0 1280 720 300 > /tmp/cam3.log 2>&1; echo $? > /
+tmp/cam3.rc) &
+# cam=$!
+# sleep 2
+n/peppa_pruned.mnn /tmp/mnn/peppa_input.f32 /tmp/mnn/conc3_t2 300 2
+echo PROBE_RC=$?
+wait $cam
+echo CAM_RC=$(cat /tmp/cam3.rc)
+grep -c CAPTURE_FRAME /tmp/cam3.log
+tail -2 /tmp/cam3.log
+echo CC_END
+
+printf '\nVIGI_COMMAND_DONE\n'
+# echo PROBE_START
+PROBE_START
+# /tmp/mnn/vg_mnn_probe /tmp/mnn/peppa_pruned.mnn /tmp/mnn/peppa_input.f32 /tmp/
+mnn/conc3_t2 300 2
+The device supports: i8sdot:0, fp16:0, i8mm: 0, sve2: 0, sme2: 0
+MNN_MODEL_PROBE_PASS output_elements=143
+[1]+  Done                       (/usr/bin/uvc_probe /dev/video0 1280 720 300 1>/tmp/cam3.log 2>&1; echo ${?} 1>/tmp/cam3.rc)
+# echo PROBE_RC=$?
+PROBE_RC=0
+# wait $cam
+# echo CAM_RC=$(cat /tmp/cam3.rc)
+CAM_RC=2
+# grep -c CAPTURE_FRAME /tmp/cam3.log
+301
+# tail -2 /tmp/cam3.log
+CAPTURE_FRAME n=300 sequence=299 bytes=70493 ts=2544.567300
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=300 requested_mode=unmet
+# echo CC_END
+CC_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

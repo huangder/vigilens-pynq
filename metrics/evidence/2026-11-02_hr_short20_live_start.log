@@ -1,0 +1,8 @@
+if grep -q '^HR20_INSTALL_VERIFIED$' /tmp/hr20_install.log; then sh /tmp/vigil
+ens_hr20/run_native.sh /tmp/vigilens_hr20 1800 > /tmp/vigilens_hr20/run.log 2>&1
+ & echo HR20_LIVE_PID=$!; else echo HR20_INSTALL_NOT_VERIFIED; fi
+HR20_LIVE_PID=654
+# printf '\nHR20_LIVE_STARTED\n'
+
+HR20_LIVE_STARTED
+# 

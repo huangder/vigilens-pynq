@@ -1,0 +1,18 @@
+{
+  "synthetic_max_err_deg": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "real_frames_solved": 604,
+  "real_frames_rejected": 17,
+  "reproj_px_median": 3.865,
+  "reproj_px_p95": 10.474,
+  "reproj_frac_median": 0.0409,
+  "reproj_frac_p95": 0.1231,
+  "yaw_vs_nose_cue_corr": -0.916,
+  "roll_vs_eye_line_corr": 0.938,
+  "yaw_median": 1.49,
+  "pitch_median": -2.41,
+  "roll_median": -0.68
+}

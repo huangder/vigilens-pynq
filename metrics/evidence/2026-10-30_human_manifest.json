@@ -1,0 +1,51 @@
+{
+  "private_capture_relative_path": "metrics\\logs\\human_acceptance_20261029\\private.vlp",
+  "private_capture_bytes": 876184220,
+  "private_capture_sha256": "ff124798174a6749bd37ff9af5872407373a22ac8dfda013fffe8fd483619169",
+  "board_log_sha256": "72869faedca42e48b2c18495c0655381018a54baf801424da32d21de1d5a68fe",
+  "board_log_bytes": 4005491,
+  "privacy": "Original identifiable frames stay in ignored local logs; no face image archived or uploaded.",
+  "artifacts": {
+    "2026-10-30_human_auto.json": "d66937c176cfd36301b4e6145f00cc575c93893cd23241f1aef54363c208c613",
+    "2026-10-30_human_auto.md": "eaf49bcdf15b882db13ddb56c01507a6b3ab7be44cbcfc0b33b7a678fd4945bc",
+    "2026-10-30_human_baseline_auto.json": "962613727a9afca22ecf6d50848e53c22f796449aa2713ecde4a0968efdc5ebf",
+    "2026-10-30_human_baseline_summary.json": "c11c469e39c1d898b14ebb557551611d1cbe032a83dd927a3fff6c84a1d9d23b",
+    "2026-10-30_human_capture.json": "060f422a2e880421a7110ac69a5910b6b2586cc3653a41d5148b738d18edea92",
+    "2026-10-30_human_check_all.json": "68c9b7603d739b33841331949d45849078194368dd7b261c3ffa751a3baf622d",
+    "2026-10-30_human_check_all.log": "540054f6fc9ec3fad3b99f7e24e96e6f852e82b7bc7dda9faaa9d9c8a4aa469c",
+    "2026-10-30_human_fixed_summary.json": "ead443f95df48893c43a702aa5cc33a7b7ae80da4fcf2e15919063d8169900e2",
+    "2026-10-30_human_hardware.json": "7883f7e9583cf26e583f916384243b0ab0c1bb868c02b9a4adfc4f26d1f290d2",
+    "2026-10-30_human_live_face_precheck.json": "2c632421865e5061e508c6ab330f7a5b5a185b6395516e17bfec44df5221b31b",
+    "2026-10-30_human_replay_comparison.json": "e5ed4ad04b4c11101e7c10eb209c670fce3c35b9a27665943728a2a69833442e",
+    "2026-10-30_human_replay_manifest.json": "b0dd00448bf9647960cc60bd9fdb7788d885d56b0edd1362a9372dba10982489"
+  },
+  "source_sha256": {
+    "config.yaml": "f607323c303e04d74a0d15a7ce894fe6b23b99381353b67f6e973486aa6c8c41",
+    "backend/behavior_metrics.py": "290019c352f8b6cb50136c8c0586a59c3d1fa2debca94b92cfc2c7c30170fbd3",
+    "metrics/scripts/human_session.py": "0739be3abcea3d920a05a1a0c7d7b43ec401ae008496a775d1b4c9c4daead0c7",
+    "metrics/scripts/human_session.html": "b9f15ff5aeda02f2dcf88c016c7b02fa4972ec6c263fdb603e0bbed84348fa5b",
+    "metrics/scripts/evaluate_human_session.py": "2961e112a56799fae4ad0f5223048859a2506e6382253bc527c8a34c530a7179",
+    "metrics/scripts/check_p4_readiness.py": "d7f56934c75a92c9c6b890b3d7369e1ee10c98bc9cdee51c3f37e605099bb055",
+    "backend/tests/test_human_session.py": "688aab11824395e398f06f03ea5156bee161f9b3eceaeb511432ed1912a19b94",
+    "backend/tests/test_evaluate_human_session.py": "fda11336355ec5ddc38b87925582479af6e1ba4d613df9d89b0d4f4bbe6fdd64",
+    "backend/tests/test_annotation_consistency.py": "824eef8a6b0c22ffc5032ebad73cc3121d19a22ccbe7e210e0f8a229d6987ce9",
+    "backend/tests/test_behavior_min_close_ms.py": "35941126381449393012e7861a7eaf0495a3f8c3e099c1f11841c9bae914efb4"
+  },
+  "runtime": {
+    "numpy": "1.26.4",
+    "Pillow": "12.3.0",
+    "mediapipe": "0.10.21",
+    "opencv-contrib-python": "4.11.0.86",
+    "pytest": "9.1.1"
+  },
+  "git_head": "83aae0ff36d00ed0d0ee11d6436862671e71d71c",
+  "git_branch": "a-line/human-algorithm-acceptance",
+  "working_tree_note": "Uncommitted workspace; use source fingerprints, not git HEAD alone.",
+  "full_pytest_terminal_result": "507 passed, 2 warnings in 30.70s",
+  "final_check_all": {
+    "passed": 26,
+    "failed": 0,
+    "elapsed_s": 74.0
+  },
+  "manual_review_service_stopped": true
+}

@@ -1,0 +1,10 @@
+........................................................................ [100%]
+============================== warnings summary ===============================
+board/autonomy/tests/test_prepare_peppa_calibration.py::PeppaPreparation::test_preparation_with_mock_detections_skips_and_never_crosses_split
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+board/autonomy/tests/test_prepare_peppa_calibration.py::PeppaPreparation::test_preparation_with_mock_detections_skips_and_never_crosses_split
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+72 passed, 2 warnings in 2.78s

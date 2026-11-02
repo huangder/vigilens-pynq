@@ -1,0 +1,10 @@
+{
+  "source_features_sha256": "2ff1dbc25f9b21806cb2a1eaa38ab59670e5e7cc50da7a50a42989413c8bce34",
+  "matched_production_frames": 7750,
+  "mismatches": [],
+  "spectral_windows": 1901,
+  "scope": "scalar POS/fixed-versus-floating-FIR ablation, no HR reference",
+  "max_fixed_peak_fraction": 0.15412247882741817,
+  "max_float_peak_fraction": 0.15427635401145198,
+  "float_majority_windows": 0
+}

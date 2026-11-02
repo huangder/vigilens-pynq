@@ -14,6 +14,7 @@
 #      python fpga/sim/gen_frames.py           -> sim/data/        (roi_statistic)
 #      python fpga/sim/gen_motion_vectors.py   -> sim/data_motion/ (rgb2gray, motion_quality)
 #      python fpga/sim/gen_fir_vectors.py      -> sim/data_fir/    (fir_filter)
+#      python fpga/sim/gen_scale_vectors.py    -> sim/data_scale/  (frame_scale)
 #
 #  契约：docs/interface.md —— 器件/时钟/寄存器映射/比对口径均已冻结。
 # =============================================================================
@@ -24,7 +25,10 @@ if {[info exists ::env(HLS_IP)] && $::env(HLS_IP) ne ""} {
     set ip_name $::env(HLS_IP)
 }
 
-set known_ips [list roi_statistic rgb2gray motion_quality fir_filter]
+# 2026-10-24：MIPI/CSI-2 像素源方案已整体取消（用户决定改用 USB UVC），
+# 因此 raw10_unpack / bayer_demosaic 两个 IP 已从仓库移除（源码/TB/黄金参考/报告一并删除，
+# 需要时从 git 历史取回：git log --diff-filter=D -- fpga/src/raw10_unpack.cpp）。
+set known_ips [list roi_statistic rgb2gray motion_quality fir_filter frame_scale]
 if {[lsearch -exact $known_ips $ip_name] < 0} {
     puts "ERROR: unknown HLS_IP '$ip_name'. Known: $known_ips"
     exit 1
@@ -36,6 +40,46 @@ if {$ip_name eq "rgb2gray" || $ip_name eq "motion_quality"} {
     set default_data "sim/data_motion"
 } elseif {$ip_name eq "fir_filter"} {
     set default_data "sim/data_fir"
+} elseif {$ip_name eq "frame_scale"} {
+    set default_data "sim/data_scale"
+}
+
+# ---- fir_filter 的 60 Hz 档（2026-09-29 新增）-------------------------------
+#   用法：  set "FIR_FS=60"   然后照常跑 run_hls.tcl（HLS_IP=fir_filter）
+#   60 Hz 必须用 N=127 的系数表（63 抽头在 60 Hz 下停止带会从 -16 dB 退化到 -6 dB），
+#   所以它有自己的黄金参考目录；不设这个变量时一切照旧走 30 Hz 的 sim/data_fir。
+set fir_60 0
+if {$ip_name eq "fir_filter" && [info exists ::env(FIR_FS)] && $::env(FIR_FS) eq "60"} {
+    set fir_60 1
+    set default_data "sim/data_fir_60hz"
+    puts "INFO: fir_filter 60 Hz 档（N=127 系数表 + sim/data_fir_60hz 黄金参考）"
+}
+
+# ---- 测量口径档位（2026-09-30 新增）----------------------------------------
+#  契约依据：docs/interface.md §0 的 **v1.5 草案**（测量口径档位化，待 A/B 会签）
+#            + docs/20（720p60 落地）；拍板记录见 docs/24 §5.1。
+#
+#  用法（只影响 rgb2gray 的抽取比与默认黄金参考目录，**不设就一切照旧**）：
+#      set "VIGILENS_TIER=720p60"     -> 抽取 3/8，灰度 480x270，数据目录 sim/data_motion_720p60
+#      set "VIGILENS_TIER=1080p45"    -> 抽取 1/4，灰度 480x270，数据目录 sim/data_motion_1080p45
+#      （不设）                        -> 抽取 3/5，灰度 384x288，数据目录 sim/data_motion（既有档，不变）
+#
+#  为什么两档都要做成 480x270：129600 像素 ≤ 2^17 ⇒ BRAM 台阶不跨，
+#  motion_quality 的片内帧缓存仍是 64 个 BRAM18（23%）—— 见 fpga/sim/link_budget.py 实测表。
+set tier_num 3
+set tier_den 5
+if {[info exists ::env(VIGILENS_TIER)] && $::env(VIGILENS_TIER) ne ""} {
+    if {$::env(VIGILENS_TIER) eq "720p60"} {
+        set tier_num 3 ; set tier_den 8
+        set default_data "sim/data_motion_720p60"
+    } elseif {$::env(VIGILENS_TIER) eq "1080p45"} {
+        set tier_num 1 ; set tier_den 4
+        set default_data "sim/data_motion_1080p45"
+    } else {
+        puts "ERROR: unknown VIGILENS_TIER '$::env(VIGILENS_TIER)'. Known: 720p60 / 1080p45"
+        exit 1
+    }
+    puts "INFO: 档位 VIGILENS_TIER=$::env(VIGILENS_TIER) → 抽取 $tier_num/$tier_den，数据目录 $default_data"
 }
 
 set src_file "src/$ip_name.cpp"
@@ -50,10 +94,57 @@ puts "INFO: source    = $src_file"
 puts "INFO: testbench = $tb_file"
 
 # Create project / component
-open_component -reset component_$ip_name -flow_target vivado
+# -----------------------------------------------------------------------------
+# ⚠️ 组件目录名可用环境变量覆盖（2026-09-30 新增；**缺省行为与以前完全一致**）：
+#      set "HLS_COMPONENT=component_roi_statistic_run2"
+#      vitis-run --mode hls --tcl run_hls.tcl
+#   为什么要有这个后门：`open_component -reset` 需要**先删掉**旧组件目录，
+#   而某些环境里旧目录中的 `*.hlsrun_csim_summary` / `hls/.autopilot/db/a.g*`
+#   会因 NTFS 拒绝项而删不掉 —— 实测：
+#      error deleting "D:/Desktop/AMD/fpga/component_roi_statistic/hls/hls.aps": permission denied
+#   于是 csim 连启动都做不到。那是**环境问题**，不该逼人改共享脚本或删仓库文件；
+#   指定一个新目录名即可绕开。（`fpga/component_*/` 本就在 .gitignore 里，不入库。）
+# -----------------------------------------------------------------------------
+set comp_name "component_$ip_name"
+if {[info exists ::env(HLS_COMPONENT)] && $::env(HLS_COMPONENT) ne ""} {
+    set comp_name $::env(HLS_COMPONENT)
+    puts "INFO: HLS_COMPONENT override -> $comp_name"
+} elseif {[info exists ::env(VIGILENS_TIER)] && $::env(VIGILENS_TIER) ne ""} {
+    # ⚠️ 2026-10-24 加的安全阀（BUG-039 的第二起实例）：换档必须同时换组件目录。
+    #     `open_component -reset component_rgb2gray` 会**覆盖**同名组件，
+    #     而 board/build_bd.tcl 的 640x480 档正是从这个默认目录取 IP。
+    #     实测代价：10-23 用 VIGILENS_TIER=720p60 跑 rgb2gray（忘了给 HLS_COMPONENT），
+    #     默认组件被重建为 3/8、导出的 impl/ip 也被冲掉，第二天 BD 校验直接报
+    #     "找不到导出 IP 目录 .../component_rgb2gray/hls/impl/ip"，
+    #     要重跑一遍 3/5 的 csim+csynth+export 才能恢复（≈2 min，但很容易当成"环境坏了"）。
+    puts "ERROR: 设了 VIGILENS_TIER=$::env(VIGILENS_TIER) 却没设 HLS_COMPONENT。"
+    puts "       档位实验必须用独立组件目录，否则会覆盖 640x480 档正在用的 $comp_name。"
+    puts "       例：set \"HLS_COMPONENT=${comp_name}_720p60\" 再重跑本脚本。"
+    exit 1
+}
+open_component -reset $comp_name -flow_target vivado
 
-add_files $src_file
-add_files -tb $tb_file
+if {$fir_60} {
+    # ⚠️ **同一组宏必须同时给测试台**（2026-10-23 修）：fir_filter.cpp 用 -DFIR_FS_60HZ 选
+    # 127 阶系数表，而 tb_fir_filter.cpp 也按 FIR_NUM_TAPS 推期望值/门限。
+    # 之前只给 src 不给 tb ⇒ tb 按 63 阶断言、IP 按 127 阶输出，csim 报
+    # "契约/系数不一致 —— meta taps=127 …本工程 taps=63" 并以退出码 1 失败
+    # （与 rgb2gray 档位宏当年踩的是同一个坑，见下面分支的注释）。
+    set fir_flags "-DFIR_FS_60HZ"
+    add_files $src_file -cflags $fir_flags
+    add_files -tb $tb_file -cflags $fir_flags
+} elseif {$ip_name eq "rgb2gray"} {
+    # 档位化的抽取比（缺省 3/5 = 既有档，与以前完全一致）。
+    # ⚠️ **同一组宏必须同时给测试台**：测试台的 Layer 1 断言与朴素参考都按抽取比推导，
+    #    只给 src 不给 tb 会让两边口径不一致（实测过：tb 按 3/5 断言、IP 按 3/8 输出，
+    #    csim 报 "read while empty" 并以退出码 3 失败）。
+    set decim_flags "-DRGB2GRAY_DECIM_NUM=$tier_num -DRGB2GRAY_DECIM_DEN=$tier_den"
+    add_files $src_file -cflags $decim_flags
+    add_files -tb $tb_file -cflags $decim_flags
+} else {
+    add_files $src_file
+    add_files -tb $tb_file
+}
 set_top $ip_name
 
 # Solution: device + clock（docs/interface.md 第 0 节冻结：PYNQ-Z2 / 100 MHz）
@@ -62,30 +153,61 @@ create_clock -period 10
 
 # ---- 定位黄金参考数据目录 ---------------------------------------------------
 # 测试台通过 argv[1] 收到该目录；找不到时测试台会硬失败（防止"假通过"）。
+set golden_files [list golden_roi.csv golden_motion.csv golden_fir.csv \
+                       golden_scale.csv]
+
+proc has_golden {dir files} {
+    foreach f $files {
+        if {[file exists [file join $dir $f]]} { return 1 }
+    }
+    return 0
+}
+
 set data_dir ""
 set cand_list [list]
-if {[info exists ::env(ROI_DATA_DIR)] && $::env(ROI_DATA_DIR) ne ""} {
-    lappend cand_list [file normalize $::env(ROI_DATA_DIR)]
-}
-catch {
-    lappend cand_list [file normalize "[file dirname [file normalize [info script]]]/$default_data"]
-}
-lappend cand_list [file normalize "[pwd]/$default_data"]
-lappend cand_list [file normalize "[pwd]/fpga/$default_data"]
 
-foreach c $cand_list {
-    if {[file exists "$c/golden_roi.csv"] || [file exists "$c/golden_motion.csv"] || [file exists "$c/golden_fir.csv"]} {
-        set data_dir $c
-        break
+# ① 显式指定（ROI_DATA_DIR）—— ⚠️ **指定了就必须可用**（2026-10-01 修）：
+#    原实现把它当"候选之一"：目录里没有黄金参考就**静默跳到下一个候选**，
+#    后果是"你以为在测 480x270 档，其实跑的是 384x288 档"，而日志只有一行
+#    `INFO: data dir = <另一个目录>` —— 正是本项目最忌讳的静默错
+#    （2026-10-01 实测踩到：-D 给了 720p60 的数据目录，却跑成了 640x480 档，
+#     并因此把一次 cosim 的结论张冠李戴）。故改为**硬失败**。
+if {[info exists ::env(ROI_DATA_DIR)] && $::env(ROI_DATA_DIR) ne ""} {
+    set forced [file normalize $::env(ROI_DATA_DIR)]
+    if {![has_golden $forced $golden_files]} {
+        puts "ERROR: ROI_DATA_DIR is set but unusable: '$::env(ROI_DATA_DIR)'"
+        puts "       expected one of: $golden_files"
+        puts "       Refusing to silently fall back to the default data dir --"
+        puts "       that would test a DIFFERENT measurement tier than requested."
+        exit 1
+    }
+    puts "INFO: ROI_DATA_DIR -> $forced  (explicit, verified)"
+    set data_dir $forced
+}
+
+# ② 否则按"默认档位目录"找（可用 VIGILENS_TIER 改档位，见上文）。
+if {$data_dir eq ""} {
+    catch {
+        lappend cand_list [file normalize "[file dirname [file normalize [info script]]]/$default_data"]
+    }
+    lappend cand_list [file normalize "[pwd]/$default_data"]
+    lappend cand_list [file normalize "[pwd]/fpga/$default_data"]
+
+    foreach c $cand_list {
+        if {[has_golden $c $golden_files]} {
+            set data_dir $c
+            break
+        }
+    }
+    if {$data_dir eq ""} {
+        puts "WARNING: golden reference not found. Candidates tried:"
+        foreach c $cand_list { puts "         $c" }
+        puts "WARNING: run the matching gen_*.py first."
+        set data_dir [lindex $cand_list 0]
+    } else {
+        puts "INFO: data dir  = $data_dir  (default for tier '$default_data')"
     }
 }
-if {$data_dir eq ""} {
-    puts "WARNING: golden reference not found. Candidates tried:"
-    foreach c $cand_list { puts "         $c" }
-    puts "WARNING: run the matching gen_*.py first."
-    set data_dir [lindex $cand_list 0]
-}
-puts "INFO: data dir  = $data_dir"
 
 # =============================================================================
 #  hls_exec: 1 = 仅 C 综合; 2 = 综合 + RTL 协同仿真(cosim); 3 = 再加导出

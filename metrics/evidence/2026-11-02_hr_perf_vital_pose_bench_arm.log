@@ -1,0 +1,27 @@
+
+# wget -q -O /tmp/vigilens_hr_perf/temporal_bench http://169.254.73.28:8095/temp
+oral_bench
+/temporal_bench
+/tmp/vigilens_hr_perf/temporal_bench
+printf '\nTEMPORAL_CPU_BENCH_DONE\n'
+
+printf '\nVIGI_COMMAND_DONE\n'
+# chmod 755 /tmp/vigilens_hr_perf/temporal_bench
+# /tmp/vigilens_hr_perf/temporal_bench
+POSE_TEMPORAL_BENCH frames=120 cold_cpu_ms=3.437112 warm_cpu_ms=0.390808 max_angle_difference_deg=0.000000002 synthetic_only=1
+VITAL_CPU_BENCH method=pos source_hz=27.50 iterations=20 estimate_cpu_ms=19.983615 synthetic_input_bpm=69 estimated_bpm=69.700000000 conf=0.989600000 synthetic_only=1
+VITAL_CPU_BENCH method=pos source_hz=28.50 iterations=20 estimate_cpu_ms=19.154814 synthetic_input_bpm=69 estimated_bpm=68.400000000 conf=0.994900000 synthetic_only=1
+VITAL_CPU_BENCH method=pos source_hz=29.95 iterations=20 estimate_cpu_ms=18.170405 synthetic_input_bpm=69 estimated_bpm=69.900000000 conf=0.983800000 synthetic_only=1
+VITAL_CPU_BENCH method=pos source_hz=30.00 iterations=20 estimate_cpu_ms=18.182626 synthetic_input_bpm=69 estimated_bpm=70.000000000 conf=0.979700000 synthetic_only=1
+VITAL_CPU_BENCH method=green source_hz=27.50 iterations=20 estimate_cpu_ms=5.522362 synthetic_input_bpm=69 estimated_bpm=69.700000000 conf=0.989600000 synthetic_only=1
+VITAL_CPU_BENCH method=green source_hz=28.50 iterations=20 estimate_cpu_ms=5.219981 synthetic_input_bpm=69 estimated_bpm=68.400000000 conf=0.994900000 synthetic_only=1
+VITAL_CPU_BENCH method=green source_hz=29.95 iterations=20 estimate_cpu_ms=4.951279 synthetic_input_bpm=69 estimated_bpm=69.900000000 conf=0.983800000 synthetic_only=1
+VITAL_CPU_BENCH method=green source_hz=30.00 iterations=20 estimate_cpu_ms=4.981765 synthetic_input_bpm=69 estimated_bpm=70.000000000 conf=0.979700000 synthetic_only=1
+# printf '\nTEMPORAL_CPU_BENCH_DONE\n'
+
+TEMPORAL_CPU_BENCH_DONE
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

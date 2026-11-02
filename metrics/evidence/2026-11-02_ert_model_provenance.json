@@ -1,0 +1,19 @@
+{
+  "model_use": "local noncommercial evaluation only; iBUG-derived model not redistributed",
+  "downloads": {
+    "dlib-v19.24.6.tar.gz": {
+      "url": "https://codeload.github.com/davisking/dlib/tar.gz/refs/tags/v19.24.6",
+      "bytes": 18927196,
+      "sha256": "22513c353ec9c153300c394050c96ca9d088e02966ac0f639e989e50318c82d6"
+    },
+    "shape_predictor_68_face_landmarks.dat.bz2": {
+      "url": "https://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2",
+      "bytes": 64040097,
+      "sha256": "7d6637b8f34ddb0c1363e09a4628acb34314019ec3566fd66b80c04dda6980f5"
+    }
+  },
+  "model": {
+    "bytes": 99693937,
+    "sha256": "fbdc2cb80eb9aa7a758672cbfdda32ba6300efe9b6e6c7a299ff7e736b11b92f"
+  }
+}

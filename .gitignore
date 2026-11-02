@@ -24,6 +24,57 @@ fpga/sim/data_motion/gray.bin
 #       是黄金参考，**必须入库**（golden_fir_out.csv 是逐样本期望输出，可人工评审）。
 fpga/sim/data_fir/series.bin
 
+# ---- C 线：fir_filter 的 60 Hz 档系数与向量（docs/22 §2）--------------------
+# 系数表 fpga/src/fir_coeffs_q15_60hz.h 由 design_fir_coeffs.py 生成，**必须入库**；
+# 黄金参考：python fpga/sim/gen_fir_vectors.py --header fpga/src/fir_coeffs_q15_60hz.h \
+#                                             --out-dir fpga/sim/data_fir_60hz
+# 注意：fpga/sim/data_fir_60hz/{meta.txt, golden_fir.csv, golden_fir_out.csv} 必须入库。
+fpga/sim/data_fir_60hz/series.bin
+
+# ---- C 线：v1.5 测量口径档位的生成向量（docs/interface.md 头部 v1.5 草案）----
+# 720p 档（抽取 3/8 -> 480x270）：
+#   python fpga/sim/gen_motion_vectors.py --width 1280 --height 720 --decim 3 8 \
+#          --out-dir fpga/sim/data_motion_720p
+# 1080p 档（抽取 1/4 -> 480x270）：同上，改 --width 1920 --height 1080 --decim 1 4
+# 注意：fpga/sim/data_motion_720p/{meta.txt, golden_motion.csv} 是黄金参考，**必须入库**。
+fpga/sim/data_motion_720p/rgb_frames.bin
+fpga/sim/data_motion_720p/gray.bin
+
+# ---- C 线：raw10_unpack / bayer_demosaic 的生成向量（docs/19 新像素源链路）----
+# 一键重建：python fpga/sim/gen_mipi_vectors.py
+# 注意：fpga/sim/data_mipi/{meta.txt, golden_mipi.csv} 是黄金参考，**必须入库**
+#       （golden_mipi.csv 是逐帧抽查点，可人工评审；全量黄金参考是 .bin，体积大且可重建）。
+fpga/sim/data_mipi/raw10.bin
+fpga/sim/data_mipi/golden_bayer16.bin
+fpga/sim/data_mipi/golden_rgb.bin
+
+# ---- C 线：frame_scale 的生成向量（docs/20 的 720p60 方案）-------------------
+# 一键重建：python fpga/sim/gen_scale_vectors.py
+# 注意：fpga/sim/data_scale/{meta.txt, golden_scale.csv} 是黄金参考，**必须入库**。
+fpga/sim/data_scale/rgb_in.bin
+fpga/sim/data_scale/golden_scale.bin
+
+# ---- C 线：v1.5 档位化（720p60 / 1080p45）的生成向量 -------------------------
+# 与上面每一条同一纪律：**大 .bin 不入库**（可由 seed 确定性重建），
+# **meta.txt 与 golden_*.csv 必须入库**（它们是黄金参考，人要能评审）。
+# ⚠️ 2026-10-01 补：这四个目录是那轮新加的，当时**没有任何规则**，
+#    于是 1080p45 的 62 MB rgb_frames.bin 被提交进了 git —— 推送时 GitHub 直接告警
+#    （"larger than GitHub's recommended maximum file size of 50.00 MB"），
+#    而 AGENTS.md §10.2 早就写明这类 .bin 不能提交。这条就是补那个漏。
+#    重建命令见各目录的 README.md。
+fpga/sim/data_motion_720p60/rgb_frames.bin
+fpga/sim/data_motion_720p60/gray.bin
+fpga/sim/data_motion_1080p45/rgb_frames.bin
+fpga/sim/data_motion_1080p45/gray.bin
+fpga/sim/data_roi_720p/frames.bin
+fpga/sim/data_roi_1080p/frames.bin
+# 档位的缩小尺寸集（cosim 用）与 30 Hz 小尺寸 FIR 序列：同样只留 meta/golden
+fpga/sim/data_motion_small_720p60/rgb_frames.bin
+fpga/sim/data_motion_small_720p60/gray.bin
+fpga/sim/data_motion_small_3_8/rgb_frames.bin
+fpga/sim/data_motion_small_3_8/gray.bin
+fpga/sim/data_fir_small_30hz/series.bin
+
 # ---- Vitis HLS 构建产物 ----------------------------------------------------
 fpga/component_*/
 fpga/logs/
@@ -55,11 +106,45 @@ data/raw/*.mkv
 data/raw/*.bin
 
 # ---- 运行时产物（代码生成，不入库；目录靠 .gitkeep 保留）--------------------
+# Include nested run directories and command/lock files, not only flat logs.
+/metrics/logs/**
+!/metrics/logs/.gitkeep
+/metrics/csv/**
+!/metrics/csv/.gitkeep
 metrics/csv/*.csv
 metrics/logs/*.json
 metrics/logs/*.jsonl
 metrics/logs/*.log
+metrics/logs/*.tmp
+# metrics/logs/ 是**生成物**目录（`metrics/csv/*.csv` 已经这样处理了）：A 线管线/演示脚本
+# 在这里落的契约指标 CSV（如 demo_clip.csv / demo_face.csv）同理不入库。
+# ⚠️ 正式证据仍然走 metrics/evidence/（那一条不要加更宽的通配，见下面的注意事项）。
+metrics/logs/*.csv
+# 视频转运的帧序列（默认落点）：体积大、可能含可识别人脸，**一律不入库**。
+# 需要留证据时只入库 `metrics/evidence/` 下的 manifest/哈希/日志摘要，不入库 frames.bin。
+metrics/logs/video_clips/
 metrics/evidence/*.tmp
+# ⚠️ BUG-003：上面这条 `metrics/logs/*.tmp` 是补的（2026-10-01）。
+#    原来只有 `metrics/evidence/*.tmp`，而实际脏掉 git status 的临时文件**产生在 metrics/logs/**
+#    （`tempfile` 在 A 线管线/演示脚本运行期落到那里，形如 tmp_bz04xar.tmp）——
+#    于是"每次 git status 都是脏的"。台账 BUG-003 描述的现象与这里对得上。
+# 📌 BUG-003 的**根因**另有一条（本行修不了）：`tempfile.gettempdir()` 在本机解析到一个
+#    被写入拒绝的目录，才导致产物落到 metrics/logs/。真正该做的是修 TEMP 或让脚本显式指定
+#    产物目录；本行只保证"不再脏 git status"。
+
+# HLS 构建失败标记（vitis-run 会在 fpga/ 下留一个 .hls.failed）
+fpga/.hls.failed
+
+# ---- A 线：年龄分层疲劳功能的产物（docs/28）--------------------------------
+# **必须入库**（不要在上面加通配）：data/reference/age_bands.json（带出处的参照基线）、
+#   data/fatigue_db/schema.sql（库结构，供评审查表）。
+# **不入库**：
+#   · 年龄模型权重（体积大、许可见模型页，用 metrics/scripts/fetch_age_model.py 取）；
+#   · SQLite 库本体 —— 它含**个体测量数据与人脸签名**（虽是不可逆签名，仍属个人信息）。
+data/models/age/
+data/fatigue_db/*.sqlite3
+data/fatigue_db/*.sqlite3-wal
+data/fatigue_db/*.sqlite3-shm
 
 # 自检/临时脚本产物（下划线开头 = 本机临时，不是证据，不入库）
 metrics/logs/_*
@@ -67,6 +152,24 @@ metrics/evidence/_pytest_tmp/
 metrics/evidence/_*
 # ⚠️ 注意：metrics/evidence/ 下**正式证据**（如 a_line_m1_run.json、js_frames.jsonl、
 #    页面截图 B8）是要入库的，不要在上面加更宽的通配把它一起忽略掉。
+
+# ---- C 线：档位 cosim 用的小帧数向量（生成物，可由 seed 重建）----------------
+# 生成：python fpga/sim/gen_frames.py --width 1280 --height 720 --frames 1 \
+#              --out-dir fpga/sim/data_roi_720p_cosim
+# 注意：fpga/sim/data_roi_*_cosim/golden_roi.csv 是黄金参考，**必须入库**。
+# 同理（由 gen_motion_vectors.py 重建、黄金参考入库）：
+fpga/sim/data_roi_720p_cosim/frames.bin
+fpga/sim/data_roi_1080p_cosim/frames.bin
+fpga/sim/data_motion_small_1080p45/rgb_frames.bin
+fpga/sim/data_motion_small_1080p45/gray.bin
+
+# ---- 仓库根的一次性临时产物（会话日志 / 临时黄金参考目录）--------------------
+# 🔍 为什么要有这条：C 线跑 HLS 时习惯先把日志与"从仓库外搬进来的黄金参考"落在仓库根
+#    （形如 `_cosim_*.log` / `_golden720/` / `_roi720/` / `_tier_*.log`）。
+#    **要留的证据**应当归档进 `fpga/report/logs/`（原始日志）或 `fpga/sim/data_*/`
+#    （黄金参考），根目录这一份一律不入库 —— 否则 `git status` 长期是脏的
+#    （与 BUG-003 同一类，2026-10-01 实测又踩到：根目录一次留下 40+ 个 `_*` 文件）。
+/_*
 
 # ---- 编辑器 / 自动生成 ------------------------------------------------------
 *.log.bak
@@ -87,3 +190,59 @@ report/**/~$*
 .idea/
 Thumbs.db
 desktop.ini
+
+# ---- Vivado 会话产物 / 工程目录（不是交付物，2026-10-23 补）-------------------
+# 🔍 为什么现在补：跑一次 `build_bd.tcl`（无论 BD_ONLY 还是全量）就会在**当前目录**留下
+#    `vivado.log` / `vivado.jou` / `vivado_<pid>.backup.{log,jou}`，还会建 `vivado_project/`、
+#    `.Xil/`、`.gen/`、`.srcs/`。这四类加起来一次就是 30~40 条未跟踪项，把真正要提交的
+#    源码淹掉（2026-10-23 实测:43 项未跟踪里 34 项是这个）。
+#    真正的交付物是 `board/bitstream/system_wrapper.bit` 与它的时序/资源报告，那两条另有规则。
+vivado*.log
+vivado*.jou
+board/vivado*.log
+board/vivado*.jou
+# 同一次会话的临时目录（Vivado / 综合脚本都会建）
+.Xil/
+.gen/
+.srcs/
+# 工程本体（含 runs/ 里的中间网表，几百 MB），用 board/build_bd.tcl 重建
+board/vivado_project/
+board/cam_detect/.Xil/
+# Vivado 输出给用户的一次性信息文件
+clockInfo.txt
+
+# ---- bitstream / HDF：**不入库**，走 Releases（2026-10-23 定）------------------
+# system_wrapper.bit 4.0 MB + system.hdf 456 KB，每次重综合都变（时序不同、内容不同），
+# 提交进 git 只会让历史迅速膨胀，而且**没有任何人能用它复现**（要配同一个 Vivado 版本）。
+# 需要时用 `board/build_bd.tcl` 重建；报告与时序数字照旧入库（board/*.rpt、fpga/report/）。
+# ⚠️ 不要忽略 `board/overlay/*`、`board/*.tcl`、`board/*.v` —— 那些是源码。
+board/bitstream/*.bit
+board/bitstream/*.hdf
+board/bitstream/*.xsa
+board/bitstream/ps7_init.tcl
+
+# ---- 本机会话的临时目录（板上实验脚本 .tmp/s4/ 等，勿入库）---------------------
+.tmp/
+.tmp_probe.txt
+/pytest-of-*/
+
+# ---- 裸机固件的编译产物（board/s4_bench/，2026-10-23）-------------------------
+# 源码（s4_bench.c / start.S / link.ld）与驱动（*.py）入库，二进制不入库：
+# 6 KB 的东西每改一行就变一次，重建只要 `bash board/s4_bench/build.sh`。
+board/s4_bench/*.bin
+board/s4_bench/*.elf
+board/s4_bench/run_*.tcl
+board/s4_bench/res.bin
+board/s4_bench/gray_out.bin
+
+# ---- 本机一次性诊断脚本 / 探针留下的东西（2026-10-23 清点）--------------------
+# board/retry_open_nr.log = IMX219 探针重试日志；data/fatigue_db/_probe.txt = 建库探针；
+# fix_jtag_ftdi.ps1 = 修 FTDI 驱动的一次性脚本（含本机路径，不可移植）。
+board/retry_open_nr.log
+data/fatigue_db/_probe.txt
+fix_jtag_ftdi.ps1
+
+# Local delivery archives, extraction checks and manifests.
+/deliverables/
+.ruff_cache/
+/gastest.o

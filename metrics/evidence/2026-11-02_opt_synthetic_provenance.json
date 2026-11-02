@@ -1,0 +1,78 @@
+{
+  "seed": 20261102,
+  "contains_face_images": false,
+  "pixels": "procedural numpy gradients and seeded noise only",
+  "jpeg_fixtures": [
+    {
+      "name": "noise0_q75",
+      "bytes": 183170,
+      "width": 1280,
+      "height": 720,
+      "quality": 75,
+      "noise_sigma": 0
+    },
+    {
+      "name": "noise0_q95",
+      "bytes": 415587,
+      "width": 1280,
+      "height": 720,
+      "quality": 95,
+      "noise_sigma": 0
+    },
+    {
+      "name": "noise5_q75",
+      "bytes": 206647,
+      "width": 1280,
+      "height": 720,
+      "quality": 75,
+      "noise_sigma": 5
+    },
+    {
+      "name": "noise5_q95",
+      "bytes": 608251,
+      "width": 1280,
+      "height": 720,
+      "quality": 95,
+      "noise_sigma": 5
+    },
+    {
+      "name": "noise15_q75",
+      "bytes": 305327,
+      "width": 1280,
+      "height": 720,
+      "quality": 75,
+      "noise_sigma": 15
+    },
+    {
+      "name": "noise15_q95",
+      "bytes": 877319,
+      "width": 1280,
+      "height": 720,
+      "quality": 95,
+      "noise_sigma": 15
+    },
+    {
+      "name": "noise40_q75",
+      "bytes": 537336,
+      "width": 1280,
+      "height": 720,
+      "quality": 75,
+      "noise_sigma": 40
+    },
+    {
+      "name": "noise40_q95",
+      "bytes": 1162534,
+      "width": 1280,
+      "height": 720,
+      "quality": 95,
+      "noise_sigma": 40
+    }
+  ],
+  "files": {
+    "synthetic_roi.rgbstream": "604e4a5abd6ae68b9d823f8d8288c4fcb384c16acc7f0fc608a0ca6f6438ed1f",
+    "synthetic_jpeg.stream": "bce249c7fb9ea39032f63e3097c7cf4f69cc846ea775944ba37a82fd02ded958",
+    "ert_prefetch_arm": "12210ace1333a98c91ea6aa6083e75fa423b17903818fd464f9e6b3e63eebada",
+    "jpeg_baseline_arm": "d248ecf50ad1bff12cc213710a252def429823f610482798681042a61293f6bc",
+    "jpeg_o3_arm": "6eef8052b1b409fa77d143a8cec8601570c5e44754d9c622a3b8f78408e33098"
+  }
+}

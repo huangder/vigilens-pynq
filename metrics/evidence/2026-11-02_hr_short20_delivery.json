@@ -1,0 +1,29 @@
+{
+  "kind": "local_ARM_candidate_delivery_NOT_real_person_validation",
+  "archive": ".tmp\\autonomy\\hr_short20_20261102\\vigilens_hr20_candidate.zip",
+  "archive_sha256": "c04f63fbef8b8c1e50385c1df252ef164eb76bb673f96ddf9225e85834c07a8c",
+  "archive_bytes": 86478742,
+  "config_sha256": "e21bf2b5a61f3c58b76f7eef87fd55d4578eea27b84ee061feafdf31225aff44",
+  "heart_rate_window_seconds": 20,
+  "required_hr_samples": 600,
+  "behavior_window_seconds": 30,
+  "targeted_tests": {
+    "passed": 89,
+    "subtests_passed": 8
+  },
+  "offline_checks": {
+    "passed": 26,
+    "failed": 0
+  },
+  "native_ctest": {
+    "passed": 10,
+    "failed": 0
+  },
+  "local_installer_smoke_passed": true,
+  "local_installer_uses_file_copy_download_fixture": true,
+  "archive_crc_and_manifest_verified": true,
+  "installed_on_board": false,
+  "real_heart_rate_verified": false,
+  "all_board_30fps_verified": false,
+  "raw_face_media_transferred": false
+}

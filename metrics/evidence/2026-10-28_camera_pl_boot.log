@@ -1,0 +1,42 @@
+[[open ok COM11 @ 115200]]
+
+
+U-Boot 2024.10 (Oct 25 2026 - 20:34:10 +0800)
+
+CPU:   Zynq 7z020
+Silicon: v3.1
+Model: Avnet ZedBoard board
+DRAM:  ECC disabled 512 MiB
+Core:  22 devices, 16 uclasses, devicetree: board
+Flash: 0 Bytes
+NAND:  0 MiB
+MMC:   mmc@e0100000: 0
+Loading Environment from nowhere... OK
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Net:   Could not get PHY for eth0: addr 0
+No ethernet found.
+
+Hit any key to stop autoboot:  2  1  0 
+JTAG: Trying to boot script at 3000000
+## Executing script at 03000000
+Kernel image @ 0x2000000 [ 0x000000 - 0xa7c200 ]
+## Loading init Ramdisk from Legacy Image at 18000000 ...
+   Image Name:   VigiLens-direct-loop
+   Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+   Data Size:    11597958 Bytes = 11.1 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 1c000000
+   Booting using the fdt blob at 0x1c000000
+Working FDT set to 1c000000
+Could not get PHY for eth0: addr 0
+Could not get PHY for eth0: addr 0
+   Loading Ramdisk to 1cfbd000, end 1dacc886 ... OK
+   Loading Device Tree to 1cfa9000, end 1cfbc3a1 ... OK
+Working FDT set to 1cfa9000
+
+Starting kernel ...
+

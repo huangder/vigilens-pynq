@@ -4,10 +4,9 @@
 
 几个刻意的设计决定，都会影响《02》的验收口径，写在这里避免以后被当成 bug：
 
-1. **逻辑时间戳 = frame_id / fps，不用墙上时钟。**
-   PERCLOS / 眨眼率都是滑动窗口统计，如果时间戳取 time.time()，同一段视频
-   跑两次会得到不同数值 —— 直接违反《02》A3 的"同视频重复运行结果一致"。
-   因此本文件用帧序号推时间轴；真实实时采集时才用墙上时钟（--wall-clock）。
+1. **离线回放用 frame_id/fps；实时源用实际采集间隔。**
+   离线回放保持确定性；实时源按采集时间槽限制输出速率，保留实际时间戳，
+   行为计时、契约 ts 和 rPPG 使用同一时间轴。慢源不补帧、不伪装成标称帧率。
 
 2. **上游关键点是 stub 时，必须在输出里说清楚。**
    每次运行结束都打印"本次数据来源"，并在 summary JSON 里标 `landmark_source`。
@@ -40,32 +39,51 @@ import json
 import sys
 import time
 from collections import Counter
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
 try:
+    from .age_contract import dumps as age_dumps
+    from .age_contract import validate_age_state
+    from .age_infer import AgeProfileStore
     from .behavior_metrics import BehaviorTracker
-    from .capture import OrientingSource, image_size, open_frame_source
+    from .capture import OrientingSource, image_size, is_live_source, open_frame_source
+    from .sampling import LiveSampler
     from .config import REPO_ROOT, load_config
     from .contract import new_frame
     from .decision import DecisionEngine
     from .face_landmark import make_landmarker
+    from .fatigue_coupling import CoupledRiskModel
+    from .fatigue_db import FatigueDB, load_reference
     from .quality import QualityScorer
-    from .publish import FramePoster, PostError, PreviewPoster, full_url, preview_url
+    from .publish import (FramePoster, PostError, PreviewPoster, LatestPreviewPoster, SidecarPoster,
+                          VideoPusher, age_url_from_ingest, frame_url_from_ingest,
+                          full_url, preview_url)
     from .storage import MetricsStorage, write_snapshot
     from .vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
+    from .rppg_color import make_rppg
 except ImportError:  # python backend/run_pipeline.py
     sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from age_contract import dumps as age_dumps
+    from age_contract import validate_age_state
+    from age_infer import AgeProfileStore
     from behavior_metrics import BehaviorTracker
-    from capture import OrientingSource, image_size, open_frame_source
+    from capture import OrientingSource, image_size, is_live_source, open_frame_source
+    from sampling import LiveSampler
     from config import REPO_ROOT, load_config
     from contract import new_frame
     from decision import DecisionEngine
     from face_landmark import make_landmarker
+    from fatigue_coupling import CoupledRiskModel
+    from fatigue_db import FatigueDB, load_reference
     from quality import QualityScorer
-    from publish import FramePoster, PostError, PreviewPoster, full_url, preview_url
+    from publish import (FramePoster, PostError, PreviewPoster, LatestPreviewPoster, SidecarPoster,
+                         VideoPusher, age_url_from_ingest, frame_url_from_ingest,
+                         full_url, preview_url)
     from storage import MetricsStorage, write_snapshot
     from vital import GreenRppg, forehead_roi, q15_from_roi_sum, roi_channel_sum
+    from rppg_color import make_rppg
 
 # 收尾帧（契约 §2 第 6 种状态）的固定话术，与 mock.py 的 _ADVICE["done"] 一致
 DONE_ADVICE = "测量完成"
@@ -94,9 +112,8 @@ def build_frame(
     # 心率：由 rPPG 估计器给出（P3）；**必须过 gate_vitals 这道门**才允许出现在契约里。
     # 质量不够、窗口没填满、频谱里没有真峰 —— 任一不满足都会让 vital.* 变回 null。
     # 呼吸率目前恒为 null：契约 §3.5 冻结"63 阶 @45 fps 做不了呼吸带"，需要另一组系数。
-    vital = engine.gate_vitals(q_public["overall"], vital_input)
-
     dec = engine.decide(frame_id=frame_id, behavior=beh_public, quality=q_public, face=face)
+    vital = engine.gate_vitals(q_public["overall"], vital_input, face=face, status=dec["status"])
     frame = new_frame(
         ts=round(ts, 3),
         frame_id=frame_id,
@@ -117,6 +134,82 @@ def strip_internal(frame: dict) -> dict:
     return {k: v for k, v in frame.items() if not k.startswith("_")}
 
 
+def update_rppg(rppg: GreenRppg, engine: DecisionEngine, *, obs: Any,
+                quality: dict, image: Any, frame_id: int, ts: float | None,
+                fallback: tuple[int, int], stabilizer=None) -> dict:
+    """Keep a continuous valid-face window, never reuse a pre-loss estimate.
+
+    Face loss/empty ROI immediately clears history. Configured short quality or
+    pose failures pause the raw window, but never return a stale estimate.
+    """
+    def finish(raw):
+        rppg.last_raw_hr = raw["hr_bpm"]
+        rppg.last_raw_hr_conf = raw["hr_conf"]
+        if stabilizer is None:
+            return raw
+        value, conf = stabilizer.update(raw["hr_bpm"], raw["hr_conf"], ts if ts is not None else frame_id / rppg.fps)
+        return {**raw, "hr_bpm": value, "hr_conf": conf}
+
+    face = {"visible": float(obs.visible), "pose": obs.pose}
+    if not engine.vitals_allowed(quality["overall"], face):
+        if face["visible"] < engine.face_visible_min:
+            rppg.invalidate("face_invalid", ts)
+        else:
+            reason = "quality_invalid" if quality["overall"] < max(engine.quality_min, engine.vital_require_quality) else "pose_invalid"
+            rppg.invalidate(reason, ts, allow_recovery=True)
+        return finish(rppg.estimate())
+    fw, fh = image_size(image, fallback=fallback)
+    roi = obs.forehead if obs.forehead is not None else forehead_roi(obs.bbox, fw, fh)
+    sum_g, count = roi_channel_sum(image, roi, channel=1)
+    if count <= 0:
+        rppg.invalidate("empty_roi", ts)
+    else:
+        previous_ts = rppg.last_sample_ts
+        if ts is not None and previous_ts is not None and ts - previous_ts > rppg.max_gap_s:
+            rppg.reset("source_gap")
+        if getattr(rppg, "needs_rgb", False):
+            # OpenCV is BGR; the color algorithm consumes explicit RGB means.
+            sum_r, _ = roi_channel_sum(image, roi, channel=2)
+            sum_b, _ = roi_channel_sum(image, roi, channel=0)
+            rppg.push_rgb((sum_r, sum_g, sum_b), count, frame_id, ts=ts)
+        else:
+            rppg.push(q15_from_roi_sum(sum_g, count), frame_id, ts=ts)
+    return finish(rppg.estimate())
+
+
+def load_pl_motion(path: str | Path) -> dict[int, float]:
+    """读取 `pc_phase10.json`（或同构结果），返回 `{frame_id: motion_ratio}`。
+
+    只接受**有效**帧：`motion_quality` 第 1 帧的片内 BRAM 未定义，`valid=false`
+    不能拿 0 去覆盖软件质量分；无效帧直接跳过，让 A 线保留自己的帧差结果。
+    `motion_ratio_q16` 按 PL 口径 /65536 还原到 0~1。
+    """
+    p = Path(path)
+    data = json.loads(p.read_text(encoding="utf-8"))
+    rows = data.get("per_frame") if isinstance(data, dict) else None
+    if not isinstance(rows, list):
+        raise ValueError(f"{p}: 缺少 per_frame 数组（需要 pc_phase10.json 格式）")
+
+    out: dict[int, float] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError(f"{p}: per_frame 项不是对象: {row!r}")
+        fid = int(row["fid"])
+        valid = bool(row.get("valid", True))
+        if not valid:
+            continue
+        if row.get("motion_ratio_q16") is not None:
+            ratio = float(row["motion_ratio_q16"]) / 65536.0
+        elif row.get("motion_ratio") is not None:
+            ratio = float(row["motion_ratio"])
+        else:
+            raise ValueError(f"{p}: fid={fid} 既没有 motion_ratio_q16 也没有 motion_ratio")
+        if not 0.0 <= ratio <= 1.0:
+            raise ValueError(f"{p}: fid={fid} motion_ratio={ratio} 超出 0~1")
+        out[fid] = ratio
+    return out
+
+
 def encode_preview_jpeg(image: Any, quality: int = 80) -> bytes | None:
     """真实 ndarray → JPEG；SyntheticImage 等非图像源明确返回 None。"""
     try:
@@ -135,13 +228,20 @@ def encode_preview_jpeg(image: Any, quality: int = 80) -> bytes | None:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="VigiLens A 线：视频回放 → 契约 JSON / CSV")
     ap.add_argument("--source", default="synthetic",
-                    help="视频文件路径 / 摄像头序号 / synthetic（默认，不需要任何依赖）")
+                    help="视频文件路径 / 摄像头序号 / synthetic（默认，不需要任何依赖）"
+                         " / mjpeg:URL（网页旁路画面，如 mjpeg:http://127.0.0.1:8031/video.mjpg）"
+                         " / board:IP:port（同包板端 RGB 与 PL 结果）")
     ap.add_argument("--pattern", default="blink", choices=["blink", "yawn", "still", "turn"],
                     help="stub 关键点的行为模式（装好 mediapipe 后此项被忽略）")
     ap.add_argument("--stub", action="store_true", help="强制使用 stub 关键点（对比用）")
-    ap.add_argument("--fps", type=float, default=None, help="逻辑帧率，默认取 config.yaml")
-    ap.add_argument("--seconds", type=float, default=None, help="只跑前 N 秒（按 --fps 换算成帧数）")
+    ap.add_argument("--fps", type=float, default=None, help="实时源采样目标/离线逻辑帧率，默认取 config.yaml")
+    ap.add_argument("--rppg-method", choices=["green", "pos"], default=None,
+                    help="临时覆盖心率信号算法；pos 为实验选项，不修改 config.yaml")
+    ap.add_argument("--seconds", type=float, default=None, help="只跑前 N 秒（实时源按采集时间，离线按 --fps）")
     ap.add_argument("--limit", type=int, default=None, help="只跑前 N 帧")
+    ap.add_argument("--loop", action="store_true",
+                    help="视频文件源读到尾就从头继续（**同一个进程**：计数器 / CSV 不重置，"
+                         "frame_id 与 ts 单调递增；摄像头与 MJPEG 无效）。见 docs/16 BUG-009 成因 A")
     ap.add_argument("--width", type=int, default=None)
     ap.add_argument("--height", type=int, default=None)
     ap.add_argument("--wall-clock", action="store_true",
@@ -166,18 +266,62 @@ def main(argv: list[str] | None = None) -> int:
                          "写 auto 等价于本机默认地址")
     ap.add_argument("--preview-hz", type=float, default=12.0,
                     help="同源预览发送帧率（默认 12 fps，独立于指标 1 Hz）")
+    ap.add_argument("--preview-async", action="store_true",
+                    help="预览编码/HTTP 在后台执行，只保留最新一帧，不阻塞测量")
     ap.add_argument("--preview-jpeg-quality", type=int, default=80,
                     help="同源预览 JPEG 质量 1~100（默认 80）")
     ap.add_argument("--realtime", action="store_true",
                     help="文件/合成回放按逻辑帧率节奏播放；摄像头本身已按自然采集节奏运行")
     ap.add_argument("--no-done", action="store_true",
                     help="不发收尾帧（status=done）。默认会发：M2 要求六态都能在网页上出现")
+    ap.add_argument("--push-video", action="store_true",
+                    help="M3：同时把当前画面作为 **旁路 JPEG** 推到 B 线 /api/frame，"
+                         "网页上就能看到真实画面（而不再只是占位网格）。"
+                         "必须与 --post 一起用（地址从 --post 推导）。"
+                         "⚠️ 旁路画面失败**不改变退出码**，只计数并进 summary —— "
+                         "画面是给人看的，指标才是测量结果")
+    ap.add_argument("--video-hz", type=float, default=None,
+                    help="旁路画面推送节奏，默认取 config.yaml 的 video_push_hz（8 Hz）")
+    ap.add_argument("--video-quality", type=int, default=None,
+                    help="旁路 JPEG 质量 1..100，默认取 config.yaml 的 video_jpeg_quality（80）")
+    ap.add_argument("--video-max-width", type=int, default=None,
+                    help="旁路画面最长边（等比缩放），默认取 config.yaml 的 video_max_width（640）")
     ap.add_argument("--frame-id-offset", type=int, default=0,
                     help="帧号起点偏移（M2 连跑多段时必须用：契约要求 frame_id/ts 跨帧单调递增，"
                          "第二段从 0 重新开始会让 B 线趋势曲线的 frame_id 回退）")
+    ap.add_argument("--pl-motion-json", default=None,
+                    help="用 PL/phase-10 的 motion_ratio 覆盖 quality.motion_score；"
+                         "输入是 pc_phase10.json（RTL/PC 仿真结果）。仅用于仿真闭环，"
+                         "不新增契约字段；无效帧（如 PL 第 1 帧）自动跳过。")
+    # ---- 年龄分层疲劳对照（旁路功能：**不进冻结的 9 字段契约帧**）----------------
+    ap.add_argument("--age", action="store_true",
+                    help="启用年龄档案旁路：图像年龄推断（1 Hz 节流）+ 人脸收录判断 + "
+                         "同龄基线比对。产物写 --age-jsonl / --age-json，可选 --db 落库。"
+                         "缺省不加此开关时，本脚本行为与从前一致。")
+    ap.add_argument("--age-confirm", type=int, default=None, metavar="N",
+                    help="非交互地正式确认年龄（6~100）。确认后按用户要求**停用图像推测**。"
+                         "交互式确认走 B 线网页的 POST /api/age。"
+                         "命令行确认发生在逻辑时间 0 点，保证同一段回放可复现。")
+    ap.add_argument("--age-jsonl", default=None,
+                    help="年龄档案件逐帧追加（如 metrics/logs/age.jsonl）。"
+                         "**不是**契约帧，绝不写进 stream.jsonl")
+    ap.add_argument("--age-json", default=None,
+                    help="最新一份年龄档案件快照（如 metrics/logs/age.json）")
+    ap.add_argument("--db", dest="db_path", default=None,
+                    help="把本次测量写入年龄分层疲劳数据库（SQLite）。"
+                         "不给则只在内存里算比对、不落库")
     args = ap.parse_args(argv)
 
     cfg = load_config()
+    if args.rppg_method is not None:
+        cfg["rppg_method"] = args.rppg_method
+    board_live = args.source.strip().lower().startswith("board:")
+    if board_live and args.pl_motion_json:
+        ap.error("board: frames already contain hardware motion; --pl-motion-json is incompatible")
+    if board_live and args.wall_clock:
+        ap.error("board: uses its capture timestamps; --wall-clock is incompatible")
+    if board_live and args.rotate not in ("auto", "0", 0):
+        ap.error("board: preserves PL pixel coordinates; --rotate must be 0 or auto (kept at 0)")
     fps = float(args.fps if args.fps is not None else cfg["fps_nominal"])
     width = int(args.width if args.width is not None else cfg["fpga"]["img_width"])
     height = int(args.height if args.height is not None else cfg["fpga"]["img_height"])
@@ -194,15 +338,32 @@ def main(argv: list[str] | None = None) -> int:
 
     say(f"=== VigiLens A 线：视频回放 → 契约 JSON ===")
     say(f"config : {cfg['_source']}  (PyYAML={'有' if cfg['_yaml_available'] else '无，用内置解析器'})")
-    say(f"逻辑帧率: {fps} fps   逻辑时间戳: {'墙上时钟（不可复现）' if args.wall_clock else 'frame_id/fps（可复现）'}")
+    say(f"目标帧率: {fps} fps；实时源按采集时间计时，离线源按 frame_id/fps 回放")
 
-    frames_iter, desc = open_frame_source(args.source, width=width, height=height, fps=fps, limit=limit)
+    requested_live = is_live_source(args.source)
+    frames_iter, desc = open_frame_source(args.source, width=width, height=height, fps=fps,
+                                          limit=None if requested_live else limit,
+                                          loop=bool(args.loop))
     say(f"帧源   : {desc}")
+    board_stream = frames_iter if board_live else None
+    if board_stream is not None:
+        board_stream.limit = args.limit
+        board_stream.seconds = args.seconds
+        say("板端源 : 同包 RGB/PL；保留板端时间与运动量，不二次采样/旋转")
 
     # 合成帧源不是图像（只有 shape 与一个亮度值），真 MediaPipe 在上面看不到任何人脸：
     # 硬跑只会白跑一遍并抛 cv2.error。这里沿用项目既有的"链路优先 + 明确告知"做法
     # （与 capture.py 在缺 OpenCV 时回退到合成帧源同一个模式），自动改用 StubLandmarker。
     synthetic_src = desc.startswith("synthetic")
+    live_source = requested_live and not synthetic_src
+    sampler = None
+    if live_source and not board_live:
+        sampler = LiveSampler(frames_iter, fps=fps, limit=args.limit, seconds=args.seconds)
+        frames_iter = sampler
+        say("采样   : 按真实时间槽保留帧；慢源不补帧，采集时刻保留给行为计时和 rPPG")
+    elif requested_live and not board_live and limit is not None:
+        from itertools import islice
+        frames_iter = islice(frames_iter, limit)
     auto_stub = synthetic_src and not args.stub
     if auto_stub:
         say("[warn] 帧源是合成帧（SyntheticImage，不是图像）—— 已自动改用 StubLandmarker。")
@@ -224,7 +385,7 @@ def main(argv: list[str] | None = None) -> int:
     orient = OrientingSource(
         frames_iter,
         detect=(lambda img: landmarker.detect(img, 0).visible > 0.0) if lm_source == "mediapipe" else None,
-        rotate=args.rotate,
+        rotate="0" if board_live else args.rotate,
         probe_frames=int(cfg.get("orientation_probe_frames", 8)),
     )
     orient.prime()
@@ -238,10 +399,91 @@ def main(argv: list[str] | None = None) -> int:
 
     tracker = BehaviorTracker(cfg)
     scorer = QualityScorer(cfg)
+    pl_motion: dict[int, float] = {}
+    if args.pl_motion_json:
+        pl_path = Path(args.pl_motion_json)
+        if not pl_path.is_absolute():
+            pl_path = REPO_ROOT / pl_path
+        pl_motion = load_pl_motion(pl_path)
+        say(f"PL 运动量: {pl_path}（{len(pl_motion)} 个有效帧；覆盖 quality.motion_score）")
+        say("           ⚠️ 这是 RTL/PC 仿真的 PL 结果，不是板端实测；契约字段本身未改。")
     engine = DecisionEngine(cfg)
     # rPPG（P3）：输入是**绿通道 ROI 累加**经契约 §4.6 量化后的 Q1.15 序列，
     # 带通复用冻结 FIR，滑窗填满后才可能出数（窗口长度 = config 的 window_seconds）。
-    rppg = GreenRppg.from_config(cfg, fps=fps)
+    rppg = make_rppg(cfg, fps=fps)
+    try:
+        from .hr_filter import HrStabilizer, HrFilterConfig
+    except ImportError:
+        from hr_filter import HrStabilizer, HrFilterConfig
+    hr_stabilizer = HrStabilizer(HrFilterConfig.from_config(cfg))
+    # Live behavior, public ts and rPPG share capture-time intervals.
+    # Offline replay keeps its deterministic frame_id/fps path.
+
+    # ---- 年龄分层疲劳对照（旁路；缺省不加 --age 时这一整段都不存在）----------
+    # 设计要点见 docs/28：年龄档案件**不进**契约帧（那 9 个字段是冻结的），
+    # 只能走 --age-jsonl / --age-json / POST /api/age / SQLite 这四条旁路。
+    age_store: AgeProfileStore | None = None
+    couple: CoupledRiskModel | None = None
+    fatigue_db: FatigueDB | None = None
+    session_id: str | None = None
+    age_jsonl_fh = None
+    age_jsonl_path: Path | None = None
+    age_json_path: Path | None = None
+    age_posted = 0
+    age_compare_counts: Counter[str] = Counter()
+    sidecar_poster = None
+    if args.age:
+        norms = load_reference(cfg=cfg)
+        couple = CoupledRiskModel(cfg, norms)
+        # 会话号刻意**确定性**：同一段回放重复导入同一会话（INSERT OR REPLACE），
+        # 这样"再跑一次会不会多出一条脏数据"这个问题根本不会出现。
+        session_id = f"run-{Path(str(args.source)).stem or 'src'}-{fid_offset}"
+        if args.db_path:
+            fatigue_db = FatigueDB(REPO_ROOT / args.db_path if not Path(args.db_path).is_absolute()
+                                   else args.db_path, cfg=cfg)
+            fatigue_db.load_reference_into_db(norms)
+        age_store = AgeProfileStore(
+            cfg,
+            on_event=(lambda ev: fatigue_db.log_age_event(ev, session_id=session_id))
+            if fatigue_db is not None else None,
+            on_subject=(lambda su: fatigue_db.upsert_subject(su)) if fatigue_db is not None else None,
+        )
+        if args.age_jsonl:
+            age_jsonl_path = REPO_ROOT / args.age_jsonl
+            age_jsonl_path.parent.mkdir(parents=True, exist_ok=True)
+            age_jsonl_fh = age_jsonl_path.open("w", encoding="utf-8")
+        if args.age_json:
+            age_json_path = REPO_ROOT / args.age_json
+        say(f"年龄档案: {'启用' if age_store.enabled else '未启用（config.age_enabled=false）'}"
+            f"｜引擎 {age_store.engine.name if age_store.engine else 'none'}"
+            + ("（占位引擎，无精度证据）" if age_store.engine and age_store.engine.placeholder else "")
+            + f"｜参照基线 {norms.version}"
+            + (f"｜数据库 {args.db_path}" if fatigue_db is not None else "｜不落库"))
+        if age_store.engine is None:
+            say("[warn] 没有任何可用的年龄推断引擎（缺模型权重）—— 档案仍可用，"
+                "但 estimate 段会是 engine=none，前端显示『本次未做推断』。"
+                "缺权重时取权重：python metrics/scripts/fetch_age_model.py")
+        if args.age_confirm is not None:
+            # 命令行确认：发生在**逻辑时间 0 点**，因此同一段回放跑两次结果一致
+            # （交互式确认走 B 线网页，那条路径按墙上时钟记 confirmed_at，本就不可复现）。
+            age_store.set_manual(int(args.age_confirm), ts=0.0)
+            say(f"年龄确认: 命令行指定 {args.age_confirm} 岁 → 参照组 "
+                f"{age_store.profile['band']}，图像推测已停用（locked="
+                f"{age_store.profile['locked']}）")
+        if fatigue_db is not None:
+            fatigue_db.start_session(
+                session_id=session_id, started_at=0.0, fps=fps,
+                subject=age_store.profile.get("subject"),
+                age_years=age_store.profile.get("age_years"),
+                age_band=age_store.profile.get("band"),
+                age_source=age_store.profile.get("source"),
+                confirmed_by=age_store.profile.get("confirmed_by"),
+                engine=age_store.stats()["engine"],
+                engine_placeholder=age_store.stats()["engine_placeholder"],
+                landmark_source=lm_source, frame_source=desc,
+                provenance=("stub" if lm_source == "stub" else "live"),
+                reference_version=norms.version,
+                notes="run_pipeline --age 写入；provenance 由 landmark_source 判定")
 
     # M2（P5）：跨进程把真实帧推给 B 线。`auto` = 本机默认端口，省得记地址。
     poster: FramePoster | None = None
@@ -253,13 +495,48 @@ def main(argv: list[str] | None = None) -> int:
     preview_poster: PreviewPoster | None = None
     if args.preview_post:
         purl = preview_url() if args.preview_post == "auto" else args.preview_post
-        preview_poster = PreviewPoster(purl, hz=args.preview_hz)
+        preview_poster = (LatestPreviewPoster(purl, hz=args.preview_hz,
+                          encoder=lambda image: encode_preview_jpeg(image, args.preview_jpeg_quality))
+                          if args.preview_async else PreviewPoster(purl, hz=args.preview_hz))
         say(f"预览   : {purl}（{args.preview_hz:g} fps，同源 JPEG 旁路；失败不截断测量）")
+
+    # M3：旁路画面。与契约帧走**同一个服务、不同端点**，地址从 --post 推导。
+    vpusher: VideoPusher | None = None
+    if args.push_video:
+        if poster is None:
+            print("[FAIL] --push-video 需要同时给 --post（画面地址从 --post 推导）。",
+                  file=sys.stderr)
+            return 2
+        v_hz = float(cfg.get("video_push_hz") if args.video_hz is None else args.video_hz)
+        v_q = int(cfg.get("video_jpeg_quality") if args.video_quality is None else args.video_quality)
+        v_w = int(cfg.get("video_max_width") if args.video_max_width is None else args.video_max_width)
+        vpusher = VideoPusher(frame_url_from_ingest(poster.url), hz=v_hz, quality=v_q, max_width=v_w)
+        if synthetic_src:
+            # 合成帧源不是图像（SyntheticImage），没有 shape/像素 → 编码必然失败。
+            # 明确告知并**关掉**，而不是每帧刷一条错误。
+            say("[warn] 帧源是合成帧，没有真实像素 —— 已关闭 --push-video（网页会显示占位画面）。")
+            say("       要看真实画面请用真实视频或摄像头：--source <视频文件> 或 --source 0。")
+            vpusher = None
+        elif not vpusher._ensure_cv2():
+            say(f"[warn] {vpusher._encode_failed_reason} —— 已关闭 --push-video。")
+            say("       装依赖：pip install -r requirements.txt")
+            vpusher = None
+        else:
+            vpusher.start()
+            say(f"旁路画面: {vpusher.url}（{v_hz} Hz，JPEG q{v_q}，最长边 {v_w}）"
+                f" ← 网页上会显示真实画面；失败只计数，不影响退出码")
 
     post_failed = False      # 推送彻底失败过 → 结局非零退出（但仍跑完测量）
     post_stopped = False     # 已停止后续推送（不做逐帧重试）
     preview_stopped = False
     preview_unavailable = False
+
+    # 年龄档案推送：地址从 --post 推导（同一台服务），失败**不改退出码**
+    # —— 理由与旁路画面一致：档案是给人看的解释，指标才是测量结果。
+    sidecar_poster: SidecarPoster | None = None
+    if args.age and poster is not None:
+        sidecar_poster = SidecarPoster(age_url_from_ingest(poster.url))
+        say(f"档案推送: {sidecar_poster.url}（失败只计数，不影响退出码）")
 
     def push(frame: dict, *, force: bool = False) -> None:
         """推一帧给 B 线。失败**不打断测量**（见文件头第 4 条）。
@@ -291,10 +568,14 @@ def main(argv: list[str] | None = None) -> int:
     last_frame: dict | None = None
     n = 0
     replay_started = time.perf_counter()
+    source_started = None
+    source_last_ts = None
 
-    with MetricsStorage(jsonl_out, csv_out) as store:
+    pl_applied = 0
+    with MetricsStorage(jsonl_out, csv_out) as store, (
+            preview_poster if isinstance(preview_poster, LatestPreviewPoster) else nullcontext()):
         for frame in frames_iter:
-            if args.realtime and not str(args.source).strip().isdigit():
+            if args.realtime and not live_source:
                 target = frame.frame_id / fps
                 remain = target - (time.perf_counter() - replay_started)
                 if remain > 0:
@@ -304,28 +585,105 @@ def main(argv: list[str] | None = None) -> int:
             # 帧源自己的 frame_id 仍喂给 landmarker：stub 的眨眼/哈欠节拍按**本段**时间走，
             # 加偏移不该改变这一段里"第几秒眨眼"。
             fid = frame.frame_id + fid_offset
-            ts = time.time() if args.wall_clock else fid / fps
+            if source_started is None:
+                source_started = frame.ts
+            source_last_ts = frame.ts
+            ts = (time.time() if args.wall_clock else
+                  frame.ts - source_started + fid_offset / fps if live_source else fid / fps)
             obs = landmarker.detect(frame.image, frame.frame_id)
             beh = tracker.update(fid, ts, obs)
             qua = scorer.update(fid, ts, frame, obs)
+            if board_live:
+                try:
+                    from .board_source import apply_board_motion
+                except ImportError:
+                    from board_source import apply_board_motion
+                if frame.board_metadata is None:
+                    raise ValueError("board frame lost its hardware metadata")
+                qua = apply_board_motion(scorer, qua, frame.board_metadata,
+                                         face_score=float(getattr(obs, "visible", 0.0)))
+                pl_applied += int(frame.board_metadata["motion_valid"])
+            elif fid in pl_motion:
+                qua = scorer.apply_motion_ratio(
+                    qua, pl_motion[fid], face_score=float(getattr(obs, "visible", 0.0))
+                )
+                pl_applied += 1
 
-            # rPPG 的输入样本：额头 ROI 的**绿通道**累加 → Q1.15（契约 §4.6 的唯一口径）。
-            # 空 ROI / 非图像帧 → count==0 → 按契约**丢弃该帧**（不喂样本、不补值）。
+            # rPPG 输入：额头 ROI 的 RGB 均值 → 配置选择的 POS/绿色标量 → 冻结 Q1.15。
+            # 空 ROI / 非图像帧 → count==0 → 丢弃该帧，不喂样本、不补值；
+            # 同时清掉旧窗，恢复人脸后重新积累连续有效样本。
             # ⚠️ ROI 必须按**当帧真实尺寸**裁剪：视频不一定是 640×480（实测 720×1280 的素材
             # 用契约尺寸算 ROI，908 帧里有 861 帧被裁成空 → rPPG 永远填不满窗口）。
-            _fw, _fh = image_size(frame.image, fallback=(width, height))
-            _roi = forehead_roi(obs.bbox, _fw, _fh)
-            _sum_g, _cnt = roi_channel_sum(frame.image, _roi, channel=1)
-            rppg.push(q15_from_roi_sum(_sum_g, _cnt) if _cnt > 0 else None, fid)
+            # 采样区优先用**额头关键点**算出来的那一块（BUG-011 的正解）：整脸框是轴对齐的，
+            # 头一偏框顶就不是额顶，"整脸框上 30%"会落回眼睛（实测 51/60 帧采到瞳孔）。
+            # `forehead` 为 None（stub 检测器或关键点退化）时才回退到框几何的近似。
+            # Keep real capture intervals; never disguise slow/dropped frames
+            # as a continuous nominal-rate input to the frequency estimator.
+            vital_estimate = update_rppg(
+                rppg, engine, obs=obs, quality=qua, image=frame.image, frame_id=fid,
+                ts=frame.ts if live_source else None, fallback=(width, height), stabilizer=hr_stabilizer)
 
             full, dec = build_frame(frame_id=fid, ts=ts, obs=obs,
                                     behavior=beh, quality=qua, engine=engine,
-                                    vital_input=rppg.estimate())
+                                    vital_input=vital_estimate)
             clean = strip_internal(full)
             store.write(clean)
             write_snapshot(json_out, clean)
-            push(clean)
-            if preview_poster is not None and not preview_stopped:
+            # ⚠️ 推送要的是带内部字段的 **full**，不是 clean（BUG-030 第二轮）：
+            # 判定证据链挂在 `full["_triggers"]`，而 `push → FramePoster.post()` 恰恰是
+            # 从原始帧取它、再作为与 frame 平级的旁路字段发出去（publish.py 的 `_clean()`
+            # 会自己剥掉 `_` 前缀并过一遍契约校验）。这里若传 clean，triggers 在
+            # **上线前**就被剥没了 —— 网页"可解释建议"因此永远是占位文字。
+            push(full)
+
+            # ---- 年龄档案旁路（契约帧已经落盘/推送完毕，这里只动旁路产物）------
+            if age_store is not None and couple is not None:
+                # 顺序刻意如此：**先比对**（用本帧的指标）→ 再推进收录窗口 →
+                # 再（按 1 Hz 节流）做图像推断。这样 sidecar 里的 comparison 与
+                # 同一份契约帧严格同源，不会出现"档案比指标晚一帧"的错位。
+                cmp_block = couple.compare(
+                    behavior=clean["behavior"], quality=clean["quality"],
+                    face=clean["face"], band=age_store.effective_band(),
+                    status=clean["status"], frame_id=fid, ts=float(clean["ts"]))
+                age_compare_counts[cmp_block["risk_level"]] += 1
+                age_store.observe(frame_id=fid, ts=float(clean["ts"]), image=frame.image,
+                                  bbox=clean["face"]["bbox"],
+                                  quality_overall=float(clean["quality"]["overall"]),
+                                  face_visible=float(clean["face"]["visible"]))
+                # ⚠️ **必须先问 `inference_allowed()` 再调 `maybe_infer()`**：
+                # 年龄一经正式确认就停用图像推测（用户明确要求）。`maybe_infer` 在锁定后
+                # 若仍被调用，会**故意**把 inference_calls_after_lock 加一并让 schema 报错
+                # —— 那是给第三方调用方准备的绊线，不是给本文件的正常路径用的。
+                # （本文件首版就是没问就调，结果 --age-confirm 一开就整段红着结束。）
+                if age_store.inference_allowed():
+                    age_store.maybe_infer(frame_id=fid, logical_t=fid / fps, image=frame.image,
+                                          bbox=clean["face"]["bbox"], ts=float(clean["ts"]))
+                sidecar = age_store.sidecar(ts=float(clean["ts"]), frame_id=fid,
+                                           comparison=cmp_block)
+                errs = validate_age_state(sidecar)
+                if errs:
+                    # 不静默产出坏数据：直接抛，让这次运行红着结束（与 storage 同纪律）
+                    raise ValueError("年龄档案件不符合 age_contract：\n  - " + "\n  - ".join(errs))
+                if age_jsonl_fh is not None:
+                    age_jsonl_fh.write(age_dumps(sidecar) + "\n")
+                if age_json_path is not None:
+                    write_snapshot(age_json_path, sidecar)
+                if fatigue_db is not None:
+                    fatigue_db.add_frame(session_id, clean, commit=False)
+                    fatigue_db.add_comparison(session_id, fid, cmp_block)
+                    if n % 30 == 0:
+                        fatigue_db.conn.commit()
+                if sidecar_poster is not None and sidecar_poster.maybe_post(sidecar):
+                    age_posted += 1
+
+            if isinstance(preview_poster, LatestPreviewPoster):
+                sh = tuple(getattr(frame.image, "shape", (height, width)))
+                preview_poster.offer(
+                    frame.image, frame_id=fid, ts=float(clean["ts"]), bbox=clean["face"]["bbox"],
+                    source_width=int(sh[1]), source_height=int(sh[0]),
+                    face_visible=float(clean["face"]["visible"]), status=clean["status"],
+                    detector="mediapipe" if lm_source == "mediapipe" else "stub")
+            elif preview_poster is not None and not preview_stopped:
                 jpeg = encode_preview_jpeg(frame.image, args.preview_jpeg_quality)
                 if jpeg is None:
                     if not preview_unavailable:
@@ -349,6 +707,9 @@ def main(argv: list[str] | None = None) -> int:
                         print(f"[warn] {e}", file=sys.stderr)
                         print("[warn] 已停止同源预览推送；指标测量、JSON/CSV 与正式 1 Hz 推送继续。",
                               file=sys.stderr)
+            if vpusher is not None:
+                # 旁路画面：非阻塞投递，编码与网络都在后台线程。这里**不等**它。
+                vpusher.offer(frame.image, frame_id=fid)
             status_counter[dec["status"]] += 1
             last_frame = clean
             n += 1
@@ -357,37 +718,128 @@ def main(argv: list[str] | None = None) -> int:
                     f"EAR={clean['behavior']['ear_left']:.3f} PERCLOS={clean['behavior']['perclos']:.3f} "
                     f"Q={clean['quality']['overall']:.2f} | {clean['reason'][:52]}")
 
+        if isinstance(preview_poster, LatestPreviewPoster):
+            preview_poster.stop()
+            preview_stopped = bool(preview_poster.errors)
+            preview_unavailable = not preview_poster.image_available
+
         # ---- 收尾帧（契约 §2 第 6 种状态 done）--------------------------
         # 只进 jsonl 流 + 推送，**不进 CSV / 不覆盖 last.json**：CSV 是逐帧测量表
         # （P4 标定与黄金结果比对按行数统计），last.json 是"最新一次测量快照"。
         done_info: dict[str, Any] | None = None
         if not args.no_done and last_frame is not None:
+            terminal_status = "disconnected" if board_stream is not None and board_stream.error else "done"
             done = new_frame(
                 ts=round(last_frame["ts"] + 1.0 / fps, 3),
                 frame_id=int(last_frame["frame_id"]) + 1,
                 face=last_frame["face"],
                 behavior=last_frame["behavior"],
-                vital=engine.gate_vitals(last_frame["quality"]["overall"], last_frame["vital"]),
+                vital=engine.gate_vitals(last_frame["quality"]["overall"], last_frame["vital"],
+                                         face=last_frame["face"], status=terminal_status),
                 quality=last_frame["quality"],
-                status="done",
-                advice=DONE_ADVICE,
-                reason=(f"本次运行正常结束：共处理 {n} 帧（逻辑时长 {n / fps:.1f}s），"
+                status=terminal_status,
+                advice="请检查板端视频连接" if board_stream is not None and board_stream.error else DONE_ADVICE,
+                reason=(f"板端流中断：{board_stream.error}" if board_stream is not None and board_stream.error else
+                        f"本次运行正常结束：共处理 {n} 帧（逻辑时长 {n / fps:.1f}s），"
                         f"关键点来源 {lm_source}"),
             )
             store.write_stream_only(done)
+            # 收尾帧也要带**属于它自己**的证据链，否则 `/api/status` 的 triggers 会停在前一帧：
+            # 页面在 status=done 时拿到 frame_id=600 的帧、配 frame_id=570 的 triggers，
+            # 前端按 frame_id 一致才显示（app.js 的护栏），于是又退回"暂无判定证据链"的占位
+            # —— 看起来像 BUG-030 没修。顺序刻意：先落盘（done 此刻还没有 `_triggers`，
+            # 才能通过 validate_frame 的"不许有契约外顶层字段"），再挂内存字段给推送用。
+            done["_triggers"] = [{
+                "rule": "done", "metric": "frames_processed", "value": int(n),
+                "threshold": None, "verdict": "pass",
+            }]
             push(done, force=True)
             done_info = {"frame_id": done["frame_id"], "ts": done["ts"], "status": done["status"],
                          "written_to": "jsonl" + ("+post" if poster else "")}
 
     if last_frame is None:
+        if vpusher is not None:
+            vpusher.stop()
+        if board_stream is not None and args.summary:
+            sp = REPO_ROOT / args.summary
+            sp.parent.mkdir(parents=True, exist_ok=True)
+            sp.write_text(json.dumps({"frames_processed": 0, "frame_source": desc,
+                                      "board_source": board_stream.stats()}, ensure_ascii=False,
+                                     indent=2), encoding="utf-8")
         print("[FAIL] 没有处理任何帧：帧源是空的。检查 --source 路径 / --limit 是否被设成 0。", file=sys.stderr)
         return 2
 
+    if vpusher is not None:
+        vpusher.stop()
+
+    # ---- 年龄档案收尾：落库 + 关闭旁路文件 ------------------------------
+    age_summary: dict[str, Any] | None = None
+    if age_store is not None:
+        if age_jsonl_fh is not None:
+            age_jsonl_fh.close()
+            age_jsonl_fh = None
+        if fatigue_db is not None:
+            # 会话可能是在跑的过程中才完成收录 / 才被确认年龄的，因此收尾时把
+            # **最终**档案写回会话行（否则库里会留一个"当时没年龄"的会话，
+            # 而它其实是有年龄的 —— 那会让按年龄分组统计直接漏掉这一段）。
+            fatigue_db.update_session_age(
+                session_id, subject=age_store.profile.get("subject"),
+                age_years=age_store.profile.get("age_years"),
+                age_band=age_store.profile.get("band"),
+                age_source=age_store.profile.get("source"),
+                confirmed_by=age_store.profile.get("confirmed_by"),
+                engine=age_store.stats()["engine"],
+                engine_placeholder=age_store.stats()["engine_placeholder"])
+            fatigue_db.finish_session(
+                session_id, ended_at=float(last_frame["ts"]) if last_frame else 0.0,
+                summary={"status_counts": dict(status_counter),
+                         "logical_duration_s": round(n / fps, 2)})
+            # ⚠️ 取计数必须在 close() **之前**（关掉连接后再查会 ProgrammingError，
+            # 本文件首版就是踩了这个，摘要直接崩在最后一行）。
+            db_counts = fatigue_db.counts()
+            fatigue_db.close()
+        else:
+            db_counts = None
+        est = age_store.estimate
+        age_summary = {
+            "enabled": age_store.enabled,
+            "engine": age_store.stats()["engine"],
+            "engine_placeholder": age_store.stats()["engine_placeholder"],
+            "profile": dict(age_store.profile),
+            "enrollment_state": age_store.enrollment.get("state"),
+            "enrollment_samples": age_store.enrollment.get("samples"),
+            "enrollment_reason": age_store.enrollment.get("reason"),
+            "estimate": (est.to_estimate_block() if est is not None else None),
+            "inference_calls": age_store.inference_calls,
+            "inference_refused_locked": age_store.inference_refused_locked,
+            "risk_level_counts": dict(age_compare_counts),
+            "db": ({"path": str(args.db_path), "session_id": session_id,
+                    "counts": db_counts} if args.db_path else None),
+            "sidecar_post": sidecar_poster.stats() if sidecar_poster is not None else None,
+            "outputs": {"jsonl": str(age_jsonl_path) if age_jsonl_path else None,
+                        "json": str(age_json_path) if age_json_path else None},
+            "note": ("年龄推断只是建议，未经用户确认不得用于选择参照组；"
+                     "placeholder=true 的引擎（heuristic）无任何精度证据，不得引用其数值。"
+                     if age_store.engine and age_store.engine.placeholder else
+                     "年龄推断只是建议，未经用户确认不得用于选择参照组。"),
+        }
+
     elapsed = time.perf_counter() - t_start
     hist = last_frame["behavior"]
+    capture_duration = (max(0.0, source_last_ts - source_started)
+                        if live_source and source_started is not None and source_last_ts is not None
+                        else None)
+    duration_label = "采集时长" if capture_duration is not None else "逻辑时长"
+    duration_s = capture_duration if capture_duration is not None else n / fps
     summary = {
         "landmark_source": lm_source,
         "frame_source": desc,
+        "time_base": "source_elapsed" if live_source else "fid_nominal",
+        "sampling": sampler.stats() if sampler is not None else None,
+        "board_source": board_stream.stats() if board_stream is not None else None,
+        "pl_motion": ({"path": str(pl_path), "loaded_frames": len(pl_motion),
+                       "applied_frames": pl_applied, "source": "pl_sim"}
+                      if args.pl_motion_json else None),
         "pattern": args.pattern,
         "frames_processed": n,
         "frame_id_offset": fid_offset,
@@ -397,6 +849,7 @@ def main(argv: list[str] | None = None) -> int:
         "rotation_probe_scores": orient.scores,
         "logical_fps": fps,
         "logical_duration_s": round(n / fps, 2),
+        "capture_duration_s": round(capture_duration, 6) if capture_duration is not None else None,
         "wall_elapsed_s": round(elapsed, 2),
         "throughput_fps": round(n / elapsed, 1) if elapsed > 0 else None,
         "status_counts": dict(status_counter),
@@ -420,18 +873,37 @@ def main(argv: list[str] | None = None) -> int:
                           "stopped_after_failure": preview_stopped,
                           "image_available": not preview_unavailable}
                          if preview_poster is not None else None),
-        # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够）
+        # 旁路画面统计：刻意放在独立的键里，**不混进 post** ——
+        # post 的 ok 参与退出码判定，画面不参与，两者混在一起会让人读错。
+        "video": (vpusher.stats() if vpusher is not None else None),
+        # 年龄档案旁路（不进契约帧）：本次用了哪个引擎、档案到哪一步、风险档位分布
+        "age": age_summary,
+        # rPPG 窗口状态：回答"为什么 vital 是 null"（窗口没满 / 没有真峰 / 质量不够 / 采样率不符）
+        "rppg_method": cfg["rppg_method"],
         "rppg_window_samples": rppg.samples,
         "rppg_window_need": rppg.need,
+        # 时间基准诊断（docs/16 BUG-029）：estimate() 最后用的是真实时间戳还是 frame_id/fps、
+        # 反推出的有效采样率是多少、因为什么没报数。只要 hr_bpm 非空，这一行就该在 summary 里。
+        "rppg_time_base": rppg.last_time_base,
+        "rppg_fs_eff": rppg.last_fs_eff,
+        "rppg_fir_design_fps": rppg.fir_design_fps,
+        "rppg_interval_p95_s": rppg.last_interval_p95_s,
+        "rppg_reject": rppg.last_reject,
+        # 峰邻域能量占比：有数时是"这个峰有多干净"，无数时是"离 0.5 差多少"（BUG-041）
+        "rppg_conf": rppg.last_conf,
+        "rppg_diagnostics": rppg.stats(),
+        "hr_stabilizer": {"config": hr_stabilizer.cfg.__dict__, "last_reason": hr_stabilizer.reason,
+                          "last_raw_hr": getattr(rppg, "last_raw_hr", None)},
         "note": ("landmark_source=stub 时，EAR/MAR 为占位几何量；"
                  "vital.hr_* 为 null 的可能原因：窗口未填满（需 %d 个有效样本）、"
-                 "频谱中没有占主导的峰、或质量低于门控阈值 %s。"
+                 "频谱中没有占主导的峰、质量低于门控阈值 %s、"
+                 "或真实采样率与 fps_nominal 偏差超过 rppg_fs_tol（见 rppg_reject）。"
                  "vital.rr_* 恒为 null：契约 §3.5 冻结 63 阶 @45 fps 做不了呼吸带。"
                  % (rppg.need, cfg["vital_require_quality"])),
     }
 
     print("\n=== 运行摘要 ===")
-    print(f"处理帧数  : {n}（逻辑时长 {summary['logical_duration_s']}s，墙上耗时 {elapsed:.2f}s）")
+    print(f"处理帧数  : {n}（{duration_label} {duration_s:.2f}s，墙上耗时 {elapsed:.2f}s）")
     print(f"关键点来源: {lm_source}" + ("  ← 占位数据，勿直接用于报告" if lm_source == "stub" else ""))
     print(f"状态分布  : " + "  ".join(f"{k}={v}" for k, v in status_counter.most_common()))
     print(f"末帧指标  : 眨眼 {hist['blink_count']} 次 / {hist['blink_rate_per_min']} per min，"
@@ -442,7 +914,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"产物      : {json_out}" + (f" | {jsonl_out}" if jsonl_out else "")
           + (f" | {csv_out}" if csv_out else ""))
     if done_info:
-        print(f"收尾帧    : status=done frame_id={done_info['frame_id']} "
+        print(f"收尾帧    : status={done_info['status']} frame_id={done_info['frame_id']} "
               f"→ {done_info['written_to']}（不进 CSV / 不覆盖 last.json）")
     if poster is not None:
         print(f"推送      : 成功 {poster.posted} 帧 / 节流跳过 {poster.throttled} 帧 "
@@ -453,6 +925,31 @@ def main(argv: list[str] | None = None) -> int:
               f"→ {preview_poster.url}"
               + ("  ← 当前源无真实图像" if preview_unavailable else "")
               + ("  ← 推送失败后已停止" if preview_stopped else ""))
+    if vpusher is not None:
+        v = vpusher.stats()
+        print(f"旁路画面  : 投递 {v['offered']} / 编码 {v['encoded']} / 送达 {v['posted']} "
+              f"/ 丢弃 {v['dropped']}  → {v['url']}")
+        if v["errors"]:
+            print(f"            ⚠️ 画面有 {len(v['errors'])} 类错误（**不影响本次测量**）：{v['errors'][0]}")
+    if age_summary is not None:
+        prof = age_summary["profile"]
+        band_txt = prof.get("band") or "未定（按全人群兜底基线比对）"
+        print(f"年龄档案  : 引擎 {age_summary['engine'] or 'none'}"
+              + ("  ← 占位引擎，无精度证据" if age_summary["engine_placeholder"] else "")
+              + f"｜年龄 {prof.get('age_years')}（{band_txt}）｜已确认 {prof.get('confirmed')}"
+              + f"（by {prof.get('confirmed_by')}）｜锁定 {prof.get('locked')}")
+        print(f"人脸收录  : {age_summary['enrollment_state']}"
+              f"（样本 {age_summary['enrollment_samples']}）—— {age_summary['enrollment_reason']}")
+        print(f"同龄比对  : 风险档位分布 " + ("  ".join(f"{k}={v}" for k, v in
+              sorted(age_summary["risk_level_counts"].items())) or "（无）")
+              + "  ← unknown = 质量门控不过，**不报数字**（正确行为）")
+        if age_summary["db"]:
+            print(f"数据库    : {age_summary['db']['path']}（会话 {age_summary['db']['session_id']}，"
+                  f"{age_summary['db']['counts']}）")
+        if age_summary["sidecar_post"]:
+            sp = age_summary["sidecar_post"]
+            print(f"档案推送  : 成功 {sp['posted']} 次 / HTTP {sp['attempts']} 次 → {sp['url']}"
+                  + ("  ← **推送失败，已停止**" if sp["stopped_after_failure"] else ""))
 
     if args.summary:
         sp = REPO_ROOT / args.summary
@@ -465,6 +962,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[FAIL] 推送未完成：测量产物已完整落盘，但 B 线没收到全部帧 "
               f"（退出码 {EXIT_POST_FAILED}）。", file=sys.stderr)
         return EXIT_POST_FAILED
+    if board_stream is not None and board_stream.error:
+        return 4
     return 0
 
 

@@ -1,0 +1,23 @@
+{
+  "config_sha256": "25626b95042d1e59b7e91db6447419068ac0ebe31659d7f7239ddcab183e315b",
+  "board_vision": {
+    "min_face": 40,
+    "scale_factor": 0.709,
+    "score_p": 0.6,
+    "score_r": 0.7,
+    "score_o": 0.7,
+    "nms_p_scale": 0.5,
+    "nms_p": 0.7,
+    "nms_r": 0.7,
+    "nms_o": 0.7,
+    "max_candidates": 64,
+    "threads": 2,
+    "redetect_seconds": 5.0,
+    "crop_scale": 1.4,
+    "forehead_inset": 0.08,
+    "forehead_top": 0.65,
+    "forehead_bottom": 0.1,
+    "forehead_min_pixels": 8
+  },
+  "accuracy_verified": false
+}

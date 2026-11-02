@@ -1,0 +1,162 @@
+[
+  {
+    "config": {
+      "codec": "raw",
+      "pipeline": "serial",
+      "frames": 120,
+      "emulate": true,
+      "decode_ms": 31.6,
+      "pl_ms": 19.9,
+      "audit_every": 1,
+      "link_mbps": 100.0
+    },
+    "frames_sent": 120,
+    "frames_dropped": 0,
+    "wall_s": 35.15,
+    "fps": 3.414,
+    "decode_ms": {
+      "n": 120,
+      "median": 31.967,
+      "p95": 32.232
+    },
+    "pl_ms": {
+      "n": 120,
+      "median": 20.249,
+      "p95": 20.453
+    },
+    "send_ms": {
+      "n": 120,
+      "median": 221.513,
+      "p95": 221.736
+    },
+    "audit_frames": 120,
+    "audit_mismatches": 0,
+    "stage_overruns": {
+      "audit": 11
+    },
+    "is_board_run": false,
+    "mode": "pc_sim",
+    "name": "raw + serial（现状基线）",
+    "model_fps": 3.46
+  },
+  {
+    "config": {
+      "codec": "jpeg",
+      "pipeline": "serial",
+      "frames": 120,
+      "emulate": true,
+      "decode_ms": 31.6,
+      "pl_ms": 19.9,
+      "audit_every": 1,
+      "link_mbps": 100.0
+    },
+    "frames_sent": 120,
+    "frames_dropped": 0,
+    "wall_s": 9.433,
+    "fps": 12.72,
+    "decode_ms": {
+      "n": 120,
+      "median": 31.936,
+      "p95": 32.135
+    },
+    "pl_ms": {
+      "n": 120,
+      "median": 20.277,
+      "p95": 20.646
+    },
+    "send_ms": {
+      "n": 120,
+      "median": 8.382,
+      "p95": 8.653
+    },
+    "audit_frames": 120,
+    "audit_mismatches": 0,
+    "stage_overruns": {
+      "audit": 16,
+      "pl": 1
+    },
+    "is_board_run": false,
+    "mode": "pc_sim",
+    "name": "jpeg + serial（S1）",
+    "model_fps": 13.13
+  },
+  {
+    "config": {
+      "codec": "jpeg",
+      "pipeline": "serial",
+      "frames": 120,
+      "emulate": true,
+      "decode_ms": 31.6,
+      "pl_ms": 19.9,
+      "audit_every": 30,
+      "link_mbps": 100.0
+    },
+    "frames_sent": 120,
+    "frames_dropped": 0,
+    "wall_s": 7.402,
+    "fps": 16.21,
+    "decode_ms": {
+      "n": 120,
+      "median": 31.928,
+      "p95": 32.302
+    },
+    "pl_ms": {
+      "n": 120,
+      "median": 20.306,
+      "p95": 20.731
+    },
+    "send_ms": {
+      "n": 120,
+      "median": 8.414,
+      "p95": 8.676
+    },
+    "audit_frames": 4,
+    "audit_mismatches": 0,
+    "stage_overruns": {},
+    "is_board_run": false,
+    "mode": "pc_sim",
+    "name": "jpeg + serial + 审计30（S1+S2）",
+    "model_fps": 16.66
+  },
+  {
+    "config": {
+      "codec": "jpeg",
+      "pipeline": "threaded",
+      "frames": 120,
+      "emulate": true,
+      "decode_ms": 31.6,
+      "pl_ms": 19.9,
+      "audit_every": 30,
+      "link_mbps": 100.0
+    },
+    "frames_sent": 66,
+    "frames_dropped": 54,
+    "wall_s": 2.172,
+    "fps": 30.789,
+    "decode_ms": {
+      "n": 66,
+      "median": 31.922,
+      "p95": 32.261
+    },
+    "pl_ms": {
+      "n": 66,
+      "median": 20.257,
+      "p95": 20.645
+    },
+    "send_ms": {
+      "n": 66,
+      "median": 8.42,
+      "p95": 8.604
+    },
+    "audit_frames": 3,
+    "audit_mismatches": 0,
+    "stage_overruns": {
+      "decode": 1,
+      "audit": 1
+    },
+    "is_board_run": false,
+    "mode": "pc_sim",
+    "name": "jpeg + 三线程 + 审计30（S1+S2+S3）",
+    "model_fps": 31.65
+  }
+]

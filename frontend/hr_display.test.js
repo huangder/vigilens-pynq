@@ -1,0 +1,18 @@
+"use strict";
+const assert=require("assert"), H=require("./hr_display.js");
+const model=H.create({freshMs:3000});
+const frame=(id,hr,status="normal")=>({frame_id:id,ts:id,face:{visible:1},vital:{hr_bpm:hr,hr_conf:.8},status:status});
+let view=model.view(0,false);assert.equal(view.text,"正在测量");assert.ok(view.text);assert.equal(view.value,undefined);
+assert.equal(model.accept(frame(1,72),1000,true),true);
+assert.equal(model.view(1000,true).kind,"current");assert.equal(model.view(1000,true).text,"72.0");
+assert.equal(model.accept(frame(1,72),2000,true),false);
+assert.equal(model.view(6000,true).kind,"history");assert.equal(model.view(6000,true).age,5);
+model.accept(frame(2,null),6100,true);view=model.view(7000,true);assert.equal(view.text,"72.0");assert.equal(view.kind,"history");assert.ok(view.note.includes("非当前测量"));
+model.accept(frame(3,170,"unreliable"),7100,false);assert.equal(model.view(7200,true).text,"72.0");
+view=model.view(8000,false);assert.ok(view.note.includes("连接中断"));assert.equal(view.text,"72.0");
+model.accept(frame(-1,null,"disconnected"),8100,false);
+assert.equal(model.view(8200,true).text,"72.0");assert.equal(model.view(8200,true).kind,"history");
+model.accept(frame(4,74),9000,true);assert.equal(model.view(9100,true).text,"74.0");
+model.accept(frame(1,null),10000,true);assert.equal(model.view(10000,true).text,"正在测量");
+model.accept(frame(2,75),11000,true);model.reset();assert.equal(model.view(12000,true).text,"正在测量");
+console.log("HR_DISPLAY_PASS: waiting/current/history/timeout/disconnection/duplicate/rollback/source-reset; no fabricated first reading");

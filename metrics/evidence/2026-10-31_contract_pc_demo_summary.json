@@ -1,0 +1,22 @@
+{
+  "kind": "pc_autonomy_demo",
+  "source": "data/raw/blink.mp4",
+  "points": "metrics\\logs\\peppa_68_blink_full.jsonl",
+  "pose": "mediapipe",
+  "vital_every": 30,
+  "fps": 30.0,
+  "stats": {
+    "measure_rejected": 1,
+    "frames": 655,
+    "normal": 510,
+    "vital_not_ready": 21,
+    "adjust_posture": 145
+  },
+  "contract_errors": [],
+  "hr_accepted_samples": 0,
+  "hr_min": null,
+  "hr_max": null,
+  "board_run": false,
+  "pose_migrated": false,
+  "accuracy_verified": false
+}

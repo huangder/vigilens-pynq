@@ -1,0 +1,51 @@
+tail -n 45 /tmp/hr20_install.log
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+# Generated from config.yaml; source sha256 e21bf2b5a61f3c58b76f7eef87fd55d4578eea27b84ee061feafdf31225aff44
+VG_CAPTURE_FPS=30
+VG_CAPTURE_WIDTH=640
+VG_CAPTURE_HEIGHT=480
+VG_CAMERA_FORMAT=yuyv
+VG_RUNTIME=ert_temporal
+VG_LANDMARK_FILE=shape_predictor_68_face_landmarks.dat
+VG_MOTION_THRESHOLD=16
+VG_STALE_SECONDS=3.0
+{
+  "files": {
+    "vigi_camera_autonomy": "be004f02ac047c36c00b62c59ad15d3a4b24f85e4ddd7aa0223103716896b966",
+    "vg_vision_replay_arm": "d77b71ac2e7b45b85c106d69d0f304c8eaaeac6270f6a7b391b734ae50720570",
+    "vg_metrics_http": "ec24e3e0f3faf48484f20031c19d84e3b5a258b2f7c45af02cdf85b27316e785",
+    "shape_predictor_68_face_landmarks.dat": "fbdc2cb80eb9aa7a758672cbfdda32ba6300efe9b6e6c7a299ff7e736b11b92f",
+    "libgomp.so.1": "2d25b3b1e4a3d8ac657c406a888395eda289cbeef85a13f94dadca0452922ac2",
+    "display.html": "d26ba34cea9b9e38bd216806327d1c69b7cf1322c8e3df11292ce8d236565f33",
+    "install_native.sh": "e55da5159a1d71ec5279de4430ff0da306384c79f8fe5da8f0f483bb195c4733",
+    "run_native.sh": "d611b34060b659e9e3d2998cab56fac09d4a0ed2e451b4263ff16e89ebb20b4e",
+    "det1.param": "a9338e207dbbaa7ad56625492b551aeb4ecaf10ac279d098b02f17b0a62b1e0b",
+    "det1.bin": "8dedfdc5e37378d23131a6cb91d1e0a446ecb7751e2d3eadd5f086fdf18b5cec",
+    "det2.param": "e9f614c923b3fede02c236be0246465e83a34b37ceed0bc2bcb6bfda32461d25",
+    "det2.bin": "15a3f7df9dc7cc1ec0976fad36ef58128bf1b5de8c2abfb42ae722e803dbd842",
+    "det3.param": "b7fe7677d4840677aa0ea5690c7018630cc8d4a661be95290fe26814920bfad4",
+    "det3.bin": "93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962",
+    "runtime.env": "be0166ef0ea197561b5b5350602a389a055eda201449ee32415aaf40848475dc"
+  },
+  "config_sha256": "e21bf2b5a61f3c58b76f7eef87fd55d4578eea27b84ee061feafdf31225aff44",
+  "runtime": "ert_temporal",
+  "heart_rate_window_seconds": 20.0,
+  "required_hr_samples": 600,
+  "capture": {
+    "width": 640,
+    "height": 480,
+    "format": "yuyv"
+  },
+  "full30_verified": false,
+  "local_only": true,
+  "hardware_boot_verified": false,
+  "accuracy_verified": false
+}
+HR20_INSTALL_VERIFIED
+# ps | grep -E 'hr20_install|wget' | grep -v grep
+# printf '\nHR20_INSTALL_STATUS_END\n'
+
+HR20_INSTALL_STATUS_END
+# 

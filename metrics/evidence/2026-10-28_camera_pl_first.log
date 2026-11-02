@@ -1,0 +1,26 @@
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: root
+Password: 
+# cat /proc/cmdline
+console=ttyPS0,115200 root=/dev/ram0 rw mem=512M cpuidle.off=1 cma=128M usbcore.autosuspend=-1 clk_ignore_unused
+/bin/vigi_camera_pl /dev/video0 1280 720 30 30 16; print# grep -A1 -B1 12000000 /proc/iomem
+f 'CAMERA_PL_EXIT=%s\n' "$?"
+
+printf '\nVIGI_COMMAND_DONE\n'
+# /usr/bin/vigi_camera_pl /dev/video0 1280 720 30 30 16; printf 'CAMERA_PL_EXIT=
+%s\n' "$?"
+SAMPLE_REQUEST target_fps=30 time_base=v4l2_buffer no_padding=1
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=30
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+PL_PROFILE_FAIL reserved no-map RAM/profile absent; no registers touched
+CAPTURE_FAIL /dev/video0 frames=0 errno=22 (Invalid argument)
+CAMERA_PL_EXIT=1
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

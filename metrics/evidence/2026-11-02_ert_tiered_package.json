@@ -1,0 +1,23 @@
+{
+  "experimental": true,
+  "config_sha256": "beed734d2f9a8606c23f4c2444d1a1a6cc0f44fc597525ea5cb8c5022bd50c59",
+  "files": {
+    "det1.bin": "8dedfdc5e37378d23131a6cb91d1e0a446ecb7751e2d3eadd5f086fdf18b5cec",
+    "det1.param": "a9338e207dbbaa7ad56625492b551aeb4ecaf10ac279d098b02f17b0a62b1e0b",
+    "det2.bin": "15a3f7df9dc7cc1ec0976fad36ef58128bf1b5de8c2abfb42ae722e803dbd842",
+    "det2.param": "e9f614c923b3fede02c236be0246465e83a34b37ceed0bc2bcb6bfda32461d25",
+    "det3.bin": "93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962",
+    "det3.param": "b7fe7677d4840677aa0ea5690c7018630cc8d4a661be95290fe26814920bfad4",
+    "display.html": "d26ba34cea9b9e38bd216806327d1c69b7cf1322c8e3df11292ce8d236565f33",
+    "ert_guard_arm": "974c9f4d5dbf1080111567bf61382716243b006a5ca7d451451393c328576460",
+    "ert_hint_arm": "63818b8fadd99f303716e76902e8db5badeee85eb8687482a396827f4a1baa46",
+    "libgomp.so.1": "2d25b3b1e4a3d8ac657c406a888395eda289cbeef85a13f94dadca0452922ac2",
+    "runtime.env": "c555a44ffe0304fb8760354321943790ecb6a73cb67603f1e38f923595b7e7f5",
+    "shape_predictor_68_face_landmarks.dat": "fbdc2cb80eb9aa7a758672cbfdda32ba6300efe9b6e6c7a299ff7e736b11b92f",
+    "vg_metrics_http": "ec24e3e0f3faf48484f20031c19d84e3b5a258b2f7c45af02cdf85b27316e785",
+    "vg_vision_replay_arm": "776c76f93ea048e70df12ca5c80934ef4a48562ce871b9710f460c5a84def9f7",
+    "vigi_camera_autonomy": "d8c8316efe74fb2a82d18a5de0494626fa76976ff03e5589571a4e0e4235031e"
+  },
+  "accuracy_verified": false,
+  "full30_passed": false
+}

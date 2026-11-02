@@ -1,0 +1,63 @@
+
+# sh -c '
+> set -e
+> wget -T 15 -O /tmp/peppa_pruned.param http://169.254.73.28:8093/peppa_pruned.p
+aram
+> wget -T 15 -O /tmp/peppa_pruned.bin http://169.254.73.28:8093/peppa_pruned.bin
+> echo "fe16640233b21071af8eab6db6877b1a2efc72eda03bc66c796f063c8bb615f2  /tmp/v
+g_ncnn_probe_options" | sha256sum -c -
+> echo "223746b13c090a5f9efaa1a7e599fa15bdef17d8d1b52dd48b483b8f994b3976  /tmp/p
+eppa_pruned.param" | sha256sum -c -
+> echo "f9c76eee62232147f2e53a7bfd1d2033b9a3eac147ce0493869655131f83199b  /tmp/p
+eppa_pruned.bin" | sha256sum -c -
+> echo "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd  /tmp/p
+eppa_input.f32" | sha256sum -c -
+> echo PEPPA_PRUNED_FP32_PROBE_BEGIN
+> uname -m
+> for n in 1 2; do
+>  /tmp/vg_ncnn_probe_options /tmp/peppa_pruned.param /tmp/peppa_pruned.bin 160 
+160 input1 output1 /tmp/peppa_pruned_t$n 300 $n 143 /tmp/peppa_input.f32
+>  cat /tmp/peppa_pruned_t$n.json
+> done
+> echo PEPPA_PRUNED_FP32_PROBE_END
+> echo VIGI_FILE_BEGIN peppa_pruned_t2.output0.f32
+> gzip -c /tmp/peppa_pruned_t2.output0.f32 | base64
+> echo VIGI_FILE_END
+> '
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/peppa_pruned.param'
+peppa_pruned.param   100% |********************************|  2126  0:00:00 ETA
+'/tmp/peppa_pruned.param' saved
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/peppa_pruned.bin'
+peppa_pruned.bin     100% |********************************|  464k  0:00:00 ETA
+'/tmp/peppa_pruned.bin' saved
+/tmp/vg_ncnn_probe_options: OK
+/tmp/peppa_pruned.param: OK
+/tmp/peppa_pruned.bin: OK
+/tmp/peppa_input.f32: OK
+PEPPA_PRUNED_FP32_PROBE_BEGIN
+armv7l
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":true,"kernel_policy":"default","winograd":true,"sgemm":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":300,"threads":1,"mean_ms":58.433159983333326,"p50_ms":58.417591000000002,"p95_ms":58.572175000000001,"max_rss_kib":7808,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":false,"packing":true,"kernel_policy":"default","winograd":true,"sgemm":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":300,"threads":2,"mean_ms":33.514511173333339,"p50_ms":33.510570999999999,"p95_ms":33.711570000000002,"max_rss_kib":7808,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+PEPPA_PRUNED_FP32_PROBE_END
+VIGI_FILE_BEGIN peppa_pruned_t2.output0.f32
+H4sIAAAAAAAAAwXBaUiTARwHYNM23fJofgimWXR5LEEmRMR6f//WYQeB5Rm9aVImtA6bm0ZrKmbN
+jrmsvHINdSOVZcGMSmWHlh/U1lBwYYFG0mXKQnGF2VzPY7dMMZMsi+NLg0zRu2qUjFqZhVQzhoUO
+pp0dRO78HBOSPoUl8wY8X/LjvjkFLIVRRJkMZWIhNWXUIMO6joxXLFh7KJoGppwQiQWUG/cNQUou
+FRf7sHHXb7icPErkTCJ7E49Ox1sxpw6ltigj9rHhNC2/ge41eYgvKMfWuVIkiK9DJqrG0fg7GNA3
+Qr38AJfOtSIg8BHO9veiMNmAyz/fQDFdh1rWhd0V1YD+Iz7/0UBl+IIGRyW2dXTga0I35vEYOeoR
+TJ8wQnvyB3p2tsD2fRGHP9TAOuPB+QP1eLbDi8RxA1zZi7glbIN8zIuHhZ0Ir/oFpUqJvRw9Tg1U
+ImZ9K1KSdJgPM6Fwtg4tKzrQJ9XCn/cEmpUVSFK0g1/7ClXv25GMfvS4TBgXvAVfYkK+bBRd0mZE
+RA5hRGKGz2DHnteduGZTYCjTj8w4DeTDQdSsqUVaKYei3XooGrgUqzLiSDqHCm4+RZYhkLgXXiCN
+54PZ3YaiCR75D7Yg5l8EBerqoO0V0DHvbSRrV9MniQZZ2/nEHVNhOT+AZOZ7CLUE06y/CWW6ENp/
+xoRIYTCVLFiQU+7DjKcVm7fwSfC3EYx3FWW47yLFySfbxS689IjtWVKdTe+R9kVdlfQZUycc46JY
++g8Jn+L6PAIAAA==
+VIGI_FILE_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

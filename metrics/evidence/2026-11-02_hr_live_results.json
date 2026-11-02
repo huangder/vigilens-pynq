@@ -1,0 +1,311 @@
+{
+  "live1": {
+    "gate": {
+      "kind": "native_full_board_realtime_gate",
+      "passed": false,
+      "errors": [
+        "analysis 29.762852 fps below 30.0",
+        "AUTONOMY_SUMMARY.skipped=19.0, required 0",
+        "AUTONOMY_SUMMARY.accepted=2681.0, required 2700.0",
+        "AUTONOMY_SUMMARY.processed=2681.0, required 2700.0",
+        "face-bearing coverage below configured face_visible_min"
+      ],
+      "capture_fps": 29.960226,
+      "analysis_update_fps": 29.762852,
+      "capture_interval_p95_s": 0.03600399999959336,
+      "submitted": 2700.0,
+      "processed": 2681.0,
+      "contract_frames": 2680,
+      "face_bearing_ratio": 0.020149253731343283,
+      "face_bearing_frames": 54,
+      "face_bearing_update_fps": 0.5996992567164179,
+      "native_camera_mode_verified": true,
+      "accuracy_verified": false,
+      "cold_boot_verified": false
+    },
+    "contract_valid": true,
+    "sampling": [
+      {
+        "input": "2700",
+        "kept": "2700",
+        "dropped": "0",
+        "driver_sequence_gaps": "0",
+        "empty_slots": "0",
+        "input_fps": "29.960226",
+        "output_fps": "29.960226",
+        "native_30fps": "yes"
+      }
+    ],
+    "analysis": [
+      {
+        "submitted": "2700",
+        "accepted": "2681",
+        "skipped": "19",
+        "processed": "2681",
+        "succeeded": "2680",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "29.960226",
+        "analysis_update_fps": "29.762852"
+      }
+    ],
+    "status_counts": {
+      "unreliable": 40,
+      "adjust_posture": 2638,
+      "normal": 2
+    },
+    "background_positive": 78,
+    "background_completed": 88,
+    "background_geometry_failures": {
+      "-1": 10,
+      "107": 44,
+      "108": 20,
+      "0": 12,
+      "106": 2
+    },
+    "vital_rejects": {
+      "vitals_blocked": 2680
+    },
+    "heart_rate_frames": 0,
+    "blink_count_max": 0,
+    "long_close_count_max": 0,
+    "yawn_count_max": 0,
+    "longest_visible_segment": {
+      "frames": 14,
+      "span_s": 0.4678460000004634,
+      "first_frame_id": 1243,
+      "last_frame_id": 1257
+    },
+    "longest_nonblocked_segment": {
+      "frames": 0,
+      "span_s": 0,
+      "first_frame_id": null,
+      "last_frame_id": null
+    },
+    "visible_pose_median": {
+      "yaw": -7.662543108212786,
+      "pitch": -42.93173399142934,
+      "roll": -1.2687615406946695
+    },
+    "perclos_max": 0
+  },
+  "live2": {
+    "gate": {
+      "kind": "native_full_board_realtime_gate",
+      "passed": false,
+      "errors": [
+        "analysis 29.425506 fps below 30.0",
+        "AUTONOMY_SUMMARY.skipped=49.0, required 0",
+        "AUTONOMY_SUMMARY.accepted=2651.0, required 2700.0",
+        "AUTONOMY_SUMMARY.processed=2651.0, required 2700.0",
+        "face-bearing coverage below configured face_visible_min"
+      ],
+      "capture_fps": 29.9602,
+      "analysis_update_fps": 29.425506,
+      "capture_interval_p95_s": 0.036028100000385165,
+      "submitted": 2700.0,
+      "processed": 2651.0,
+      "contract_frames": 2650,
+      "face_bearing_ratio": 0.42566037735849055,
+      "face_bearing_frames": 1128,
+      "face_bearing_update_fps": 12.525271987924528,
+      "native_camera_mode_verified": true,
+      "accuracy_verified": false,
+      "cold_boot_verified": false
+    },
+    "contract_valid": true,
+    "sampling": [
+      {
+        "input": "2700",
+        "kept": "2700",
+        "dropped": "0",
+        "driver_sequence_gaps": "0",
+        "empty_slots": "0",
+        "input_fps": "29.960200",
+        "output_fps": "29.960200",
+        "native_30fps": "yes"
+      }
+    ],
+    "analysis": [
+      {
+        "submitted": "2700",
+        "accepted": "2651",
+        "skipped": "49",
+        "processed": "2651",
+        "succeeded": "2650",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "29.960200",
+        "analysis_update_fps": "29.425506"
+      }
+    ],
+    "status_counts": {
+      "adjust_posture": 2031,
+      "normal": 152,
+      "unreliable": 370,
+      "fatigue_risk": 97
+    },
+    "background_positive": 79,
+    "background_completed": 89,
+    "background_geometry_failures": {
+      "0": 49,
+      "108": 3,
+      "107": 22,
+      "-1": 10,
+      "106": 4,
+      "105": 1
+    },
+    "vital_rejects": {
+      "vitals_blocked": 2559,
+      "window_not_full": 91
+    },
+    "heart_rate_frames": 0,
+    "blink_count_max": 1,
+    "long_close_count_max": 0,
+    "yawn_count_max": 0,
+    "longest_visible_segment": {
+      "frames": 131,
+      "span_s": 4.371624999999767,
+      "first_frame_id": 219,
+      "last_frame_id": 350
+    },
+    "longest_nonblocked_segment": {
+      "frames": 42,
+      "span_s": 1.3679689999999027,
+      "first_frame_id": 2598,
+      "last_frame_id": 2639
+    },
+    "visible_pose_median": {
+      "yaw": 2.4849621775573993,
+      "pitch": -39.28623007343846,
+      "roll": -5.000269801102183
+    },
+    "perclos_max": 0.0067
+  },
+  "live3": {
+    "gate": {
+      "kind": "native_full_board_realtime_gate",
+      "passed": false,
+      "errors": [
+        "analysis 29.527286 fps below 30.0",
+        "AUTONOMY_SUMMARY.skipped=27.0, required 0",
+        "AUTONOMY_SUMMARY.accepted=1773.0, required 1800.0",
+        "AUTONOMY_SUMMARY.processed=1773.0, required 1800.0"
+      ],
+      "capture_fps": 29.95401,
+      "analysis_update_fps": 29.527286,
+      "capture_interval_p95_s": 0.03606560000025638,
+      "submitted": 1800.0,
+      "processed": 1773.0,
+      "contract_frames": 1772,
+      "face_bearing_ratio": 0.904627539503386,
+      "face_bearing_frames": 1603,
+      "face_bearing_update_fps": 26.711196082392778,
+      "native_camera_mode_verified": true,
+      "accuracy_verified": false,
+      "cold_boot_verified": false
+    },
+    "contract_valid": true,
+    "sampling": [
+      {
+        "input": "1800",
+        "kept": "1800",
+        "dropped": "0",
+        "driver_sequence_gaps": "0",
+        "empty_slots": "0",
+        "input_fps": "29.954010",
+        "output_fps": "29.954010",
+        "native_30fps": "yes"
+      }
+    ],
+    "analysis": [
+      {
+        "submitted": "1800",
+        "accepted": "1773",
+        "skipped": "27",
+        "processed": "1773",
+        "succeeded": "1772",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "29.954010",
+        "analysis_update_fps": "29.527286"
+      }
+    ],
+    "status_counts": {
+      "adjust_posture": 132,
+      "normal": 117,
+      "fatigue_risk": 1486,
+      "unreliable": 37
+    },
+    "background_positive": 59,
+    "background_completed": 59,
+    "background_geometry_failures": {
+      "0": 55,
+      "107": 3,
+      "106": 1
+    },
+    "vital_rejects": {
+      "vitals_blocked": 526,
+      "window_not_full": 1213,
+      "recovering": 33
+    },
+    "heart_rate_frames": 0,
+    "blink_count_max": 5,
+    "long_close_count_max": 2,
+    "yawn_count_max": 0,
+    "longest_visible_segment": {
+      "frames": 1531,
+      "span_s": 51.68654500000048,
+      "first_frame_id": 127,
+      "last_frame_id": 1676
+    },
+    "longest_nonblocked_segment": {
+      "frames": 526,
+      "span_s": 17.651585999999952,
+      "first_frame_id": 578,
+      "last_frame_id": 1107
+    },
+    "visible_pose_median": {
+      "yaw": 3.5938444433106893,
+      "pitch": -1.2568790399005925,
+      "roll": -2.244905510998487
+    },
+    "perclos_max": 0.303
+  },
+  "package": {
+    "files": {
+      "vigi_camera_autonomy": "fb16a9d633be290f6298f4048093b8c56509b3fe3d9329aadacb9de251d889d0",
+      "vg_vision_replay_arm": "1870198fa57ac591224d03bebdea02c223f2f051ba6722c7cd9885ebf6cceb7f",
+      "vg_metrics_http": "ec24e3e0f3faf48484f20031c19d84e3b5a258b2f7c45af02cdf85b27316e785",
+      "shape_predictor_68_face_landmarks.dat": "fbdc2cb80eb9aa7a758672cbfdda32ba6300efe9b6e6c7a299ff7e736b11b92f",
+      "libgomp.so.1": "2d25b3b1e4a3d8ac657c406a888395eda289cbeef85a13f94dadca0452922ac2",
+      "display.html": "d26ba34cea9b9e38bd216806327d1c69b7cf1322c8e3df11292ce8d236565f33",
+      "install_native.sh": "a0c650b1f6234dc6bb374281fa3562a4a3a4f908c36affae29e72d9871feaa36",
+      "run_native.sh": "d611b34060b659e9e3d2998cab56fac09d4a0ed2e451b4263ff16e89ebb20b4e",
+      "det1.param": "a9338e207dbbaa7ad56625492b551aeb4ecaf10ac279d098b02f17b0a62b1e0b",
+      "det1.bin": "8dedfdc5e37378d23131a6cb91d1e0a446ecb7751e2d3eadd5f086fdf18b5cec",
+      "det2.param": "e9f614c923b3fede02c236be0246465e83a34b37ceed0bc2bcb6bfda32461d25",
+      "det2.bin": "15a3f7df9dc7cc1ec0976fad36ef58128bf1b5de8c2abfb42ae722e803dbd842",
+      "det3.param": "b7fe7677d4840677aa0ea5690c7018630cc8d4a661be95290fe26814920bfad4",
+      "det3.bin": "93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962",
+      "runtime.env": "632dbe65200014a46b29a883588894799827ef769b9f6dd1a446d76b8fc18c0d"
+    },
+    "config_sha256": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417",
+    "runtime": "ert_temporal",
+    "capture": {
+      "width": 640,
+      "height": 480,
+      "format": "yuyv"
+    },
+    "full30_verified": false,
+    "local_only": true,
+    "hardware_boot_verified": false,
+    "accuracy_verified": false
+  },
+  "archive_sha256": "2e675b69fe8ec41ae924a5bd13cd85cf9f58cb643f6a2ae942c8b7dfbfa18488",
+  "raw_face_media_transferred": false,
+  "thresholds_changed_during_tests": false
+}

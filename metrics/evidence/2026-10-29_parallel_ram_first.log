@@ -1,0 +1,28 @@
+
+# sh -c '
+> if [ -n "$(pidof vigi_camera_pl 2>/dev/null)" ]; then echo VIGI_INSTALL_BUSY; 
+exit 1; fi
+> wget -T 10 -O /tmp/vigi_camera_pl.dual http://169.254.73.28:8092/vigi_camera_p
+l || exit 2
+> echo "90c34accde99ff89157c4c38a652d82e2b62ef9c50aa941649ec654a258097c8  /tmp/v
+igi_camera_pl.dual" | sha256sum -c - || exit 3
+> if [ ! -f /tmp/vigi_camera_pl.fps_prior ]; then cp /usr/bin/vigi_camera_pl /tm
+p/vigi_camera_pl.fps_prior || exit 4; fi
+> chmod 755 /tmp/vigi_camera_pl.dual && mv /tmp/vigi_camera_pl.dual /usr/bin/vig
+i_camera_pl || exit 5
+> sha256sum /usr/bin/vigi_camera_pl
+> echo VIGI_RAM_INSTALL_OK
+> '
+DONE\n'
+Connecting to 169.254.73.28:8092 (169.254.73.28:8092)
+saving to '/tmp/vigi_camera_pl.dual'
+vigi_camera_pl.dual  100% |********************************|  237k  0:00:00 ETA
+'/tmp/vigi_camera_pl.dual' saved
+/tmp/vigi_camera_pl.dual: OK
+90c34accde99ff89157c4c38a652d82e2b62ef9c50aa941649ec654a258097c8  /usr/bin/vigi_camera_pl
+VIGI_RAM_INSTALL_OK
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

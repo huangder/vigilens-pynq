@@ -1,0 +1,38 @@
+SAMPLE_REQUEST target_fps=30 time_base=v4l2_buffer no_padding=1
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=60
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+PL_READY profile=720p-3of8 ram=0x12000000 bytes=16777216 fid0=1 motion_threshold=16 pipeline=threaded audit_every=5 codec=jpeg
+JPEG_CONFIG method=IFAST fancy_upsampling=0 cpu_reference=audit
+BOARD_STREAM_LISTEN bind=169.254.73.29:9000 protocol=VLP2 rgb=jpeg_decoded_on_pc codec=jpeg-mjpeg strategy=default
+BOARD_STREAM_CONNECTED pixels=local_ram_only
+CAPTURE_FRAME n=1 sequence=0 bytes=99080 ts=224.768296
+SAMPLE_FRAME n=1 source_sequence=0 ts_us=224768296
+CAPTURE_FRAME n=2 sequence=1 bytes=99322 ts=224.804304
+SAMPLE_FRAME n=2 source_sequence=1 ts_us=224804304
+CAPTURE_FRAME n=3 sequence=2 bytes=98775 ts=224.820331
+CAPTURE_FRAME n=4 sequence=3 bytes=98591 ts=224.836332
+SAMPLE_FRAME n=3 source_sequence=3 ts_us=224836332
+CAPTURE_FRAME n=5 sequence=4 bytes=98808 ts=224.852515
+CAPTURE_FRAME n=6 sequence=5 bytes=98864 ts=224.868816
+SAMPLE_FRAME n=4 source_sequence=5 ts_us=224868816
+CAMERA_PL_FRAME n=1 seq=0 ts_us=224768296 mismatch=0 audit=1 roi_g=129899328 roi_count=921600 motion_valid=0 motion_ratio_q16=2724 decode_ms=46.521 reference_ms=15.579 transfer_pl_ms=22.223
+BOARD_STREAM_FRAME n=1 codec=jpeg-mjpeg jpeg_bytes=99080 wire_bytes=99080 send_ms=2.852
+CAPTURE_FRAME n=7 sequence=6 bytes=98699 ts=224.888362
+CAMERA_PL_FRAME n=2 seq=1 ts_us=224804304 mismatch=0 audit=0 roi_g=129837111 roi_count=921600 motion_valid=1 motion_ratio_q16=2699 decode_ms=55.254 reference_ms=0.000 transfer_pl_ms=18.007
+BOARD_STREAM_FRAME n=2 codec=jpeg-mjpeg jpeg_bytes=99322 wire_bytes=99322 send_ms=1.245
+CAPTURE_FRAME n=8 sequence=7 bytes=98469 ts=224.904323
+SAMPLE_FRAME n=5 source_sequence=7 ts_us=224904323
+CAPTURE_FRAME n=9 sequence=8 bytes=98976 ts=224.920377
+CAPTURE_FRAME n=10 sequence=9 bytes=98720 ts=224.936338
+SAMPLE_FRAME n=6 source_sequence=9 ts_us=224936338
+CAPTURE_FRAME n=11 sequence=10 bytes=98479 ts=224.956319
+CAMERA_PL_FRAME n=3 seq=3 ts_us=224836332 mismatch=0 audit=0 roi_g=129995425 roi_count=921600 motion_valid=1 motion_ratio_q16=2666 decode_ms=51.897 reference_ms=0.000 transfer_pl_ms=17.593
+BOARD_STREAM_FAIL seq=3 errno=32
+CAPTURE_FRAME n=12 sequence=11 bytes=98453 ts=224.972360
+SAMPLE_FRAME n=7 source_sequence=11 ts_us=224972360
+CAPTURE_FAIL /dev/video0 frames=12 errno=5 (Input/output error)
+CAMERA_PL_EXIT=1
+

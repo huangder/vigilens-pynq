@@ -1,0 +1,192 @@
+
+****** vitis-run v2026.1 (64-bit)
+  **** SW Build 6511674 on 2026-06-16-13:14:00
+  **** Start of session at: Thu Oct  1 21:07:20 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+  **** HLS Build v2026.1 6493734
+Sourcing Tcl script 'D:/Desktop/AMD/fpga/_probe_cosim_opts.tcl'
+SYNTAX 
+  cosim_design [OPTIONS]
+
+DESCRIPTION
+  Executes post-synthesis co-simulation of the generated RTL with the original C-based testbench.
+
+OPTIONS
+  -O
+    Enables optimize compilation of the C testbench and RTL wrapper. Without optimization, cosim_design will compile the
+    testbench as quickly as possible.
+  -argv <string> 
+    Option to specify the argument list for the behavioral testbench. The <string> will be passed to the main C function.
+  -compiled_library_dir <string> 
+    Option to specify the compiled library directory during simulation with 3rd party simulators.
+  -coverage
+    This option enables the coverage feature during simulation with the VCS simulator.
+  -disable_binary_tv
+    Use plain text binary test vector files instead of binary compressed format
+  -disable_deadlock_detection
+    Disables deadlock detection
+  -disable_dependency_check
+    Disables dependency checks
+  -enable_dataflow_profiling
+    This option turns on the dataflow channel profiling to track channel sizes during simulation
+  -enable_fifo_sizing
+    This option turns on auto dataflow FIFO channel size tuning during simulation
+  -enable_tasks_with_m_axi
+    Enables simulation of "hls::task" and ap_ctrl_none with stable top pointers
+  -hwemu_trace_dir <string> 
+    Specify hwemu trace test vector file folder
+  -ldflags <string> 
+    Provides for the specification of options that need to be passed to the linker for co-simulation. This is typically used
+    to pass on include path information or library information for the C test bench.
+  -mflags <string> *** DEPRECATED***
+    Provides for the specification of options that need to be passed to the compiler for systemc simulation. This is
+    typically used to speed up compilation.
+  -random_stall
+    Enable random stalling of top level interfaces during co-simulation
+  -rtl <vhdl|*verilog*>
+    Specify RTL language to use for C/RTL co-simulation.
+  -setup
+    When this option is specified, all the simulation files will be created in the "sim/<HDL>" directory of the active
+    solution, but the simulation will not be executed.
+  -stable_axilite_update
+    Enable axilite to config registers which is stable compared with previous transaction
+  -stdmath [=true|*false*]
+    Link the system standard math library
+  -tool <vcs|questa|modelsim|riviera|xcelium|*xsim*>
+    Option to select the HDL simulator to be used to co-simulate the RTL with the C testbench.
+  -trace_level <all|port|port_hier|*none*>
+    Determines the level of waveform tracing during C/RTL cosimulation.
+  -user_stall <string> 
+    Specify which ports to stall via a json file
+  -wave_debug
+    Opens the Vivado waveform viewer during co-simulation (simulation will not exit until the viewer is closed)
+
+SEE ALSO
+  docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1399-vitis-hls&resourceid=rpg1583259720879.html
+
+===== help cosim_design =====
+INFO: [HLS 200-1510] Running: cosim_design -help 
+SYNTAX 
+  cosim_design [OPTIONS]
+
+DESCRIPTION
+  Executes post-synthesis co-simulation of the generated RTL with the original C-based testbench.
+
+OPTIONS
+  -O
+    Enables optimize compilation of the C testbench and RTL wrapper. Without optimization, cosim_design will compile the
+    testbench as quickly as possible.
+  -argv <string> 
+    Option to specify the argument list for the behavioral testbench. The <string> will be passed to the main C function.
+  -compiled_library_dir <string> 
+    Option to specify the compiled library directory during simulation with 3rd party simulators.
+  -coverage
+    This option enables the coverage feature during simulation with the VCS simulator.
+  -disable_binary_tv
+    Use plain text binary test vector files instead of binary compressed format
+  -disable_deadlock_detection
+    Disables deadlock detection
+  -disable_dependency_check
+    Disables dependency checks
+  -enable_dataflow_profiling
+    This option turns on the dataflow channel profiling to track channel sizes during simulation
+  -enable_fifo_sizing
+    This option turns on auto dataflow FIFO channel size tuning during simulation
+  -enable_tasks_with_m_axi
+    Enables simulation of "hls::task" and ap_ctrl_none with stable top pointers
+  -hwemu_trace_dir <string> 
+    Specify hwemu trace test vector file folder
+  -ldflags <string> 
+    Provides for the specification of options that need to be passed to the linker for co-simulation. This is typically used
+    to pass on include path information or library information for the C test bench.
+  -mflags <string> *** DEPRECATED***
+    Provides for the specification of options that need to be passed to the compiler for systemc simulation. This is
+    typically used to speed up compilation.
+  -random_stall
+    Enable random stalling of top level interfaces during co-simulation
+  -rtl <vhdl|*verilog*>
+    Specify RTL language to use for C/RTL co-simulation.
+  -setup
+    When this option is specified, all the simulation files will be created in the "sim/<HDL>" directory of the active
+    solution, but the simulation will not be executed.
+  -stable_axilite_update
+    Enable axilite to config registers which is stable compared with previous transaction
+  -stdmath [=true|*false*]
+    Link the system standard math library
+  -tool <vcs|questa|modelsim|riviera|xcelium|*xsim*>
+    Option to select the HDL simulator to be used to co-simulate the RTL with the C testbench.
+  -trace_level <all|port|port_hier|*none*>
+    Determines the level of waveform tracing during C/RTL cosimulation.
+  -user_stall <string> 
+    Specify which ports to stall via a json file
+  -wave_debug
+    Opens the Vivado waveform viewer during co-simulation (simulation will not exit until the viewer is closed)
+
+SEE ALSO
+  docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1399-vitis-hls&resourceid=rpg1583259720879.html
+
+===== cosim_design -help =====
+SYNTAX 
+  config_cosim [OPTIONS]
+
+DESCRIPTION
+  Set options that control the behavior of RTL Co-Simulation
+
+OPTIONS
+  -O*** DEPRECATED***
+    Replaced by common simulation O option.
+  -argv <string> 
+    Option to specify the argument list for the behavioral testbench. The <string> will be passed to the main C function.
+  -compiled_library_dir <string> 
+    Option to specify the compiled library directory during simulation with 3rd party simulators.
+  -coverage
+    This option enables the coverage feature during simulation with the VCS simulator.
+  -disable_binary_tv
+    Use plain text binary test vector files instead of binary compressed format
+  -disable_deadlock_detection
+    Disables deadlock detection
+  -disable_dependency_check
+    Disables dependency checks
+  -enable_dataflow_profiling
+    This option turns on the dataflow channel profiling to track channel sizes during simulation
+  -enable_fifo_sizing
+    This option turns on auto dataflow FIFO channel size tuning during simulation
+  -enable_tasks_with_m_axi
+    Enables simulation of "hls::task" and ap_ctrl_none with stable top pointers
+  -hwemu_trace_dir <string> 
+    Specify hwemu trace test vector file folder
+  -ldflags <string> *** DEPRECATED***
+    Replaced by common simulation ldflags option.
+  -mflags <string> *** DEPRECATED***
+    Provides for the specification of options that need to be passed to the compiler for systemc simulation. This is
+    typically used to speed up compilation.
+  -random_stall
+    Enable random stalling of top level interfaces during co-simulation
+  -rtl <vhdl|*verilog*>
+    Specify RTL language to use for C/RTL co-simulation.
+  -setup
+    When this option is specified, all the simulation files will be created in the "sim/<HDL>" directory of the active
+    solution, but the simulation will not be executed.
+  -stable_axilite_update
+    Enable axilite to config registers which is stable compared with previous transaction
+  -stdmath [=true|*false*]
+    Link the system standard math library
+  -tool <vcs|questa|modelsim|riviera|xcelium|*xsim*>
+    Option to select the HDL simulator to be used to co-simulate the RTL with the C testbench.
+  -trace_level <all|port|port_hier|*none*>
+    Determines the level of waveform tracing during C/RTL cosimulation.
+  -user_stall <string> 
+    Specify which ports to stall via a json file
+  -wave_debug
+    Opens the Vivado waveform viewer during co-simulation (simulation will not exit until the viewer is closed)
+
+SEE ALSO
+  INI: cosim.*
+  docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1399-vitis-hls&resourceid=vyw1583260160301.html
+
+===== help config_cosim =====
+INFO: [HLS 200-112] Total CPU user time: 1 seconds. Total CPU system time: 1 seconds. Total elapsed time: 1.382 seconds; peak allocated memory: 30.719 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 3s
+INFO: [vitis-run 60-1662] Stopping dispatch session having empty uuid.

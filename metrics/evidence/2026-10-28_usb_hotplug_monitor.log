@@ -1,0 +1,77 @@
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: root
+Password: 
+# hotplug_check() {
+>     for cycle in 1 2 3; do
+>         echo "HOTPLUG_WAIT_REMOVE cycle=$cycle"
+>         waited=0
+>         while [ -e /sys/bus/usb/devices/1-1/idVendor ] && [ "$waited" -lt 180 
+]; do sleep 1; waited=$((waited+1)); done
+>         if [ -e /sys/bus/usb/devices/1-1/idVendor ]; then echo "HOTPLUG_FAIL r
+emoval_timeout cycle=$cycle"; return 1; fi
+>         echo "HOTPLUG_REMOVED cycle=$cycle"
+>         waited=0
+>         while [ ! -e /sys/bus/usb/devices/1-1/idVendor ] && [ "$waited" -lt 60
+ ]; do sleep 1; waited=$((waited+1)); done
+>         if [ ! -e /sys/bus/usb/devices/1-1/idVendor ]; then echo "HOTPLUG_FAIL
+ reconnect_timeout cycle=$cycle"; return 1; fi
+>         sleep 2
+>         vendor=$(cat /sys/bus/usb/devices/1-1/idVendor)
+>         product=$(cat /sys/bus/usb/devices/1-1/idProduct)
+>         echo "HOTPLUG_CONNECTED cycle=$cycle id=$vendor:$product devnum=$(cat 
+/sys/bus/usb/devices/1-1/devnum)"
+>         if [ "$vendor:$product" != "0c45:64ab" ]; then echo "HOTPLUG_FAIL wron
+g_device cycle=$cycle"; return 1; fi
+>         capture=$(/usr/bin/uvc_probe /dev/video0 1280 720 10 2>&1)
+>         result=$?
+>         printf '%s\n' "$capture"
+>         if [ "$result" -ne 0 ] && [ "$result" -ne 2 ]; then echo "HOTPLUG_FAIL
+ capture_error cycle=$cycle"; return 1; fi
+>         if ! printf '%s\n' "$capture" | grep -Eq '^CAPTURE_(PASS .*1280x720 fr
+ames=10|FRAMES_OK .*negotiated=1280x720 frames=10)'; then echo "HOTPLUG_FAIL no_
+frame_evidence cycle=$cycle"; return 1; fi
+>         echo "HOTPLUG_CYCLE_DONE cycle=$cycle requested_30fps_still_unmet"
+>     done
+>     echo HOTPLUG_THREE_CYCLES_DONE
+> }
+# hotplug_check
+HOTPLUG_WAIT_REMOVE cycle=1
+[  207.170296] usb 1-1: USB disconnect, device number 2
+HOTPLUG_REMOVED cycle=1
+[  208.560206] usb 1-1: new high-speed USB device number 3 using ci_hdrc
+[  208.772515] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+HOTPLUG_CONNECTED cycle=1 id=0c45:64ab devnum=3
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=10
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+CAPTURE_FRAME n=1 sequence=0 bytes=18772 ts=211.856621
+CAPTURE_FRAME n=2 sequence=1 bytes=18772 ts=212.148622
+CAPTURE_FRAME n=3 sequence=2 bytes=18772 ts=212.164625
+CAPTURE_FRAME n=4 sequence=3 bytes=18772 ts=212.184607
+CAPTURE_FRAME n=5 sequence=4 bytes=18772 ts=212.200615
+CAPTURE_FRAME n=6 sequence=5 bytes=18778 ts=212.216616
+CAPTURE_FRAME n=7 sequence=6 bytes=18776 ts=212.232620
+CAPTURE_FRAME n=8 sequence=7 bytes=18773 ts=212.248623
+CAPTURE_FRAME n=9 sequence=8 bytes=18778 ts=212.268607
+CAPTURE_FRAME n=10 sequence=9 bytes=21278 ts=212.284612
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=10 requested_mode=unmet
+HOTPLUG_CYCLE_DONE cycle=1 requested_30fps_still_unmet
+HOTPLUG_WAIT_REMOVE cycle=2
+[  220.820266] usb 1-1: USB disconnect, device number 3
+HOTPLUG_REMOVED cycle=2
+[  222.440255] usb 1-1: new high-speed USB device number 4 using ci_hdrc
+[  222.652849] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+[  223.837107] usb 1-1: USB disconnect, device number 4
+cat: can't open '/sys/bus/usb/devices/1-1/idVendor': No such file or directory
+cat: can't open '/sys/bus/usb/devices/1-1/idProduct': No such file or directory
+cat: can't open '/sys/bus/usb/devices/1-1/devnum': No such file or directory
+HOTPLUG_CONNECTED cycle=2 id=: devnum=
+HOTPLUG_FAIL wrong_device cycle=2
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

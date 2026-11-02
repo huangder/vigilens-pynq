@@ -1,0 +1,58 @@
+
+# sh -c '
+> set -e
+> wget -T 15 -O /tmp/peppa_pruned_mnn_v361.mnn http://169.254.73.28:8093/peppa_p
+runed_mnn_v361.mnn
+> echo "3d42f95f68c13c0599e1547a919bd404a62983454ec5f4d735aa27f221790ad9  /tmp/v
+g_mnn_probe_v361" | sha256sum -c -
+> echo "be908e37a2dba5fb1b43fcf242f54db5290800f999ff18c2406432726f19b138  /tmp/p
+eppa_pruned_mnn_v361.mnn" | sha256sum -c -
+> echo "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd  /tmp/p
+eppa_input.f32" | sha256sum -c -
+> echo PEPPA_MNN_PRUNED_FP32_PROBE_BEGIN
+> uname -m
+> for n in 1 2; do
+>  /tmp/vg_mnn_probe_v361 /tmp/peppa_pruned_mnn_v361.mnn /tmp/peppa_input.f32 /t
+mp/peppa_mnn_pruned_t$n 300 $n
+>  cat /tmp/peppa_mnn_pruned_t$n.json
+> done
+> echo PEPPA_MNN_PRUNED_FP32_PROBE_END
+> echo VIGI_FILE_BEGIN peppa_mnn_pruned_t2.output0.f32
+> gzip -c /tmp/peppa_mnn_pruned_t2.output0.f32 | base64
+> echo VIGI_FILE_END
+> '
+intf '\nVIGI_COMMAND_DONE\n'
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/peppa_pruned_mnn_v361.mnn'
+peppa_pruned_mnn_v36 100% |********************************|  472k  0:00:00 ETA
+'/tmp/peppa_pruned_mnn_v361.mnn' saved
+/tmp/vg_mnn_probe_v361: OK
+/tmp/peppa_pruned_mnn_v361.mnn: OK
+/tmp/peppa_input.f32: OK
+PEPPA_MNN_PRUNED_FP32_PROBE_BEGIN
+armv7l
+The device supports: i8sdot:0, fp16:0, i8mm: 0, sve2: 0, sme2: 0
+MNN_MODEL_PROBE_PASS output_elements=143
+{"kind":"mnn_model_tensor_probe","mnn_version":"3.6.1","backend":"CPU","precision":"Precision_High","fp16":false,"int8":false,"input_kind":"file","input_provenance_verified":false,"channel_order_verified":false,"landmark_pipeline_verified":false,"full_pipeline_realtime_verified":false,"accuracy_verified":false,"input_layout":"NCHW","input_shape":[1,3,160,160],"input_blob":"input1","output_blob":"output1","input_copy_each_iteration":true,"run_session_each_iteration":true,"timing_scope":"runSession_only","warmup_iterations":1,"iterations":300,"threads_requested":1,"mean_ms":50.53773193333334,"p50_ms":50.520487000000003,"p95_ms":50.662998999999999,"max_rss_kib":7040,"outputs":[{"elements":143,"host_layout":"CAFFE","host_element_count":143,"shape":[1,143],"storage":"little_endian_float32"}]}
+The device supports: i8sdot:0, fp16:0, i8mm: 0, sve2: 0, sme2: 0
+MNN_MODEL_PROBE_PASS output_elements=143
+{"kind":"mnn_model_tensor_probe","mnn_version":"3.6.1","backend":"CPU","precision":"Precision_High","fp16":false,"int8":false,"input_kind":"file","input_provenance_verified":false,"channel_order_verified":false,"landmark_pipeline_verified":false,"full_pipeline_realtime_verified":false,"accuracy_verified":false,"input_layout":"NCHW","input_shape":[1,3,160,160],"input_blob":"input1","output_blob":"output1","input_copy_each_iteration":true,"run_session_each_iteration":true,"timing_scope":"runSession_only","warmup_iterations":1,"iterations":300,"threads_requested":2,"mean_ms":27.594211116666671,"p50_ms":27.591289,"p95_ms":27.699822999999999,"max_rss_kib":7040,"outputs":[{"elements":143,"host_layout":"CAFFE","host_element_count":143,"shape":[1,143],"storage":"little_endian_float32"}]}
+PEPPA_MNN_PRUNED_FP32_PROBE_END
+VIGI_FILE_BEGIN peppa_mnn_pruned_t2.output0.f32
+H4sIAAAAAAAAAw3O20uTARwGYFPn2vK0imhFiZWHRKqti6i199egpkUgtJnCBB1mDMsi/SwzdYo2
+o3S5dCXO5Q6kY9nFMjvI3HR2obUkaUYFSkgnTVZWM8ym9fwFT49jSvxeocCxxWEx86IRzJhT/DPD
+jmG+W2xTDEP5Y04cIZtC0B6PB4vLuGGXIoeiKKaqEFUCPrXJmyB3bibTRQc2HdlIQ1NepAp4lJv0
+CeFMBDGlQWw7MA+vl0O7WJM4vpVDqmQn5ioiybbBgoOKaJo9dxk96/IgPKnGlrlK7BDUQZXSCHny
+NXgMrVAvNaPolBnhoe0oGOxDqdCICzNDKJvWo1kxCmlNI/YZ3uHjbw0Y4wfcdtdCaLNhZvtjfMcd
+5Fe8xHSOBbrcL3iy3wTP5wUcfdsE11c/TqffxMO9AaS8MeJV1gLq+Z0o8wXQerYbvPpvKC5nkM4y
+QPm0FvFxZhzaqcV8lBVFs3p0rrDBJWlAmPIu6sJrICzpArvlERpedyEVg/CMWuHjPUesyIq8wjH0
+SjrAXT0Cn8iORaMLaZ5uVPeXwJu5jMyk//dnYdShaYGskkXrxw04fyuCEsstkMlYlH/lHrKNoRRa
+1As5JwjbeCeYCQ4tHTYh7m8MhWj10PbxKDtwFbsbYmlSpEHWHi6xfeVYOhFChXYdoh1sml5uQ7V2
+JUkLrFjLZ1PxLweU6iBm/GYkJHBpzZ9WILCK5OPXkebl0siZ+3D7BS6VRNuv80sGIi+JBloyJtzO
+lET6Bzfo7JI8AgAA
+VIGI_FILE_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

@@ -1,0 +1,142 @@
+{
+  "kind": "same_run_actual_raw_to_filter_cross_language_verification",
+  "source_prefix": "2026-11-02_hr_continuous_live",
+  "contract_frames": 1786,
+  "all_filter_outputs_match_python": true,
+  "finite_raw_held_frames": 30,
+  "finite_raw_estimate_events": 1,
+  "maximum_consecutive_valid_estimates": 1,
+  "filtered_nonnull_frames": 30,
+  "filter": {
+    "enabled": true,
+    "window": 3,
+    "alpha": 0.35,
+    "interval_s": 0.8,
+    "max_gap_s": 1.5,
+    "max_spread_bpm": 12.0,
+    "startup_samples": 1
+  },
+  "events": [
+    {
+      "frame_id": 1296,
+      "ts": 14126.775901,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1328,
+      "ts": 14127.843893,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1358,
+      "ts": 14128.843873,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1388,
+      "ts": 14129.843897,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1419,
+      "ts": 14130.879826,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1451,
+      "ts": 14131.948143,
+      "raw": 69.7,
+      "raw_conf": 0.5511,
+      "filtered": 69.7,
+      "reason": "accepted"
+    },
+    {
+      "frame_id": 1481,
+      "ts": 14132.947821,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1511,
+      "ts": 14133.947782,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1541,
+      "ts": 14134.951754,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1571,
+      "ts": 14135.951718,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1601,
+      "ts": 14136.951701,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1692,
+      "ts": 14139.98765,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1722,
+      "ts": 14140.987958,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1753,
+      "ts": 14142.023945,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    },
+    {
+      "frame_id": 1784,
+      "ts": 14143.059576,
+      "raw": null,
+      "raw_conf": null,
+      "filtered": null,
+      "reason": "invalid_input"
+    }
+  ],
+  "accuracy_verified": false
+}

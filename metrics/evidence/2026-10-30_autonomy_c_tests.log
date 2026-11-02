@@ -1,0 +1,55 @@
+test_blink_short_and_long_at_two_rates (test_behavior.BehaviorParity.test_blink_short_and_long_at_two_rates) ... ok
+test_blink_timestamp_eviction_preserves_cumulative_count (test_behavior.BehaviorParity.test_blink_timestamp_eviction_preserves_cumulative_count) ... ok
+test_exact_duration_boundaries (test_behavior.BehaviorParity.test_exact_duration_boundaries) ... ok
+test_face_loss_cancels_confirmed_closure_and_yawn (test_behavior.BehaviorParity.test_face_loss_cancels_confirmed_closure_and_yawn) ... ok
+test_geometry_empty_degenerate_and_oblique (test_behavior.BehaviorParity.test_geometry_empty_degenerate_and_oblique) ... ok
+test_invalid_config_and_backward_time_leave_output_unchanged (test_behavior.BehaviorParity.test_invalid_config_and_backward_time_leave_output_unchanged) ... ok
+test_just_below_long_close_remains_blink (test_behavior.BehaviorParity.test_just_below_long_close_remains_blink) ... ok
+test_missing_eyes_is_face_loss (test_behavior.BehaviorParity.test_missing_eyes_is_face_loss) ... ok
+test_nextafter_duration_and_reclosing_during_opening (test_behavior.BehaviorParity.test_nextafter_duration_and_reclosing_during_opening) ... ok
+test_seeded_irregular_long_stream_wraps_and_grows_queues (test_behavior.BehaviorParity.test_seeded_irregular_long_stream_wraps_and_grows_queues) ... ok
+test_strict_ear_and_mar_thresholds (test_behavior.BehaviorParity.test_strict_ear_and_mar_thresholds) ... ok
+test_window_cutoff_inclusive_and_frame_weighting (test_behavior.BehaviorParity.test_window_cutoff_inclusive_and_frame_weighting) ... ok
+test_yawn_rearms_and_zero_duration_still_needs_second_sample (test_behavior.BehaviorParity.test_yawn_rearms_and_zero_duration_still_needs_second_sample) ... ok
+test_invalid_pl_result_never_becomes_a_zero_measurement (test_quality.QualityParity.test_invalid_pl_result_never_becomes_a_zero_measurement) ... ok
+test_motion_gain_boundary (test_quality.QualityParity.test_motion_gain_boundary) ... ok
+test_nonfinite_inputs_rejected_without_output_change (test_quality.QualityParity.test_nonfinite_inputs_rejected_without_output_change) ... ok
+test_override_clamps_and_missing_face (test_quality.QualityParity.test_override_clamps_and_missing_face) ... ok
+test_pixel_stats_grid_and_q16_endpoints (test_quality.QualityParity.test_pixel_stats_grid_and_q16_endpoints) ... ok
+test_seeded_stats_and_overrides (test_quality.QualityParity.test_seeded_stats_and_overrides) ... ok
+test_update_raw_face_differs_from_override_clamped_face (test_quality.QualityParity.test_update_raw_face_differs_from_override_clamped_face) ... ok
+test_weights_normalization_zero_sum_and_output_clamp (test_quality.QualityParity.test_weights_normalization_zero_sum_and_output_clamp) ... ok
+test_exact_boundaries_and_neighbors (test_decision.DecisionParity.test_exact_boundaries_and_neighbors) ... ok
+test_invalid_input_does_not_change_result (test_decision.DecisionParity.test_invalid_input_does_not_change_result) ... ok
+test_pose_hold_zero_clamps_to_one (test_decision.DecisionParity.test_pose_hold_zero_clamps_to_one) ... ok
+test_pose_hysteresis_and_early_return_freeze (test_decision.DecisionParity.test_pose_hysteresis_and_early_return_freeze) ... ok
+test_priority_and_all_fatigue_triggers (test_decision.DecisionParity.test_priority_and_all_fatigue_triggers) ... ok
+test_quality_weakest_motion_complement_and_ties (test_decision.DecisionParity.test_quality_weakest_motion_complement_and_ties) ... ok
+test_seeded_rule_sequences (test_decision.DecisionParity.test_seeded_rule_sequences) ... ok
+test_vital_null_mask_and_optional_face_status (test_decision.DecisionParity.test_vital_null_mask_and_optional_face_status) ... ok
+test_decimal_round_matches_python_at_ties_neighbors_and_random (test_measure.MeasureParity.test_decimal_round_matches_python_at_ties_neighbors_and_random) ... ok
+test_finite_geometry_overflow_rejected_before_behavior_state_changes (test_measure.MeasureParity.test_finite_geometry_overflow_rejected_before_behavior_state_changes) ... ok
+test_full_chain_seeded_irregular_sequences (test_measure.MeasureParity.test_full_chain_seeded_irregular_sequences) ... ok
+test_rejected_frames_do_not_pollute_state_or_output (test_measure.MeasureParity.test_rejected_frames_do_not_pollute_state_or_output) ... ok
+test_rounding_before_decision_changes_boundary_result (test_measure.MeasureParity.test_rounding_before_decision_changes_boundary_result) ... ok
+test_timestamp_difference_overflow_is_rejected (test_measure.MeasureParity.test_timestamp_difference_overflow_is_rejected) ... ok
+test_altered_thresholds_legacy_ms_alias_and_hold_clamp (test_export_config.ExportConfig.test_altered_thresholds_legacy_ms_alias_and_hold_clamp) ... ok
+test_cpp_application_links_the_c_modules (test_export_config.ExportConfig.test_cpp_application_links_the_c_modules) ... ok
+test_max_native_integer_constants_compile_without_overflow (test_export_config.ExportConfig.test_max_native_integer_constants_compile_without_overflow) ... ok
+test_nonfinite_and_missing_source_fail_without_output (test_export_config.ExportConfig.test_nonfinite_and_missing_source_fail_without_output) ... ok
+test_out_of_range_integers_fail_without_output (test_export_config.ExportConfig.test_out_of_range_integers_fail_without_output) ... ok
+test_repository_config_exact_compiled_values_and_digest (test_export_config.ExportConfig.test_repository_config_exact_compiled_values_and_digest) ... ok
+test_cli_usage (test_measure_replay.MeasureReplay.test_cli_usage) ... ok
+test_parser_rejects_malformed_headers_lengths_nonfinite_and_bad_numbers (test_measure_replay.MeasureReplay.test_parser_rejects_malformed_headers_lengths_nonfinite_and_bad_numbers) ... ok
+test_synthetic_fixture_matches_python_and_is_deterministic (test_measure_replay.MeasureReplay.test_synthetic_fixture_matches_python_and_is_deterministic) ... ok
+test_bad_models_shapes_counts_nonfinite_and_blob_names_fail (test_ncnn_probe_cli.NcnnProbeCLI.test_bad_models_shapes_counts_nonfinite_and_blob_names_fail) ... ok
+test_file_input_exact_length_finite_little_endian_and_metadata (test_ncnn_probe_cli.NcnnProbeCLI.test_file_input_exact_length_finite_little_endian_and_metadata) ... ok
+test_fp32_zero_input_fresh_extractors_and_little_endian_output (test_ncnn_probe_cli.NcnnProbeCLI.test_fp32_zero_input_fresh_extractors_and_little_endian_output) ... ok
+test_int8_build_reports_permission_without_certifying_model (test_ncnn_probe_cli.NcnnProbeCLI.test_int8_build_reports_permission_without_certifying_model) ... ok
+test_invalid_cli_and_argument_bounds (test_ncnn_probe_cli.NcnnProbeCLI.test_invalid_cli_and_argument_bounds) ... ok
+test_kernel_options_recorded_and_invalid_values_rejected (test_ncnn_probe_cli.NcnnProbeCLI.test_kernel_options_recorded_and_invalid_values_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 50 tests in 4.389s
+
+OK

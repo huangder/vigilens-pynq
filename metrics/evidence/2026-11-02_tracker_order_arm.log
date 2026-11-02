@@ -1,0 +1,37 @@
+
+# cat /tmp/order_run.log
+order_before: OK
+order_after: OK
+ORDER_RESULT mode=before pass=1
+{"missing_critical":-1,"iterations":100,"cpu_ms_mean":7.324566,"synthetic_only":true}
+{"missing_critical":36,"iterations":100,"cpu_ms_mean":3.004933,"synthetic_only":true}
+{"missing_critical":48,"iterations":100,"cpu_ms_mean":5.258925,"synthetic_only":true}
+ORDER_RESULT mode=after pass=1
+{"missing_critical":-1,"iterations":100,"cpu_ms_mean":7.330172,"synthetic_only":true}
+{"missing_critical":36,"iterations":100,"cpu_ms_mean":0.128105,"synthetic_only":true}
+{"missing_critical":48,"iterations":100,"cpu_ms_mean":2.363301,"synthetic_only":true}
+ORDER_POINT_BYTE_PARITY_PASS=1
+ORDER_RESULT mode=before pass=2
+{"missing_critical":-1,"iterations":100,"cpu_ms_mean":7.325535,"synthetic_only":true}
+{"missing_critical":36,"iterations":100,"cpu_ms_mean":3.004775,"synthetic_only":true}
+{"missing_critical":48,"iterations":100,"cpu_ms_mean":5.259939,"synthetic_only":true}
+ORDER_RESULT mode=after pass=2
+{"missing_critical":-1,"iterations":100,"cpu_ms_mean":7.328558,"synthetic_only":true}
+{"missing_critical":36,"iterations":100,"cpu_ms_mean":0.128335,"synthetic_only":true}
+{"missing_critical":48,"iterations":100,"cpu_ms_mean":2.364997,"synthetic_only":true}
+ORDER_POINT_BYTE_PARITY_PASS=2
+ORDER_RESULT mode=before pass=3
+{"missing_critical":-1,"iterations":100,"cpu_ms_mean":7.322481,"synthetic_only":true}
+{"missing_critical":36,"iterations":100,"cpu_ms_mean":3.005815,"synthetic_only":true}
+{"missing_critical":48,"iterations":100,"cpu_ms_mean":5.257635,"synthetic_only":true}
+ORDER_RESULT mode=after pass=3
+{"missing_critical":-1,"iterations":100,"cpu_ms_mean":7.329437,"synthetic_only":true}
+{"missing_critical":36,"iterations":100,"cpu_ms_mean":0.128632,"synthetic_only":true}
+{"missing_critical":48,"iterations":100,"cpu_ms_mean":2.361194,"synthetic_only":true}
+ORDER_POINT_BYTE_PARITY_PASS=3
+ORDER_BOARD_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

@@ -1,0 +1,80 @@
+
+# sh -c '
+> set -e
+> wget -T 15 -O /tmp/vg_ncnn_probe http://169.254.73.28:8093/vg_ncnn_probe
+> wget -T 15 -O /tmp/ghostone.param http://169.254.73.28:8093/ghostone.param
+> wget -T 15 -O /tmp/ghostone.bin http://169.254.73.28:8093/ghostone.bin
+> wget -T 15 -O /tmp/ghostone_input.f32 http://169.254.73.28:8093/ghostone_input
+.f32
+> echo "79a9df6640a0abe8ab8a80a843c00134be59d9eceebd6268f0a871906ce86592  /tmp/v
+g_ncnn_probe" | sha256sum -c -
+> echo "4be7f1478d817f8c93dbc2a507da12af743aeda5038f7af2266c5879b7264ed1  /tmp/g
+hostone.param" | sha256sum -c -
+> echo "ab899aac0f681aca77390646184719958c3313242ea0dff6b2e719a800a25706  /tmp/g
+hostone.bin" | sha256sum -c -
+> echo "4496218ecb68f2c690cef27a4d19a9ba5960045f93e30f353c9a48e1dea7e682  /tmp/g
+hostone_input.f32" | sha256sum -c -
+> chmod 700 /tmp/vg_ncnn_probe
+> echo LIGHTWEIGHT_GHOSTONE_PROBE_BEGIN
+> uname -m
+> for n in 1 2; do
+>  echo GHOSTONE_THREADS=$n
+>  /tmp/vg_ncnn_probe /tmp/ghostone.param /tmp/ghostone.bin 112 112 input output
+ /tmp/ghostone_t$n 60 $n 196 /tmp/ghostone_input.f32
+>  cat /tmp/ghostone_t$n.json
+> done
+> echo LIGHTWEIGHT_GHOSTONE_PROBE_END
+> echo VIGI_FILE_BEGIN ghostone_t2.output0.f32
+> gzip -c /tmp/ghostone_t2.output0.f32 | base64
+> echo VIGI_FILE_END
+> '
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/vg_ncnn_probe'
+vg_ncnn_probe         20% |******                          | 2164k  0:00:03 ETAvg_ncnn_probe        100% |********************************| 10.4M  0:00:00 ETA
+'/tmp/vg_ncnn_probe' saved
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/ghostone.param'
+ghostone.param       100% |********************************| 11889  0:00:00 ETA
+'/tmp/ghostone.param' saved
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/ghostone.bin'
+ghostone.bin          97% |******************************* | 2673k  0:00:00 ETAghostone.bin         100% |********************************| 2745k  0:00:00 ETA
+'/tmp/ghostone.bin' saved
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/ghostone_input.f32'
+ghostone_input.f32   100% |********************************|  147k  0:00:00 ETA
+'/tmp/ghostone_input.f32' saved
+/tmp/vg_ncnn_probe: OK
+/tmp/ghostone.param: OK
+/tmp/ghostone.bin: OK
+/tmp/ghostone_input.f32: OK
+LIGHTWEIGHT_GHOSTONE_PROBE_BEGIN
+armv7l
+GHOSTONE_THREADS=1
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=196
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"RGB_planar_float32","fp16":false,"bf16":false,"int8":false,"packing":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input","output_blob":"output","input_shape_whc":[112,112,3],"iterations":60,"threads":1,"mean_ms":194.6142872333333,"p50_ms":194.556038,"p95_ms":194.86016599999999,"max_rss_kib":13240,"outputs":[{"slot":0,"elements":196,"shape":[196],"source_dims":1,"source_w":49,"source_elempack":4,"storage":"little_endian_float32"}]}
+GHOSTONE_THREADS=2
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=196
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"RGB_planar_float32","fp16":false,"bf16":false,"int8":false,"packing":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input","output_blob":"output","input_shape_whc":[112,112,3],"iterations":60,"threads":2,"mean_ms":114.70774815,"p50_ms":114.66402100000001,"p95_ms":114.964333,"max_rss_kib":13028,"outputs":[{"slot":0,"elements":196,"shape":[196],"source_dims":1,"source_w":49,"source_elempack":4,"storage":"little_endian_float32"}]}
+LIGHTWEIGHT_GHOSTONE_PROBE_END
+VIGI_FILE_BEGIN ghostone_t2.output0.f32
+H4sIAAAAAAAAAwXBC0wMAAAG4HQR19EpdxJ1deb0oEip4/z/NTpJrkOFIs8szfJYQhgrLJpK5HFr
+VNSakaJZOa9dKcIcXc2jJUWTakilPMr3Bam7F6QX2nLYVQIbg4TGWj/8lDtxuCgcj45PpUkdD3GF
+O82zDqK52ZuepzNgfuVL5+FLSEpV8n5JKWrdF9Cj2ghDkJpxDW/gIV7IvNROZPtp2Dv/L4KzlrBN
+b0WLsFDeLx3FtM4wZp2yZvWaCO5XC/ni/Fq+trNjyYUN/JfjSHl2DJMzXfjk3io+GDed03VhjDV4
+MXH3Im4Z4ccEV3++kqjo5evJyR2BjJ8oo/ayhrvOjKfoWgi1JgFdrodSs60bWq9lFArNKF+8lCaR
+AdLAEMrW5wMMpsCUBnZp6LF9A8riAuD76Rs+2BETehvw7sx2JFx9iYDkFAzk1OJA+kkoFA341JsB
+7ej32B2RBn2kCbb9h1Bd/hrLQ8NxxbcF7TVfsSTHgL4DfxCtLESi00hOMedi50c7jo07C72DK92k
+eTDWSHn720UE1Y1hVWouUg5ZMsn6BrQz+7HaWI2eDjNKyr5DHNkIXZYlrVRv8axOxKiEFlhQzHXx
+n1EsVfDoUCdCDsv4dmsfIq3sWfBbwEsrHei8YzTd5BKK3c4iWD6MJBs9Ko2/sGl/Pq63deF57B0k
+FvagsawOLVECOhdXoOaLFRXtxfDfaENdci5i6scwJqUD8wLbMbDrL27tfIqbEUJaO1Si84QtP++4
+i7Rr9hTvrYTTbHu2Vplx0VPMxDlt0MkF3NPciqKhH3jYpGJ0Zh90snnsmvUTtwu8eW7fb3zN82T9
+Vgsulyk4d6mITVOn0SfOkQ1Rcn6cJKEyX8GcueNZM+jNeo2QRwb9eaN/FCfUzueaEguaFCqWRg5C
+oFTRp2cIgQNqvmi1pOMMJbMKRGxMn8OmmVLGrpRz2WMbOq9wYUCRgPpjbkwOGUEvH282rStHUWg3
+UDGOm6fcxX/nS732EAMAAA==
+VIGI_FILE_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

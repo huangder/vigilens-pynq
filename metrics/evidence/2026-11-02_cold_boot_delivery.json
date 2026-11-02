@@ -1,0 +1,103 @@
+{
+  "directory": "D:\\Desktop\\AMD\\.tmp\\cold_boot_20261102\\VigiLens_SD_20261102",
+  "archive": "D:\\Desktop\\AMD\\.tmp\\cold_boot_20261102\\VigiLens_SD_20261102.zip",
+  "archive_sha256": "9fab1ff3ef88219ea23eb75386557c90b49f18d7c62e288896606d25c5b18843",
+  "archive_bytes": 110025705,
+  "file_count": 28,
+  "copy_bytes": 152160928,
+  "hardware_sd_boot_verified": false,
+  "kind": "offline_complete_SD_cold_boot_candidate_files_ready_for_human_copy",
+  "config_sha256": "73c1eddce5a0d473c2925c5bf85b685fe822ef619e2ca9224b91808595271b88",
+  "application_camera_sha256": "c94592db6e1f7fc2fb454d55ae0acb1b1d584ad5f9d0516d0ce692ca28011b44",
+  "bootrom_load_bytes": 123728,
+  "bootrom_payload_exact_complete_spl_match": true,
+  "bootgen": {
+    "tool": "D:\\Xilinx\\2026.1\\Vitis\\bin\\bootgen.bat",
+    "payload_sha256": "41166d6d8a48e3d56bfe3a485af56fc7f9bc2ce3f321b909665606d634acaf17",
+    "image_sha256": "5b7009a35ccc0af9bca927b5ad4c82cb4894b4f78281b61958eafaa74c981384",
+    "physical_boot_verified": false
+  },
+  "fit": {
+    "passed": true,
+    "sha256": "1af4eb97f26d943b65ec88ffb490f7c94e214b4fcf6822b11b50773141fba7ad",
+    "images": {
+      "firmware-1": {
+        "type": "firmware",
+        "description": "U-Boot 2024.10 for zynq board",
+        "bytes": 1036664,
+        "hash_algorithm": "crc32",
+        "hash_verified": true
+      },
+      "fdt-1": {
+        "type": "flat_dt",
+        "description": "zynq-mizar-candidate",
+        "bytes": 13976,
+        "hash_algorithm": "crc32",
+        "hash_verified": true
+      }
+    },
+    "default_configuration": "conf-1",
+    "firmware": "firmware-1",
+    "fdt": "fdt-1",
+    "sole_board": "zynq-mizar-candidate",
+    "hardware_boot_verified": false
+  },
+  "linux": {
+    "passed": true,
+    "device_tree": {
+      "sd_status": "okay",
+      "sd_bus_width": "4",
+      "sd_max_frequency": "25000000",
+      "sd_broken_cd": "",
+      "sd_disable_wp": "",
+      "usb_status": "okay",
+      "usb_role": "host",
+      "gem_status": "okay",
+      "phy_max_speed": "100",
+      "dram": "100000 1ff00000",
+      "dma_reservation": "12000000 1000000",
+      "pl_profile": "720p-3of8"
+    },
+    "kernel_builtins": [
+      "CONFIG_MMC",
+      "CONFIG_MMC_BLOCK",
+      "CONFIG_MMC_SDHCI",
+      "CONFIG_MMC_SDHCI_OF_ARASAN",
+      "CONFIG_FAT_FS",
+      "CONFIG_VFAT_FS",
+      "CONFIG_BLK_DEV_INITRD",
+      "CONFIG_DEVTMPFS"
+    ],
+    "uvc_driver": {
+      "state": "module",
+      "files": [
+        "lib/modules/6.6.158/kernel/drivers/media/usb/uvc/uvcvideo.ko"
+      ]
+    },
+    "rootfs_uncompressed_bytes": 32705536,
+    "rootfs_sha256": "debbbfabb0170af028984a24d9bd6996bc31281ac1c7e8f76b3a721dd00ff38c",
+    "contains_autostart_service": true,
+    "contains_model_weights": false,
+    "hardware_sd_boot_verified": false
+  },
+  "current_service_and_boot_environment_present_in_final_initrd": true,
+  "offline_regression": {
+    "passed": 26,
+    "failed": 0,
+    "elapsed_s": 85.6
+  },
+  "targeted_tests_passed": 31,
+  "targeted_subtests_passed": 4,
+  "service_fixture_tests_passed": 4,
+  "copy_hashes_passed": 28,
+  "archive_crc_passed": true,
+  "packaged_page_script_fixture_test_passed": true,
+  "powershell_wrapper_parsed_only": true,
+  "continuous_capture_on_ARM_verified": false,
+  "physical_camera_recovery_verified": false,
+  "accuracy_verified": false,
+  "serial_probe_received_bytes": 0,
+  "storage_devices_written": false,
+  "raw_face_media_saved_or_transferred": false,
+  "user_next_step": "Copy contents of copy_to_sd to the first FAT32 partition root, verify files, then perform independent SD power-on."
+}

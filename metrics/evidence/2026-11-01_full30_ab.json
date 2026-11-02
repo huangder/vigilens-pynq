@@ -1,0 +1,167 @@
+{
+  "hardware_test": true,
+  "accuracy_verified": false,
+  "files": {
+    "2026-11-01_full30_before.log": "532bd7236a286107c5624b8519a2de1d3227e49f424ccc9f565b502418d6535b",
+    "2026-11-01_full30_after.log": "f4e0b226d1547f580255b6607ebdfe5ad6de93685cfc514b54d2bb884cfc26e8",
+    "2026-11-01_full30_before.jsonl": "4e2fc23100238944beb13e2577560c90cde42ac91e65b39e77a6302140831a57",
+    "2026-11-01_full30_after.jsonl": "2d401eae1d3f18a6d7ad97d3e1ff31cbd1f01bf041d9e67873465a39b9f46774",
+    "2026-11-01_full30_plonly.log": "2d83896c529221930e7a5965139a74a762628b472c02250c623cfca0b0d084f5"
+  },
+  "runs": {
+    "before": {
+      "autonomy": {
+        "submitted": "582",
+        "accepted": "169",
+        "skipped": "413",
+        "processed": "169",
+        "succeeded": "168",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "15.575051",
+        "analysis_update_fps": "4.430682"
+      },
+      "audit": {
+        "frames": "582",
+        "audits": "20",
+        "failures": "0",
+        "reference_ms_total": "1184"
+      },
+      "timings": {
+        "detector_ms": {
+          "mean": 112.04224404761905,
+          "median": 51.829,
+          "max": 3009.847
+        },
+        "landmark_ms": {
+          "mean": 93.648875,
+          "median": 92.3665,
+          "max": 205.036
+        },
+        "total_ms": {
+          "mean": 224.67622023809523,
+          "median": 162.73899999999998,
+          "max": 3116.945
+        },
+        "landmark_model_ms": {
+          "mean": 75.01819642857143,
+          "median": 74.116,
+          "max": 172.933
+        },
+        "detector_caller_cpu_ms": {
+          "mean": 92.79093452380953,
+          "median": 50.293,
+          "max": 1721.045
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 87.02454166666666,
+          "median": 86.81,
+          "max": 99.757
+        },
+        "decode_cpu_ms": {
+          "mean": 35.933465635738834,
+          "median": 35.1005,
+          "max": 49.9
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 9.668747422680413,
+          "median": 9.305,
+          "max": 14.312
+        },
+        "decode_ms": {
+          "mean": 61.32942611683849,
+          "median": 59.9725,
+          "max": 93.947
+        },
+        "transfer_pl_ms": {
+          "mean": 23.02767182130584,
+          "median": 20.013,
+          "max": 44.993
+        }
+      }
+    },
+    "after": {
+      "autonomy": {
+        "submitted": "383",
+        "accepted": "37",
+        "skipped": "346",
+        "processed": "37",
+        "succeeded": "36",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "24.480385",
+        "analysis_update_fps": "2.192195"
+      },
+      "audit": {
+        "frames": "383",
+        "audits": "13",
+        "failures": "0",
+        "reference_ms_total": "822"
+      },
+      "timings": {
+        "detector_ms": {
+          "mean": 275.35147222222224,
+          "median": 46.238,
+          "max": 5287.707
+        },
+        "landmark_ms": {
+          "mean": 139.98038888888888,
+          "median": 94.3495,
+          "max": 803.748
+        },
+        "total_ms": {
+          "mean": 456.42602857142856,
+          "median": 161.106,
+          "max": 5402.561
+        },
+        "landmark_model_ms": {
+          "mean": 108.72874285714286,
+          "median": 76.891,
+          "max": 610.535
+        },
+        "detector_caller_cpu_ms": {
+          "mean": 148.6484,
+          "median": 43.029,
+          "max": 1661.069
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 85.36034285714285,
+          "median": 85.896,
+          "max": 94.201
+        },
+        "gray_ms": {
+          "mean": 4.912023498694517,
+          "median": 4.271,
+          "max": 24.478
+        },
+        "submit_ms": {
+          "mean": 2.480545691906005,
+          "median": 0.007,
+          "max": 54.29
+        },
+        "decode_cpu_ms": {
+          "mean": 36.94697120418848,
+          "median": 35.4375,
+          "max": 49.366
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 9.500293193717278,
+          "median": 9.155000000000001,
+          "max": 14.233
+        },
+        "decode_ms": {
+          "mean": 68.92389528795812,
+          "median": 65.094,
+          "max": 113.34
+        },
+        "transfer_pl_ms": {
+          "mean": 27.248696335078535,
+          "median": 26.262,
+          "max": 62.417
+        }
+      }
+    }
+  }
+}

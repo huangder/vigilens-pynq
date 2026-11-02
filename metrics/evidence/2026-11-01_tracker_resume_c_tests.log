@@ -1,0 +1,63 @@
+[ 10%] Built target vg_behavior
+[ 10%] Built target vg_quality
+[ 20%] Built target vg_detect_policy
+[ 20%] Built target vg_decision
+[ 30%] Built target vg_pose
+[ 30%] Built target vg_vital
+[ 40%] Built target vg_detect_policy_test
+[ 40%] Built target vg_metrics_http
+[ 45%] Built target vg_point_patch_test
+[ 52%] Built target vg_autonomy_camera_test
+[ 57%] Built target vg_vision_roi_test
+[ 60%] Building CXX object CMakeFiles/vg_point_tracker_test.dir/tests/point_tracker_test.cpp.o
+[ 65%] Built target vg_measure
+[ 70%] Built target vg_pose_cli
+[ 75%] Built target vg_contract
+[ 77%] Linking CXX executable vg_point_tracker_test
+[ 82%] Built target vg_measure_replay
+[ 85%] Built target vg_point_tracker_test
+[ 90%] Built target vg_autonomy
+[ 95%] Built target vg_autonomy_test
+[100%] Built target vg_autonomy_service
+Internal ctest changing into directory: /mnt/d/Desktop/AMD/.tmp/autonomy/full30_20261101/ctest
+Test project /mnt/d/Desktop/AMD/.tmp/autonomy/full30_20261101/ctest
+    Start 1: detect_policy
+1/6 Test #1: detect_policy ....................   Passed    0.01 sec
+    Start 2: autonomy_engine
+2/6 Test #2: autonomy_engine ..................   Passed    0.12 sec
+    Start 3: point_tracker
+3/6 Test #3: point_tracker ....................   Passed    0.04 sec
+    Start 4: point_patch
+4/6 Test #4: point_patch ......................   Passed    0.00 sec
+    Start 5: autonomy_camera_queue
+5/6 Test #5: autonomy_camera_queue ............   Passed    0.02 sec
+    Start 6: vision_roi_bounds
+6/6 Test #6: vision_roi_bounds ................   Passed    0.02 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   0.35 sec
+DMA_GRAY_TEST_PASS byte_sum_exact full_frame_values=256 random=1 prefixes=128
+JPEG_DECODE_FAIL sequence=2
+CAMERA_PL_FAIL incomplete_pipeline submitted=5 processed=1
+CAMERA_PL_FAIL incomplete_pipeline submitted=9 processed=2
+JPEG_DECODE_FAIL sequence=2
+CAMERA_PL_FAIL incomplete_pipeline submitted=5 processed=0
+CAMERA_PL_FAIL incomplete_pipeline submitted=9 processed=2
+DECODE_SUMMARY workers=1 frames=2 peak_active=1
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=1 frames=240 peak_active=1
+AUDIT_SUMMARY frames=240 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=1 frames=1 peak_active=1
+AUDIT_SUMMARY frames=1 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=1 frames=2 peak_active=1
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=2 frames=2 peak_active=2
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=2 frames=240 peak_active=2
+AUDIT_SUMMARY frames=240 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=2 frames=0 peak_active=2
+AUDIT_SUMMARY frames=0 audits=0 failures=0 reference_ms_total=0
+DECODE_SUMMARY workers=2 frames=2 peak_active=2
+AUDIT_SUMMARY frames=2 audits=0 failures=0 reference_ms_total=0
+CAMERA_PIPELINE_HOST_PASS workers=1,2 ordered_drain=2,240 reorder=forced history=retained worker_failures=4 startup_failures=5 abort=1

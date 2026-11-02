@@ -1,0 +1,12 @@
+if ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep; then echo HR5_REFUSE_
+CONCURRENT_RUN; else cp /tmp/vigilens_hr5/camera.log /tmp/vigilens_hr5/live1_cam
+era.log; cp /tmp/vigilens_hr5/contracts.jsonl /tmp/vigilens_hr5/live1_contracts.
+jsonl; cp /tmp/vigilens_hr5/http.log /tmp/vigilens_hr5/live1_http.log; cp /tmp/v
+igilens_hr5/run.log /tmp/vigilens_hr5/live1_run.log; sh /tmp/vigilens_hr5/run_na
+tive.sh /tmp/vigilens_hr5 1800 > /tmp/vigilens_hr5/run.log 2>&1 & echo HR5_LIVE2
+_PID=$!; fi
+HR5_LIVE2_PID=806
+# printf '\nHR5_LIVE2_STARTED\n'
+
+HR5_LIVE2_STARTED
+# 

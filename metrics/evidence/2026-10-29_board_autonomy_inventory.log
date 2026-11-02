@@ -1,0 +1,37 @@
+
+# sh -c '
+> echo VIGI_AUTONOMY_INVENTORY_BEGIN
+> uname -m
+> cat /sys/devices/system/cpu/online
+> grep -E "Processor|model name|Features|CPU architecture|Hardware" /proc/cpuinf
+o
+> grep -E "MemTotal|MemAvailable" /proc/meminfo
+> for name in python3 python pip3 busybox; do command -v "$name" || true; done
+> ls -l /usr/bin/vigi_camera_pl /dev/video0
+> if pidof vigi_camera_pl; then echo CAPTURE_RUNNING; else echo CAPTURE_IDLE; fi
+> cat /proc/cmdline
+> echo VIGI_AUTONOMY_INVENTORY_END
+> '
+VIGI_AUTONOMY_INVENTORY_BEGIN
+armv7l
+0-1
+model name	: ARMv7 Processor rev 0 (v7l)
+Features	: half thumb fastmult vfp edsp thumbee neon vfpv3 tls vfpd32 
+CPU architecture: 7
+model name	: ARMv7 Processor rev 0 (v7l)
+Features	: half thumb fastmult vfp edsp thumbee neon vfpv3 tls vfpd32 
+CPU architecture: 7
+Hardware	: Xilinx Zynq Platform
+MemTotal:         476868 kB
+MemAvailable:     422460 kB
+/bin/busybox
+crw-------    1 root     root       81,   0 Jan  1 00:00 [1;35m/dev/video0[m
+-rwxr-xr-x    1 root     root        243524 Jan  1 00:37 [1;32m/usr/bin/vigi_camera_pl[m
+CAPTURE_IDLE
+console=ttyPS0,115200 root=/dev/ram0 rw mem=512M cpuidle.off=1 cma=128M usbcore.autosuspend=-1 clk_ignore_unused
+VIGI_AUTONOMY_INVENTORY_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

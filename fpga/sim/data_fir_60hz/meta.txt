@@ -1,0 +1,11 @@
+fs=60
+taps=127
+coeff_shift=15
+band_hz=0.70,3.50
+band_convention=-6dB
+segments=16
+total_samples=4098
+series_bytes=8196
+scale=1
+seed=20260910
+coeff_header=fir_coeffs_q15_60hz.h

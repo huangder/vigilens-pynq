@@ -1,0 +1,24 @@
+{
+  "scope": "host-only local regression; no camera or board execution",
+  "bug_reproduced_before_fix": true,
+  "lifecycle_cases_passed": 3,
+  "asan_ubsan_passed": true,
+  "offline_checks_passed": 26,
+  "offline_checks_failed": 0,
+  "arm_cross_compile_passed": true,
+  "current_fix_executed_on_board": false,
+  "normal_replay_byte_identical_to_previous": true,
+  "normal_replay_deterministic_two_runs": true,
+  "normal_replay_sha256": "067af68170895ef1b8443c975df7f3903950b5f3bda40e29fa109821782390d2",
+  "known_absence_frames": 45,
+  "known_absence_false_positive_frames": 0,
+  "accuracy_verified": false,
+  "full30_passed": false,
+  "source_sha256": {
+    "board/autonomy/ert_runtime.cpp": "cd58e2bf452a049794cb4c9a08159ddf52458be65689fb55bb2f8f163114c5b1",
+    "board/autonomy/tests/ert_lifecycle_test.cpp": "82ab951678958617331f7d823bcf9283c2dc2f8dd28e87e46b0134aa31ad3e54",
+    "board/autonomy/tests/run_ert_lifecycle.sh": "cd4568951ce9b0e6a526821a967cd1bcc376f1bd0b20cbc590f667d132f157e4",
+    "config.yaml": "beed734d2f9a8606c23f4c2444d1a1a6cc0f44fc597525ea5cb8c5022bd50c59"
+  },
+  "arm_camera_sha256": "9f1e208a1ef0eb70ad65dc7b1b82daab801c27a46eadbffc0cef901258119b57"
+}

@@ -1,0 +1,77 @@
+[
+  {
+    "command": [
+      "node",
+      "frontend/hr_display.test.js"
+    ],
+    "exit_code": 0,
+    "output": "HR_DISPLAY_PASS: waiting/current/history/timeout/disconnection/duplicate/rollback/source-reset; no fabricated first reading\n"
+  },
+  {
+    "command": [
+      "node",
+      "board/autonomy/tests/hr_display_page.test.js",
+      "D:\\Desktop\\AMD\\.tmp\\autonomy\\hr_continuous_20261102\\package\\display.html"
+    ],
+    "exit_code": 0,
+    "output": "PACKAGED_HR_PAGE_PASS: waiting/current/history/disconnect/aging/recovery/restart; software fixtures only\n"
+  },
+  {
+    "command": [
+      "node",
+      "frontend/tests/trends.test.js"
+    ],
+    "exit_code": 0,
+    "output": "✔ history and latest sample share one timestamp-based series (0.9529ms)\n✔ one sample is retained and genuine zero remains a number (0.0954ms)\n✔ null, no face, and disconnected samples break rather than zero-fill curves (0.1311ms)\n✔ missing frames create a time gap instead of bridging a stale value (0.5586ms)\n✔ invalid numeric values never reach the chart (0.1386ms)\n✔ disconnect is anchored to the last sample and never mutates the contract frame (0.0977ms)\n✔ a disconnect before the first measurement does not create history (0.0618ms)\n✔ duplicate frames do not accumulate and recovery is a new segment (0.065ms)\n✔ a producer timestamp or frame-id reset starts a fresh history (0.1014ms)\n✔ both the 120-second time window and the point limit are enforced (0.2362ms)\n✔ ranges preserve units, cover all samples, and handle constant/zero values (0.1738ms)\n✔ both yaw and pitch contribute to a shared degree scale (0.0749ms)\nℹ tests 12\nℹ suites 0\nℹ pass 12\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 7.2434\n"
+  },
+  {
+    "command": [
+      "node",
+      "frontend/tests/alerts.test.js"
+    ],
+    "exit_code": 0,
+    "output": "✔ exactly ten seconds does not alert; first sample beyond ten does, once (1.2189ms)\n✔ heart rate must exceed the configured line, not equal it (0.5376ms)\n✔ fatigue status produces its own warning and practical advice (0.189ms)\n✔ simultaneous sustained conditions produce one combined warning (0.1943ms)\n✔ normal readings reset timing instead of accumulating intermittent anomalies (0.1465ms)\n✔ each condition keeps its timer when another condition starts or resolves (0.1011ms)\n✔ acknowledged episodes stay quiet until recovery and a fresh sustained episode (0.1295ms)\n✔ a new warning still appears when a different warning was acknowledged (0.1225ms)\n✔ invalid quality, light, motion or visibility cannot sustain warnings (0.3904ms)\n✔ missing or gated heart rate cannot alert while reliable fatigue still can (0.404ms)\n✔ gaps longer than the configured disconnect timeout reset the clock (0.1269ms)\n✔ timestamps and frame IDs must advance; replays start fresh (0.1856ms)\n✔ disconnect with the same timestamp clears an already visible warning (0.0945ms)\n✔ policy changes, malformed frames and source tracker replacement reset timing (0.0645ms)\n✔ duration and gap settings must be valid and are respected (0.1775ms)\nℹ tests 15\nℹ suites 0\nℹ pass 15\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 8.6228\n"
+  },
+  {
+    "command": [
+      "node",
+      "frontend/tests/recording.test.js"
+    ],
+    "exit_code": 0,
+    "output": "✔ every sample of all three groups passes the existing contract and is reproducible (14.6123ms)\n✔ exercise recovers without inventing a seventh status or implying fatigue (0.1167ms)\n✔ only fatigue fixtures contain sustained eye and yawn evidence (0.1021ms)\n✔ rest stays quiet; exercise and fatigue exercise the latest GitHub alert logic (1.7944ms)\n✔ default round plays each group for 15 seconds, raises fatigue prompt and holds its last sample (0.363ms)\n✔ pause consumes no samples, resume continues, and looping returns to the first sample (0.0815ms)\n✔ invalid groups and duration cannot produce a broken or runaway player (0.2822ms)\nℹ tests 7\nℹ suites 0\nℹ pass 7\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 20.764\n"
+  },
+  {
+    "command": [
+      "node",
+      "--check",
+      "frontend/app.js"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": [
+      "node",
+      "frontend/mock.js",
+      "--selftest"
+    ],
+    "exit_code": 0,
+    "output": "{\n  \"checked\": 22,\n  \"failures\": [],\n  \"ok\": true\n}\n"
+  },
+  {
+    "command": [
+      "D:\\Desktop\\AMD\\.venv\\Scripts\\python.exe",
+      "metrics/scripts/check_frontend_wiring.py"
+    ],
+    "exit_code": 0,
+    "output": "index.html 中 id 数量      : 64\napp.js 中静态引用 id 数量  : 56\n动态拼接 id 前缀           : ['blink_', 'card_', 'gate_']（由 JS 创建，不校验 HTML）\n\n前端接线检查：通过 —— 所有静态 id 引用都能在 index.html 找到对应元素。\n"
+  },
+  {
+    "command": [
+      "check_frontend_contract.py",
+      "D:\\Desktop\\AMD\\metrics\\logs\\_hr_continuous_js_frames.jsonl"
+    ],
+    "exit_code": 0,
+    "output": "读取 6 帧（来源：D:\\Desktop\\AMD\\metrics\\logs\\_hr_continuous_js_frames.jsonl）\n状态覆盖：['adjust_posture', 'disconnected', 'done', 'fatigue_risk', 'normal', 'unreliable']（契约共 6 值）\n\n跨语言契约检查：通过 —— 全部 6 帧在 Python 侧同样合法。\n"
+  }
+]

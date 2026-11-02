@@ -1,0 +1,17 @@
+/* bootgen 镜像描述：FSBL + U-Boot（不含 U-Boot SPL）
+ *
+ * 为什么没有 U-Boot SPL：SPL 会带它自己那份 ps7_init（Zynq 通用/ZedBoard 的 DDR 时序），
+ * 与 Mizar 的 1GB DDR3 不匹配 ⇒ 卡在 "Timeout waiting for hardware cmd"。
+ * DDR 初始化必须由我们用 Mizar HDF 编出的 FSBL 完成。
+ *
+ * 用法（Vitis 2026.1）：
+ *   call D:\Xilinx\2026.1\Vitis\settings64.bat
+ *   bootgen -image board\w7_buildroot\boot.bif -arch zynq -o board\w7_buildroot\boot.bin -w on
+ *
+ * 第一版**不要**把 .bit 加进来：W7 只要求 /dev/video0，PL 仍走现有 xsdb 路径。
+ */
+the_ROM_image:
+{
+	[bootloader] fsbl.elf
+	u-boot.elf
+}

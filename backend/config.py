@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import os
+import math
 from pathlib import Path
 from typing import Any
 
@@ -28,8 +29,9 @@ DEFAULT_CONFIG_PATH = REPO_ROOT / "config.yaml"
 #    否则"没装 PyYAML"的机器会静默按旧帧率跑（本机历史上就是这么埋过雷）。
 FALLBACK: dict[str, Any] = {
     "window_seconds": 30,
-    "fps_nominal": 45,          # 契约 docs/interface.md §0（2026-09-13 v1.1：30→45）
+    "fps_nominal": 30,          # 契约 docs/interface.md §0（2026-09-20 v1.2 草案：45→30；v1.1 曾为 45）
     "ear_close_threshold": 0.21,
+    "min_close_ms": 100,        # 时间口径（帧率无关）；旧键 min_close_frames 仅作兼容别名
     "min_close_frames": 3,
     "long_close_ms": 500,
     "perclos_warning": 0.25,
@@ -44,7 +46,13 @@ FALLBACK: dict[str, Any] = {
     "light_score_min": 0.5,
     "motion_score_max": 0.35,
     "light_target": 0.5,
-    "motion_thresh_gray": 25,
+    "motion_thresh_gray": 16,   # ⚠️ 2026-10-01 修正：此处原为 25（占位残留），
+                                #   与 config.yaml 的 16 不一致 —— 而契约 §3.3 冻结值、
+                                #   HLS `motion_quality` 寄存器默认值、以及
+                                #   metrics/scripts/check_motion_golden.py 的黄金参考
+                                #   全都是 16。后果是"没装 PyYAML 的机器"会按 25 算运动分，
+                                #   与黄金参考对不上却看不出原因（正是本文件头部警告的静默降级）。
+                                #   依据：config.yaml 第 43~48 行 + docs/interface.md §5.4。
     "motion_score_gain": 4.0,
     "quality_weights": {"light": 0.5, "motion": 0.3, "face": 0.2},
     "fatigue_yawn_count": 2,
@@ -55,8 +63,60 @@ FALLBACK: dict[str, Any] = {
     "hr_band_hz": [0.7, 3.5],
     "rr_band_hz": [0.1, 0.5],
     "vital_require_quality": 0.75,
+    "rppg_method": "green",
+    "rppg_window_seconds": None,  # 旧配置缺省时沿用 window_seconds，不另设数值来源
+    "rppg_color_window_seconds": 1.6,
+    "rppg_fs_tol": 0.10,        # 真实采样率与 fps_nominal 的相对偏差上限（docs/16 BUG-029）
+    "rppg_max_gap_ms": 100,     # config.yaml 的兼容副本；不允许跨长缺口插值
+    "rppg_recovery_ms": 100,
+    "rppg_recovery_samples": 3,
+    "rppg_harmonic_ratio_min": 0.05,
+    "hr_stabilizer_enabled": False,  # 旧配置缺省保持原始估计输出；数值参数来自config.yaml
     "ws_push_hz": 1.0,
     "ws_disconnect_timeout_s": 3.0,
+    "alert_duration_seconds": 10,  # config.yaml 的离线兼容副本
+    "hr_alert_high_bpm": 100.0,
+    # ---- B 线旁路视频流（config.yaml 同名键；不是契约的一部分）----
+    "video_push_hz": 8.0,
+    "video_jpeg_quality": 80,
+    "video_max_width": 640,
+    # ---- 年龄档案旁路（config.yaml 同名键；不是契约的一部分）----
+    # 与上面 fpga/motion_thresh_gray 同一纪律：这里是 config.yaml 的**副本**，
+    # 改 config.yaml 必须同步改这里，否则没装 PyYAML 的机器会静默按旧值跑。
+    "age_enabled": True,
+    "age_infer_hz": 1.0,
+    "age_engine_order": ["opencv_caffe", "heuristic"],
+    "age_model_dir": "data/models/age",
+    "age_bands_path": "data/reference/age_bands.json",
+    "age_db_path": "data/fatigue_db/vigilens_fatigue.sqlite3",
+    "age_enroll_window_s": 20.0,
+    "age_enroll_min_samples": 12,
+    "age_enroll_min_quality": 0.65,
+    "age_enroll_restart_frames": 3,
+    "age_signature_dim": 16,
+    "age_signature_match_max_distance": 0.35,
+    "age_stores_face_image": False,
+    "age_confirm_locks_inference": True,
+    "couple_prior_logit": -2.2,
+    "couple_gain_perclos": 1.6,
+    "couple_gain_long_close": 1.2,
+    "couple_gain_yawn": 1.0,
+    "couple_gain_blink_low": 0.9,
+    "couple_gain_trend": 0.8,
+    "couple_interaction_perclos_longclose": 0.7,
+    "couple_interaction_perclos_blinksupp": 0.5,
+    "couple_weight_floor": 0.15,
+    "couple_clip": 3.0,
+    "couple_memory_alpha": 0.25,
+    "couple_risk_medium": 0.45,
+    "couple_risk_high": 0.70,
+    # ---- 年龄 × 指标耦合（依据见 config.yaml 同名键的注释与 docs/28）----
+    "age_scenario": "reading",
+    "couple_eye_sensitivity_default": 1.0,
+    "couple_eye_sensitivity_older": 0.5,
+    "couple_non_eye_sensitivity_older": 1.2,
+    "couple_gain_pose_drift": 0.5,
+    "couple_trend_ref_per_min": 0.10,
     "fpga": {
         "device": "xc7z020clg400-1",
         "clock_ns": 10,
@@ -135,6 +195,16 @@ def load_config(path: str | os.PathLike[str] | None = None) -> dict[str, Any]:
     merged["_source"] = str(cfg_path)
     merged["_yaml_available"] = _yaml_available()
     return merged
+
+
+def rppg_window_seconds(cfg: dict) -> float:
+    """Resolve the HR-only window; legacy configs retain their shared window."""
+    value = cfg.get("rppg_window_seconds")
+    seconds = float(cfg["window_seconds"] if value is None else value)
+    fps = float(cfg["fps_nominal"])
+    if not math.isfinite(seconds) or seconds <= 0 or not math.isfinite(fps) or fps <= 0 or seconds * fps < 2:
+        raise ValueError("rppg_window_seconds must be finite, positive and cover at least two samples")
+    return seconds
 
 
 def _yaml_available() -> bool:

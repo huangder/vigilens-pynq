@@ -188,6 +188,9 @@ def numpy_crosscheck(rgb_frames, grays, w, h, ow, oh, thresh):
 
 
 def main():
+    # ⚠️ `global` 必须出现在**本函数内任何一次使用这两个名字之前** ——
+    #    下面的 `default=[DECIM_NUM, DECIM_DEN]` 也算使用，所以它必须放在这里。
+    global DECIM_NUM, DECIM_DEN
     ap = argparse.ArgumentParser(
         description="生成 rgb2gray / motion_quality 测试向量与黄金参考")
     ap.add_argument("--width", type=int, default=DEF_W)
@@ -195,9 +198,23 @@ def main():
     ap.add_argument("--seed", type=int, default=DEF_SEED)
     ap.add_argument("--seed2", type=int, default=DEF_SEED2)
     ap.add_argument("--motion-thresh", type=int, default=DEF_MOTION_THRESH)
+    # 🚧 docs/interface.md v1.5 草案：测量口径档位化后，抽取比例按档位不同 ——
+    #   640x480 -> 3/5 (384x288) ；1280x720 -> 3/8 (480x270) ；1920x1080 -> 1/4 (480x270)
+    #   三档的灰度工作尺寸都 <= 2^17，故 motion_quality 的片内缓存恒为 64 个 BRAM18。
+    #   例： python fpga/sim/gen_motion_vectors.py --width 1280 --height 720 \
+    #             --decim 3 8 --out-dir fpga/sim/data_motion_720p
+    ap.add_argument("--decim", type=int, nargs=2, default=[DECIM_NUM, DECIM_DEN],
+                    metavar=("NUM", "DEN"),
+                    help="相位抽取比例：每 DEN 个采样保留前 NUM 个（默认 3 5）")
     ap.add_argument("--out-dir", default=os.path.join(os.path.dirname(
         os.path.abspath(__file__)), "data_motion"))
     args = ap.parse_args()
+
+    # 让下面所有函数读到按档位设置的抽取比例（它们都在调用时读模块级常量）
+    DECIM_NUM, DECIM_DEN = int(args.decim[0]), int(args.decim[1])
+    if not (0 < DECIM_NUM < DECIM_DEN):
+        print("!! --decim 必须满足 0 < NUM < DEN，当前 %d %d" % (DECIM_NUM, DECIM_DEN))
+        return 1
 
     w, h, th = args.width, args.height, args.motion_thresh
     ow, oh = out_dims(w, h)

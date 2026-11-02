@@ -1,0 +1,12 @@
+{
+  "source_and_executable_sha256": {
+    "board/autonomy/ert_probe.cpp": "afb1baa71a06095a182fb96867c7ac01887683adb202a2fd91eed1da96f02dc0",
+    "board/autonomy/prepare_ert_neon.py": "3f7e36de314668b1e01c21d8fd8ed7e313535212ac3b092ffc099e1b59e5af89",
+    "board/autonomy/tests/test_ert_probe_cli.py": "04d104a4416af3192585d7ca5c646eab47b79061537b96785ddfbada44aa9a35",
+    ".tmp\\autonomy\\ert_20261102\\ert_probe_host": "117173aea2c1b7c5ffbaae3bcd307f12a56e27bc2721e6e30e7b920173122bed",
+    ".tmp\\autonomy\\ert_20261102\\ert_probe_arm": "81426f5619738c9e8efcc1be6448e3c5124eeca40674cdc25f39d092ea0a01e6",
+    ".tmp\\autonomy\\ert_20261102\\ert_probe_neon_arm": "e3b4dd248cb4697f0018f128fa56591635b915343fcb451cda38a27cbed5fe9f"
+  },
+  "full_pipeline": false,
+  "accuracy_verified": false
+}

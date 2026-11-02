@@ -1,0 +1,200 @@
+{
+  "when": "2026-11-02T22:35:41",
+  "elapsed_s": 75.3,
+  "passed": 26,
+  "failed": 0,
+  "rows": [
+    {
+      "section": "环境",
+      "name": "Python",
+      "status": "INFO",
+      "detail": "3.12.13 @ D:\\Desktop\\AMD\\.venv\\Scripts\\python.exe"
+    },
+    {
+      "section": "环境",
+      "name": "依赖 cv2",
+      "status": "PASS",
+      "detail": "4.11.0"
+    },
+    {
+      "section": "环境",
+      "name": "依赖 numpy",
+      "status": "PASS",
+      "detail": "1.26.4"
+    },
+    {
+      "section": "环境",
+      "name": "依赖 mediapipe",
+      "status": "PASS",
+      "detail": "0.10.21"
+    },
+    {
+      "section": "环境",
+      "name": "依赖 yaml",
+      "status": "PASS",
+      "detail": "6.0.3"
+    },
+    {
+      "section": "环境",
+      "name": "依赖 fastapi",
+      "status": "PASS",
+      "detail": "0.141.1"
+    },
+    {
+      "section": "环境",
+      "name": "依赖 uvicorn",
+      "status": "PASS",
+      "detail": "0.52.4"
+    },
+    {
+      "section": "环境",
+      "name": "依赖 pytest",
+      "status": "PASS",
+      "detail": "9.1.1"
+    },
+    {
+      "section": "环境",
+      "name": "依赖 pyserial",
+      "status": "INFO",
+      "detail": "未安装 —— Python 串口工具不可用；现有板端 PowerShell 串口工具不依赖它"
+    },
+    {
+      "section": "环境",
+      "name": "node",
+      "status": "PASS",
+      "detail": "C:\\Program Files\\nodejs\\node.EXE"
+    },
+    {
+      "section": "A 线",
+      "name": "check_a_line_all（A~E 五段）",
+      "status": "PASS",
+      "detail": "退出码 0，用时 51.1s | ============================================================== | A 线自检全部通过：17 项（用时 51.0s）"
+    },
+    {
+      "section": "B 线",
+      "name": "B 线门控阈值一处定义 → /api/status → 前端兜底三处一致",
+      "status": "PASS",
+      "detail": "退出码 0，用时 1.6s | B 线阈值守卫检查：通过 —— 4/4（config.yaml → /api/status → app.js 兜底，三处一致）"
+    },
+    {
+      "section": "B 线",
+      "name": "B 线 /ws 断流兜底（发合法契约的 disconnected，序号不倒退）",
+      "status": "PASS",
+      "detail": "退出码 0，用时 8.5s | B 线 /ws 断流兜底检查：通过 —— 5/5"
+    },
+    {
+      "section": "B 线",
+      "name": "旁路画面链路 + 契约未被污染（15 项）",
+      "status": "PASS",
+      "detail": "退出码 0，用时 6.7s | 全部通过：15/15 项通过"
+    },
+    {
+      "section": "B 线",
+      "name": "年龄档案旁路（年龄档案/收录/同龄基线比对 + Python↔JS 校验一致）",
+      "status": "PASS",
+      "detail": "退出码 0，用时 0.6s | RESULT: PASS (33/33 PASS, 0 FAIL, 0 SKIP)"
+    },
+    {
+      "section": "工具自检",
+      "name": "backend/contract.py",
+      "status": "PASS",
+      "detail": "退出码 0"
+    },
+    {
+      "section": "工具自检",
+      "name": "backend/config.py",
+      "status": "PASS",
+      "detail": "fpga.device              = xc7z020clg400-1"
+    },
+    {
+      "section": "工具自检",
+      "name": "backend/publish.py",
+      "status": "PASS",
+      "detail": "本地契约校验：坏帧会被拦下 —— 拦住了： True 1 条错误"
+    },
+    {
+      "section": "工具自检",
+      "name": "board/regmap.py --selftest",
+      "status": "PASS",
+      "detail": "RESULT: PASS"
+    },
+    {
+      "section": "工具自检",
+      "name": "board/bringup_check.py --selftest",
+      "status": "PASS",
+      "detail": "RESULT: PASS"
+    },
+    {
+      "section": "工具自检",
+      "name": "board/hw_sw_compare.py --selftest",
+      "status": "PASS",
+      "detail": "⚠️ 本自检只证明'数据与档位配套'；PL 侧数值一致性仍必须上板跑本脚本正文。"
+    },
+    {
+      "section": "工具自检",
+      "name": "board/dma_test.py --selftest",
+      "status": "PASS",
+      "detail": "⚠️ 本自检只证明'测试图可复现 + 黄金参考配套'；DMA 回环/长跑本身必须上板跑。"
+    },
+    {
+      "section": "工具自检",
+      "name": "board/overlay/mmap_overlay.py --selftest",
+      "status": "PASS",
+      "detail": "RESULT: PASS"
+    },
+    {
+      "section": "工具自检",
+      "name": "metrics/scripts/check_uvc_camera.py --selftest",
+      "status": "PASS",
+      "detail": "RESULT: PASS (21/21)"
+    },
+    {
+      "section": "工具自检",
+      "name": "metrics/scripts/probe_rppg_timebase.py",
+      "status": "PASS",
+      "detail": "✅ 全部档位符合验收判据（容差内报数、容差外 null）"
+    },
+    {
+      "section": "语法",
+      "name": "7 个 Python 目标可解析",
+      "status": "PASS",
+      "detail": "全部 OK"
+    },
+    {
+      "section": "语法",
+      "name": "frontend/app.js（node --check）",
+      "status": "PASS",
+      "detail": "OK"
+    },
+    {
+      "section": "语法",
+      "name": "frontend/preview.js 坐标换算自检（含 720p）",
+      "status": "PASS",
+      "detail": "\"failures\": [], | \"ok\": true | }"
+    },
+    {
+      "section": "就绪",
+      "name": "P4 标定素材（4 视频 + 4 标注）",
+      "status": "INFO",
+      "detail": "· turn.csv 标注不存在（放 data\\annotations/，格式见 data/README.md） | → 补齐后重跑本脚本；再按 backend/P4_CALIBRATION_GUIDE.md 逐项标定。"
+    },
+    {
+      "section": "就绪",
+      "name": "board/bitstream/ 里的 bitstream",
+      "status": "INFO",
+      "detail": "找到 2 个文件"
+    },
+    {
+      "section": "就绪",
+      "name": "Vitis HLS 工具链",
+      "status": "INFO",
+      "detail": "已安装"
+    },
+    {
+      "section": "就绪",
+      "name": "data/raw/ 真实视频",
+      "status": "INFO",
+      "detail": "3 个：['blink.mp4', 'blink_1080p_src.mp4', '_probe_rot90.mp4']"
+    }
+  ]
+}

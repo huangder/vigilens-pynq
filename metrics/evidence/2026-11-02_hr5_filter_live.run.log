@@ -1,0 +1,17 @@
+vigi_camera_autonomy: OK
+vg_vision_replay_arm: OK
+vg_metrics_http: OK
+shape_predictor_68_face_landmarks.dat: OK
+libgomp.so.1: OK
+display.html: OK
+install_native.sh: OK
+run_native.sh: OK
+det1.param: OK
+det1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+NATIVE_RUN camera_pid=881 http_pid=880 frames=1800
+NATIVE_CAMERA_EXIT=0

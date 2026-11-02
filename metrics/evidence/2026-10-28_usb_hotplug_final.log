@@ -1,0 +1,76 @@
+
+# dmesg | tail -40
+sys/bus/usb/devices/1-1/idProduct /sys/bus/usb/devices/1[    2.801223] Segment Routing with IPv6
+[    2.804953] In-situ OAM (IOAM) with IPv6
+[    2.808962] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.815653] NET: Registered PF_PACKET protocol family
+[    2.820750] can: controller area network core
+[    2.825154] NET: Registered PF_CAN protocol family
+[    2.829941] can: raw protocol
+[    2.832960] can: broadcast manager protocol
+[    2.837144] can: netlink gateway - max_hops=1
+[    2.842022] Key type dns_resolver registered
+[    2.846597] ThumbEE CPU extension supported.
+[    2.850909] Registering SWP/SWPB emulation handler
+[    2.867004] Loading compiled-in X.509 certificates
+[    2.888525] usb_phy_generic phy0: dummy supplies not allowed for exclusive requests
+[    2.897912] clk: Disabling unused clocks
+[    2.905957] Freeing unused kernel image (initmem) memory: 2048K
+[    2.912656] Run /init as init process
+[    2.916320]   with arguments:
+[    2.916327]     /init
+[    2.916334]   with environment:
+[    2.916339]     HOME=/
+[    2.916345]     TERM=linux
+[    3.220368] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    3.225276] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    3.270208] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    3.276567] hub 1-0:1.0: USB hub found
+[    3.280510] hub 1-0:1.0: 1 port detected
+[    3.620210] usb 1-1: new high-speed USB device number 2 using ci_hdrc
+[    4.526534] videodev: Linux video capture interface: v2.00
+[    4.541289] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+[    4.566205] usbcore: registered new interface driver uvcvideo
+[  207.170296] usb 1-1: USB disconnect, device number 2
+[  208.560206] usb 1-1: new high-speed USB device number 3 using ci_hdrc
+[  208.772515] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+[  220.820266] usb 1-1: USB disconnect, device number 3
+[  222.440255] usb 1-1: new high-speed USB device number 4 using ci_hdrc
+[  222.652849] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+[  223.837107] usb 1-1: USB disconnect, device number 4
+[  225.830205] usb 1-1: -1/devnumnew high-speed USB device number 5 using ci_hdrc
+[  226.042901] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+
+ls -l /dev/video0
+/usr/bin/uvc_probe /dev/vide# cat /sys/bus/usb/devices/1-1/idVendor /sys/bus/usb/devices/1-1/idProduct /sys/
+bus/usb/devices/1-1/devnum
+o0 1280 720 10
+
+printf '\nVIGI_COMMAND_DONE\n'
+0c45
+64ab
+5
+# ls -l /dev/video0
+crw-------    1 root     root       81,   0 Jan  1 00:03 [1;35m/dev/video0[m
+# /usr/bin/uvc_probe /dev/video0 1280 720 10
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=10
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+CAPTURE_FRAME n=1 sequence=0 bytes=18772 ts=282.237517
+CAPTURE_FRAME n=2 sequence=1 bytes=18772 ts=282.529516
+CAPTURE_FRAME n=3 sequence=2 bytes=18772 ts=282.545519
+CAPTURE_FRAME n=4 sequence=3 bytes=18772 ts=282.561523
+CAPTURE_FRAME n=5 sequence=4 bytes=18772 ts=282.581508
+CAPTURE_FRAME n=6 sequence=5 bytes=18778 ts=282.597511
+CAPTURE_FRAME n=7 sequence=6 bytes=18775 ts=282.613515
+CAPTURE_FRAME n=8 sequence=7 bytes=18772 ts=282.629517
+CAPTURE_FRAME n=9 sequence=8 bytes=18775 ts=282.645521
+CAPTURE_FRAME n=10 sequence=9 bytes=21276 ts=282.665506
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=10 requested_mode=unmet
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

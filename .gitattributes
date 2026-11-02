@@ -33,6 +33,7 @@
 *.txt    text eol=lf
 
 # ---- Windows 批处理：必须 CRLF ----
+*.sh     text eol=lf
 *.bat    text eol=crlf
 *.cmd    text eol=crlf
 

@@ -1,0 +1,41 @@
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: root
+Password: 
+# ip link; dmesg | grep -iE "macb|mdio|ethernet|RTL8211"; ifconfig eth0 169.254.
+73.29 netmask 255.255.0.0 up; sleep 3; cat /sys/class/net/eth0/operstate; cat /s
+ys/class/net/eth0/speed; ping -c 3 -W 1 169.254.73.28; ip addr show eth0
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop qlen 1000
+    link/ether f6:ac:dc:9c:34:8e brd ff:ff:ff:ff:ff:ff
+3: sit0@NONE: <[   39.362953] macb e000b000.ethernet eth0: PHY [e000b000.ethernet-ffffffff:01] driver [RTL8211E Gigabit Ethernet] (irq=POLL)
+NOARP> mtu 1480 qdisc noop qlen 1000
+    link/sit 0.0.0.0 brd 0[   39.375682] macb e000b000.ethernet eth0: configuring for phy/rgmii-id link mode
+.0.0.0
+[    2.551117] macb e000b000.ethernet eth0: Cadence GEM rev 0x00020118 at 0xe000b000 irq 39 (f6:ac:dc:9c:34:8e)
+[    2.580899] igb: Intel(R) Gigabit Ethernet Network Driver
+[    2.599026] pegasus: Pegasus/Pegasus II USB Ethernet driver
+down
+-1
+PING 169.254.73.28 (169.254.73.28): 56 data bytes
+[   42.502004] macb e000b000.ethernet eth0: unable to generate target frequency: 125000000 Hz
+[   42.510383] macb e000b000.ethernet eth0: Link is Up - 1Gbps/Full - flow control tx
+64 bytes from 169.254.73.28: seq=0 ttl=128 time=1052.792 ms
+64 bytes from 169.254.73.28: seq=1 ttl=128 time=52.694 ms
+64 bytes from 169.254.73.28: seq=2 ttl=128 time=1.131 ms
+
+--- 169.254.73.28 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 1.131/368.872/1052.792 ms
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    link/ether f6:ac:dc:9c:34:8e brd ff:ff:ff:ff:ff:ff
+    inet 169.254.73.29/16 brd 169.254.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::f4ac:dcff:fe9c:348e/64 scope link 
+       valid_lft forever preferred_lft forever
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

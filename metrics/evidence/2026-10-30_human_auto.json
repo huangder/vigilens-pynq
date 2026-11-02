@@ -1,0 +1,82 @@
+{
+  "wire_sha256": "ff124798174a6749bd37ff9af5872407373a22ac8dfda013fffe8fd483619169",
+  "config_sha256": "f607323c303e04d74a0d15a7ce894fe6b23b99381353b67f6e973486aa6c8c41",
+  "pipeline_jsonl_sha256": "dfef8136de6554c1ba29b60282bbc9ebb4e851b744df90919d3537cbdfed5cd1",
+  "frames": 7750,
+  "source_span_s": 259.815371,
+  "landmark_source": "mediapipe",
+  "face_visible_frames": 7476,
+  "status_counts": {
+    "unreliable": 151,
+    "normal": 1252,
+    "fatigue_risk": 5994,
+    "adjust_posture": 353
+  },
+  "final_counts": {
+    "blink_count": 48,
+    "long_close_count": 11,
+    "yawn_count": 1
+  },
+  "rppg_reject": "sampling_jitter",
+  "rppg_conf": null,
+  "vital_nonnull_hr_frames": 0,
+  "hr_reference_error": null,
+  "hr_reference_status": "not_measured_no_synchronous_reference",
+  "rr_validation": "not_implemented_in_current_pipeline",
+  "human_annotation_status": "omitted_by_user",
+  "acceptance_verdict": "AUTOMATIC_CHECKS_COMPLETED_WITHOUT_ACCURACY_VALIDATION",
+  "full_acceptance_complete": false,
+  "scope": "single-session staged actions; not fatigue diagnosis or population accuracy",
+  "automatic_checks": {
+    "pass": true,
+    "checks": {
+      "counter_monotonicity": {
+        "pass": true,
+        "violation_count": 0,
+        "first_frame_ids": []
+      },
+      "counter_increment_without_face": {
+        "pass": true,
+        "violation_count": 0,
+        "first_frame_ids": []
+      },
+      "missing_face_closure_reset": {
+        "pass": true,
+        "violation_count": 0,
+        "first_frame_ids": []
+      },
+      "decision_rule_replay": {
+        "pass": true,
+        "violation_count": 0,
+        "first_frame_ids": []
+      },
+      "vital_gate": {
+        "pass": true,
+        "violation_count": 0,
+        "first_frame_ids": []
+      },
+      "perclos_window_consistency": {
+        "pass": true,
+        "violation_count": 0,
+        "first_frame_ids": []
+      }
+    },
+    "serialization_ambiguous_ear_frames": 3,
+    "missing_face_frames": 274,
+    "missing_face_status_counts": {
+      "adjust_posture": 148,
+      "unreliable": 126
+    },
+    "source_timing": {
+      "output_fps": 29.825025248409954,
+      "interval_p95_ms": 48.04659999999785,
+      "max_interval_ms": 99.89899999999352
+    },
+    "scope": "contract/rule/timestamp/self-consistency only; no independent accuracy ground truth"
+  },
+  "accuracy": null,
+  "precision": null,
+  "recall": null,
+  "perclos_reference_error": null,
+  "accuracy_validation": "NOT_ASSESSED_NO_INDEPENDENT_REFERENCE"
+}

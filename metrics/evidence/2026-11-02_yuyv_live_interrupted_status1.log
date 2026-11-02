@@ -1,0 +1,30 @@
+
+# echo FINAL_LIVE_STATUS_BEGIN
+FINAL_LIVE_STATUS_BEGIN
+al/run.l# tail -n 4 /tmp/vigilens_final/run.log
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+NATIVE_RUN camera_pid=649 http_pid=648 frames=1800
+# grep -E '^CAPTURE_MODE|^CAPTURE_COLOR|^CAMERA_GEOMETRY|^AUTONOMY_SUMMARY|^AUDI
+T_SUMMARY|^SAMPLE_RESULT|^CAMERA_PL_PASS|^CAPTURE_FAIL|^ERT_HYBRID_SUMMARY|^ERT_
+SUMMARY' /tmp/vigilens_final/camera.log
+CAPTURE_MODE 640x480 fourcc=0x56595559 interval=1/30
+CAPTURE_COLOR colorspace=8 ycbcr=1 quantization=2 stride=1280
+CAMERA_GEOMETRY width=640 height=480 gray_width=240 gray_height=180 input=yuyv stride=1280 limited=1
+ilens_final/contracts.jsonl
+echo FINAL_LIVE_STATUS_END
+
+printf '# tail -n 2 /tmp/vigilens_final/camera.log
+\nVIGI_COMMAND_DONE\n'
+CAMERA_PL_FRAME n=551 seq=585 ts_us=13506084721 mismatch=0 audit=0 roi_g=44438599 roi_count=307200 motion_valid=1 motion_ratio_q16=315 decode_ms=25.546 reference_ms=0.000 transfer_pl_ms=10.006 decode_cpu_ms=18.215 transfer_pl_cpu_ms=3.061
+AUTONOMY_HANDOFF frame_id=550 gray_ms=0.416 submit_ms=0.024 accepted=0
+# wc -l /tmp/vigilens_final/contracts.jsonl
+400 /tmp/vigilens_final/contracts.jsonl
+# echo FINAL_LIVE_STATUS_END
+FINAL_LIVE_STATUS_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

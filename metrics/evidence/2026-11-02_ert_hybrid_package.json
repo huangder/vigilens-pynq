@@ -1,0 +1,13 @@
+{
+  "runtime": "ert_hybrid",
+  "camera_sha256": "feb3e21cd04892f822e1de1b6c1ff6588f34c4d4e9d8d14560464bb82eba1835",
+  "source_sha256": {
+    "board/autonomy/ert_runtime.cpp": "07962576a35f790e63ca61e5d7d96f2babaeb4dcb884bd9ec36475b286656f09",
+    "board/autonomy/point_tracker.cpp": "ca7f325345f7444f821f02b214b98f484c9bb3fd18d296892a29c708488c167e",
+    "board/autonomy/ert_guard.hpp": "596fdafedf87a5e748443e1e7991b9045dcb2e478a7a06bd3ca8c430d33dc1a8",
+    "board/autonomy/build_native_vision.sh": "191325cb17a8dab8b910dcee71887fd2f80b3dfa1a046d734e925c9be617a129",
+    "config.yaml": "beed734d2f9a8606c23f4c2444d1a1a6cc0f44fc597525ea5cb8c5022bd50c59"
+  },
+  "accuracy_verified": false,
+  "full30_passed": false
+}

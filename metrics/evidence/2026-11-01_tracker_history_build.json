@@ -1,0 +1,12 @@
+{
+  "board/autonomy/tracked_runtime.cpp": "bb0b63c14ae4c6442dfc66118a699d73de4e493e48afce3d633b43a879bf16cd",
+  "board/autonomy/point_tracker.cpp": "9856f823e59ec34b23e029e94b12fb35075f751f7e4765f0281aaae403ec05ba",
+  "board/autonomy/point_tracker.hpp": "0bd529c05da3d86a03af90fea466a008a03495ed8e26baaa3d6c09c67cd5a77b",
+  "board/autonomy/track_history.hpp": "8311483b54e65671f2b5ed6c0cf107a96673249c042ea54a5398ef236634e3a2",
+  "board/autonomy/export_vision_config.py": "8d0866cfa6f40b2ff15c654cd284ad003c9874652b8dfcc1406e39b4b41b65ae",
+  "board/autonomy/build_native_vision.sh": "2a949adcefb5ff1c2c7422f04ceb508c1b0ffa68a6ce2f1de65c5e0fefaba83e",
+  "board/w7_buildroot/camera_pl.c": "0719679b9903c8c73f4f9701709c2fcb80f26bba5762f49ea53e8fef7149b5cb",
+  "board/w7_buildroot/dma_gray.h": "3ee8801dc0e5522d26ba617f49c1a938f3b011621c8916d7a1755fdf0d97be4d",
+  ".tmp/autonomy/tracked30_20261101/history_r7.yaml": "7b7d1a7302581fdd9034341d2a346bbff07ba58f24dc15de992fea61d7b16880",
+  ".tmp/autonomy/tracked30_20261101/arm_history_r7/vigi_camera_autonomy": "6dd1cc4dad6b662d10adf0836552c24abdc25d1af987042f64041c32c8387a92"
+}

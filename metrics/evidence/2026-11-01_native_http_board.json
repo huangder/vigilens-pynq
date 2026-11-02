@@ -1,0 +1,59 @@
+{
+  "kind": "native_board_http_read",
+  "samples": [
+    {
+      "http": 503,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "http": 503,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "http": 503,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "http": 503,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "http": 503,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "http": 503,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "http": 503,
+      "error": "HTTP Error 503: Service Unavailable"
+    },
+    {
+      "http": 200,
+      "frame_id": 1,
+      "ts": 1395.266151,
+      "visible": 1,
+      "status": "normal"
+    },
+    {
+      "http": 200,
+      "frame_id": 2,
+      "ts": 1395.298186,
+      "visible": 1,
+      "status": "normal"
+    },
+    {
+      "http": 200,
+      "frame_id": 58,
+      "ts": 1398.378143,
+      "visible": 1,
+      "status": "adjust_posture"
+    }
+  ],
+  "display": {
+    "http": 200,
+    "bytes": 1886
+  },
+  "measurement_on_pc": false
+}

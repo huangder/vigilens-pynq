@@ -1,0 +1,7 @@
+sh /tmp/hr5_filter_install.sh > /tmp/hr5_filter_install.log 2>&1 &
+# echo HR5_FILTER_INSTALL_PID=$!
+HR5_FILTER_INSTALL_PID=846
+# printf '\nHR5_FILTER_INSTALL_STARTED\n'
+
+HR5_FILTER_INSTALL_STARTED
+# 

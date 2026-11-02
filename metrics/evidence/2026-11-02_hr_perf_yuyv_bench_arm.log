@@ -1,0 +1,29 @@
+
+# mkdir -p /tmp/vigilens_hr_perf
+hr_perf/# wget -q -O /tmp/vigilens_hr_perf/yuyv_convert_bench http://169.254.73.28:8095/
+yuyv_convert_bench
+wget -q -O /tmp/vigilens_hr_perf/camera_input_arm http://169.254.73.28:8095/camera_input_arm
+chmod 755 /tmp/vigilens_hr_perf/yuyv_convert_bench /tmp/vigilens_hr_perf/camera_input_arm
+/tmp/vigilens_hr_perf/camera_input_arm
+/tmp/vigilens_hr_perf/yuyv_convert_bench
+printf '\nYUYV_BENCH_DONE\n'
+
+printf '\nVIGI_COMMAND_DONE\n'
+# wget -q -O /tmp/vigilens_hr_perf/camera_input_arm http://169.254.73.28:8095/ca
+mera_input_arm
+# chmod 755 /tmp/vigilens_hr_perf/yuyv_convert_bench /tmp/vigilens_hr_perf/camer
+a_input_arm
+# /tmp/vigilens_hr_perf/camera_input_arm
+CAMERA_GEOMETRY_PASS profiles=2 invalid_rejected=1 unaligned_960_rejected=1
+YUYV_RGB_PASS pixels=37748736 scalar_reference_parity=1 boundaries=1 RGB_order=1 implementation=neon
+# /tmp/vigilens_hr_perf/yuyv_convert_bench
+YUYV_CONVERT_BENCH limited=0 iterations=40 before_cpu_ms=15.187420 after_cpu_ms=8.562503 rgb_byte_parity=1 synthetic_only=1
+YUYV_CONVERT_BENCH limited=1 iterations=40 before_cpu_ms=15.310735 after_cpu_ms=9.023111 rgb_byte_parity=1 synthetic_only=1
+# printf '\nYUYV_BENCH_DONE\n'
+
+YUYV_BENCH_DONE
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

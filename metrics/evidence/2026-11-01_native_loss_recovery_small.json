@@ -1,0 +1,53 @@
+{
+  "source": "metrics\\evidence\\2026-11-01_native_loss_recovery_small.log",
+  "frames": 300,
+  "rc0_frames": 268,
+  "detect_ms": {
+    "sum": 121.001,
+    "mean": 0.403,
+    "median": 0.321,
+    "max": 5.916
+  },
+  "total_ms": {
+    "sum": 341.753,
+    "mean": 1.139
+  },
+  "by_path": {
+    "0": {
+      "frames": 1,
+      "detect_ms_sum": 0.0,
+      "detect_ms_mean": 0.0,
+      "landmark_ms_sum": 0.0
+    },
+    "1": {
+      "frames": 2,
+      "detect_ms_sum": 2.163,
+      "detect_ms_mean": 1.082,
+      "landmark_ms_sum": 1.496
+    },
+    "2": {
+      "frames": 284,
+      "detect_ms_sum": 98.512,
+      "detect_ms_mean": 0.347,
+      "landmark_ms_sum": 177.749
+    },
+    "3": {
+      "frames": 11,
+      "detect_ms_sum": 12.574,
+      "detect_ms_mean": 1.143,
+      "landmark_ms_sum": 6.772
+    },
+    "4": {
+      "frames": 1,
+      "detect_ms_sum": 5.916,
+      "detect_ms_mean": 5.916,
+      "landmark_ms_sum": 1.411
+    },
+    "5": {
+      "frames": 1,
+      "detect_ms_sum": 1.836,
+      "detect_ms_mean": 1.836,
+      "landmark_ms_sum": 0.548
+    }
+  }
+}

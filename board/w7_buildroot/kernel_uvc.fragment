@@ -1,0 +1,33 @@
+# 内核配置片段：W7 需要的最小 USB/UVC 集合
+# 用法：Buildroot
+#   BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL)/.../kernel_uvc.fragment"
+# 或手工：把下面几行 append 到 defconfig 后 `make olddefconfig`
+#
+# 【未上板验证】符号名以内核 6.x 为准（不同版本可能挪位置），编译前用 menuconfig 复核一次。
+# 起点用 xilinx_zynq_defconfig（Buildroot 的 zynq_zed 配方也是它），已含 ARCH_ZYNQ / MACB / MMC 等。
+# 2026-10-25 抽查：USB_ULPI / USB_ULPI_VIEWPORT 在 Linux v6.6 的 drivers/usb/phy/Kconfig 里确实存在
+#   （USB_ULPI 是 bool 且 select USB_ULPI_VIEWPORT，所以两行都写不会冲突）。其余符号未逐个核。
+
+# --- USB Host（Zynq = chipidea/DWC，不是 EHCI）---
+CONFIG_USB=y
+CONFIG_USB_CHIPIDEA=y
+CONFIG_USB_CHIPIDEA_HOST=y
+CONFIG_USB_ULPI=y
+CONFIG_USB_ULPI_VIEWPORT=y
+CONFIG_USB_STORAGE=m
+
+# --- UVC 摄像头 ---
+CONFIG_MEDIA_SUPPORT=y
+CONFIG_MEDIA_USB_SUPPORT=y
+CONFIG_USB_VIDEO_CLASS=y
+CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV=y
+
+# --- 连续内存（VDMA 缓冲）---
+CONFIG_CMA=y
+CONFIG_DMA_CMA=y
+CONFIG_CMA_SIZE_MBYTES=256
+
+# --- 板级外设（若 defconfig 已含则无副作用）---
+CONFIG_SERIAL_XILINX_PS_UART=y
+CONFIG_MMC_SDHCI_OF_ARASAN=y
+CONFIG_MACB=y

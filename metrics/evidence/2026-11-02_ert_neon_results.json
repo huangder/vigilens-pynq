@@ -1,0 +1,34 @@
+{
+  "kind": "ERT explicit SIMD model-only comparison",
+  "full_pipeline": false,
+  "accuracy_verified": false,
+  "runs": {
+    "1": {
+      "samples": 12,
+      "wall_mean_ms": 25.762925666666668,
+      "wall_p95_nearest_rank_ms": 25.822098,
+      "cpu_mean_ms": 25.7494025,
+      "point_outputs_exact": true,
+      "baseline_wall_mean_ms": 23.49823025,
+      "single_model_speedup": 0.9120947890015131
+    },
+    "2": {
+      "samples": 12,
+      "wall_mean_ms": 25.726339333333335,
+      "wall_p95_nearest_rank_ms": 25.789345,
+      "cpu_mean_ms": 25.712421,
+      "point_outputs_exact": true,
+      "baseline_wall_mean_ms": 23.47652325,
+      "single_model_speedup": 0.9125481455335438
+    },
+    "3": {
+      "samples": 12,
+      "wall_mean_ms": 25.82814475,
+      "wall_p95_nearest_rank_ms": 25.914498,
+      "cpu_mean_ms": 25.81084,
+      "point_outputs_exact": true,
+      "baseline_wall_mean_ms": 23.47037525,
+      "single_model_speedup": 0.908713168412919
+    }
+  }
+}

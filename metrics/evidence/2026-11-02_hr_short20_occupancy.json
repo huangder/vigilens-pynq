@@ -1,0 +1,24 @@
+{
+  "kind": "actual_log_gate_counter_comparison_NOT_heart_rate_validation",
+  "assumption": "valid forehead ROI on every visible frame; no estimator called",
+  "source": "metrics\\evidence\\2026-11-02_hr_live3.jsonl",
+  "source_sha256": "1b822db06228de2fd900b5df42306af398da4cf489729007b1c0a486db432694",
+  "config_sha256": "e21bf2b5a61f3c58b76f7eef87fd55d4578eea27b84ee061feafdf31225aff44",
+  "results": [
+    {
+      "window_seconds": 30,
+      "required_samples": 900,
+      "max_retained_samples_upper_bound": 760,
+      "allowed_frames_with_full_counter_upper_bound": 0,
+      "first_full_counter_frame_id": null
+    },
+    {
+      "window_seconds": 20,
+      "required_samples": 600,
+      "max_retained_samples_upper_bound": 600,
+      "allowed_frames_with_full_counter_upper_bound": 161,
+      "first_full_counter_frame_id": 1133
+    }
+  ],
+  "real_heart_rate_verified": false
+}

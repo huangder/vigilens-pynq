@@ -1,0 +1,40 @@
+
+# sh -c '
+> set -e
+> wget -T 15 -O /tmp/mesh468.tflite http://169.254.73.28:8093/mesh468.tflite
+> echo "1055cb9d4a9ca8b8c688902a3a5194311138ba256bcc94e336d8373a5f30c814  /tmp/m
+esh468.tflite" | sha256sum -c -
+> echo "039ba39321a76fbca5467dfcdba2e34064da0ad4f800e06db3a5e7dfb77ba34a  /tmp/v
+g_model_probe_xnn" | sha256sum -c -
+> echo LIGHTWEIGHT_468_PROBE_BEGIN
+> uname -m
+> for n in 1 2; do
+>  echo MESH468_THREADS=$n
+>  /tmp/vg_model_probe_xnn /tmp/mesh468.tflite --zeros /tmp/mesh468_t$n 60 $n
+>  cat /tmp/mesh468_t$n.json
+> done
+> echo LIGHTWEIGHT_468_PROBE_END
+> '
+ND_DONE\n'
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/mesh468.tflite'
+mesh468.tflite       100% |********************************| 1213k  0:00:00 ETA
+'/tmp/mesh468.tflite' saved
+/tmp/mesh468.tflite: OK
+/tmp/vg_model_probe_xnn: OK
+LIGHTWEIGHT_468_PROBE_BEGIN
+armv7l
+MESH468_THREADS=1
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+MODEL_PROBE_PASS outputs=2 synthetic=1 delegate_nodes=1 mean_ms=135.645
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":60,"threads":1,"input_bytes":442368,"delegate_nodes":1,"mean_ms":135.64494023333333,"p50_ms":135.612583,"p95_ms":135.812443,"max_rss_kib":18248,"outputs":[{"slot":0,"elements":1404,"shape":[1,1,1,1404]},{"slot":1,"elements":1,"shape":[1,1,1,1]}]}
+MESH468_THREADS=2
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+MODEL_PROBE_PASS outputs=2 synthetic=1 delegate_nodes=1 mean_ms=74.7118
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":60,"threads":2,"input_bytes":442368,"delegate_nodes":1,"mean_ms":74.711791550000015,"p50_ms":74.700294999999997,"p95_ms":74.978370999999996,"max_rss_kib":18124,"outputs":[{"slot":0,"elements":1404,"shape":[1,1,1,1404]},{"slot":1,"elements":1,"shape":[1,1,1,1]}]}
+LIGHTWEIGHT_468_PROBE_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

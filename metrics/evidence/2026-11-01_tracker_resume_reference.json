@@ -1,0 +1,32 @@
+{
+  "hardware_test": false,
+  "accuracy_verified": false,
+  "reference_kind": "same-clip native FP32 models, no human labels",
+  "reference_sha256": "d7b2900863fdd8b0e0a909b49e5e9b7f67358ebf409e944550a519be9a9b9332",
+  "candidate_sha256": "272688629039868520653f9e477a815aea7cb80b7e15c02da2e96794ea06c953",
+  "paired_face_frames": 491,
+  "reference_blink_states": {
+    "OPEN": {
+      "reference_face_frames": 596,
+      "candidate_face_frames": 491,
+      "state_disagreements_when_both_have_face": 0
+    }
+  },
+  "differences": {
+    "ear_left": {
+      "absolute_mean": 0.030920570264765784,
+      "p95_nearest_rank": 0.0862,
+      "maximum": 0.3834000000000001
+    },
+    "ear_right": {
+      "absolute_mean": 0.05227637474541751,
+      "p95_nearest_rank": 0.16400000000000003,
+      "maximum": 0.2057
+    },
+    "mar": {
+      "absolute_mean": 0.03227657841140529,
+      "p95_nearest_rank": 0.12970000000000004,
+      "maximum": 0.21589999999999998
+    }
+  }
+}

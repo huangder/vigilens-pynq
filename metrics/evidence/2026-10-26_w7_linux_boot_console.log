@@ -1,0 +1,632 @@
+﻿
+[[open ok COM11 @ 115200]]
+
+
+U-Boot 2024.10 (Oct 25 2026 - 20:34:10 +0800)
+
+CPU:   Zynq 7z020
+Silicon: v3.1
+Model: Avnet ZedBoard board
+DRAM:  ECC disabled 512 MiB
+Core:  22 devices, 16 uclasses, devicetree: board
+Flash: 0 Bytes
+NAND:  0 MiB
+MMC:   mmc@e0100000: 0
+Loading Environment from nowhere... OK
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Net:   Could not get PHY for eth0: addr 0
+No ethernet found.
+
+Hit any key to stop autoboot:  2  1  0 
+JTAG: Trying to boot script at 3000000
+## Executing script at 03000000
+VigiLens: JTAG script running
+Kernel image @ 0x2000000 [ 0x000000 - 0xa7c200 ]
+## Loading init Ramdisk from Legacy Image at 18000000 ...
+   Image Name:   VigiLens initramfs
+   Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+   Data Size:    11493497 Bytes = 11 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 1c000000
+   Booting using the fdt blob at 0x1c000000
+Working FDT set to 1c000000
+Could not get PHY for eth0: addr 0
+Could not get PHY for eth0: addr 0
+   Loading Ramdisk to 1cfd6000, end 1dacc079 ... OK
+   Loading Device Tree to 1cfc3000, end 1cfd5fb2 ... OK
+Working FDT set to 1cfc3000
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 6.6.158 (root@dream) (arm-buildroot-linux-gnueabihf-gcc.br_real (Buildroot -g0a9b7567) 13.4.0, GNU ld (GNU Binutils) 2.43.1) #1 SMP Sun Oct 25 20:37:16 CST 2026
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt: Machine model: MicroPhase Mizar-Z7 7020
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] efi: UEFI not found.
+[    0.000000] cma: Reserved 256 MiB at 0x0c800000 on node -1
+[    0.000000] Zone ranges:
+[    0.000000]   DMA      [mem 0x0000000000000000-0x000000001fffffff]
+[    0.000000]   Normal   empty
+[    0.000000]   HighMem  empty
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000000000000-0x000000001fffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000000000000-0x000000001fffffff]
+[    0.000000] percpu: Embedded 16 pages/cpu s36564 r8192 d20780 u65536
+[    0.000000] Kernel command line: console=ttyPS0,115200 root=/dev/ram0 rw mem=512M cpuidle.off=1
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes, linear)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 130048
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.000000] Memory: 217580K/524288K available (15360K kernel code, 2485K rwdata, 6468K rodata, 2048K init, 418K bss, 44564K reserved, 262144K cma-reserved, 0K highmem)
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU event tracing is enabled.
+[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=16 to nr_cpu_ids=2.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[    0.000000] NR_IRQS: 16, nr_irqs: 16, preallocated irqs: 16
+[    0.000000] slcr mapped to (ptrval)
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x02460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x02460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] zynq_clock_init: clkc starts at (ptrval)
+[    0.000000] Zynq clock init
+[    0.000001] sched_clock: 64 bits at 167MHz, resolution 6ns, wraps every 4398046511103ns
+[    0.000023] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x26703d7dd8, max_idle_ns: 440795208065 ns
+[    0.000056] Switching to timer-based delay loop, resolution 6ns
+[    0.002808] Console: colour dummy device 80x30
+[    0.002859] Calibrating delay loop (skipped), value calculated using timer frequency.. 333.33 BogoMIPS (lpj=1666666)
+[    0.002877] CPU: Testing write buffer coherency: ok
+[    0.002912] CPU0: Spectre v2: using BPIALL workaround
+[    0.002921] pid_max: default: 32768 minimum: 301
+[    0.003048] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.003064] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.003862] missing device node for CPU 0
+[    0.003880] missing device node for CPU 1
+[    0.003886] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.004955] Setting up static identity map for 0x300000 - 0x3000ac
+[    0.006182] rcu: Hierarchical SRCU implementation.
+[    0.006190] rcu: 	Max phase no-delay instances is 1000.
+[    0.008773] EFI services will not be available.
+[    0.009016] smp: Bringing up secondary CPUs ...
+[    0.009879] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.009899] CPU1: Spectre v2: using BPIALL workaround
+[    0.010055] smp: Brought up 1 node, 2 CPUs
+[    0.010068] SMP: Total of 2 processors activated (666.66 BogoMIPS).
+[    0.010078] CPU: All CPU(s) started in SVC mode.
+[    0.011005] devtmpfs: initialized
+[    0.020719] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.020983] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.021006] futex hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.038314] pinctrl core: initialized pinctrl subsystem
+[    0.041284] DMI not present or invalid.
+[    0.042112] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.044953] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.047703] thermal_sys: Registered thermal governor 'step_wise'
+[    0.059286] /axi: Fixed dependency cycle(s) with /axi/interrupt-controller@f8f01000
+[    0.059428] /axi/etb@f8801000: Fixed dependency cycle(s) with /replicator
+[    0.059546] /axi/tpiu@f8803000: Fixed dependency cycle(s) with /replicator
+[    0.059579] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889d000
+[    0.059602] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889c000
+[    0.059627] /axi/funnel@f8804000: Fixed dependency cycle(s) with /replicator
+[    0.059674] /axi/ptm@f889c000: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.059714] /axi/ptm@f889d000: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.066541] /replicator: Fixed dependency cycle(s) with /axi/etb@f8801000
+[    0.066657] /axi/etb@f8801000: Fixed dependency cycle(s) with /replicator
+[    0.066910] /replicator: Fixed dependency cycle(s) with /axi/tpiu@f8803000
+[    0.067020] /axi/tpiu@f8803000: Fixed dependency cycle(s) with /replicator
+[    0.067293] /replicator: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.067389] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889d000
+[    0.067415] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889c000
+[    0.067438] /axi/funnel@f8804000: Fixed dependency cycle(s) with /replicator
+[    0.067699] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889c000
+[    0.067795] /axi/ptm@f889c000: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.068051] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889d000
+[    0.068144] /axi/ptm@f889d000: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.081327] No ATAGs?
+[    0.081419] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.081433] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.091129] Serial: AMBA PL011 UART driver
+[    0.091981] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 26, base_baud = 6249999) is a xuartps
+[    0.092064] printk: console [ttyPS0] enabled
+[    0.753655] iommu: Default domain type: Translated
+[    0.758446] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.765750] SCSI subsystem initialized
+[    0.780606] usbcore: registered new interface driver usbfs
+[    0.786136] usbcore: registered new interface driver hub
+[    0.791511] usbcore: registered new device driver usb
+[    0.798924] mc: Linux media interface: v0.10
+[    0.803335] pps_core: LinuxPPS API ver. 1 registered
+[    0.808295] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.817453] PTP clock support registered
+[    0.821677] EDAC MC: Ver: 3.0.0
+[    0.826710] scmi_core: SCMI protocol bus registered
+[    0.860355] vgaarb: loaded
+[    0.875236] clocksource: Switched to clocksource arm_global_timer
+[    0.901075] NET: Registered PF_INET protocol family
+[    0.906161] IP idents hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.914678] tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)
+[    0.923088] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.930853] TCP established hash table entries: 4096 (order: 2, 16384 bytes, linear)
+[    0.938632] TCP bind hash table entries: 4096 (order: 4, 65536 bytes, linear)
+[    0.945907] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.952353] UDP hash table entries: 256 (order: 1, 8192 bytes, linear)
+[    0.958906] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes, linear)
+[    0.966049] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.980436] RPC: Registered named UNIX socket transport module.
+[    0.986358] RPC: Registered udp transport module.
+[    0.991071] RPC: Registered tcp transport module.
+[    0.995766] RPC: Registered tcp-with-tls transport module.
+[    1.001259] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    1.007700] PCI: CLS 0 bytes, default 64
+[    1.012321] armv7-pmu f8891000.pmu: hw perfevents: no interrupt-affinity property, guessing.
+[    1.030504] Trying to unpack rootfs image as initramfs...
+[    1.036987] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.046891] Initialise system trusted keyrings
+[    1.051644] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.058472] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.064696] NFS: Registering the id_resolver key type
+[    1.069774] Key type id_resolver registered
+[    1.073976] Key type id_legacy registered
+[    1.078015] nfs4filelayout_init: NFSv4 File Layout Driver Registering...
+[    1.084764] nfs4flexfilelayout_init: NFSv4 Flexfile Layout Driver Registering...
+[    1.092223] ntfs: driver 2.1.32 [Flags: R/O].
+[    1.097020] Key type asymmetric registered
+[    1.101146] Asymmetric key parser 'x509' registered
+[    1.106089] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 244)
+[    1.113519] io scheduler mq-deadline registered
+[    1.118053] io scheduler kyber registered
+[    1.122165] io scheduler bfq registered
+[    1.148156] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    1.234329] dma-pl330 f8003000.dma-controller: Loaded driver for PL330 DMAC-241330
+[    1.241980] dma-pl330 f8003000.dma-controller: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.252803] xilinx-vdma 41e00000.dma: Please ensure that IP supports buffer length > 23 bits
+[    1.261315] xilinx-vdma 41e00000.dma: error -EINVAL: failed to get irq
+[    1.267845] xilinx-vdma: probe of 41e00000.dma failed with error -22
+[    1.622393] Serial: 8250/16550 driver, 5 ports, IRQ sharing enabled
+[    1.646169] SuperH (H)SCI(F) driver initialized
+[    1.652312] msm_serial: driver initialized
+[    1.656403] STMicroelectronics ASC driver initialized
+[    1.663047] STM32 USART driver initialized
+[    1.689762] brd: module loaded
+[    1.699755] loop: module loaded
+[    1.721930] CAN device driver interface
+[    1.727631] bgmac_bcma: Broadcom 47xx GBit MAC driver loaded
+[    1.735436] e1000e: Intel(R) PRO/1000 Network Driver
+[    1.740419] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    1.746401] igb: Intel(R) Gigabit Ethernet Network Driver
+[    1.751843] igb: Copyright (c) 2007-2014 Intel Corporation.
+[    1.765021] pegasus: Pegasus/Pegasus II USB Ethernet driver
+[    1.770709] usbcore: registered new interface driver pegasus
+[    1.776423] usbcore: registered new interface driver asix
+[    1.781919] usbcore: registered new interface driver ax88179_178a
+[    1.788074] usbcore: registered new interface driver cdc_ether
+[    1.793998] usbcore: registered new interface driver smsc75xx
+[    1.799804] usbcore: registered new interface driver smsc95xx
+[    1.805614] usbcore: registered new interface driver net1080
+[    1.811361] usbcore: registered new interface driver cdc_subset
+[    1.817340] usbcore: registered new interface driver zaurus
+[    1.823017] usbcore: registered new interface driver cdc_ncm
+[    1.858195] i2c_dev: i2c /dev entries driver
+[    1.884609] ------------[ cut here ]------------
+[    1.889235] WARNING: CPU: 0 PID: 1 at drivers/cpufreq/cpufreq-dt.c:79 dt_cpufreq_probe+0x39c/0x3f0
+[    1.898256] Modules linked in:
+[    1.901356] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 6.6.158 #1
+[    1.907366] Hardware name: Xilinx Zynq Platform
+[    1.911897]  unwind_backtrace from show_stack+0x10/0x14
+[    1.917150]  show_stack from dump_stack_lvl+0x40/0x4c
+[    1.922219]  dump_stack_lvl from __warn+0x78/0x124
+[    1.927027]  __warn from warn_slowpath_fmt+0x184/0x18c
+[    1.932183]  warn_slowpath_fmt from dt_cpufreq_probe+0x39c/0x3f0
+[    1.938216]  dt_cpufreq_probe from platform_probe+0x5c/0xb0
+[    1.943824]  platform_probe from really_probe+0xc8/0x2d8
+[    1.949152]  really_probe from __driver_probe_device+0x94/0x1c8
+[    1.955089]  __driver_probe_device from driver_probe_device+0x30/0x104
+[    1.961633]  driver_probe_device from __driver_attach+0x90/0x178
+[    1.967657]  __driver_attach from bus_for_each_dev+0x7c/0xcc
+[    1.973325]  bus_for_each_dev from bus_add_driver+0xcc/0x1ec
+[    1.978993]  bus_add_driver from driver_register+0x7c/0x114
+[    1.984583]  driver_register from do_one_initcall+0x58/0x200
+[    1.990260]  do_one_initcall from kernel_init_freeable+0x1a8/0x204
+[    1.996460]  kernel_init_freeable from kernel_init+0x18/0x12c
+[    2.002223]  kernel_init from ret_from_fork+0x14/0x28
+[    2.007281] Exception stack(0xe0815fb0 to 0xe0815ff8)
+[    2.012328] 5fa0:                                     00000000 00000000 00000000 00000000
+[    2.020505] 5fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[    2.028681] 5fe0: 00000000 00000000 00000000 00000000 00000013 00000000
+[    2.035322] ---[ end trace 0000000000000000 ]---
+[    2.040104] cpu cpu0: OPP table can't be empty
+[    2.046225] Xilinx Zynq CpuIdle Driver started
+[    2.050715] failed to register cpuidle driver
+[    2.057167] sdhci: Secure Digital Host Controller Interface driver
+[    2.063375] sdhci: Copyright(c) Pierre Ossman
+[    2.070986] Synopsys Designware Multimedia Card Interface Driver
+[    2.080163] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.109327] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.118694] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    2.127963] timer #0 at (ptrval), irq=40
+[    2.132740] usbcore: registered new interface driver usbhid
+[    2.138373] usbhid: USB HID core driver
+[    2.156413] NET: Registered PF_INET6 protocol family
+[    2.163144] Segment Routing with IPv6
+[    2.166929] In-situ OAM (IOAM) with IPv6
+[    2.170937] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.177699] NET: Registered PF_PACKET protocol family
+[    2.182761] can: controller area network core
+[    2.187239] NET: Registered PF_CAN protocol family
+[    2.192040] can: raw protocol
+[    2.195048] can: broadcast manager protocol
+[    2.199273] can: netlink gateway - max_hops=1
+[    2.204186] Key type dns_resolver registered
+[    2.208795] ThumbEE CPU extension supported.
+[    2.213107] Registering SWP/SWPB emulation handler
+[    2.229348] Loading compiled-in X.509 certificates
+[    2.259435] mmc0: SDHCI controller on e0100000.mmc [e0100000.mmc] using ADMA
+[    2.716930] Freeing initrd memory: 11228K
+[    2.783347] clk: Disabling unused clocks
+[    2.790430] Freeing unused kernel image (initmem) memory: 2048K
+[    2.797136] Run /init as init process
+Saving 256 bits of non-creditable seed for next boot
+Starting syslogd: OK
+Starting klogd: OK
+Running sysctl: OK
+Starting network: OK
+Starting crond: OK
+Starting dropbear sshd: OK
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: [    4.764888] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[    4.774035] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[    4.780465] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[    4.786896] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[    4.793328] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[    4.799760] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[    4.806192] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[    4.812624] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[    4.819056] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[    4.825488] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[    4.831920] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[    4.838351] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[    4.844783] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[    4.851216] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[    4.857647] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[    4.864079] mmc0: sdhci: Host ctl2: 0x00000000
+[    4.868514] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[    4.874946] mmc0: sdhci: ============================================
+[    7.084803] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[    7.093938] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[    7.100369] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[    7.106800] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[    7.113232] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[    7.119664] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[    7.126096] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[    7.132527] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[    7.138959] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[    7.145391] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[    7.151823] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[    7.158255] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[    7.164687] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[    7.171119] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[    7.177551] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[    7.183982] mmc0: sdhci: Host ctl2: 0x00000000
+[    7.188418] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[    7.194849] mmc0: sdhci: ============================================
+[   10.555978] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   10.565113] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   10.571544] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   10.577975] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   10.584407] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   10.590839] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   10.597271] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   10.603703] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   10.610135] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   10.616567] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   10.622999] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   10.629430] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   10.635862] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   10.642295] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   10.648726] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   10.655158] mmc0: sdhci: Host ctl2: 0x00000000
+[   10.659593] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   10.666025] mmc0: sdhci: ============================================
+[   11.725052] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   11.734187] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   11.740618] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   11.747050] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   11.753482] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   11.759914] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   11.766345] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   11.772778] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   11.779209] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   11.785641] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   11.792073] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   11.798505] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   11.804937] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   11.811369] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   11.817801] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   11.824232] mmc0: sdhci: Host ctl2: 0x00000000
+[   11.828668] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   11.835100] mmc0: sdhci: ============================================
+[   11.872282] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   11.881417] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   11.887848] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   11.894280] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   11.900712] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   11.907144] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   11.913576] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   11.920008] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   11.926439] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   11.932871] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   11.939303] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   11.945735] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   11.952167] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   11.958599] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   11.965031] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   11.971462] mmc0: sdhci: Host ctl2: 0x00000000
+[   11.975898] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   11.982330] mmc0: sdhci: ============================================
+[   13.084971] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   13.094100] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   13.100531] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   13.106963] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   13.113395] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   13.119827] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   13.126259] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   13.132690] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   13.139122] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   13.145554] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   13.151986] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   13.158418] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   13.164850] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   13.171282] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   13.177714] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   13.184145] mmc0: sdhci: Host ctl2: 0x00000000
+[   13.188581] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   13.195012] mmc0: sdhci: ============================================
+[   15.404967] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   15.414100] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   15.420530] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   15.426962] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   15.433394] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   15.439826] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   15.446257] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   15.452689] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   15.459121] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   15.465553] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   15.471985] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   15.478417] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   15.484849] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   15.491281] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   15.497713] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   15.504144] mmc0: sdhci: Host ctl2: 0x00000000
+[   15.508580] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   15.515012] mmc0: sdhci: ============================================
+[   16.604424] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   16.613554] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   16.619985] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   16.626417] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   16.632848] mmc0: sdhci: Argument:  0x000001aa | Trn mode: 0x00000000
+[   16.639280] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   16.645712] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   16.652144] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   16.658576] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   16.665008] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   16.671440] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   16.677871] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   16.684303] mmc0: sdhci: Cmd:       0x0000081a | Max curr: 0x00000001
+[   16.690735] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   16.697167] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   16.703599] mmc0: sdhci: Host ctl2: 0x00000000
+[   16.708034] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   16.714466] mmc0: sdhci: ============================================
+[   16.752515] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   16.761643] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   16.768074] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   16.774506] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   16.780938] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   16.787370] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   16.793801] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   16.800233] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   16.806665] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   16.813097] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   16.819529] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   16.825961] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   16.832393] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   16.838825] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   16.845257] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   16.851688] mmc0: sdhci: Host ctl2: 0x00000000
+[   16.856124] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   16.862555] mmc0: sdhci: ============================================
+[   17.964816] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   17.973953] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   17.980384] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   17.986816] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   17.993247] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   17.999679] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   18.006111] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   18.012543] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   18.018975] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   18.025407] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   18.031839] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   18.038271] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   18.044702] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   18.051134] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   18.057566] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   18.063998] mmc0: sdhci: Host ctl2: 0x00000000
+[   18.068433] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   18.074865] mmc0: sdhci: ============================================
+[   19.195985] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   19.205115] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   19.211546] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   19.217978] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   19.224410] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   19.230842] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   19.237274] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   19.243705] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   19.250137] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   19.256569] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   19.263001] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   19.269433] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   19.275865] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   19.282297] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   19.288729] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   19.295160] mmc0: sdhci: Host ctl2: 0x00000000
+[   19.299596] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   19.306028] mmc0: sdhci: ============================================
+[   22.604805] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   22.613934] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   22.620365] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   22.626796] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   22.633228] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   22.639660] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   22.646092] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   22.652524] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   22.658956] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   22.665387] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   22.671819] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   22.678251] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   22.684683] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   22.691115] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   22.697547] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   22.703979] mmc0: sdhci: Host ctl2: 0x00000000
+[   22.708414] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   22.714846] mmc0: sdhci: ============================================
+[   23.805046] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   23.814178] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   23.820609] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   23.827041] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   23.833472] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   23.839905] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   23.846336] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   23.852768] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   23.859200] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   23.865632] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   23.872064] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   23.878495] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   23.884928] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   23.891360] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   23.897791] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   23.904223] mmc0: sdhci: Host ctl2: 0x00000000
+[   23.908659] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   23.915090] mmc0: sdhci: ============================================
+[   23.952439] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   23.961573] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   23.968004] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   23.974436] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   23.980868] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   23.987299] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   23.993731] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   24.000163] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   24.006595] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   24.013027] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   24.019459] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   24.025891] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   24.032323] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   24.038754] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   24.045186] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   24.051618] mmc0: sdhci: Host ctl2: 0x00000000
+[   24.056054] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   24.062485] mmc0: sdhci: ============================================
+[   25.195986] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   25.205122] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   25.211553] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   25.217984] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   25.224416] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   25.230849] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   25.237280] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   25.243712] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   25.250144] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   25.256576] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   25.263008] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   25.269439] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   25.275871] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   25.282303] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   25.288735] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   25.295167] mmc0: sdhci: Host ctl2: 0x00000000
+[   25.299603] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   25.306034] mmc0: sdhci: ============================================
+[   27.484885] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   27.494021] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   27.500452] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   27.506883] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   27.513315] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   27.519747] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   27.526179] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   27.532611] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   27.539042] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   27.545474] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   27.551906] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   27.558338] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   27.564770] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   27.571202] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   27.577634] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   27.584066] mmc0: sdhci: Host ctl2: 0x00000000
+[   27.588501] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   27.594933] mmc0: sdhci: ============================================
+[   29.804884] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   29.814019] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   29.820451] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   29.826882] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   29.833314] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   29.839746] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   29.846178] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   29.852610] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   29.859041] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   29.865473] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   29.871905] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   29.878337] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   29.884769] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   29.891201] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   29.897633] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   29.904065] mmc0: sdhci: Host ctl2: 0x00000000
+[   29.908500] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   29.914932] mmc0: sdhci: ============================================
+[   29.952276] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   29.961406] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   29.967837] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   29.974269] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   29.980701] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   29.987132] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   29.993564] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   29.999996] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   30.006428] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   30.012860] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   30.019292] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   30.025724] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   30.032156] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   30.038588] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   30.045019] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   30.051451] mmc0: sdhci: Host ctl2: 0x00000000
+[   30.055887] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   30.062318] mmc0: sdhci: ============================================
+[   35.676145] mmc0: Got command interrupt 0x00030000 even though no command operation was in progress.
+[   35.685276] mmc0: sdhci: ============ SDHCI REGISTER DUMP ===========
+[   35.691707] mmc0: sdhci: Sys addr:  0x00000000 | Version:  0x00008901
+[   35.698139] mmc0: sdhci: Blk size:  0x00000000 | Blk cnt:  0x00000000
+[   35.704570] mmc0: sdhci: Argument:  0x00000000 | Trn mode: 0x00000000
+[   35.711002] mmc0: sdhci: Present:   0x01ff0000 | Host ctl: 0x00000001
+[   35.717434] mmc0: sdhci: Power:     0x0000000f | Blk gap:  0x00000000
+[   35.723866] mmc0: sdhci: Wake-up:   0x00000000 | Clock:    0x00008007
+[   35.730298] mmc0: sdhci: Timeout:   0x00000000 | Int stat: 0x00000000
+[   35.736730] mmc0: sdhci: Int enab:  0x00ff0003 | Sig enab: 0x00ff0003
+[   35.743162] mmc0: sdhci: ACmd stat: 0x00000000 | Slot int: 0x00000000
+[   35.749593] mmc0: sdhci: Caps:      0x69ec0080 | Caps_1:   0x00000000
+[   35.756025] mmc0: sdhci: Cmd:       0x0000371a | Max curr: 0x00000001
+[   35.762457] mmc0: sdhci: Resp[0]:   0x00000000 | Resp[1]:  0x00000000
+[   35.768889] mmc0: sdhci: Resp[2]:   0x00000000 | Resp[3]:  0x00000000
+[   35.775321] mmc0: sdhci: Host ctl2: 0x00000000
+[   35.779756] mmc0: sdhci: ADMA Err:  0x00000000 | ADMA Ptr: 0x00000000
+[   35.786188] mmc0: sdhci: ============================================

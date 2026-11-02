@@ -1,0 +1,55 @@
+attempting to launch hw_server
+
+****** Xilinx hw_server v2026.1
+  **** Build date : May 29 2026 at 14:55:19
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+INFO: hw_server application started
+INFO: Use Ctrl-C to exit hw_server application
+
+
+
+****** Xilinx hw_server v2026.1
+
+  **** Build date : May 29 2026 at 14:55:19
+
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+
+
+INFO: hw_server application started
+
+INFO: Use Ctrl-C to exit hw_server application
+
+
+
+
+INFO: To connect to this hw_server instance use url: TCP:127.0.0.1:3121
+
+
+
+CPU_CONTEXT_BEGIN
+CORE ARM*#0
+pc: ffffff28
+
+cpsr: 200001df
+       n (Bits [31]):  0      z (Bits [30]):  0      c (Bits [29]):  1
+       v (Bits [28]):  0      q (Bits [27]):  0  it (Bits [15:25]):  0
+       j (Bits [24]):  0  ge (Bits [19:16]):  0       e (Bits [9]):  0
+        a (Bits [8]):  1       i (Bits [7]):  1       f (Bits [6]):  1
+        t (Bits [5]):  0     m (Bits [4:0]): 1f
+
+CORE ARM*#1
+pc: ffffff34
+
+cpsr: 600001d3
+       n (Bits [31]):  0      z (Bits [30]):  1      c (Bits [29]):  1
+       v (Bits [28]):  0      q (Bits [27]):  0  it (Bits [15:25]):  0
+       j (Bits [24]):  0  ge (Bits [19:16]):  0       e (Bits [9]):  0
+        a (Bits [8]):  1       i (Bits [7]):  1       f (Bits [6]):  1
+        t (Bits [5]):  0     m (Bits [4:0]): 13
+
+CPU_CONTEXT_END

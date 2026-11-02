@@ -1,0 +1,23 @@
+{
+  "kind": "native_full_board_realtime_gate",
+  "passed": false,
+  "errors": [
+    "analysis 29.762852 fps below 30.0",
+    "AUTONOMY_SUMMARY.skipped=19.0, required 0",
+    "AUTONOMY_SUMMARY.accepted=2681.0, required 2700.0",
+    "AUTONOMY_SUMMARY.processed=2681.0, required 2700.0",
+    "face-bearing coverage below configured face_visible_min"
+  ],
+  "capture_fps": 29.960226,
+  "analysis_update_fps": 29.762852,
+  "capture_interval_p95_s": 0.03600399999959336,
+  "submitted": 2700.0,
+  "processed": 2681.0,
+  "contract_frames": 2680,
+  "face_bearing_ratio": 0.020149253731343283,
+  "face_bearing_frames": 54,
+  "face_bearing_update_fps": 0.5996992567164179,
+  "native_camera_mode_verified": true,
+  "accuracy_verified": false,
+  "cold_boot_verified": false
+}

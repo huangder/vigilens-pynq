@@ -1,0 +1,15 @@
+{
+  "board/autonomy/tracked_runtime.cpp": "fe68c9cdf823a35d189b25a4a05f6a88ba191f872f64337bd447c59358b491ba",
+  "board/autonomy/point_tracker.cpp": "79c03203b4dbf150405a1931198ade39acaf02780e899ee65b15ea02fd605c9e",
+  "board/autonomy/point_tracker.hpp": "0bd529c05da3d86a03af90fea466a008a03495ed8e26baaa3d6c09c67cd5a77b",
+  "board/autonomy/track_box.hpp": "4d8326546b3f786681da0a9909dabaca4b23de233d41ca933924ee20957ee040",
+  "board/autonomy/track_history.hpp": "8311483b54e65671f2b5ed6c0cf107a96673249c042ea54a5398ef236634e3a2",
+  "board/autonomy/export_vision_config.py": "8d0866cfa6f40b2ff15c654cd284ad003c9874652b8dfcc1406e39b4b41b65ae",
+  "board/autonomy/build_native_vision.sh": "2a949adcefb5ff1c2c7422f04ceb508c1b0ffa68a6ce2f1de65c5e0fefaba83e",
+  "board/w7_buildroot/camera_pl.c": "0719679b9903c8c73f4f9701709c2fcb80f26bba5762f49ea53e8fef7149b5cb",
+  "board/w7_buildroot/dma_gray.h": "3ee8801dc0e5522d26ba617f49c1a938f3b011621c8916d7a1755fdf0d97be4d",
+  ".tmp\\autonomy\\tracked30_20261101\\resume0.yaml": "88b3b99e4d5ffcb662fe14c2437b129f528572259a0198c63b529d2c7a8bd713",
+  ".tmp\\autonomy\\tracked30_20261101\\arm_resume0\\vigi_camera_autonomy": "b94d2842660c5be29c7db1d61e10ea1fea697e04fc812c2f3b864a45cd4eeeb3",
+  ".tmp\\autonomy\\tracked30_20261101\\resume10.yaml": "9a91abd0b29f14508b7e086c0c65c1dfec018261fd318b3640871ac48cd848b0",
+  ".tmp\\autonomy\\tracked30_20261101\\arm_resume10\\vigi_camera_autonomy": "94411110df5189f9aac9cafde41652541dde3e3281cd01e3135ce96573bb82b6"
+}

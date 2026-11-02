@@ -1,0 +1,13 @@
+vigi_final: OK
+vg_detector_test: OK
+vg_gray_test: OK
+FACE_DETECTOR_CROP_INPUT_EXACT cases=1024 padded_stride=1 edge_padding=1
+FACE_DETECTOR_BOUNDS_PASS
+DMA_GRAY_TEST_PASS byte_sum_exact full_frame_values=256 random=1 prefixes=128
+FULL30_FINAL_EXIT=2
+VISION_CONFIG detector_threads=1 landmark_threads=1 ncnn_packing=0 analysis_nice=0 config_sha256=c5d979e8bab9bed91476a044079cf604d284e0108d4d276605da85a4df342690
+SAMPLE_RESULT input=1200 kept=1117 dropped=83 driver_sequence_gaps=2329 empty_slots=666 input_fps=20.184239 output_fps=18.786998 native_30fps=no
+AUTONOMY_SUMMARY submitted=1117 accepted=313 skipped=804 processed=313 succeeded=312 rejected=1 failed=0 rc=0 camera_submit_fps=18.786998 analysis_update_fps=5.209241
+AUDIT_SUMMARY frames=1117 audits=38 failures=0 reference_ms_total=2982
+CAMERA_PL_PASS compared_frames=1117 native_camera_mode_verified=0
+FULL30_FINAL_END

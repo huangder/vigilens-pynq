@@ -1,0 +1,26 @@
+{
+  "time_base": "source_ts",
+  "checkpoints": 8,
+  "accepted": 8,
+  "decision_mismatches": 0,
+  "max_abs_hr_delta": 0.0,
+  "max_abs_conf_delta": 0.0,
+  "samples": [
+    {
+      "frame": 960,
+      "present": true,
+      "reject": null,
+      "hr_c": 70.0,
+      "hr_py": 70.0,
+      "decision_match": true
+    },
+    {
+      "frame": 990,
+      "present": true,
+      "reject": null,
+      "hr_c": 68.0,
+      "hr_py": 68.0,
+      "decision_match": true
+    }
+  ]
+}

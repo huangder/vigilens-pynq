@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -28,7 +29,10 @@ for p in (str(REPO_ROOT), str(BACKEND)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-SCRATCH_ROOT = REPO_ROOT / "metrics" / "evidence" / "_pytest_tmp"
+# 默认仍落在仓库内；受限沙箱/只读 ACL 的机器可以 `VIGILENS_TEST_TMP=<可写目录>` 覆盖，
+# 否则 `metrics/` 不可写时整批测试会卡在 workdir 创建上（2026-10-29 实测）。
+SCRATCH_ROOT = Path(os.environ.get("VIGILENS_TEST_TMP")
+                    or (REPO_ROOT / "metrics" / "evidence" / "_pytest_tmp"))
 
 
 @pytest.fixture

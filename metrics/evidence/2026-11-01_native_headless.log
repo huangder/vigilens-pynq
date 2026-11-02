@@ -1,0 +1,25 @@
+
+# echo NATIVE_HEADLESS_BEGIN
+NATIVE_HEADLESS_BEGIN
+# wc -l /tmp/vigilens_autonomy/contracts.jsonl
+/vigilens_autonomy/contracts.jsonl
+ip link set eth0 up
+echo NATIVE_HEADLESS_END
+
+printf '\nVIGI_COMMAND_DONE\n'
+15 /tmp/vigilens_autonomy/contracts.jsonl
+# ip link set eth0 down
+[ 1415.932878] macb e000b000.ethernet eth0: Link is Down
+# sleep 5
+# wc -l /tmp/vigilens_autonomy/contracts.jsonl
+21 /tmp/vigilens_autonomy/contracts.jsonl
+# ip link set eth0 up
+[ 1420.983085] macb e000b000.ethernet eth0: PHY [e000b000.ethernet-ffffffff:01] driver [RTL8211E Gigabit Ethernet] (irq=POLL)
+[ 1420.995338] macb e000b000.ethernet eth0: configuring for phy/rgmii-id link mode
+# echo NATIVE_HEADLESS_END
+NATIVE_HEADLESS_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

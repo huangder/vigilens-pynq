@@ -1,0 +1,37 @@
+{
+  "kind": "peppa68_pc_pipeline",
+  "source": "data/raw/blink.mp4",
+  "model": "D:\\Desktop\\AMD\\.tmp\\autonomy\\candidates\\peppa\\slim_160_latest.onnx",
+  "fps": 30.0,
+  "frames": 656,
+  "face_frames": 656,
+  "face_rate": 1.0,
+  "geometry_valid_frames": 621,
+  "geometry_invalid_frames": 35,
+  "partial_eye_frames": 15,
+  "ear": {
+    "n": 621,
+    "median": 0.387,
+    "p95": 0.53,
+    "max": 0.976
+  },
+  "reasons": {},
+  "layout_failures": {},
+  "detect_ms": {
+    "n": 656,
+    "median": 4.459,
+    "p95": 4.839,
+    "max": 7.115
+  },
+  "model_ms": {
+    "n": 656,
+    "median": 1.805,
+    "p95": 2.174,
+    "max": 4.732
+  },
+  "board_run": false,
+  "tracking": "re-detect cadence + bounded hold (no optical flow)",
+  "accuracy_verified": false,
+  "declared_frames": 656,
+  "detect_every": 1
+}

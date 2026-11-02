@@ -1,0 +1,62 @@
+SAMPLE_REQUEST target_fps=30 time_base=v4l2_buffer no_padding=1
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=30
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+CAPTURE_FRAME n=1 sequence=0 bytes=78657 ts=4947.836176
+SAMPLE_FRAME n=1 source_sequence=0 ts_us=4947836176
+DIAGNOSTIC_PIXELS w=1280 h=720 mean_rgb=141.986,146.308,159.067 raw_stored=0 raw_transferred=0
+DIAGNOSTIC_DETECT rotation=0 result=1 ms=1276.089
+DIAGNOSTIC_BOX rotation=0 box=589,421,846,720 score=0.997066
+DIAGNOSTIC_DETECT rotation=90 result=0 ms=1159.469
+DIAGNOSTIC_DETECT rotation=180 result=0 ms=1157.745
+DIAGNOSTIC_DETECT rotation=270 result=0 ms=1189.613
+CAPTURE_FRAME n=2 sequence=1 bytes=78572 ts=4947.868195
+CAPTURE_FRAME n=3 sequence=2 bytes=78692 ts=4947.884233
+SAMPLE_FRAME n=2 source_sequence=2 ts_us=4947884233
+CAPTURE_FRAME n=4 sequence=3 bytes=78648 ts=4947.904202
+SAMPLE_FRAME n=3 source_sequence=3 ts_us=4947904202
+CAPTURE_FRAME n=5 sequence=304 bytes=79089 ts=4952.968083
+SAMPLE_FRAME n=4 source_sequence=304 ts_us=4952968083
+CAPTURE_FRAME n=6 sequence=305 bytes=79059 ts=4952.984093
+SAMPLE_FRAME n=5 source_sequence=305 ts_us=4952984093
+CAPTURE_FRAME n=7 sequence=306 bytes=79125 ts=4953.004076
+SAMPLE_FRAME n=6 source_sequence=306 ts_us=4953004076
+CAPTURE_FRAME n=8 sequence=307 bytes=79132 ts=4953.020100
+CAPTURE_FRAME n=9 sequence=308 bytes=78933 ts=4953.036085
+CAPTURE_FRAME n=10 sequence=309 bytes=79110 ts=4953.052089
+SAMPLE_FRAME n=7 source_sequence=309 ts_us=4953052089
+CAPTURE_FRAME n=11 sequence=310 bytes=79029 ts=4953.068092
+CAPTURE_FRAME n=12 sequence=311 bytes=79017 ts=4953.088075
+SAMPLE_FRAME n=8 source_sequence=311 ts_us=4953088075
+CAPTURE_FRAME n=13 sequence=312 bytes=78855 ts=4953.104080
+SAMPLE_FRAME n=9 source_sequence=312 ts_us=4953104080
+CAPTURE_FRAME n=14 sequence=313 bytes=79000 ts=4953.120102
+CAPTURE_FRAME n=15 sequence=314 bytes=79139 ts=4953.136086
+CAPTURE_FRAME n=16 sequence=315 bytes=79173 ts=4953.156069
+SAMPLE_FRAME n=10 source_sequence=315 ts_us=4953156069
+CAPTURE_FRAME n=17 sequence=316 bytes=79089 ts=4953.172076
+SAMPLE_FRAME n=11 source_sequence=316 ts_us=4953172076
+CAPTURE_FRAME n=18 sequence=317 bytes=79154 ts=4953.188078
+CAPTURE_FRAME n=19 sequence=318 bytes=79126 ts=4953.204083
+SAMPLE_FRAME n=12 source_sequence=318 ts_us=4953204083
+CAPTURE_FRAME n=20 sequence=319 bytes=79032 ts=4953.220101
+CAPTURE_FRAME n=21 sequence=320 bytes=79072 ts=4953.240085
+SAMPLE_FRAME n=13 source_sequence=320 ts_us=4953240085
+CAPTURE_FRAME n=22 sequence=321 bytes=79160 ts=4953.256073
+CAPTURE_FRAME n=23 sequence=322 bytes=79023 ts=4953.272078
+SAMPLE_FRAME n=14 source_sequence=322 ts_us=4953272078
+CAPTURE_FRAME n=24 sequence=323 bytes=79053 ts=4953.288082
+CAPTURE_FRAME n=25 sequence=324 bytes=78988 ts=4953.304085
+SAMPLE_FRAME n=15 source_sequence=324 ts_us=4953304085
+CAPTURE_FRAME n=26 sequence=325 bytes=79070 ts=4953.324070
+CAPTURE_FRAME n=27 sequence=326 bytes=78928 ts=4953.340089
+SAMPLE_FRAME n=16 source_sequence=326 ts_us=4953340089
+CAPTURE_FRAME n=28 sequence=327 bytes=79170 ts=4953.356077
+CAPTURE_FRAME n=29 sequence=328 bytes=79085 ts=4953.372080
+SAMPLE_FRAME n=17 source_sequence=328 ts_us=4953372080
+CAPTURE_FRAME n=30 sequence=329 bytes=78915 ts=4953.388082
+SAMPLE_RESULT input=30 kept=17 dropped=13 driver_sequence_gaps=300 empty_slots=150 input_fps=5.223431 output_fps=2.890224 native_30fps=no
+DIAGNOSTIC_CAPTURE_END_NOT_PL_TEST compared_frames=17 native_camera_mode_verified=0
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=30 requested_mode=unmet

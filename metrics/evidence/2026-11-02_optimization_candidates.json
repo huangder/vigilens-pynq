@@ -1,0 +1,313 @@
+{
+  "full30_passed": false,
+  "accuracy_verified": false,
+  "performance_candidates": {
+    "ert_prefetch": {
+      "input": "24 procedural noise supplied-ROI frames, three rounds",
+      "point_parity": "exact",
+      "mean_cpu_ms_by_lookahead": {
+        "-1": 23.366075,
+        "0": 23.265279,
+        "4": 24.244205333333333,
+        "8": 24.684631
+      },
+      "adopted": false
+    },
+    "jpeg_o3": {
+      "baseline_mean_cpu_ms": 68.5554895,
+      "o3_mean_cpu_ms": 69.11221616666667,
+      "synthetic_cases_per_round": 8,
+      "rounds": 3,
+      "decoded_rgb_byte_parity": true,
+      "adopted": false
+    },
+    "osf_U": {
+      "synthetic_only": true,
+      "rounds": [
+        {
+          "iterations": 10,
+          "threads": 1,
+          "input_shape": [
+            1,
+            3,
+            112,
+            112
+          ],
+          "output_shape": [
+            1,
+            198,
+            14,
+            14
+          ],
+          "wall_ms_mean": 129.746248,
+          "wall_ms_max": 129.989461,
+          "caller_cpu_ms_mean": 129.727741,
+          "synthetic_only": true,
+          "accuracy_verified": false,
+          "full_pipeline": false
+        },
+        {
+          "iterations": 10,
+          "threads": 1,
+          "input_shape": [
+            1,
+            3,
+            112,
+            112
+          ],
+          "output_shape": [
+            1,
+            198,
+            14,
+            14
+          ],
+          "wall_ms_mean": 129.786259,
+          "wall_ms_max": 130.023997,
+          "caller_cpu_ms_mean": 129.77173,
+          "synthetic_only": true,
+          "accuracy_verified": false,
+          "full_pipeline": false
+        },
+        {
+          "iterations": 10,
+          "threads": 1,
+          "input_shape": [
+            1,
+            3,
+            112,
+            112
+          ],
+          "output_shape": [
+            1,
+            198,
+            14,
+            14
+          ],
+          "wall_ms_mean": 129.875254,
+          "wall_ms_max": 130.199311,
+          "caller_cpu_ms_mean": 129.854986,
+          "synthetic_only": true,
+          "accuracy_verified": false,
+          "full_pipeline": false
+        }
+      ],
+      "adopted": false
+    },
+    "osf_V": {
+      "synthetic_only": true,
+      "rounds": [
+        {
+          "iterations": 10,
+          "threads": 1,
+          "input_shape": [
+            1,
+            3,
+            112,
+            112
+          ],
+          "output_shape": [
+            1,
+            198,
+            14,
+            14
+          ],
+          "wall_ms_mean": 256.720775,
+          "wall_ms_max": 256.876322,
+          "caller_cpu_ms_mean": 256.697228,
+          "synthetic_only": true,
+          "accuracy_verified": false,
+          "full_pipeline": false
+        },
+        {
+          "iterations": 10,
+          "threads": 1,
+          "input_shape": [
+            1,
+            3,
+            112,
+            112
+          ],
+          "output_shape": [
+            1,
+            198,
+            14,
+            14
+          ],
+          "wall_ms_mean": 256.853301,
+          "wall_ms_max": 257.17433,
+          "caller_cpu_ms_mean": 256.830912,
+          "synthetic_only": true,
+          "accuracy_verified": false,
+          "full_pipeline": false
+        },
+        {
+          "iterations": 10,
+          "threads": 1,
+          "input_shape": [
+            1,
+            3,
+            112,
+            112
+          ],
+          "output_shape": [
+            1,
+            198,
+            14,
+            14
+          ],
+          "wall_ms_mean": 256.799315,
+          "wall_ms_max": 257.020154,
+          "caller_cpu_ms_mean": 256.772988,
+          "synthetic_only": true,
+          "accuracy_verified": false,
+          "full_pipeline": false
+        }
+      ],
+      "adopted": false
+    },
+    "tracker_order": {
+      "input": "procedural texture only",
+      "decoded_point_bytes_equal": true,
+      "cpu_ms_mean": {
+        "-1": {
+          "before": 7.324194,
+          "after": 7.329389
+        },
+        "36": {
+          "before": 3.005174333333333,
+          "after": 0.12835733333333332
+        },
+        "48": {
+          "before": 5.258833,
+          "after": 2.363164
+        }
+      },
+      "microbenchmark_only": true
+    }
+  },
+  "offline": {
+    "translation_host1": {
+      "contracts": 657,
+      "visible": 478,
+      "known_absence_checked": 0,
+      "sha256": "3b6f7e60e59cedf6f94c564b272dca7a4d2eccf112b680f52c1eabfe3bd069f9"
+    },
+    "translation_negative": {
+      "contracts": 657,
+      "visible": 386,
+      "known_absence_checked": 45,
+      "sha256": "92384794dcf34cd55a6012be0d21ceb09a3d1c4c6925047a03516fd3802adc4b"
+    },
+    "hybrid_host1": {
+      "contracts": 657,
+      "visible": 498,
+      "known_absence_checked": 0,
+      "sha256": "e47686c25b1955372f3f1acd1f45a043b140fbf6dc3c16f7e3e8d450bf0197f9"
+    },
+    "hybrid_negative": {
+      "contracts": 657,
+      "visible": 409,
+      "known_absence_checked": 45,
+      "sha256": "02fa2254689d633f8e2fc6919492dec1042e5a58dd76a68d6e946440f92a10e1"
+    }
+  },
+  "hybrid_board": {
+    "kind": "native_full_board_realtime_gate",
+    "passed": false,
+    "errors": [
+      "capture 23.312938 fps below 28.5",
+      "analysis 15.59989 fps below 30.0",
+      "AUTONOMY_SUMMARY.skipped=390.0, required 0",
+      "AUTONOMY_SUMMARY.accepted=804.0, required 1194.0",
+      "AUTONOMY_SUMMARY.processed=804.0, required 1194.0",
+      "face-bearing coverage below configured face_visible_min",
+      "raw capture timestamps fail configured throughput",
+      "capture interval p95 exceeds configured jitter limit"
+    ],
+    "capture_fps": 23.312938,
+    "analysis_update_fps": 15.59989,
+    "capture_interval_p95_s": 0.0840752000000066,
+    "submitted": 1194.0,
+    "processed": 804.0,
+    "contract_frames": 803,
+    "face_bearing_ratio": 0.6438356164383562,
+    "face_bearing_frames": 517,
+    "face_bearing_update_fps": 10.043764794520548,
+    "native_camera_mode_verified": false,
+    "accuracy_verified": false,
+    "cold_boot_verified": false,
+    "hybrid_summary": {
+      "foreground_inferences": 315,
+      "accepted_lk_frames": 338
+    },
+    "background_model_frames": 44,
+    "background_detector_positive_frames": 44,
+    "background_valid_ert_frames": 44,
+    "status_counts": {
+      "adjust_posture": 795,
+      "normal": 2,
+      "unreliable": 6
+    },
+    "null_vitals_when_invisible": true,
+    "blink_states_visible": {
+      "OPEN": 338,
+      "CLOSING": 36,
+      "CLOSED": 91,
+      "OPENING": 52
+    },
+    "max_blink_count": 7,
+    "max_yawn_count": 1,
+    "landmark_cpu_ms_mean_by_path": {
+      "0": 20.662115384615383,
+      "10": 18.294118343195265,
+      "8": 46.150461538461535,
+      "9": 43.642916666666665
+    },
+    "action_accuracy_verified": false,
+    "includes_critical_first_order_optimization": false,
+    "camera_sha256": "feb3e21cd04892f822e1de1b6c1ff6588f34c4d4e9d8d14560464bb82eba1835"
+  },
+  "hybrid_order_accepted_output_unchanged": true,
+  "default_native_contracts_unchanged": true,
+  "local_checks": {
+    "2026-11-02_ert_hybrid_sanitizer.log": {
+      "required_marker": "ERT_LIFECYCLE_PASS cases=3",
+      "observed": true
+    },
+    "2026-11-02_tracker_order_sanitizer.log": {
+      "required_marker": "POINT_TRACKER_TEST_PASS",
+      "observed": true
+    },
+    "2026-11-02_hybrid_check_all.log": {
+      "required_marker": "PASS 26 / FAIL 0",
+      "observed": true
+    },
+    "2026-11-02_hybrid_ctest.log": {
+      "required_marker": "100% tests passed, 0 tests failed out of 8",
+      "observed": true
+    },
+    "2026-11-02_ert_borrowed_local.log": {
+      "required_marker": "ERT_BORROWED_PASS frames=60",
+      "observed": true
+    },
+    "2026-11-02_hybrid_native_parity.log": {
+      "required_marker": "DEFAULT_NATIVE_UNCHANGED",
+      "observed": true
+    }
+  },
+  "critical_first_full_arm_build": {
+    "camera_sha256": "22babd4903ae3d9667c0edc0c2610f2ff3082782430ee5498680fd9fe100f2e7",
+    "full_pipeline_executed_on_board": false
+  },
+  "current_source_sha256": {
+    "board/autonomy/ert_runtime.cpp": "07962576a35f790e63ca61e5d7d96f2babaeb4dcb884bd9ec36475b286656f09",
+    "board/autonomy/point_tracker.cpp": "d4dd989aa77b6bc8fad09da66a1fcd159655b1fbdc5967cabe38b5898170de37",
+    "board/autonomy/ert_guard.hpp": "596fdafedf87a5e748443e1e7991b9045dcb2e478a7a06bd3ca8c430d33dc1a8",
+    "board/autonomy/build_native_vision.sh": "191325cb17a8dab8b910dcee71887fd2f80b3dfa1a046d734e925c9be617a129",
+    "board/autonomy/prepare_ert_prefetch.py": "580e7e460a6e52dd8b70fb74b7989aa4793e0c08359cd7f51134fd5bf4cc2bec",
+    "board/autonomy/osf_tensor_probe.cpp": "3276e61fb1e0111f31087666953115d4b3618efc19507738939254dba6bc8702",
+    "board/autonomy/tests/tracker_order_bench.cpp": "bf65f6446f604e45be5d10ee09845438240426c926ca0f21e9bcca0eccf38d01",
+    "board/w7_buildroot/tests/jpeg_decode_bench.c": "b61b288e47347e459d9bd7f6db158569a36d637b3d523643916dba31831ff4d6",
+    "config.yaml": "beed734d2f9a8606c23f4c2444d1a1a6cc0f44fc597525ea5cb8c5022bd50c59"
+  }
+}

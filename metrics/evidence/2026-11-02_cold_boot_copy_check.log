@@ -1,0 +1,2 @@
+COPY_CHECK_PASS files=28 release=VigiLens-SD-73c1eddce5a0d473
+This checks files only. Physical SD power-on is a separate acceptance step.

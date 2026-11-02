@@ -1,0 +1,29 @@
+{
+  "network_closed_loop_pass": true,
+  "same_packet_motion_checked_frames": 31,
+  "hardware": {
+    "hardware_invariants_pass": true,
+    "hardware_compare_pass": false,
+    "audit_compare_pass": true,
+    "audit_frames": 7,
+    "verification_mode": "audit",
+    "compared_frames": 31,
+    "valid_motion_frames": 30,
+    "native_camera_mode_verified": false,
+    "source_span_s": 1.012057000000027,
+    "selected_fps": 29.64259918166585,
+    "interval_p95_ms": 36.05714999991392,
+    "target_fps": 30.0,
+    "realtime_target_met": true,
+    "timing_median_ms": {
+      "decode_ms": 36.752,
+      "reference_ms": 0.0,
+      "transfer_pl_ms": 17.668
+    }
+  },
+  "metric_posts": 3,
+  "preview_posts": 11,
+  "landmark_source": "mediapipe",
+  "face_visible_frames": 0,
+  "note": "Connection/correctness evidence; not fatigue accuracy, native 30fps, or standalone boot validation."
+}

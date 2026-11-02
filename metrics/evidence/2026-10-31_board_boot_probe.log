@@ -1,0 +1,30 @@
+
+# echo BP_BEGIN
+BP_BEGIN
+# cat /proc/uptime
+cblk* 2>&1 | head -5
+cat /proc/mtd 2>&1 | head -5
+devmem8034.13 15331.97
+# free | head -2
+ 0xF800025C 32 2>&1
+cat /proc/cmdline
+echo BP_END
+
+printf '\nVIGI_COMMAND_DONE\n'
+              total        used        free      shared  buff/cache   available
+Mem:         476868       14596      384872       39776       77400      382148
+# ls /dev/mmcblk* 2>&1 | head -5
+ls: /dev/mmcblk*: No such file or directory
+# cat /proc/mtd 2>&1 | head -5
+dev:    size   erasesize  name
+# devmem 0xF800025C 32 2>&1
+0x00000000
+# cat /proc/cmdline
+console=ttyPS0,115200 root=/dev/ram0 rw mem=512M cpuidle.off=1 cma=128M usbcore.autosuspend=-1 clk_ignore_unused
+# echo BP_END
+BP_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

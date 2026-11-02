@@ -1,0 +1,455 @@
+[[open ok COM11 @ 115200]]
+
+
+U-Boot 2024.10 (Oct 25 2026 - 20:34:10 +0800)
+
+CPU:   Zynq 7z020
+Silicon: v3.1
+Model: Avnet ZedBoard board
+DRAM:  ECC disabled 512 MiB
+Core:  22 devices, 16 uclasses, devicetree: board
+Flash: 0 Bytes
+NAND:  0 MiB
+MMC:   mmc@e0100000: 0
+Loading Environment from nowhere... OK
+In:    serial@e0001000
+Out:   serial@e0001000
+Err:   serial@e0001000
+Net:   Could not get PHY for eth0: addr 0
+No ethernet found.
+
+Hit any key to stop autoboot:  2  1  0 
+JTAG: Trying to boot script at 3000000
+## Executing script at 03000000
+Kernel image @ 0x2000000 [ 0x000000 - 0xa7c200 ]
+## Loading init Ramdisk from Legacy Image at 18000000 ...
+   Image Name:   VigiLens USB reset fix
+   Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+   Data Size:    11499199 Bytes = 11 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 1c000000
+   Booting using the fdt blob at 0x1c000000
+Working FDT set to 1c000000
+Could not get PHY for eth0: addr 0
+Could not get PHY for eth0: addr 0
+   Loading Ramdisk to 1cfd5000, end 1dacc6bf ... OK
+   Loading Device Tree to 1cfc1000, end 1cfd42e6 ... OK
+Working FDT set to 1cfc1000
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 6.6.158 (root@dream) (arm-buildroot-linux-gnueabihf-gcc.br_real (Buildroot -g0a9b7567) 13.4.0, GNU ld (GNU Binutils) 2.43.1) #1 SMP Sun Oct 25 20:37:16 CST 2026
+[    0.000000] CPU: ARMv7 Processor [413fc090] revision 0 (ARMv7), cr=18c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt: Machine model: MicroPhase Mizar-Z7 7020
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] efi: UEFI not found.
+[    0.000000] cma: Reserved 256 MiB at 0x0c800000 on node -1
+[    0.000000] Zone ranges:
+[    0.000000]   DMA      [mem 0x0000000000000000-0x000000001fffffff]
+[    0.000000]   Normal   empty
+[    0.000000]   HighMem  empty
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000000000000-0x000000001fffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000000000000-0x000000001fffffff]
+[    0.000000] percpu: Embedded 16 pages/cpu s36564 r8192 d20780 u65536
+[    0.000000] Kernel command line: console=ttyPS0,115200 root=/dev/ram0 rw mem=512M cpuidle.off=1
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes, linear)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 130048
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.000000] Memory: 217576K/524288K available (15360K kernel code, 2485K rwdata, 6468K rodata, 2048K init, 418K bss, 44568K reserved, 262144K cma-reserved, 0K highmem)
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU event tracing is enabled.
+[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=16 to nr_cpu_ids=2.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[    0.000000] NR_IRQS: 16, nr_irqs: 16, preallocated irqs: 16
+[    0.000000] slcr mapped to (ptrval)
+[    0.000000] L2C: platform modifies aux control register: 0x02060000 -> 0x02460000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02060000 -> 0x02460000
+[    0.000000] L2C-310 erratum 769419 enabled
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating enabled, standby mode enabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 512 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46460001
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] zynq_clock_init: clkc starts at (ptrval)
+[    0.000000] Zynq clock init
+[    0.000001] sched_clock: 64 bits at 167MHz, resolution 6ns, wraps every 4398046511103ns
+[    0.000023] clocksource: arm_global_timer: mask: 0xffffffffffffffff max_cycles: 0x26703d7dd8, max_idle_ns: 440795208065 ns
+[    0.000056] Switching to timer-based delay loop, resolution 6ns
+[    0.002880] Console: colour dummy device 80x30
+[    0.002933] Calibrating delay loop (skipped), value calculated using timer frequency.. 333.33 BogoMIPS (lpj=1666666)
+[    0.002950] CPU: Testing write buffer coherency: ok
+[    0.002985] CPU0: Spectre v2: using BPIALL workaround
+[    0.002994] pid_max: default: 32768 minimum: 301
+[    0.003120] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.003136] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.003930] missing device node for CPU 0
+[    0.003949] missing device node for CPU 1
+[    0.003955] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+[    0.005018] Setting up static identity map for 0x300000 - 0x3000ac
+[    0.006332] rcu: Hierarchical SRCU implementation.
+[    0.006340] rcu: 	Max phase no-delay instances is 1000.
+[    0.009156] EFI services will not be available.
+[    0.009396] smp: Bringing up secondary CPUs ...
+[    0.010263] CPU1: thread -1, cpu 1, socket 0, mpidr 80000001
+[    0.010285] CPU1: Spectre v2: using BPIALL workaround
+[    0.010432] smp: Brought up 1 node, 2 CPUs
+[    0.010446] SMP: Total of 2 processors activated (666.66 BogoMIPS).
+[    0.010456] CPU: All CPU(s) started in SVC mode.
+[    0.011308] devtmpfs: initialized
+[    0.021298] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 4
+[    0.021555] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.021578] futex hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.038876] pinctrl core: initialized pinctrl subsystem
+[    0.041834] DMI not present or invalid.
+[    0.042668] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.045568] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    0.048371] thermal_sys: Registered thermal governor 'step_wise'
+[    0.060052] /axi: Fixed dependency cycle(s) with /axi/interrupt-controller@f8f01000
+[    0.060215] /axi/etb@f8801000: Fixed dependency cycle(s) with /replicator
+[    0.060378] /axi/tpiu@f8803000: Fixed dependency cycle(s) with /replicator
+[    0.060413] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889d000
+[    0.060436] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889c000
+[    0.060461] /axi/funnel@f8804000: Fixed dependency cycle(s) with /replicator
+[    0.060508] /axi/ptm@f889c000: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.060548] /axi/ptm@f889d000: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.067199] /replicator: Fixed dependency cycle(s) with /axi/etb@f8801000
+[    0.067306] /axi/etb@f8801000: Fixed dependency cycle(s) with /replicator
+[    0.067570] /replicator: Fixed dependency cycle(s) with /axi/tpiu@f8803000
+[    0.067667] /axi/tpiu@f8803000: Fixed dependency cycle(s) with /replicator
+[    0.067944] /replicator: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.068034] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889d000
+[    0.068060] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889c000
+[    0.068083] /axi/funnel@f8804000: Fixed dependency cycle(s) with /replicator
+[    0.068349] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889c000
+[    0.068451] /axi/ptm@f889c000: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.068710] /axi/funnel@f8804000: Fixed dependency cycle(s) with /axi/ptm@f889d000
+[    0.068804] /axi/ptm@f889d000: Fixed dependency cycle(s) with /axi/funnel@f8804000
+[    0.082172] No ATAGs?
+[    0.082292] hw-breakpoint: found 5 (+1 reserved) breakpoint and 1 watchpoint registers.
+[    0.082305] hw-breakpoint: maximum watchpoint size is 4 bytes.
+[    0.092007] Serial: AMBA PL011 UART driver
+[    0.092859] e0001000.serial: ttyPS0 at MMIO 0xe0001000 (irq = 26, base_baud = 6249999) is a xuartps
+[    0.092942] printk: console [ttyPS0] enabled
+[    0.752290] iommu: Default domain type: Translated
+[    0.757085] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.764416] SCSI subsystem initialized
+[    0.769249] usbcore: registered new interface driver usbfs
+[    0.774822] usbcore: registered new interface driver hub
+[    0.780171] usbcore: registered new device driver usb
+[    0.787674] mc: Linux media interface: v0.10
+[    0.792088] pps_core: LinuxPPS API ver. 1 registered
+[    0.797047] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.806204] PTP clock support registered
+[    0.810430] EDAC MC: Ver: 3.0.0
+[    0.814531] scmi_core: SCMI protocol bus registered
+[    0.831975] vgaarb: loaded
+[    0.850200] clocksource: Switched to clocksource arm_global_timer
+[    0.871053] NET: Registered PF_INET protocol family
+[    0.876141] IP idents hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.884646] tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)
+[    0.893056] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.900820] TCP established hash table entries: 4096 (order: 2, 16384 bytes, linear)
+[    0.908600] TCP bind hash table entries: 4096 (order: 4, 65536 bytes, linear)
+[    0.915875] TCP: Hash tables configured (established 4096 bind 4096)
+[    0.922323] UDP hash table entries: 256 (order: 1, 8192 bytes, linear)
+[    0.928872] UDP-Lite hash table entries: 256 (order: 1, 8192 bytes, linear)
+[    0.936014] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.950605] RPC: Registered named UNIX socket transport module.
+[    0.956526] RPC: Registered udp transport module.
+[    0.961245] RPC: Registered tcp transport module.
+[    0.965942] RPC: Registered tcp-with-tls transport module.
+[    0.971435] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.977876] PCI: CLS 0 bytes, default 64
+[    0.982483] armv7-pmu f8891000.pmu: hw perfevents: no interrupt-affinity property, guessing.
+[    0.991532] Trying to unpack rootfs image as initramfs...
+[    1.020529] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 7 counters available
+[    1.030549] Initialise system trusted keyrings
+[    1.050436] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    1.057305] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.101004] NFS: Registering the id_resolver key type
+[    1.106134] Key type id_resolver registered
+[    1.110352] Key type id_legacy registered
+[    1.114384] nfs4filelayout_init: NFSv4 File Layout Driver Registering...
+[    1.121101] nfs4flexfilelayout_init: NFSv4 Flexfile Layout Driver Registering...
+[    1.128526] ntfs: driver 2.1.32 [Flags: R/O].
+[    1.161009] Key type asymmetric registered
+[    1.165117] Asymmetric key parser 'x509' registered
+[    1.170078] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 244)
+[    1.177519] io scheduler mq-deadline registered
+[    1.182079] io scheduler kyber registered
+[    1.186125] io scheduler bfq registered
+[    1.221952] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    1.332058] dma-pl330 f8003000.dma-controller: Loaded driver for PL330 DMAC-241330
+[    1.339637] dma-pl330 f8003000.dma-controller: 	DBUFF-128x8bytes Num_Chans-8 Num_Peri-4 Num_Events-16
+[    1.350507] xilinx-vdma 41e00000.dma: Please ensure that IP supports buffer length > 23 bits
+[    1.358980] xilinx-vdma 41e00000.dma: error -EINVAL: failed to get irq
+[    1.365533] xilinx-vdma: probe of 41e00000.dma failed with error -22
+[    1.637176] Serial: 8250/16550 driver, 5 ports, IRQ sharing enabled
+[    1.705116] SuperH (H)SCI(F) driver initialized
+[    1.711268] msm_serial: driver initialized
+[    1.715358] STMicroelectronics ASC driver initialized
+[    1.722016] STM32 USART driver initialized
+[    1.837401] brd: module loaded
+[    1.856825] loop: module loaded
+[    1.878144] CAN device driver interface
+[    1.883908] bgmac_bcma: Broadcom 47xx GBit MAC driver loaded
+[    1.891535] e1000e: Intel(R) PRO/1000 Network Driver
+[    1.896492] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    1.902526] igb: Intel(R) Gigabit Ethernet Network Driver
+[    1.907922] igb: Copyright (c) 2007-2014 Intel Corporation.
+[    1.920840] pegasus: Pegasus/Pegasus II USB Ethernet driver
+[    1.926518] usbcore: registered new interface driver pegasus
+[    1.932309] usbcore: registered new interface driver asix
+[    1.937767] usbcore: registered new interface driver ax88179_178a
+[    1.943958] usbcore: registered new interface driver cdc_ether
+[    1.949848] usbcore: registered new interface driver smsc75xx
+[    1.955715] usbcore: registered new interface driver smsc95xx
+[    1.961567] usbcore: registered new interface driver net1080
+[    1.967302] usbcore: registered new interface driver cdc_subset
+[    1.973334] usbcore: registered new interface driver zaurus
+[    1.978964] usbcore: registered new interface driver cdc_ncm
+[    2.460935] Freeing initrd memory: 11232K
+[    2.518775] i2c_dev: i2c /dev entries driver
+[    2.545047] ------------[ cut here ]------------
+[    2.549662] WARNING: CPU: 1 PID: 1 at drivers/cpufreq/cpufreq-dt.c:79 dt_cpufreq_probe+0x39c/0x3f0
+[    2.558679] Modules linked in:
+[    2.561747] CPU: 1 PID: 1 Comm: swapper/0 Not tainted 6.6.158 #1
+[    2.567758] Hardware name: Xilinx Zynq Platform
+[    2.572291]  unwind_backtrace from show_stack+0x10/0x14
+[    2.577543]  show_stack from dump_stack_lvl+0x40/0x4c
+[    2.582612]  dump_stack_lvl from __warn+0x78/0x124
+[    2.587429]  __warn from warn_slowpath_fmt+0x184/0x18c
+[    2.592584]  warn_slowpath_fmt from dt_cpufreq_probe+0x39c/0x3f0
+[    2.598617]  dt_cpufreq_probe from platform_probe+0x5c/0xb0
+[    2.604216]  platform_probe from really_probe+0xc8/0x2d8
+[    2.609544]  really_probe from __driver_probe_device+0x94/0x1c8
+[    2.615481]  __driver_probe_device from driver_probe_device+0x30/0x104
+[    2.622026]  driver_probe_device from __driver_attach+0x90/0x178
+[    2.628041]  __driver_attach from bus_for_each_dev+0x7c/0xcc
+[    2.633709]  bus_for_each_dev from bus_add_driver+0xcc/0x1ec
+[    2.639377]  bus_add_driver from driver_register+0x7c/0x114
+[    2.644967]  driver_register from do_one_initcall+0x58/0x200
+[    2.650645]  do_one_initcall from kernel_init_freeable+0x1a8/0x204
+[    2.656843]  kernel_init_freeable from kernel_init+0x18/0x12c
+[    2.662605]  kernel_init from ret_from_fork+0x14/0x28
+[    2.667665] Exception stack(0xe0815fb0 to 0xe0815ff8)
+[    2.672711] 5fa0:                                     00000000 00000000 00000000 00000000
+[    2.680889] 5fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[    2.689065] 5fe0: 00000000 00000000 00000000 00000000 00000013 00000000
+[    2.695714] ---[ end trace 0000000000000000 ]---
+[    2.700449] cpu cpu0: OPP table can't be empty
+[    2.706584] Xilinx Zynq CpuIdle Driver started
+[    2.711057] failed to register cpuidle driver
+[    2.717600] sdhci: Secure Digital Host Controller Interface driver
+[    2.723832] sdhci: Copyright(c) Pierre Ossman
+[    2.731511] Synopsys Designware Multimedia Card Interface Driver
+[    2.740454] sdhci-pltfm: SDHCI platform and OF driver helper
+[    2.751320] ledtrig-cpu: registered to indicate activity on CPUs
+[    2.760103] clocksource: ttc_clocksource: mask: 0xffff max_cycles: 0xffff, max_idle_ns: 537538477 ns
+[    2.769365] timer #0 at (ptrval), irq=39
+[    2.774118] usbcore: registered new interface driver usbhid
+[    2.779690] usbhid: USB HID core driver
+[    2.794959] NET: Registered PF_INET6 protocol family
+[    2.801223] Segment Routing with IPv6
+[    2.804953] In-situ OAM (IOAM) with IPv6
+[    2.808962] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.815653] NET: Registered PF_PACKET protocol family
+[    2.820750] can: controller area network core
+[    2.825154] NET: Registered PF_CAN protocol family
+[    2.829941] can: raw protocol
+[    2.832960] can: broadcast manager protocol
+[    2.837144] can: netlink gateway - max_hops=1
+[    2.842022] Key type dns_resolver registered
+[    2.846597] ThumbEE CPU extension supported.
+[    2.850909] Registering SWP/SWPB emulation handler
+[    2.867004] Loading compiled-in X.509 certificates
+[    2.888525] usb_phy_generic phy0: dummy supplies not allowed for exclusive requests
+[    2.897912] clk: Disabling unused clocks
+[    2.905957] Freeing unused kernel image (initmem) memory: 2048K
+[    2.912656] Run /init as init process
+Saving 256 bits of non-creditable seed for next boot
+Starting syslogd: OK
+Starting klogd: OK
+Running sysctl: OK
+Starting network: OK
+Starting crond: OK
+Starting dropbear sshd: OK
+[    3.220368] ci_hdrc ci_hdrc.0: EHCI Host Controller
+[    3.225276] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    3.270208] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    3.276567] hub 1-0:1.0: USB hub found
+[    3.280510] hub 1-0:1.0: 1 port detected
+USB_HOST_READY: legacy PHY late-probe recovery
+[    3.620210] usb 1-1: new high-speed USB device number 2 using ci_hdrc
+================ VIGI SELF-REPORT (start) ================
+== VIGI: uname: Linux mizar 6.6.158 #1 SMP Sun Oct 25 20:37:16 CST 2026 armv7l GNU/Linux
+== VIGI: cmdline: console=ttyPS0,115200 root=/dev/ram0 rw mem=512M cpuidle.off=1
+MemTotal:         493000 kB
+MemFree:          444336 kB
+MemAvailable:     441428 kB
+== VIGI: mmc interrupt flood count: 0
+== VIGI: USB topology:
+[1;36m1-0:1.0[m  [1;36m1-1[m      [1;36m1-1:1.0[m  [1;36m1-1:1.1[m  [1;36musb1[m
+  /sys/bus/usb/devices/1-1 0c45:64ab DECXIN
+  /sys/bus/usb/devices/usb1 1d6b:0002 EHCI Host Controller
+== VIGI: USB platform binding:
+lrwxrwxrwx    1 root     root             0 Jan  1 00:00 [1;36m/sys/bus/platform/devices/e0002000.usb/driver[m -> [1;34m../../../../bus/platform/drivers/chipidea-usb2[m
+== VIGI: gpio/pin probe (read-only; LATCH=0x44, PAD=0x64):
+  register 0xF800012C = 0x00600004
+  register 0xF80007B8 = 0x00001200
+  register 0xE000A244 = 0x00004000
+  register 0xE000A248 = 0x00004000
+  register 0xE000A044 = 0x003CC000
+  register 0xE000A064 = 0x003CC000
+  register 0xE0002170 = 0x08000000
+  register 0xE0002140 = 0x00010005
+  register 0xE00021A8 = 0x00000003
+  MIO28 = 0x00000304
+  MIO29 = 0x00000305
+  MIO30 = 0x00000304
+  MIO31 = 0x00000305
+  MIO32 = 0x00000304
+  MIO33 = 0x00000304
+  MIO34 = 0x00000304
+  MIO35 = 0x00000304
+  MIO36 = 0x00000305
+  MIO37 = 0x00000304
+  MIO38 = 0x00000304
+  MIO39 = 0x00000304
+== VIGI: modprobe uvcvideo:
+[    4.526534] videodev: Linux video capture interface: v2.00
+[    4.541289] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+[    4.566205] usbcore: registered new interface driver uvcvideo
+== VIGI: video devices:
+crw-------    1 root     root       81,   0 Jan  1 00:00 [1;35m/dev/video0[m
+crw-------    1 root     root       81,   1 Jan  1 00:00 [1;35m/dev/video1[m
+  /sys/class/video4linux/video0/name: DECXIN: DECXIN
+  /sys/class/video4linux/video1/name: DECXIN: DECXIN
+== VIGI: capture validation (no images saved):
+CAPTURE_REQUEST /dev/video0 640x480 MJPG 30fps frames=30
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 640x480 1/60
+CAPTURE_MODE 640x480 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+CAPTURE_FRAME n=1 sequence=0 bytes=6732 ts=6.619312
+CAPTURE_FRAME n=2 sequence=1 bytes=6732 ts=6.839308
+CAPTURE_FRAME n=3 sequence=2 bytes=6732 ts=6.855311
+CAPTURE_FRAME n=4 sequence=3 bytes=6732 ts=6.871315
+CAPTURE_FRAME n=5 sequence=4 bytes=6732 ts=6.891300
+CAPTURE_FRAME n=6 sequence=5 bytes=6732 ts=6.907302
+CAPTURE_FRAME n=7 sequence=6 bytes=6732 ts=6.923307
+CAPTURE_FRAME n=8 sequence=7 bytes=6732 ts=6.939309
+CAPTURE_FRAME n=9 sequence=8 bytes=6732 ts=6.959294
+CAPTURE_FRAME n=10 sequence=9 bytes=7432 ts=6.975297
+CAPTURE_FRAME n=11 sequence=10 bytes=6896 ts=6.991302
+CAPTURE_FRAME n=12 sequence=11 bytes=6862 ts=7.007305
+CAPTURE_FRAME n=13 sequence=12 bytes=7103 ts=7.023309
+CAPTURE_FRAME n=14 sequence=13 bytes=7905 ts=7.043293
+CAPTURE_FRAME n=15 sequence=14 bytes=7771 ts=7.059297
+CAPTURE_FRAME n=16 sequence=15 bytes=7493 ts=7.075299
+CAPTURE_FRAME n=17 sequence=16 bytes=7018 ts=7.091304
+CAPTURE_FRAME n=18 sequence=17 bytes=21461 ts=7.107307
+CAPTURE_FRAME n=19 sequence=18 bytes=17763 ts=7.127291
+CAPTURE_FRAME n=20 sequence=19 bytes=14276 ts=7.143297
+CAPTURE_FRAME n=21 sequence=20 bytes=19583 ts=7.159300
+CAPTURE_FRAME n=22 sequence=21 bytes=16885 ts=7.175304
+CAPTURE_FRAME n=23 sequence=22 bytes=15360 ts=7.191308
+CAPTURE_FRAME n=24 sequence=23 bytes=14641 ts=7.211292
+CAPTURE_FRAME n=25 sequence=24 bytes=14223 ts=7.227296
+CAPTURE_FRAME n=26 sequence=25 bytes=13790 ts=7.243300
+CAPTURE_FRAME n=27 sequence=26 bytes=13417 ts=7.259301
+CAPTURE_FRAME n=28 sequence=27 bytes=13446 ts=7.275305
+CAPTURE_FRAME n=29 sequence=28 bytes=13366 ts=7.295291
+CAPTURE_FRAME n=30 sequence=29 bytes=13542 ts=7.311295
+CAPTURE_FRAMES_OK /dev/video0 negotiated=640x480 frames=30 requested_mode=unmet
+CAPTURE_REQUEST /dev/video0 1280x720 MJPG 30fps frames=30
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 1280x720 1/60
+CAPTURE_MODE 1280x720 fourcc=0x47504a4d interval=1/60
+CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode
+CAPTURE_FRAME n=1 sequence=0 bytes=29677 ts=7.588902
+CAPTURE_FRAME n=2 sequence=1 bytes=30708 ts=7.624902
+CAPTURE_FRAME n=3 sequence=2 bytes=32089 ts=7.640914
+CAPTURE_FRAME n=4 sequence=3 bytes=33641 ts=7.656917
+CAPTURE_FRAME n=5 sequence=4 bytes=34360 ts=7.672921
+CAPTURE_FRAME n=6 sequence=5 bytes=34574 ts=7.692906
+CAPTURE_FRAME n=7 sequence=6 bytes=35553 ts=7.708909
+CAPTURE_FRAME n=8 sequence=7 bytes=36318 ts=7.724902
+CAPTURE_FRAME n=9 sequence=8 bytes=35850 ts=7.740916
+CAPTURE_FRAME n=10 sequence=9 bytes=35852 ts=7.756919
+CAPTURE_FRAME n=11 sequence=10 bytes=35882 ts=7.776904
+CAPTURE_FRAME n=12 sequence=11 bytes=35959 ts=7.792909
+CAPTURE_FRAME n=13 sequence=12 bytes=36593 ts=7.808911
+CAPTURE_FRAME n=14 sequence=13 bytes=36747 ts=7.824914
+CAPTURE_FRAME n=15 sequence=14 bytes=36508 ts=7.840917
+CAPTURE_FRAME n=16 sequence=15 bytes=36224 ts=7.860906
+CAPTURE_FRAME n=17 sequence=16 bytes=36898 ts=7.876907
+CAPTURE_FRAME n=18 sequence=17 bytes=36459 ts=7.892911
+CAPTURE_FRAME n=19 sequence=18 bytes=36533 ts=7.908913
+CAPTURE_FRAME n=20 sequence=19 bytes=36714 ts=7.924917
+CAPTURE_FRAME n=21 sequence=20 bytes=36531 ts=7.944903
+CAPTURE_FRAME n=22 sequence=21 bytes=36319 ts=7.960907
+CAPTURE_FRAME n=23 sequence=22 bytes=36746 ts=7.976910
+CAPTURE_FRAME n=24 sequence=23 bytes=36692 ts=7.992913
+CAPTURE_FRAME n=25 sequence=24 bytes=37385 ts=8.008916
+CAPTURE_FRAME n=26 sequence=25 bytes=37212 ts=8.028894
+CAPTURE_FRAME n=27 sequence=26 bytes=36896 ts=8.044906
+CAPTURE_FRAME n=28 sequence=27 bytes=37372 ts=8.060909
+CAPTURE_FRAME n=29 sequence=28 bytes=37275 ts=8.076912
+CAPTURE_FRAME n=30 sequence=29 bytes=37384 ts=8.096898
+CAPTURE_FRAMES_OK /dev/video0 negotiated=1280x720 frames=30 requested_mode=unmet
+CAPTURE_REQUEST /dev/video1 640x480 MJPG 30fps frames=30
+CAPTURE_SKIP not a streaming capture node
+CAPTURE_REQUEST /dev/video1 1280x720 MJPG 30fps frames=30
+CAPTURE_SKIP not a streaming capture node
+== VIGI: USB/kernel diagnostics:
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.038876] pinctrl core: initialized pinctrl subsystem
+[    0.769249] usbcore: registered new interface driver usbfs
+[    0.774822] usbcore: registered new interface driver hub
+[    0.780171] usbcore: registered new device driver usb
+[    1.221952] zynq-pinctrl 700.pinctrl: zynq pinctrl initialized
+[    1.920840] pegasus: Pegasus/Pegasus II USB Ethernet driver
+[    1.926518] usbcore: registered new interface driver pegasus
+[    1.932309] usbcore: registered new interface driver asix
+[    1.937767] usbcore: registered new interface driver ax88179_178a
+[    1.943958] usbcore: registered new interface driver cdc_ether
+[    1.949848] usbcore: registered new interface driver smsc75xx
+[    1.955715] usbcore: registered new interface driver smsc95xx
+[    1.961567] usbcore: registered new interface driver net1080
+[    1.967302] usbcore: registered new interface driver cdc_subset
+[    1.973334] usbcore: registered new interface driver zaurus
+[    1.978964] usbcore: registered new interface driver cdc_ncm
+[    2.774118] usbcore: registered new interface driver usbhid
+[    2.779690] usbhid: USB HID core driver
+[    2.888525] usb_phy_generic phy0: dummy supplies not allowed for exclusive requests
+[    3.225276] ci_hdrc ci_hdrc.0: new USB bus registered, assigned bus number 1
+[    3.270208] ci_hdrc ci_hdrc.0: USB 2.0 started, EHCI 1.00
+[    3.276567] hub 1-0:1.0: USB hub found
+[    3.620210] usb 1-1: new high-speed USB device number 2 using ci_hdrc
+[    4.526534] videodev: Linux video capture interface: v2.00
+[    4.541289] usb 1-1: Found UVC 1.00 device DECXIN (0c45:64ab)
+[    4.566205] usbcore: registered new interface driver uvcvideo
+== VIGI: modules:
+Module                  Size  Used by    Tainted: G  
+uvcvideo               94208  0 
+videobuf2_vmalloc      12288  1 uvcvideo
+uvc                    12288  1 uvcvideo
+videobuf2_memops       12288  1 videobuf2_vmalloc
+videobuf2_v4l2         20480  1 uvcvideo
+videodev              200704  2 uvcvideo,videobuf2_v4l2
+videobuf2_common       45056  4 uvcvideo,videobuf2_vmalloc,videobuf2_memops,videobuf2_v4l2
+== VIGI: uptime: 8.17 10.61
+================ VIGI SELF-REPORT (end) ==================
+
+[[capture end]]

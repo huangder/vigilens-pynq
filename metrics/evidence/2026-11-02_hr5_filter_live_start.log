@@ -1,0 +1,10 @@
+if ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep; then echo HR5_FILTER_
+REFUSE_CONCURRENT; elif grep -q '^HR5_FILTER_INSTALL_VERIFIED$' /tmp/hr5_filter_
+install.log; then sh /tmp/vigilens_hr5_filter/run_native.sh /tmp/vigilens_hr5_fi
+lter 1800 > /tmp/vigilens_hr5_filter/run.log 2>&1 & echo HR5_FILTER_LIVE_PID=$!;
+ else echo HR5_FILTER_INSTALL_NOT_VERIFIED; fi
+HR5_FILTER_LIVE_PID=877
+# printf '\nHR5_FILTER_LIVE_STARTED\n'
+
+HR5_FILTER_LIVE_STARTED
+# 

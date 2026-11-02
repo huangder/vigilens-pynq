@@ -1,0 +1,108 @@
+CMake Deprecation Warning at /root/vigilens/autonomy-20261030/mnn/source/MNN-3.6.1/CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Use Threadpool, forbid openmp
+-- force turn off MNN_ARM82 when build for Android based on arm32 by MTL
+-- >>>>>>>>>>>>>
+-- MNN BUILD INFO:
+-- 	System: Linux
+-- 	Processor: armv7
+-- 	Version: 3.6.1
+-- 	Metal: OFF
+-- 	OpenCL: OFF
+-- 	OpenGL: OFF
+-- 	Vulkan: OFF
+-- 	ARM82: OFF
+-- 	KleidiAI: OFF
+-- 	oneDNN: OFF
+-- 	TensorRT: OFF
+-- 	CoreML: OFF
+-- 	NNAPI: OFF
+-- 	QNN: OFF
+-- 	CUDA: OFF
+-- 	MUSA: OFF
+-- 	OpenMP: OFF
+-- 	BF16: OFF
+-- 	ThreadPool: ON
+-- 	Hidden: TRUE
+-- 	Build Path: /root/vigilens/autonomy-20261030/mnn/arm/mnn-runtime
+-- 	CUDA PROFILE: OFF
+-- WIN_USE_ASM: 
+-- Enabling AArch32 Assemblies
+-- Configuring done (0.0s)
+-- Generating done (0.1s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_TOOLCHAIN_FILE
+
+
+-- Build files have been written to: /root/vigilens/autonomy-20261030/mnn/arm
+[  1%] Built target MNNCV
+[  0%] Built target MNNMath
+[  7%] Built target MNNCore
+[ 11%] Built target MNN_Express
+[ 11%] Built target MNNUtils
+[ 36%] Built target MNNARM32
+[ 64%] Built target MNNCPU
+[ 99%] Built target MNNTransform
+[ 99%] Built target MNN
+[ 99%] Building CXX object CMakeFiles/vg_mnn_probe.dir/model_probe.cc.o
+In file included from /root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:61,
+                 from /root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/algorithm:62,
+                 from /mnt/d/Desktop/AMD/board/autonomy/mnn_probe/model_probe.cc:4:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_heap.h: In function ‘void std::__adjust_heap(_RandomAccessIterator, _Distance, _Distance, _Tp, _Compare) [with _RandomAccessIterator = __gnu_cxx::__normal_iterator<double*, std::vector<double> >; _Distance = int; _Tp = double; _Compare = __gnu_cxx::__ops::_Iter_less_iter]’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_heap.h:214:5: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+     __adjust_heap(_RandomAccessIterator __first, _Distance __holeIndex,
+     ^~~~~~~~~~~~~
+In file included from /root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/algorithm:62,
+                 from /mnt/d/Desktop/AMD/board/autonomy/mnn_probe/model_probe.cc:4:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h: In function ‘void std::__insertion_sort(_RandomAccessIterator, _RandomAccessIterator, _Compare) [with _RandomAccessIterator = __gnu_cxx::__normal_iterator<double*, std::vector<double> >; _Compare = __gnu_cxx::__ops::_Iter_less_iter]’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1840:5: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+     __insertion_sort(_RandomAccessIterator __first,
+     ^~~~~~~~~~~~~~~~
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1840:5: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1840:5: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h: In function ‘void std::__introsort_loop(_RandomAccessIterator, _RandomAccessIterator, _Size, _Compare) [with _RandomAccessIterator = __gnu_cxx::__normal_iterator<double*, std::vector<double> >; _Size = int; _Compare = __gnu_cxx::__ops::_Iter_less_iter]’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1940:5: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+     __introsort_loop(_RandomAccessIterator __first,
+     ^~~~~~~~~~~~~~~~
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1940:5: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1954:25: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+    std::__introsort_loop(__cut, __last, __depth_limit, __comp);
+    ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/vector:69,
+                 from /root/vigilens/autonomy-20261030/mnn/source/MNN-3.6.1/include/MNN/Tensor.hpp:12,
+                 from /root/vigilens/autonomy-20261030/mnn/source/MNN-3.6.1/include/MNN/Interpreter.hpp:18,
+                 from /mnt/d/Desktop/AMD/board/autonomy/mnn_probe/model_probe.cc:2:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/vector.tcc: In member function ‘void std::vector<_Tp, _Alloc>::_M_realloc_insert(std::vector<_Tp, _Alloc>::iterator, _Args&& ...) [with _Args = {double}; _Tp = double; _Alloc = std::allocator<double>]’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/vector.tcc:413:7: note: parameter passing for argument of type ‘std::vector<double>::iterator’ {aka ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’} changed in GCC 7.1
+       vector<_Tp, _Alloc>::
+       ^~~~~~~~~~~~~~~~~~~
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/vector.tcc: In function ‘int main(int, char**)’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/vector.tcc:109:4: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+    _M_realloc_insert(end(), std::forward<_Args>(__args)...);
+    ^~~~~~~~~~~~~~~~~
+In file included from /root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/algorithm:62,
+                 from /mnt/d/Desktop/AMD/board/autonomy/mnn_probe/model_probe.cc:4:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1968:25: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+    std::__introsort_loop(__first, __last,
+    ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~
+     std::__lg(__last - __first) * 2,
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     __comp);
+     ~~~~~~~              
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1885:25: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+    std::__insertion_sort(__first, __first + int(_S_threshold), __comp);
+    ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_algo.h:1890:23: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+  std::__insertion_sort(__first, __last, __comp);
+  ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+[100%] Linking CXX executable vg_mnn_probe
+[100%] Built target vg_mnn_probe

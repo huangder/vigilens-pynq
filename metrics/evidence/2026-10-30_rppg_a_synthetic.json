@@ -1,0 +1,47 @@
+[
+  {
+    "kind": "uniform",
+    "input_is_synthetic": true,
+    "fundamental_bpm": 72,
+    "result": {
+      "hr_bpm": 72.0,
+      "hr_conf": 1.0,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": null,
+    "actual_captured_samples": 900,
+    "derived_grid_samples": 900,
+    "harmonic_ratio": null
+  },
+  {
+    "kind": "uneven_actual_time",
+    "input_is_synthetic": true,
+    "fundamental_bpm": 72,
+    "result": {
+      "hr_bpm": 72.1,
+      "hr_conf": 0.9999,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": null,
+    "actual_captured_samples": 900,
+    "derived_grid_samples": 899,
+    "harmonic_ratio": null
+  },
+  {
+    "kind": "strong_second_harmonic",
+    "input_is_synthetic": true,
+    "fundamental_bpm": 72,
+    "result": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": "harmonic_ambiguity",
+    "actual_captured_samples": 900,
+    "derived_grid_samples": 900,
+    "harmonic_ratio": 0.09627293018838613
+  }
+]

@@ -34,14 +34,13 @@
 typedef ap_axiu<8, 1, 1, 1> axis_gray_t;
 
 // 片内"上一帧"缓存尺寸（**编译期常量**，决定 BRAM 占用，与运行时的 width/height 无关）
-//   输入是 rgb2gray 缩小后的灰度：384x288 = 110592 像素。
-//   ⚠️ HLS 的片内数组按 **2 的幂地址空间**分配 BRAM，所以尺寸要**贴着 2 的幂台阶挑**：
-//     110592 -> 2^17 -> 64 个 BRAM18 = 器件的 23%
-//     （若用 640x480 = 307200 -> 2^19 -> 256 个 = 91%，放不下 DMA+互连）
-//   三组对照实验（320x240→64、512x512→128、640x480→256）已证实该规律。
-//   见 fpga/report/c4_rgb2gray_motion_quality_v1.md 第 5 节。
-#define MOTION_MAX_W 384
-#define MOTION_MAX_H 288
+//   ⚠️ 容量定义已抽到 `motion_quality_cap.h`（IP 与测试台**共用同一份**，
+//      防止"IP 按 A 开缓存、tb 按 B 校验"这种两边口径漂移）。
+//      见该头文件的注释：三档工作尺寸最大是 480×270 = 129600，≤ 2^17 ⇒ 64 个 BRAM18（23%）。
+//   ⚠️ 2026-10-01（BUG-033）：原来在这里写死 `384×288`，只够 640×480 档；
+//      v1.5 的 480×270 会越界 19008 字节 —— csim 里 C 数组不设边界（表现是**挂死**），
+//      RTL 里 ram 越界地址读回 X、写被丢弃。**两边都不报错**，属静默错。
+#include "motion_quality_cap.h"
 
 void motion_quality(hls::stream<axis_gray_t> &gray_in,
                     hls::stream<axis_gray_t> &gray_out,
@@ -67,12 +66,12 @@ void motion_quality(hls::stream<axis_gray_t> &gray_in,
 #pragma HLS INTERFACE s_axilite port=frame_id         bundle=ctrl offset=0x48
 #pragma HLS INTERFACE s_axilite port=return           bundle=ctrl
 
-    // 上一帧灰度缓存：307200 x 8bit。
+    // 上一帧灰度缓存（容量见 motion_quality_cap.h：480×270 = 129600 像素）。
     // ⚠️ BIND_STORAGE 这个 pragma 必须写在变量**声明之后** —— HLS 按顺序解析 pragma，
     //    写在声明前会报 `use of undeclared identifier 'prev_buf'`（HLS 207-4637）。
     //    （默认就会被推断成 BRAM；显式写是为了让资源意图一目了然。注意 csim 不检查这条 pragma，
     //     所以这个错误只在 csynth 阶段暴露。）
-    static ap_uint<8>  prev_buf[MOTION_MAX_W * MOTION_MAX_H];  // 上电后内容未定义
+    static ap_uint<8>  prev_buf[MOTION_MAX_PIXELS];  // 上电后内容未定义
 #pragma HLS BIND_STORAGE variable=prev_buf type=RAM_2P impl=BRAM
 
     static ap_uint<32> fid = 0;

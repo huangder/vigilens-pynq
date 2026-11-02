@@ -1,0 +1,1 @@
+{"kind":"mnn_fp32_weight_storage_audit","operators":54,"convolution_tables":26,"float32_weights":229728,"float32_biases":2415,"constant_blob_tables":5,"quantized_convolution_tables":0,"compressed_or_external_convolution_tables":0,"accuracy_verified":false}

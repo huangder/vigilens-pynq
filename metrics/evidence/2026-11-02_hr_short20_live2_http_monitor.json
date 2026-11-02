@@ -1,0 +1,8 @@
+{
+  "requests": 499,
+  "successful_requests": 449,
+  "distinct_frames": 449,
+  "observed_nonnull_hr_frames": 0,
+  "errors_include_startup_shutdown": true,
+  "monitor_is_scalar_only": true
+}

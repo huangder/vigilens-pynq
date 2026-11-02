@@ -105,7 +105,8 @@ h1 { margin: 0; font-size: 29px; line-height: 1.25; font-weight: 700; }
 .heading-icon.shield { color: var(--green); background: #34c75919; }
 .heading-icon.trend { color: var(--violet); background: #af52de17; }
 .surface-heading > span { color: var(--faint); font-size: 11px; }
-.video-wrap { position: relative; overflow: hidden; aspect-ratio: 16 / 10; border-radius: 14px; background: #101820; }
+.preview-stage { --camera-aspect: 1.3333333333; }
+.video-wrap { position: relative; overflow: hidden; aspect-ratio: var(--camera-aspect, 1.3333333333); border-radius: 14px; background: #101820; }
 .preview-placeholder, #previewImage { position: absolute; inset: 0; width: 100%; height: 100%; }
 .preview-placeholder { display: grid; place-items: center; color: #b4c0ca; font-size: 13px; background-color: #151f29; background-image: linear-gradient(#ffffff0d 1px, transparent 1px), linear-gradient(90deg, #ffffff0d 1px, transparent 1px); background-size: 40px 40px; }
 #previewImage { z-index: 1; display: block; object-fit: contain; opacity: 0; transition: opacity 160ms var(--ease-out); }
@@ -197,3 +198,110 @@ input[type=text], select { min-height: 35px; border: 1px solid var(--line); bord
 @media (max-width: 540px) { .header-inner { display: flex; flex-wrap: wrap; padding: 11px 15px; gap: 10px; }.brand { font-size: 18px; }.header-actions { margin-left: auto; gap: 5px; }.header-actions .pill { display: none; }.section-nav { order: 3; width: 100%; }.section-nav a { flex: 1; }main { padding: 21px 14px 38px; }.page-heading { align-items: start; flex-direction: column; gap: 4px; }h1 { font-size: 25px; }.page-context { text-align: left; }.surface { padding: 13px; }.video-wrap { aspect-ratio: 4 / 3; }.context-column { grid-template-columns: 1fr; }.section-heading { align-items: start; gap: 8px; }.section-heading h2 { font-size: 20px; }.cards { grid-template-columns: 1fr; }.card { min-height: 155px; grid-template-columns: minmax(110px, .85fr) minmax(0, 1.15fr); padding: 17px; gap: 12px; }.card .v { font-size: 37px; }.card.null .v { font-size: 23px; }.measurement-live { font-size: 10px; }.metric-toolbar { flex-wrap: wrap; }.gate-section { padding: 14px; }.blink-strip { justify-content: flex-start; }.developer-tools summary small { display: none; } }
 @media (max-width: 370px) { .header-actions button { padding: 7px 9px; font-size: 11px; }.measurement-live { display: none; }.card { grid-template-columns: minmax(98px, .9fr) minmax(0, 1.1fr); padding: 13px; gap: 9px; }.card .v { font-size: 31px; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } button:active { transform: none; } #previewImage, .gate-row .fill, .section-nav a, button { transition: none; } }
+.recording-controls[hidden], #recordingVideo[hidden] { display: none; }
+.page-heading-actions { display: flex; align-items: center; gap: 14px; }
+.context-details { display: contents; }
+.recording-controls { position: relative; flex: 0 0 auto; }
+.recording-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; font-size: 11px; }
+.recording-toggle > span { font-size: 20px; line-height: 12px; letter-spacing: 1px; }
+.recording-toggle[aria-expanded="true"] { color: var(--blue); border-color: #a8cfff; background: #f3f8ff; }
+.recording-options { position: absolute; top: calc(100% + 9px); right: 0; z-index: 15; width: min(420px, calc(100vw - 32px)); box-shadow: 0 14px 45px #1c1c1e22; }
+.recording-diagnostics { margin-top: 14px; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 11px; }
+.recording-summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
+.recording-summary strong { font-size: 16px; }
+.recording-summary span { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.recording-controls .select-label { white-space: nowrap; flex: 0 0 auto; }
+#recordingSeconds { width: 65px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+#recordingVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #111; }
+.recording-camera { display: none; }
+body.recording-mode .recording-camera { display: inline-flex; padding: 4px 9px; border-radius: 8px; color: var(--blue); font-size: 11px; }
+body.recording-mode .preview-caption { display: none; }
+body.recording-mode .badge-stack, body.recording-mode #srcPill, body.recording-mode #btnStart { display: none; }
+body.recording-mode #card_rr { display: none; }
+body.recording-mode .developer-tools { display: none; }
+body.recording-mode.recording-diagnostics-open .developer-tools { display: block; position: fixed; inset: 100px 20px 20px; z-index: 12; overflow: auto; margin: 0; padding: 0 20px 20px; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 14px 45px #1c1c1e33; }
+body.recording-mode.recording-diagnostics-open .recording-controls { z-index: 16; }
+
+/* The filming layout uses the available desktop viewport. Content remains in
+   normal flow on phones/short windows, so fitting never clips controls/data. */
+@media (min-width: 1100px) and (min-height: 600px) {
+  body.recording-mode .header-inner { max-width: none; min-height: 52px; height: 52px; padding: 6px 20px; grid-template-columns: 1fr auto 1fr; }
+  body.recording-mode .section-nav { grid-column: 2; grid-row: 1; padding: 2px; }
+  body.recording-mode .section-nav a { min-width: 95px; padding: 5px 10px; font-size: 12px; }
+  body.recording-mode .header-actions { grid-column: 3; }
+  body.recording-mode main { max-width: none; height: calc(100dvh - 53px); padding: 10px 20px 12px; display: flex; flex-direction: column; min-height: 0; }
+  body.recording-mode .page-heading { flex: 0 0 40px; min-height: 40px; margin-bottom: 10px; align-items: center; }
+  body.recording-mode .page-heading .eyebrow { display: none; }
+  body.recording-mode h1 { font-size: 23px; }
+  body.recording-mode .page-context { margin: 0; font-size: 11px; }
+  body.recording-mode .workspace-grid { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+  body.recording-mode .context-column { height: 100%; min-height: 0; grid-template-rows: minmax(0, 1fr) auto; gap: 10px; }
+  body.recording-mode .surface { padding: 12px; border-radius: 14px; }
+  body.recording-mode .surface-heading { flex: 0 0 auto; margin-bottom: 7px; gap: 8px; align-items: center; }
+  body.recording-mode .surface-heading h2 { font-size: 14px; gap: 7px; }
+  body.recording-mode .heading-icon { width: 24px; height: 24px; border-radius: 7px; }
+  body.recording-mode .heading-icon .fluent-icon { width: 15px; height: 15px; }
+  body.recording-mode .video-panel { display: flex; flex-direction: column; min-height: 0; }
+  body.recording-mode .preview-stage { flex: 1; min-height: 0; width: 100%; display: grid; place-items: center; container-type: size; }
+  body.recording-mode .video-wrap { width: min(100cqw, calc(100cqh * var(--camera-aspect))); aspect-ratio: var(--camera-aspect); border-radius: 10px; }
+  body.recording-mode .video-note { flex: 0 0 auto; margin-top: 5px; font-size: 10px; }
+  body.recording-mode .context-details { min-height: 0; }
+  body.recording-mode .context-details > section { min-height: 0; }
+  body.recording-mode .status-panel .surface-heading > span { display: none; }
+  body.recording-mode .state-head { padding: 2px 0 5px; gap: 8px; }
+  body.recording-mode #stateLamp { width: 5px; height: 24px; }
+  body.recording-mode #stateName { font-size: 21px; }
+  body.recording-mode #stateEn { display: none; }
+  body.recording-mode #advice { margin: 6px 0 0; font-size: 12px; line-height: 1.5; }
+  body.recording-mode #reason, body.recording-mode .evidence-block { display: none; }
+  body.recording-mode .gate-section { position: relative; padding: 9px 12px 11px; border-radius: 12px; }
+  body.recording-mode .gate-section .section-heading { margin-bottom: 8px; }
+  body.recording-mode .gate-section .section-heading h2 { font-size: 13px; gap: 7px; }
+  body.recording-mode .gate-layout { display: block; border: 0; padding: 0; }
+  body.recording-mode .gate-verdict { position: absolute; top: 12px; right: 12px; display: block; padding: 0; }
+  body.recording-mode .small-label, body.recording-mode #gateVerdictSub, body.recording-mode .quality-note { display: none; }
+  body.recording-mode #gateVerdictText { margin: 0; font-size: 12px; }
+  body.recording-mode .gate-bars { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  body.recording-mode .gate-row .top { display: block; font-size: 9px; }
+  body.recording-mode .gate-row .val { display: block; font-size: 9px; margin-top: 2px; }
+  body.recording-mode .gate-row .bar { height: 3px; margin-top: 2px; }
+  body.recording-mode .gate-row .mark { top: -1px; bottom: -1px; width: 1px; }
+  body.recording-mode .gate-row.extra { border: 0; padding: 0; }
+  body.recording-mode .metric-section { display: flex; flex-direction: column; min-height: 0; }
+  body.recording-mode .metric-section > .section-heading { flex: 0 0 27px; min-height: 27px; margin-bottom: 4px; align-items: center; }
+  body.recording-mode .metric-section .eyebrow { display: none; }
+  body.recording-mode .section-heading h2 { font-size: 17px; }
+  body.recording-mode .metric-toolbar { flex: 0 0 18px; margin-bottom: 6px; font-size: 10px; }
+  body.recording-mode .cards { flex: 1; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(7, minmax(0, 1fr)); gap: 7px; }
+  body.recording-mode .card { min-height: 0; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); padding: 7px 10px; gap: 8px; border-radius: 12px; }
+  body.recording-mode #card_hr { grid-column: 1 / -1; grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); }
+  body.recording-mode .card-top { gap: 0; }
+  body.recording-mode .card .k { font-size: 10px; line-height: 1.3; }
+  body.recording-mode .card .k::before { width: 4px; height: 4px; margin-right: 4px; vertical-align: 1px; }
+  body.recording-mode .card .card-meta { display: none; }
+  body.recording-mode .card.historical .card-meta { display: block; font-size: 9px; }
+  body.recording-mode .card .v { margin-top: 3px; font-size: clamp(24px, 3.8dvh, 34px); gap: 2px 4px; line-height: 1.1; letter-spacing: -.6px; }
+  body.recording-mode #card_hr .v { font-size: clamp(28px, 4.5dvh, 42px); }
+  body.recording-mode #card_hr .card-reading { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-content: center; column-gap: 10px; }
+  body.recording-mode #card_hr .card-top { grid-column: 1; grid-row: 1; }
+  body.recording-mode #card_hr .note { grid-column: 1; grid-row: 2; max-width: 75px; margin: 2px 0 0; }
+  body.recording-mode #card_hr .v { grid-column: 2; grid-row: 1 / span 2; margin: 0; align-self: center; }
+  body.recording-mode .card.null .v, body.recording-mode .card.msg .v { font-size: 17px; }
+  body.recording-mode .card .u { font-size: 10px; }
+  body.recording-mode .card .note { margin-top: 2px; font-size: 9px; line-height: 1.2; }
+  body.recording-mode .card-secondary { margin-top: 1px; font-size: 9px; }
+  body.recording-mode #card_yaw .card-reading { flex-direction: row; flex-wrap: wrap; align-content: center; align-items: baseline; column-gap: 6px; }
+  body.recording-mode #card_yaw .card-top { flex-basis: 100%; }
+  body.recording-mode #card_yaw .card-secondary { margin: 0; align-self: center; }
+  body.recording-mode .card-trend { padding-left: 7px; min-height: 0; }
+  body.recording-mode .card-trend-label { font-size: 8px; flex: 0 0 auto; }
+  body.recording-mode .metric-chart { flex: 1; min-height: 0; height: 0; margin-top: 0; }
+  body.recording-mode .card-axis { display: none; }
+  body.recording-mode .measurement-footer { flex: 0 0 auto; margin-top: 7px; }
+  body.recording-mode .measurement-footer > p { display: none; }
+  body.recording-mode .blink-step { min-width: 42px; padding: 2px 5px; font-size: 9px; border-radius: 6px; }
+  body.recording-mode #blinkLabel { font-size: 10px; }
+}
+@media (max-width: 540px) { .page-heading-actions { width: 100%; justify-content: space-between; gap: 8px; }.recording-options { width: min(360px, calc(100vw - 28px)); } }
+/* Cached HR remains readable and explicitly differs from a current reading. */
+.card.historical .num,.card.historical .card-meta{color:#8a6428!important}

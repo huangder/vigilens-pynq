@@ -1,0 +1,78 @@
+[
+  {
+    "input_kind": "synthetic_72bpm_fundamental_plus_144bpm_harmonic",
+    "fundamental_amplitude": 1000,
+    "harmonic_amplitude": 0,
+    "output": {
+      "hr_bpm": 72.0,
+      "hr_conf": 1.0,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": null
+  },
+  {
+    "input_kind": "synthetic_72bpm_fundamental_plus_144bpm_harmonic",
+    "fundamental_amplitude": 1000,
+    "harmonic_amplitude": 1000,
+    "output": {
+      "hr_bpm": 144.0,
+      "hr_conf": 0.536,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": null
+  },
+  {
+    "input_kind": "synthetic_72bpm_fundamental_plus_144bpm_harmonic",
+    "fundamental_amplitude": 1000,
+    "harmonic_amplitude": 2000,
+    "output": {
+      "hr_bpm": 144.0,
+      "hr_conf": 0.822,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": null
+  },
+  {
+    "input_kind": "synthetic_72bpm_fundamental_plus_144bpm_harmonic",
+    "fundamental_amplitude": 1000,
+    "harmonic_amplitude": 3000,
+    "output": {
+      "hr_bpm": 144.0,
+      "hr_conf": 0.9122,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": null
+  },
+  {
+    "input_kind": "synthetic_clean_72bpm_actual_time_sine",
+    "timing": "uniform",
+    "output": {
+      "hr_bpm": 72.0,
+      "hr_conf": 1.0,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": null,
+    "fs_eff": 29.99999999999935,
+    "interval_p95_s": 0.03333333333333499,
+    "conf": 0.999998602324313
+  },
+  {
+    "input_kind": "synthetic_clean_72bpm_actual_time_sine",
+    "timing": "slow_block_then_fast_block",
+    "output": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": "no_dominant_peak",
+    "fs_eff": 30.006675567423553,
+    "interval_p95_s": 0.03999999999999915,
+    "conf": 0.3834392907684612
+  }
+]

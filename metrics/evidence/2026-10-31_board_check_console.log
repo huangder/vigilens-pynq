@@ -1,0 +1,56 @@
+
+# echo BOARD_CHECK3_BEGIN
+BOARD_CHECK3_BEGIN
+# wget -q -T 20 -O /tmp/vg_board_check http://169.254.73.28:8093/vg_board_check
+ 20 -O /tmp/vg_board_check.sha256 http://169.254.73.28:8093/vg_board_check.sha256
+cd /tmp
+cat vg_board_check.sha256
+sha256sum -c vg_board_check.sha256
+chmod 755 /tmp/vg_board_check
+echo VITAL_RUN
+/tmp/vg_board_check vital
+echo VITAL_RC=$?
+echo CONTRACT_B64_BEGIN
+/tmp/vg_board_check contract | gzip -c | base64
+echo CONTRACT_B64_END
+echo BOARD_CHECK3_END
+
+printf '\nVIGI_COMMAND_DONE\n'
+# wget -q -T 20 -O /tmp/vg_board_check.sha256 http://169.254.73.28:8093/vg_board
+_check.sha256
+# cd /tmp
+# cat vg_board_check.sha256
+7efaeb6d25b0fe14f4ed047a044394c2a3e8458849812f82edd7802e02dd9093  vg_board_check
+# sha256sum -c vg_board_check.sha256
+sha256sum: can't open 'vg_board_check': No such file or directory
+vg_board_check: FAILED
+sha256sum: WARNING: 1 of 1 computed checksums did NOT match
+# chmod 755 /tmp/vg_board_check
+# echo VITAL_RUN
+VITAL_RUN
+# /tmp/vg_board_check vital
+VITAL present=1 reject=- hr=72.000000 conf=1.000000
+# echo VITAL_RC=$?
+VITAL_RC=0
+# echo CONTRACT_B64_BEGIN
+CONTRACT_B64_BEGIN
+# /tmp/vg_board_check contract | gzip -c | base64
+H4sIAAAAAAAAA+2VT2sTQRTA736KMuelbjZNNXuT0Js0pfYmssxuJ83g7EycnayWEmhRWFuC9W6E
+liLkIl6KVoj4YXST9JSv4JsNadeV5uae5sHAvDdv3p+ZH7xGc3Nn+1FjZ+UAqQi59qpdLYqFWhKH
+xKO7yK2AggOC3AMU04j6jGQ23xevkPvUtmzLsbP1zEIdEWWO+/glBAadqqCd7aRgDDa9HtwkbRxT
+IbUjwdJjpKV0GU69IFZ2LOle+65zn1H+3IsUVpAWNbc2NtHCGIguV1nquS7Bx+sQ6YWUz2sjMmAi
+yvZM8D1PayR3L8TyjrTQHr9xhI5iqjDT7bSl53dC5PIuY5bWAsFbC1XK2/w3llsHiPOiixlV+zoS
+0117USDk/LlDoajgCwP8WaXmFMsSMZE4e+bVer1WzR/WILp+pi70i7iQIdRrIbwbU/2zaHLydXx4
+NP58kV5dgV0SHAmoEqXv31yffx/3k/FZkn5M0sFw7jPtv04/XM5Gb7c2thuPm09WoCD71+HRZDCc
+DEaTd4k23IdOZ6Pj2aj/++d5evptejm8Tk6nx1/STz9Q717jHwzXi5LH0DEYGgzLwLBi/y2VPIVV
+Q6GhsBQKl43kNUOhobAUCpdN5Jqh0FBYBoXOsom8big0FJZCYWEgr+UpfGAoNBSWQuGyifzQUGgo
+/A8U/gGXnYqpMhQAAA==
+# echo CONTRACT_B64_END
+CONTRACT_B64_END
+# echo BOARD_CHECK3_END
+BOARD_CHECK3_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

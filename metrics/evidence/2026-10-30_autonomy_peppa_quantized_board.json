@@ -1,0 +1,232 @@
+{
+  "kind": "peppa_quantized_board_budget",
+  "models": {
+    "int8": {
+      "runs": [
+        {
+          "kind": "ncnn_model_tensor_probe",
+          "synthetic_input": false,
+          "input_kind": "file",
+          "input_provenance_verified": false,
+          "landmark_pipeline_verified": false,
+          "input_layout": "planar_float32",
+          "channel_order_verified": false,
+          "fp16": false,
+          "bf16": false,
+          "int8": true,
+          "quantized_model_verified": false,
+          "threads_requested": 1,
+          "ncnn_openmp_build_requested": true,
+          "packing": true,
+          "kernel_policy": "default",
+          "winograd": true,
+          "sgemm": true,
+          "fresh_extractor_each_iteration": true,
+          "warmup_iterations": 1,
+          "input_blob": "input1",
+          "output_blob": "output1",
+          "input_shape_whc": [
+            160,
+            160,
+            3
+          ],
+          "iterations": 60,
+          "threads": 1,
+          "mean_ms": 41.45631791666667,
+          "p50_ms": 41.432431,
+          "p95_ms": 41.593806,
+          "max_rss_kib": 6400,
+          "outputs": [
+            {
+              "slot": 0,
+              "elements": 143,
+              "shape": [
+                143
+              ],
+              "source_dims": 1,
+              "source_w": 143,
+              "source_elempack": 1,
+              "storage": "little_endian_float32"
+            }
+          ]
+        },
+        {
+          "kind": "ncnn_model_tensor_probe",
+          "synthetic_input": false,
+          "input_kind": "file",
+          "input_provenance_verified": false,
+          "landmark_pipeline_verified": false,
+          "input_layout": "planar_float32",
+          "channel_order_verified": false,
+          "fp16": false,
+          "bf16": false,
+          "int8": true,
+          "quantized_model_verified": false,
+          "threads_requested": 2,
+          "ncnn_openmp_build_requested": true,
+          "packing": true,
+          "kernel_policy": "default",
+          "winograd": true,
+          "sgemm": true,
+          "fresh_extractor_each_iteration": true,
+          "warmup_iterations": 1,
+          "input_blob": "input1",
+          "output_blob": "output1",
+          "input_shape_whc": [
+            160,
+            160,
+            3
+          ],
+          "iterations": 60,
+          "threads": 2,
+          "mean_ms": 22.938650016666667,
+          "p50_ms": 22.922238,
+          "p95_ms": 23.03694,
+          "max_rss_kib": 6144,
+          "outputs": [
+            {
+              "slot": 0,
+              "elements": 143,
+              "shape": [
+                143
+              ],
+              "source_dims": 1,
+              "source_w": 143,
+              "source_elempack": 1,
+              "storage": "little_endian_float32"
+            }
+          ]
+        }
+      ],
+      "log_sha256": "4930faff45140d7b2887ba0410b896de2c97c06fa399601aea1774583a5e5674",
+      "cross_architecture_comparison": {
+        "synthetic": true,
+        "elements": 143,
+        "host_sha256": "725d84072ce28dba6b0a310272c8e2c0dbee812bee5f485d9d6eb02151024118",
+        "board_sha256": "25822e6e04ea510a73281cc0be4f806204b4cb2facf0106d14e54c1cfec46d5f",
+        "max_abs_difference": 0.2343611717224121,
+        "first136_max_abs_difference": 0.023729771375656128,
+        "mean_abs_difference": 0.012020173476084129
+      },
+      "accuracy_verified": false,
+      "full_pipeline_realtime_verified": false
+    },
+    "mixed_v2": {
+      "runs": [
+        {
+          "kind": "ncnn_model_tensor_probe",
+          "synthetic_input": false,
+          "input_kind": "file",
+          "input_provenance_verified": false,
+          "landmark_pipeline_verified": false,
+          "input_layout": "planar_float32",
+          "channel_order_verified": false,
+          "fp16": false,
+          "bf16": false,
+          "int8": true,
+          "quantized_model_verified": false,
+          "threads_requested": 1,
+          "ncnn_openmp_build_requested": true,
+          "packing": true,
+          "kernel_policy": "default",
+          "winograd": true,
+          "sgemm": true,
+          "fresh_extractor_each_iteration": true,
+          "warmup_iterations": 1,
+          "input_blob": "input1",
+          "output_blob": "output1",
+          "input_shape_whc": [
+            160,
+            160,
+            3
+          ],
+          "iterations": 300,
+          "threads": 1,
+          "mean_ms": 44.12824401999997,
+          "p50_ms": 44.117016,
+          "p95_ms": 44.279851,
+          "max_rss_kib": 6656,
+          "outputs": [
+            {
+              "slot": 0,
+              "elements": 143,
+              "shape": [
+                143
+              ],
+              "source_dims": 1,
+              "source_w": 143,
+              "source_elempack": 1,
+              "storage": "little_endian_float32"
+            }
+          ]
+        },
+        {
+          "kind": "ncnn_model_tensor_probe",
+          "synthetic_input": false,
+          "input_kind": "file",
+          "input_provenance_verified": false,
+          "landmark_pipeline_verified": false,
+          "input_layout": "planar_float32",
+          "channel_order_verified": false,
+          "fp16": false,
+          "bf16": false,
+          "int8": true,
+          "quantized_model_verified": false,
+          "threads_requested": 2,
+          "ncnn_openmp_build_requested": true,
+          "packing": true,
+          "kernel_policy": "default",
+          "winograd": true,
+          "sgemm": true,
+          "fresh_extractor_each_iteration": true,
+          "warmup_iterations": 1,
+          "input_blob": "input1",
+          "output_blob": "output1",
+          "input_shape_whc": [
+            160,
+            160,
+            3
+          ],
+          "iterations": 300,
+          "threads": 2,
+          "mean_ms": 24.600110306666664,
+          "p50_ms": 24.586524,
+          "p95_ms": 24.707544,
+          "max_rss_kib": 6528,
+          "outputs": [
+            {
+              "slot": 0,
+              "elements": 143,
+              "shape": [
+                143
+              ],
+              "source_dims": 1,
+              "source_w": 143,
+              "source_elempack": 1,
+              "storage": "little_endian_float32"
+            }
+          ]
+        }
+      ],
+      "log_sha256": "7bfcddfc0427772c974660a79a8a2475c6e98157cc04c539279b3268b85ff220",
+      "cross_architecture_comparison": {
+        "synthetic": true,
+        "elements": 143,
+        "host_sha256": "31e61414e8651451a689aa9da025c86bc10d527d9307fda0db10907e300c19d2",
+        "board_sha256": "d1049a864b2942206d81cdc68b3d374b408647d4d0396b980fc387dc1b14ae4a",
+        "max_abs_difference": 0.12516283988952637,
+        "first136_max_abs_difference": 0.014510571956634521,
+        "mean_abs_difference": 0.006580188141002522
+      },
+      "accuracy_verified": false,
+      "full_pipeline_realtime_verified": false
+    }
+  },
+  "single_model_30fps_budget_met": true,
+  "full_pipeline_realtime_verified": false,
+  "threshold_calibration_verified": false,
+  "accuracy_verified": false,
+  "calibration_samples": 90,
+  "same_video_development_samples": 99,
+  "human_intervals_available": false
+}

@@ -1,0 +1,30 @@
+{
+  "U": {
+    "fused_relu_or_clip_convolutions": 20,
+    "source_sha256": "53aeb0ad17638089faac5e7969931b269eaa5be9ccf67d354776d9b301d81c7b",
+    "standard_sha256": "7ea2adaa12f4fe966b28e66ed1fae26b0de69b277468901ee05953a1ca300c66",
+    "ort_exact_equal": true,
+    "ort_max_absolute_difference": 0.0,
+    "output_shape": [
+      1,
+      198,
+      14,
+      14
+    ],
+    "accuracy_verified": false
+  },
+  "V": {
+    "fused_relu_or_clip_convolutions": 25,
+    "source_sha256": "2cf5a9f2219660c5b6319ca46d45f1c2eff6df09aabbd21727f1d96f5877952c",
+    "standard_sha256": "d3f8a58b1d848b79f6be3df2635d1958f16b947198f5778bdabcdaf85eb00bc6",
+    "ort_exact_equal": true,
+    "ort_max_absolute_difference": 0.0,
+    "output_shape": [
+      1,
+      198,
+      14,
+      14
+    ],
+    "accuracy_verified": false
+  }
+}

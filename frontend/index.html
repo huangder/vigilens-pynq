@@ -15,7 +15,6 @@
     </a>
     <nav class="section-nav" aria-label="页面导航">
       <a href="#current"><span class="fluent-icon icon-camera" aria-hidden="true"></span>当前监测</a>
-      <a href="#measurements"><span class="fluent-icon icon-trend" aria-hidden="true"></span>测量值与趋势</a>
     </nav>
     <div class="header-actions">
       <span class="pill mock" id="srcPill" title="数据来源：离线 Mock、服务 Mock 或 A 线 ingest"><span class="dot"></span><b id="srcName">等待数据</b></span>
@@ -47,26 +46,47 @@
       <p class="eyebrow">实时工作台</p>
       <h1>当前监测</h1>
     </div>
-    <span class="page-context">疲劳趋势辅助提示 · 非医疗诊断</span>
+    <div class="page-heading-actions">
+      <span class="page-context">疲劳趋势辅助提示 · 非医疗诊断</span>
+      <section class="recording-controls" id="recordingControls" aria-label="拍摄播放控制" hidden>
+        <button class="recording-toggle" id="recordingToggle" type="button" aria-expanded="false" aria-controls="recordingOptions"><span aria-hidden="true">⋯</span>播放设置</button>
+        <div class="recording-options surface" id="recordingOptions" hidden>
+          <div class="recording-summary"><strong id="recordingScene">静息状态</strong><span id="recordingProgress"></span></div>
+          <div class="controls">
+            <label class="select-label">分组 <select id="recordingSelection"><option value="all">完整一轮</option><option value="rest">1 · 静息状态</option><option value="exercise">2 · 短时运动后</option><option value="fatigue">3 · 疲劳状态</option></select></label>
+            <label class="select-label">每组 <input id="recordingSeconds" type="number" min="15" max="300" step="1" value="15" aria-label="每组时长（秒）">秒</label>
+            <label class="select-label"><input id="recordingLoop" type="checkbox">循环</label>
+            <button id="recordingPause" type="button">暂停</button>
+            <button id="recordingRestart" type="button">重新播放</button>
+          </div>
+          <p class="hint" id="recordingHint">1 / 2 / 3 选组 · 空格暂停 / 继续 · R 重播</p>
+          <button class="recording-diagnostics" id="recordingDiagnostics" type="button" aria-expanded="false" aria-controls="developerTools">开发者工具</button>
+        </div>
+      </section>
+    </div>
   </div>
 
   <div class="workspace-grid">
   <aside class="context-column" aria-label="视频与测量状态">
     <section class="surface video-panel" aria-labelledby="videoTitle">
-      <div class="surface-heading"><h2 id="videoTitle"><span class="heading-icon camera"><span class="fluent-icon icon-camera" aria-hidden="true"></span></span>同源画面</h2><span>视频预览</span></div>
+      <div class="surface-heading"><h2 id="videoTitle"><span class="heading-icon camera"><span class="fluent-icon icon-camera" aria-hidden="true"></span></span>同源画面</h2><span class="preview-caption">视频预览</span><button class="recording-camera" id="recordingCamera" type="button">打开本机画面</button></div>
+      <div class="preview-stage">
       <div class="video-wrap">
         <div class="preview-placeholder" id="videoPlaceholder"><span id="videoPlaceholderText">等待同源预览</span></div>
         <img id="previewImage" alt="A 线同源视频预览">
+        <video id="recordingVideo" autoplay muted playsinline hidden></video>
         <div class="badge-stack">
           <span class="badge warn" id="videoBadge">等待同源预览</span>
           <span class="badge" id="previewFreshness">—</span>
           <span class="badge" id="previewSync">未收到画面</span>
         </div>
       </div>
+      </div>
       <p class="video-note">显示当前视频源画面。</p>
     </section>
 
-    <section class="surface status-panel" aria-labelledby="statusTitle">
+    <div class="context-details">
+    <section class="surface status-panel" aria-labelledby="statusTitle" hidden>
       <div class="surface-heading"><h2 id="statusTitle"><span class="heading-icon pulse"><span class="fluent-icon icon-pulse" aria-hidden="true"></span></span>当前判断</h2><span>实时状态</span></div>
       <div class="state-head">
         <div id="stateLamp" aria-hidden="true"></div>
@@ -87,8 +107,9 @@
       <div class="gate-verdict"><span class="small-label">当前结论</span><strong id="gateVerdictText">等待数据…</strong><span id="gateVerdictSub">—</span></div>
       <div class="gate-bars" id="gateBars"></div>
     </div>
-    <p class="quality-note">质量门控未通过时，心率与呼吸率不输出数值。</p>
+    <p class="quality-note">质量门控未通过时不产生新测量；心率卡可保留带更新时间的历史值。</p>
   </section>
+    </div>
   </aside>
 
   <section class="metric-section" id="measurements" aria-labelledby="metricTitle">
@@ -101,7 +122,7 @@
       <span id="measurementTime">等待首帧</span>
     </div>
     <div class="cards" id="cards"></div>
-    <div class="measurement-footer">
+    <div class="measurement-footer" hidden>
       <div class="blink-strip" id="blinkStrip"><span id="blinkLabel">眨眼状态机：—</span></div>
       <p>每张卡片左侧为当前值，右侧为本次监测的历史与最新值。无有效测量时曲线留空。</p>
     </div>
@@ -141,6 +162,8 @@
 <script src="ui_state.js"></script>
 <script src="trends.js"></script>
 <script src="alerts.js"></script>
+<script src="recording.js"></script>
+<script src="hr_display.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

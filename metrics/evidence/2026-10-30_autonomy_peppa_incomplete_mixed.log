@@ -1,0 +1,64 @@
+
+# sh -c '
+> set -e
+> wget -T 15 -O /tmp/peppa_mixed.param http://169.254.73.28:8093/peppa_mixed.par
+am
+> wget -T 15 -O /tmp/peppa_mixed.bin http://169.254.73.28:8093/peppa_mixed.bin
+> echo "0b373e3f438e4c2cf4f1cfa48794997e8f9f6a50171eb999af8e26e0fc68dab3  /tmp/v
+g_ncnn_probe_int8" | sha256sum -c -
+> echo "b87dadf39e2f2fc2407248564941e05aee20cab1deedc0d7d3472776a2934532  /tmp/p
+eppa_mixed.param" | sha256sum -c -
+> echo "b8841db29bf3a7d85ec5259514bf65f2a619fc6c11d3d10b71e8538497739e82  /tmp/p
+eppa_mixed.bin" | sha256sum -c -
+> echo "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd  /tmp/p
+eppa_input.f32" | sha256sum -c -
+> echo PEPPA_MIXED_PROBE_BEGIN
+> uname -m
+> for n in 1 2; do
+>  /tmp/vg_ncnn_probe_int8 /tmp/peppa_mixed.param /tmp/peppa_mixed.bin 160 160 i
+nput1 output1 /tmp/peppa_mixed_t$n 300 $n 143 /tmp/peppa_input.f32
+>  cat /tmp/peppa_mixed_t$n.json
+> done
+> echo PEPPA_MIXED_PROBE_END
+> echo VIGI_FILE_BEGIN peppa_mixed_t2.output0.f32
+> gzip -c /tmp/peppa_mixed_t2.output0.f32 | base64
+> echo VIGI_FILE_END
+> '
+tf '\nVIGI_COMMAND_DONE\n'
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/peppa_mixed.param'
+peppa_mixed.param    100% |********************************|  3307  0:00:00 ETA
+'/tmp/peppa_mixed.param' saved
+Connecting to 169.254.73.28:8093 (169.254.73.28:8093)
+saving to '/tmp/peppa_mixed.bin'
+peppa_mixed.bin      100% |********************************|  884k  0:00:00 ETA
+'/tmp/peppa_mixed.bin' saved
+/tmp/vg_ncnn_probe_int8: OK
+/tmp/peppa_mixed.param: OK
+/tmp/peppa_mixed.bin: OK
+/tmp/peppa_input.f32: OK
+PEPPA_MIXED_PROBE_BEGIN
+armv7l
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":true,"quantized_model_verified":false,"threads_requested":1,"ncnn_openmp_build_requested":true,"packing":true,"kernel_policy":"default","winograd":true,"sgemm":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":300,"threads":1,"mean_ms":71.008729646666666,"p50_ms":70.987543000000002,"p95_ms":71.173651000000007,"max_rss_kib":8052,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+NCNN_MODEL_PROBE_PASS synthetic_input=false output_elements=143
+{"kind":"ncnn_model_tensor_probe","synthetic_input":false,"input_kind":"file","input_provenance_verified":false,"landmark_pipeline_verified":false,"input_layout":"planar_float32","channel_order_verified":false,"fp16":false,"bf16":false,"int8":true,"quantized_model_verified":false,"threads_requested":2,"ncnn_openmp_build_requested":true,"packing":true,"kernel_policy":"default","winograd":true,"sgemm":true,"fresh_extractor_each_iteration":true,"warmup_iterations":1,"input_blob":"input1","output_blob":"output1","input_shape_whc":[160,160,3],"iterations":300,"threads":2,"mean_ms":39.021027526666678,"p50_ms":39.009887999999997,"p95_ms":39.150474000000003,"max_rss_kib":7880,"outputs":[{"slot":0,"elements":143,"shape":[143],"source_dims":1,"source_w":143,"source_elempack":1,"storage":"little_endian_float32"}]}
+PEPPA_MIXED_PROBE_END
+VIGI_FILE_BEGIN peppa_mixed_t2.output0.f32
+H4sIAAAAAAAAAwXBaUySARwHYIHEQEwKndqs1gemTcuMZVny+2+Z007WVnyQ7HQuSVmYHzKXxyyr
+l/Cat/EC0xQoQS2XNhPK3MqMlhrlMtva3HKtQ2doLaznGVt+Jc8az4Y0s1cevqEOYxFWOfdtF0ye
+Vnn3UzdyT3rkbO4XLMxL4A7h0etzu3ArQUzpylMw7o4kpl6Hgs6NlPngLpaW1lHX8jBKvkmornEa
+/DABbT/gxY3nf+Ap4tP+ys9QbuWTM+wJHBUCyinqwL6DgbRazGBhKgM/BsuhTr8MY7sOJX0MFK4a
+ZGjr4CloQWy9AanBrchZ6sXMaCsOhzsxZboNrvwFsmNqoXkzAZbVQ1P6EbzNDH7a2uA45kJFohmJ
+JybRf4SF7fcc1A0tUBVyaEunHmfzvLigqIGf+S/e+xoxq/SjaxoTPgX4UCxsB9vtxVSVFnluM+J9
+pVCkWTBv0eHRWhvUuhokzdjR1HATWmMPlj9cwSbWjiJDD5gUO4QhA+g7bcNA/jA6PFZgdgRRsjvY
+GzKE6aEu/IvpR3HpfSRNanD1F5fU/mVoqwygd71VEB0V0AptA/YcEtIcY0DK4koajbDA4fWnSJUD
+1akcmpeZkfBSRNKcFozHSyhxRzX4glCKir2OvhkJ8c+XwcQEUfTDfCQX8ojbpMdieiClldVDHCci
+9gyLi81CKpfcw7Y8DjklBoiOB5HUWIuvycHU812HyPWr6NkaK0Iv7Rz0yeixXhrvmsiKdo0sepyq
+OBn9B5H4v1A8AgAA
+VIGI_FILE_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

@@ -1,0 +1,45 @@
+{
+  "kind": "mnn_host_fp32_synthetic_reference_comparison",
+  "synthetic": true,
+  "seed": 20261030,
+  "input_shape_nchw": [
+    1,
+    3,
+    160,
+    160
+  ],
+  "input_sha256": "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd",
+  "model_onnx_sha256": "2121aacea9169ac27227508238237376fe64b96e2f2cc57082f26e88d650fbd2",
+  "model_mnn_sha256": "2a22689a611d4d4b17da3f5e6824508d2e9ea0d08b197ce1fdc30836b8a683fc",
+  "host_output_sha256": "651e37f6baff23f66e828641bd291ebc6e0c5fe669f2cdabe624fbf2da07d20d",
+  "comparisons": {
+    "onnxruntime": {
+      "reference": ".tmp\\autonomy\\candidates\\peppa_output_onnxruntime.f32",
+      "reference_sha256": "511dd765e605485ce5ec01950ab6357e856de1d74921c73929dd2ef60141df5f",
+      "elements": 143,
+      "max_abs_difference": 1.1920928955078125e-05,
+      "mean_abs_difference": 5.737989098875673e-07,
+      "max_first136_abs_difference": 9.5367431640625e-07
+    },
+    "opencv": {
+      "reference": ".tmp\\autonomy\\candidates\\peppa_output_opencv.f32",
+      "reference_sha256": "6ab5363ba956f9e0d39f4ae3314ca18f25e4547ac7aa9dd3fe6ce9a1571a1295",
+      "elements": 143,
+      "max_abs_difference": 8.940696716308594e-07,
+      "mean_abs_difference": 9.571130459125226e-08,
+      "max_first136_abs_difference": 3.5762786865234375e-07
+    },
+    "ncnn_board_fp32": {
+      "reference": ".tmp\\autonomy\\board_outputs\\peppa_t2.output0.f32",
+      "reference_sha256": "146eba7544fff9ea89da65b5396a33eabd7adc2e15b588bf09df4a47e6ad89a1",
+      "elements": 143,
+      "max_abs_difference": 3.814697265625e-06,
+      "mean_abs_difference": 1.1358227763142619e-07,
+      "max_first136_abs_difference": 1.7881393432617188e-07
+    }
+  },
+  "new_tolerance_introduced": false,
+  "accuracy_verified": false,
+  "full_pipeline_realtime_verified": false,
+  "board_mnn_execution_verified": false
+}

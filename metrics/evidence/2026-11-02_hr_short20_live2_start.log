@@ -1,0 +1,12 @@
+if ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep; then echo HR20_REFUSE
+_CONCURRENT_RUN; else cp /tmp/vigilens_hr20/camera.log /tmp/vigilens_hr20/live1_
+camera.log; cp /tmp/vigilens_hr20/contracts.jsonl /tmp/vigilens_hr20/live1_contr
+acts.jsonl; cp /tmp/vigilens_hr20/http.log /tmp/vigilens_hr20/live1_http.log; cp
+ /tmp/vigilens_hr20/run.log /tmp/vigilens_hr20/live1_run.log; sh /tmp/vigilens_h
+r20/run_native.sh /tmp/vigilens_hr20 2700 > /tmp/vigilens_hr20/run.log 2>&1 & ec
+ho HR20_LIVE2_PID=$!; fi
+HR20_LIVE2_PID=691
+# printf '\nHR20_LIVE2_STARTED\n'
+
+HR20_LIVE2_STARTED
+# 

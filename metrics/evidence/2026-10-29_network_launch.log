@@ -1,0 +1,66 @@
+
+# sh -c '
+> if [ -n "$(pidof vigi_camera_pl 2>/dev/null)" ]; then echo VIGI_NETWORK_FAIL_A
+LREADY_RUNNING; exit 10; fi
+> if [ ! -c /dev/video0 ] || [ ! -x /usr/bin/vigi_camera_pl ]; then echo VIGI_NE
+TWORK_FAIL_CAMERA_OR_BINARY; exit 11; fi
+> ifconfig eth0 169.254.73.29 netmask 255.255.0.0 up || { echo VIGI_NETWORK_FAIL
+_IP; exit 12; }
+> :
+> i=0
+> while [ "$i" -lt 15 ]; do
+>  speed=$(cat /sys/class/net/eth0/speed 2>/dev/null)
+>  carrier=$(cat /sys/class/net/eth0/carrier 2>/dev/null)
+>  duplex=$(cat /sys/class/net/eth0/duplex 2>/dev/null)
+>  if [ "$speed" = 100 ] && [ "$carrier" = 1 ] && [ "$duplex" = full ]; then bre
+ak; fi
+>  i=$((i+1)); sleep 1
+> done
+> if [ "$speed" != 100 ] || [ "$carrier" != 1 ] || [ "$duplex" != full ]; then e
+cho VIGI_NETWORK_FAIL_LINK speed=$speed carrier=$carrier duplex=$duplex; exit 13
+; fi
+> ifconfig eth0
+> if ! ifconfig eth0 | grep -Fq "169.254.73.29"; then echo VIGI_NETWORK_FAIL_IP_
+READBACK; exit 14; fi
+> echo VIGI_NETWORK_LINK speed=$speed carrier=$carrier duplex=$duplex peer=169.2
+54.73.28
+> (
+>  env VIGI_STREAM_BIND=169.254.73.29:9000 VIGI_JPEG_FAST=1 /usr/bin/vigi_camera
+_pl /dev/video0 1280 720 300 30 16
+>  camera_rc=$?
+>  printf "CAMERA_PL_EXIT=%s\n" "$camera_rc"
+>  exit "$camera_rc"
+> ) > /tmp/vigi_network.log 2>&1 < /dev/null &
+> child=$!
+> echo VIGI_BOARD_PID=$child
+> i=0
+> while [ "$i" -lt 20 ]; do
+>  if grep -q "^BOARD_STREAM_LISTEN " /tmp/vigi_network.log; then echo VIGI_NETW
+ORK_READY; exit 0; fi
+>  if ! kill -0 "$child" 2>/dev/null; then cat /tmp/vigi_network.log; echo VIGI_
+NETWORK_FAIL_PROBE_EXITED; exit 15; fi
+>  i=$((i+1)); sleep 1
+> done
+> cat /tmp/vigi_network.log
+> echo VIGI_NETWORK_FAIL_LISTEN_TIMEOUT
+> exit 16
+> '
+\nVIGI_COMMAND_DONE\n'
+eth0      Link encap:Ethernet  HWaddr D6:26:6B:58:10:77  
+          inet addr:169.254.73.29  Bcast:169.254.255.255  Mask:255.255.0.0
+          inet6 addr: fe80::d426:6bff:fe58:1077/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:61 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:18 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:8913 (8.7 KiB)  TX bytes:1492 (1.4 KiB)
+          Interrupt:39 Base address:0xb000 
+
+VIGI_NETWORK_LINK speed=100 carrier=1 duplex=full peer=169.254.73.28
+VIGI_BOARD_PID=326
+VIGI_NETWORK_READY
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

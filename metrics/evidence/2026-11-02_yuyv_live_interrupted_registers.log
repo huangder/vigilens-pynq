@@ -1,0 +1,75 @@
+attempting to launch hw_server
+
+****** Xilinx hw_server v2026.1
+  **** Build date : May 29 2026 at 14:55:19
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+INFO: hw_server application started
+INFO: Use Ctrl-C to exit hw_server application
+
+
+
+****** Xilinx hw_server v2026.1
+
+  **** Build date : May 29 2026 at 14:55:19
+
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+
+
+INFO: hw_server application started
+
+INFO: Use Ctrl-C to exit hw_server application
+
+
+
+
+INFO: To connect to this hw_server instance use url: TCP:127.0.0.1:3121
+
+
+
+FINAL_REGISTERS_BEGIN
+NAME
+    rrd - Read register for active target.
+
+SYNOPSIS
+    rrd [options] [reg]
+        Read registers or register definitions.
+        For a processor core target, the processor core register can be read.
+        For a target representing a group of processor cores, system registers
+        or IOU registers can be read.
+
+OPTIONS
+    -defs
+        Read register definitions instead of values.
+
+    -no-bits
+        Does not show bit fields along with register values. By default,
+        bit fields are shown, when available.
+
+EXAMPLE
+    rrd
+        Read top level registers or groups.
+
+    rrd r0
+        Read register r0.
+
+    rrd usr r8
+        Read register r8 in group usr.
+
+RETURNS
+    Register names and values, or register definitions if successful.
+    Error string, if the registers cannot be read or if an invalid register is
+    specified.
+
+
+PC=pc: ffffff28
+
+REG 0xF8000244 VALUE=0
+REG 0xF8000258 VALUE=4194306
+REG 0xE0001000 VALUE=296
+REG 0xE000102C VALUE=0
+FINAL_REGISTERS_END

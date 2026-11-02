@@ -1,0 +1,674 @@
+{
+  "audit_kind": "flatbuffer_metadata_only",
+  "schema_path": "D:/Desktop/AMD/.tools/python312/Lib/site-packages/mediapipe/tasks/metadata/schema_py_generated.py",
+  "schema_sha256": "49a26cf90cdf5271271e61f61d4bf3a293da4777824c73d08f5cb9e0e2cbc29a",
+  "models": [
+    {
+      "path": "D:/Desktop/AMD/.tools/python312/Lib/site-packages/mediapipe/modules/face_detection/face_detection_full_range_sparse.tflite",
+      "size_bytes": 676746,
+      "sha256": "2c3728e6da56f21e21a320433396fb06d40d9088f2247c05e5635a688d45dfe1",
+      "schema_version": 3,
+      "description": "MLIR Converted.",
+      "operator_codes": [
+        {
+          "index": 0,
+          "builtin_code": 34,
+          "builtin_name": "PAD",
+          "custom_name": null,
+          "version": 1,
+          "instances": 43
+        },
+        {
+          "index": 1,
+          "builtin_code": 6,
+          "builtin_name": "DEQUANTIZE",
+          "custom_name": null,
+          "version": 3,
+          "instances": 182
+        },
+        {
+          "index": 2,
+          "builtin_code": 3,
+          "builtin_name": "CONV_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 49
+        },
+        {
+          "index": 3,
+          "builtin_code": 4,
+          "builtin_name": "DEPTHWISE_CONV_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 42
+        },
+        {
+          "index": 4,
+          "builtin_code": 124,
+          "builtin_name": "DENSIFY",
+          "custom_name": null,
+          "version": 1,
+          "instances": 46
+        },
+        {
+          "index": 5,
+          "builtin_code": 0,
+          "builtin_name": "ADD",
+          "custom_name": null,
+          "version": 1,
+          "instances": 19
+        },
+        {
+          "index": 6,
+          "builtin_code": 23,
+          "builtin_name": "RESIZE_BILINEAR",
+          "custom_name": null,
+          "version": 3,
+          "instances": 3
+        },
+        {
+          "index": 7,
+          "builtin_code": 5,
+          "builtin_name": "DEPTH_TO_SPACE",
+          "custom_name": null,
+          "version": 1,
+          "instances": 2
+        },
+        {
+          "index": 8,
+          "builtin_code": 22,
+          "builtin_name": "RESHAPE",
+          "custom_name": null,
+          "version": 1,
+          "instances": 2
+        }
+      ],
+      "custom_operators": [],
+      "subgraphs": [
+        {
+          "index": 0,
+          "name": "main",
+          "tensor_count": 577,
+          "operator_count": 388,
+          "inputs": [
+            {
+              "index": 0,
+              "name": "input_1",
+              "shape": [
+                1,
+                192,
+                192,
+                3
+              ],
+              "type": "FLOAT32",
+              "quantization": {
+                "scale": [],
+                "zero_point": [],
+                "quantized_dimension": 0
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "index": 576,
+              "name": "Identity",
+              "shape": [
+                1,
+                2304,
+                16
+              ],
+              "type": "FLOAT32",
+              "quantization": {
+                "scale": [],
+                "zero_point": [],
+                "quantized_dimension": 0
+              }
+            },
+            {
+              "index": 562,
+              "name": "Identity_1",
+              "shape": [
+                1,
+                2304,
+                1
+              ],
+              "type": "FLOAT32",
+              "quantization": {
+                "scale": [],
+                "zero_point": [],
+                "quantized_dimension": 0
+              }
+            }
+          ],
+          "opcode_instances": {
+            "0": 43,
+            "1": 182,
+            "2": 49,
+            "3": 42,
+            "4": 46,
+            "5": 19,
+            "6": 3,
+            "7": 2,
+            "8": 2
+          }
+        }
+      ],
+      "requires_custom_registration": false,
+      "inference_verified": false
+    },
+    {
+      "path": "D:/Desktop/AMD/.tools/python312/Lib/site-packages/mediapipe/modules/face_detection/face_detection_short_range.tflite",
+      "size_bytes": 229714,
+      "sha256": "bbff11cebd1eb27a1e004cae0b0e63ec8c551cbf34a4451148b4908b8db3eca8",
+      "schema_version": 3,
+      "description": "keras2tflite_facedetector-front.tflite.generated",
+      "operator_codes": [
+        {
+          "index": 0,
+          "builtin_code": 3,
+          "builtin_name": "CONV_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 21
+        },
+        {
+          "index": 1,
+          "builtin_code": 19,
+          "builtin_name": "RELU",
+          "custom_name": null,
+          "version": 1,
+          "instances": 17
+        },
+        {
+          "index": 2,
+          "builtin_code": 4,
+          "builtin_name": "DEPTHWISE_CONV_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 16
+        },
+        {
+          "index": 3,
+          "builtin_code": 0,
+          "builtin_name": "ADD",
+          "custom_name": null,
+          "version": 1,
+          "instances": 16
+        },
+        {
+          "index": 4,
+          "builtin_code": 34,
+          "builtin_name": "PAD",
+          "custom_name": null,
+          "version": 1,
+          "instances": 11
+        },
+        {
+          "index": 5,
+          "builtin_code": 17,
+          "builtin_name": "MAX_POOL_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 3
+        },
+        {
+          "index": 6,
+          "builtin_code": 22,
+          "builtin_name": "RESHAPE",
+          "custom_name": null,
+          "version": 1,
+          "instances": 4
+        },
+        {
+          "index": 7,
+          "builtin_code": 2,
+          "builtin_name": "CONCATENATION",
+          "custom_name": null,
+          "version": 1,
+          "instances": 2
+        },
+        {
+          "index": 8,
+          "builtin_code": 6,
+          "builtin_name": "DEQUANTIZE",
+          "custom_name": null,
+          "version": 2,
+          "instances": 74
+        }
+      ],
+      "custom_operators": [],
+      "subgraphs": [
+        {
+          "index": 0,
+          "name": "keras2tflite_facedetector-front.tflite.generated",
+          "tensor_count": 250,
+          "operator_count": 164,
+          "inputs": [
+            {
+              "index": 0,
+              "name": "input",
+              "shape": [
+                1,
+                128,
+                128,
+                3
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            }
+          ],
+          "outputs": [
+            {
+              "index": 175,
+              "name": "regressors",
+              "shape": [
+                1,
+                896,
+                16
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            },
+            {
+              "index": 174,
+              "name": "classificators",
+              "shape": [
+                1,
+                896,
+                1
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            }
+          ],
+          "opcode_instances": {
+            "0": 21,
+            "1": 17,
+            "2": 16,
+            "3": 16,
+            "4": 11,
+            "5": 3,
+            "6": 4,
+            "7": 2,
+            "8": 74
+          }
+        }
+      ],
+      "requires_custom_registration": false,
+      "inference_verified": false
+    },
+    {
+      "path": "D:/Desktop/AMD/.tools/python312/Lib/site-packages/mediapipe/modules/face_landmark/face_landmark.tflite",
+      "size_bytes": 1242398,
+      "sha256": "1055cb9d4a9ca8b8c688902a3a5194311138ba256bcc94e336d8373a5f30c814",
+      "schema_version": 3,
+      "description": "facemesh-lite.tflite.no_meta",
+      "operator_codes": [
+        {
+          "index": 0,
+          "builtin_code": 3,
+          "builtin_name": "CONV_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 25
+        },
+        {
+          "index": 1,
+          "builtin_code": 54,
+          "builtin_name": "PRELU",
+          "custom_name": null,
+          "version": 1,
+          "instances": 23
+        },
+        {
+          "index": 2,
+          "builtin_code": 4,
+          "builtin_name": "DEPTHWISE_CONV_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 20
+        },
+        {
+          "index": 3,
+          "builtin_code": 0,
+          "builtin_name": "ADD",
+          "custom_name": null,
+          "version": 1,
+          "instances": 20
+        },
+        {
+          "index": 4,
+          "builtin_code": 17,
+          "builtin_name": "MAX_POOL_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 6
+        },
+        {
+          "index": 5,
+          "builtin_code": 34,
+          "builtin_name": "PAD",
+          "custom_name": null,
+          "version": 1,
+          "instances": 3
+        },
+        {
+          "index": 6,
+          "builtin_code": 6,
+          "builtin_name": "DEQUANTIZE",
+          "custom_name": null,
+          "version": 2,
+          "instances": 113
+        }
+      ],
+      "custom_operators": [],
+      "subgraphs": [
+        {
+          "index": 0,
+          "name": "facemesh-lite.tflite.no_meta",
+          "tensor_count": 327,
+          "operator_count": 210,
+          "inputs": [
+            {
+              "index": 0,
+              "name": "input_1",
+              "shape": [
+                1,
+                192,
+                192,
+                3
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            }
+          ],
+          "outputs": [
+            {
+              "index": 213,
+              "name": "conv2d_21",
+              "shape": [
+                1,
+                1,
+                1,
+                1404
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            },
+            {
+              "index": 210,
+              "name": "conv2d_31",
+              "shape": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            }
+          ],
+          "opcode_instances": {
+            "0": 25,
+            "1": 23,
+            "2": 20,
+            "3": 20,
+            "4": 6,
+            "5": 3,
+            "6": 113
+          }
+        }
+      ],
+      "requires_custom_registration": false,
+      "inference_verified": false
+    },
+    {
+      "path": "D:/Desktop/AMD/.tools/python312/Lib/site-packages/mediapipe/modules/face_landmark/face_landmark_with_attention.tflite",
+      "size_bytes": 2495106,
+      "sha256": "e06a804e0144f9929eda782122916b35d60c697c3c9344013ca2bbe76a6ce2b4",
+      "schema_version": 3,
+      "description": "keras2tflite_facemesh_irises_faceflag-lite_roifrommesh_lips_eyes_irises-2020_08_28-v0.tflite.generated",
+      "operator_codes": [
+        {
+          "index": 0,
+          "builtin_code": 3,
+          "builtin_name": "CONV_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 80
+        },
+        {
+          "index": 1,
+          "builtin_code": 54,
+          "builtin_name": "PRELU",
+          "custom_name": null,
+          "version": 1,
+          "instances": 73
+        },
+        {
+          "index": 2,
+          "builtin_code": 4,
+          "builtin_name": "DEPTHWISE_CONV_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 66
+        },
+        {
+          "index": 3,
+          "builtin_code": 0,
+          "builtin_name": "ADD",
+          "custom_name": null,
+          "version": 1,
+          "instances": 66
+        },
+        {
+          "index": 4,
+          "builtin_code": 17,
+          "builtin_name": "MAX_POOL_2D",
+          "custom_name": null,
+          "version": 1,
+          "instances": 16
+        },
+        {
+          "index": 5,
+          "builtin_code": 34,
+          "builtin_name": "PAD",
+          "custom_name": null,
+          "version": 1,
+          "instances": 9
+        },
+        {
+          "index": 6,
+          "builtin_code": 22,
+          "builtin_name": "RESHAPE",
+          "custom_name": null,
+          "version": 1,
+          "instances": 13
+        },
+        {
+          "index": 7,
+          "builtin_code": 18,
+          "builtin_name": "MUL",
+          "custom_name": null,
+          "version": 1,
+          "instances": 6
+        },
+        {
+          "index": 8,
+          "builtin_code": 32,
+          "builtin_name": "CUSTOM",
+          "custom_name": "Landmarks2TransformMatrix",
+          "version": 2,
+          "instances": 3
+        },
+        {
+          "index": 9,
+          "builtin_code": 32,
+          "builtin_name": "CUSTOM",
+          "custom_name": "TransformTensorBilinear",
+          "version": 2,
+          "instances": 3
+        },
+        {
+          "index": 10,
+          "builtin_code": 32,
+          "builtin_name": "CUSTOM",
+          "custom_name": "TransformLandmarks",
+          "version": 2,
+          "instances": 5
+        },
+        {
+          "index": 11,
+          "builtin_code": 45,
+          "builtin_name": "STRIDED_SLICE",
+          "custom_name": null,
+          "version": 1,
+          "instances": 1
+        },
+        {
+          "index": 12,
+          "builtin_code": 6,
+          "builtin_name": "DEQUANTIZE",
+          "custom_name": null,
+          "version": 2,
+          "instances": 371
+        }
+      ],
+      "custom_operators": [
+        "Landmarks2TransformMatrix",
+        "TransformLandmarks",
+        "TransformTensorBilinear"
+      ],
+      "subgraphs": [
+        {
+          "index": 0,
+          "name": "keras2tflite_facemesh_irises_faceflag-lite_roifrommesh_lips_eyes_irises-2020_08_28-v0.tflite.generated",
+          "tensor_count": 1096,
+          "operator_count": 712,
+          "inputs": [
+            {
+              "index": 0,
+              "name": "input_1",
+              "shape": [
+                1,
+                192,
+                192,
+                3
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            }
+          ],
+          "outputs": [
+            {
+              "index": 719,
+              "name": "output_mesh_identity",
+              "shape": [
+                1,
+                1,
+                1,
+                1404
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            },
+            {
+              "index": 720,
+              "name": "output_lips",
+              "shape": [
+                1,
+                1,
+                1,
+                160
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            },
+            {
+              "index": 721,
+              "name": "output_left_eye",
+              "shape": [
+                1,
+                1,
+                1,
+                142
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            },
+            {
+              "index": 723,
+              "name": "output_right_eye",
+              "shape": [
+                1,
+                1,
+                1,
+                142
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            },
+            {
+              "index": 722,
+              "name": "output_left_iris",
+              "shape": [
+                1,
+                1,
+                1,
+                10
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            },
+            {
+              "index": 724,
+              "name": "output_right_iris",
+              "shape": [
+                1,
+                1,
+                1,
+                10
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            },
+            {
+              "index": 710,
+              "name": "conv_faceflag",
+              "shape": [
+                1,
+                1,
+                1,
+                1
+              ],
+              "type": "FLOAT32",
+              "quantization": null
+            }
+          ],
+          "opcode_instances": {
+            "0": 80,
+            "1": 73,
+            "2": 66,
+            "3": 66,
+            "4": 16,
+            "5": 9,
+            "6": 13,
+            "7": 6,
+            "8": 3,
+            "9": 3,
+            "10": 5,
+            "11": 1,
+            "12": 371
+          }
+        }
+      ],
+      "requires_custom_registration": true,
+      "inference_verified": false
+    }
+  ],
+  "limitations": [
+    "No inference, model accuracy, speed or memory benchmark was performed.",
+    "Builtin-only inventory does not prove target runtime compatibility.",
+    "Raw model outputs require the MediaPipe preprocessing and postprocessing graph."
+  ]
+}

@@ -1,0 +1,21 @@
+tail -n 3 /tmp/vigilens_hr20/run.log
+runtime.env: OK
+NATIVE_RUN camera_pid=658 http_pid=657 frames=1800
+NATIVE_CAMERA_EXIT=0
+# grep -E '^SAMPLE_RESULT|^AUTONOMY_SUMMARY|^ERT_SUMMARY|^ERT_HYBRID_SUMMARY|^AU
+DIT_SUMMARY|^CAMERA_PL_PASS' /tmp/vigilens_hr20/camera.log
+ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+SAMPLE_RESULT input=1800 kept=1800 dropped=0 driver_sequence_gaps=0 empty_slots=0 input_fps=29.954009 output_fps=29.954009 native_30fps=yes
+ERT_HYBRID_SUMMARY foreground_inferences=180 accepted_lk_frames=1375
+ERT_SUMMARY observations=1753 visible=1484 lost=269 model_submitted=59 model_completed=59
+AUTONOMY_SUMMARY submitted=1800 accepted=1754 skipped=46 processed=1754 succeeded=1753 rejected=1 failed=0 rc=0 camera_submit_fps=29.954009 analysis_update_fps=29.204325
+AUDIT_SUMMARY frames=1800 audits=60 failures=0 reference_ms_total=1062
+CAMERA_PL_PASS compared_frames=1800 native_camera_mode_verified=1
+# ps | grep -E 'vigi_camera|vg_metrics' | grep -v grep
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    178164     60268  75% /tmp
+# printf '\nHR20_FINAL_STATUS_END\n'
+
+HR20_FINAL_STATUS_END
+# 

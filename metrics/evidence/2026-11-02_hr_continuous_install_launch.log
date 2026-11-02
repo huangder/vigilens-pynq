@@ -1,0 +1,13 @@
+set +e
+# gzip /tmp/vigilens_hr5_filter/camera.log /tmp/vigilens_hr5_filter/contracts.js
+onl
+sh /tmp/hr_continuous_install.sh > /tmp/hr_continuous_install.log 2>&1 &
+echo HR_CONTINUOUS_INSTALL_PID=$!
+printf '\nHR5_FILTER_COMMAND_END\n'
+# sh /tmp/hr_continuous_install.sh > /tmp/hr_continuous_install.log 2>&1 &
+# echo HR_CONTINUOUS_INSTALL_PID=$!
+HR_CONTINUOUS_INSTALL_PID=930
+# printf '\nHR5_FILTER_COMMAND_END\n'
+
+HR5_FILTER_COMMAND_END
+# 

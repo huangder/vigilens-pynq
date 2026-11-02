@@ -1,0 +1,10 @@
+CAMERA_PL_FAIL done_mask=7 mm2s=0x1002 s2mm=0x0
+AUTONOMY_SUMMARY submitted=0 accepted=0 skipped=0 processed=0 succeeded=0 rejected=0 failed=0 rc=0 camera_submit_fps=0.000000 analysis_update_fps=0.000000
+SYNTHETIC_PL_INPUT source=procedural_yuyv camera_opened=0 performance_evidence=0
+ERT_READY mode=board_async config_sha256=459f1f2ada526e495f3b8960721f2bf8aaeee087d047aad955eb2a027816ea6e accuracy_verified=0
+AUTONOMY_READY measurement=board_native no_pc_producer=1
+PL_READY profile=720p-3of8 ram=0x12000000 bytes=16777216 fid0=3550 motion_threshold=16 pipeline=threaded audit_every=1 codec=raw decode_workers=2 pl_wait=yield
+CAMERA_GEOMETRY width=960 height=720 gray_width=360 gray_height=270 input=yuyv stride=1920 limited=1
+JPEG_CONFIG method=ISLOW fancy_upsampling=1 cpu_reference=every_frame
+ERT_HYBRID_SUMMARY foreground_inferences=0 accepted_lk_frames=0
+ERT_SUMMARY observations=0 visible=0 lost=0 model_submitted=0 model_completed=0

@@ -1,0 +1,25 @@
+=== A↔C fir_filter 逐样本黄金参考对拍（契约 4.5 节）===
+系数 : fpga\src\fir_coeffs_q15.h  N=63，shift=15，fs=30 Hz
+输入 : fpga\sim\data_fir\series.bin  (8072 B = 4036 个 int16 样本)
+黄金 : fpga\sim\data_fir\golden_fir_out.csv  (4036 个逐样本期望值)
+口径 : acc 无中间舍入 → 单次算术右移 → sat16；输出含启动瞬态；容差 0
+
+  seg  1 impulse          reset=1 n= 96  ✅ 全等
+  seg  2 dc_pos           reset=1 n=240  ✅ 全等
+  seg  3 dc_neg           reset=1 n=240  ✅ 全等
+  seg  4 nyquist_alt      reset=1 n=240  ✅ 全等
+  seg  5 sine_1p5hz       reset=1 n=300  ✅ 全等
+  seg  6 sine_0p8hz       reset=1 n=300  ✅ 全等
+  seg  7 sine_3p2hz       reset=1 n=300  ✅ 全等
+  seg  8 sine_0p2hz       reset=1 n=300  ✅ 全等
+  seg  9 sine_8hz         reset=1 n=300  ✅ 全等
+  seg 10 square_1hz_full  reset=1 n=300  ✅ 全等，饱和 33
+  seg 11 saturate_matched reset=1 n= 96  ✅ 全等，饱和 7
+  seg 12 sine_small_amp   reset=1 n=300  ✅ 全等
+  seg 13 random_full      reset=1 n=512  ✅ 全等
+  seg 14 split_part1      reset=1 n=200  ✅ 全等
+  seg 15 split_part2      reset=0 n=200  ✅ 全等
+  seg 16 split_part3      reset=0 n=112  ✅ 全等
+
+（实现位于 backend/vital.py::fir_process；P3 的心率带通将直接复用它）
+检测通过：契约 §5.2 第 12 项的时间序列部分 —— 16 段 / 4036 个样本逐样本全等，段统计一致（容差 0）✅

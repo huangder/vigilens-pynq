@@ -1,0 +1,16 @@
+[
+  {
+    "path": "/",
+    "status": 200
+  },
+  {
+    "path": "/api/latest",
+    "status": 200,
+    "contract_valid": true
+  },
+  {
+    "path": "/api/latest",
+    "status": 200,
+    "contract_valid": true
+  }
+]

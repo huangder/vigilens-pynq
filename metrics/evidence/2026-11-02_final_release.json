@@ -1,0 +1,110 @@
+{
+  "status": "final_candidate_awaiting_human_acceptance",
+  "config_sha256": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417",
+  "runtime": "ert_hybrid",
+  "capture": {
+    "width": 640,
+    "height": 480,
+    "format": "yuyv"
+  },
+  "camera_advertised_native30": true,
+  "camera_stream_started_this_revision": false,
+  "native_camera_mode_verified": false,
+  "full30_verified": false,
+  "accuracy_verified": false,
+  "clear_eye_mouth_image_verified": false,
+  "candidate_camera_sha256": "14d33ad5d3959fbe773bf67c18b711c872c3f2c58732aba028732b68446e2740",
+  "board_synthetic": {
+    "1280": {
+      "frames": 12,
+      "audits": 12,
+      "audit_failures": 0,
+      "contracts": 11,
+      "known_procedural_input": true,
+      "actual_camera": false,
+      "fps_evidence": false,
+      "gray_width": 480,
+      "gray_height": 270
+    },
+    "640": {
+      "frames": 12,
+      "audits": 12,
+      "audit_failures": 0,
+      "contracts": 11,
+      "known_procedural_input": true,
+      "actual_camera": false,
+      "fps_evidence": false,
+      "gray_width": 240,
+      "gray_height": 180
+    }
+  },
+  "checks": {
+    "final_input_host.log": {
+      "required_marker": "YUYV_RGB_PASS pixels=37748736",
+      "observed": true
+    },
+    "final_tools_tests.log": {
+      "required_marker": "12 passed",
+      "observed": true
+    },
+    "final_check_all.log": {
+      "required_marker": "PASS 26 / FAIL 0",
+      "observed": true
+    },
+    "final_pipeline_tests.log": {
+      "required_marker": "CAMERA_PIPELINE_HOST_PASS",
+      "observed": true
+    },
+    "final_native_parity.log": {
+      "required_marker": "DEFAULT_NATIVE_UNCHANGED",
+      "observed": true
+    },
+    "final_ctest.log": {
+      "required_marker": "100% tests passed, 0 tests failed out of 9",
+      "observed": true
+    },
+    "final_lifecycle_asan.log": {
+      "required_marker": "ERT_LIFECYCLE_PASS cases=3",
+      "observed": true
+    },
+    "final_local_checks.log": {
+      "required_marker": "FINAL_HYBRID_CONTRACT_PARITY_PASS",
+      "observed": true
+    },
+    "final_board_closeout.log": {
+      "required_marker": "FINAL_PACKAGE_READY_CAMERA_NOT_STARTED",
+      "observed": true
+    }
+  },
+  "unsupported_960": {
+    "camera_advertised": true,
+    "initial_board_result": "tail wait timeout after all three IPs done",
+    "gray_bytes": 97200,
+    "gray_bytes_mod64": 48,
+    "alignment_cause_confirmed": false,
+    "final_action": "reject before MMIO"
+  },
+  "package_board_directory": "/tmp/vigilens_final",
+  "replay_sha256": "e47686c25b1955372f3f1acd1f45a043b140fbf6dc3c16f7e3e8d450bf0197f9",
+  "negative_sha256": "02fa2254689d633f8e2fc6919492dec1042e5a58dd76a68d6e946440f92a10e1",
+  "source_sha256": {
+    "config.yaml": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417",
+    "board/w7_buildroot/camera_pl.c": "c97939a0d24f6abc145e8b2acd004c63f01fd4e3c4e0e7f868fc1942ae7c7d03",
+    "board/w7_buildroot/camera_pl.h": "d290ff4f2fda9a9bb72254ed6791bfb42a589b1d7e279ea89c6fbc1a7c1a2e7a",
+    "board/w7_buildroot/uvc_probe.c": "573adac8549de2eeeb6eefd60283b52dad7114c2cdbc0558de1ca285369ac74e",
+    "board/w7_buildroot/camera_geometry.h": "b2ce6aec485cb8da4ad2712d34f8fa5d76ab38effe19286d349b7b0ea78b5bfd",
+    "board/w7_buildroot/yuyv_rgb.h": "6fcb78402ecf1e53def118c391c6263b8f86ecddf50a467a3a1aa1689a6d7fa2",
+    "board/w7_buildroot/tests/camera_input_test.c": "e133e19228f2ae0e151f95c5b9f26e5bd55c13706d5aaac151ba74b762e012a7",
+    "board/w7_buildroot/tests/pl_input_synthetic.c": "91dfca9bf96ee199caaeef4e2c13d5a29f5fb7acb011e1cc9f7a5aba4fdfc849",
+    "board/autonomy/ert_runtime.cpp": "07962576a35f790e63ca61e5d7d96f2babaeb4dcb884bd9ec36475b286656f09",
+    "board/autonomy/point_tracker.cpp": "d4dd989aa77b6bc8fad09da66a1fcd159655b1fbdc5967cabe38b5898170de37",
+    "board/autonomy/build_native_vision.sh": "99812d4d36e6317f63f8f4beb517b0e96622178d6348967d8a6a4362a08395c0",
+    "board/autonomy/package_native_vision.py": "46145255ca824339f41c8ba14abd038dedf705177bd5ee434c170d696065a106",
+    "board/autonomy/run_native.sh": "d611b34060b659e9e3d2998cab56fac09d4a0ed2e451b4263ff16e89ebb20b4e",
+    "board/autonomy/install_native.sh": "a0c650b1f6234dc6bb374281fa3562a4a3a4f908c36affae29e72d9871feaa36",
+    "board/autonomy/export_vision_config.py": "8daf5371d0eb86ab1647046ab52aa7e54f4b5a78e17f737f2d1f3197f0aeeec9",
+    "board/autonomy/CMakeLists.txt": "161ce18b9d82a25cf3623ce18277ec9a6010d65ab3a4a05a5ad98e49e1c92a53",
+    "board/autonomy/tests/test_export_vision_config.py": "aefe6f914d04f3eefbfb2ec51db0427a26a85ee413143ccb1a7b9a2bc911224a",
+    "board/autonomy/tests/test_package_native_vision.py": "7eb0e5499b38882fed07b958bfe87448cd0f7b102781e5d30ab1f531d13c650a"
+  }
+}

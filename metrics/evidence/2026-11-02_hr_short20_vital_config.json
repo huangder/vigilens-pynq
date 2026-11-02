@@ -1,0 +1,20 @@
+{
+  "config_sha256": "e21bf2b5a61f3c58b76f7eef87fd55d4578eea27b84ee061feafdf31225aff44",
+  "vital": {
+    "fps": 30.0,
+    "fs_tol": 0.1,
+    "window_seconds": 20.0,
+    "color_window_seconds": 1.6,
+    "f_lo": 0.7,
+    "f_hi": 3.5,
+    "harmonic_ratio_min": 0.05,
+    "max_gap_s": 0.1,
+    "jitter_ratio_max": 1.5,
+    "recovery_s": 0.1,
+    "recovery_samples": 3,
+    "method": 1,
+    "shift": 15
+  },
+  "coeffs": 63,
+  "thresholds_calibrated_by_export": false
+}

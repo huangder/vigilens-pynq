@@ -1,0 +1,128 @@
+{
+  "hardware_model_tensor_execution_verified": true,
+  "synthetic_measurement_replay_verified": true,
+  "full_autonomy_verified": false,
+  "accuracy_verified": false,
+  "full_pipeline_realtime_verified": false,
+  "fps_nominal": 30.0,
+  "single_inference_budget_ms": 33.333333333333336,
+  "budget_interpretation": "Necessary per-inference condition only; excludes capture, other inference, PL, metrics and service work.",
+  "baseline": {
+    "path": "metrics\\logs\\autonomy_board_probe.log",
+    "sha256": "5509e10de91d2c966562aa7dc90cbd812a44b95d60ba232f27fdcd32c3511aa0",
+    "probes": [
+      {
+        "model": "ATTENTION",
+        "threads": 1,
+        "mean_ms": 251.18572650000004,
+        "p50_ms": 251.172656,
+        "p95_ms": 251.434947,
+        "max_rss_kib": 15232,
+        "delegate_nodes": 0,
+        "mean_within_single_inference_budget": false,
+        "p95_within_single_inference_budget": false
+      },
+      {
+        "model": "DETECTION",
+        "threads": 1,
+        "mean_ms": 147.08529046666666,
+        "p50_ms": 147.067076,
+        "p95_ms": 147.235094,
+        "max_rss_kib": 7680,
+        "delegate_nodes": 0,
+        "mean_within_single_inference_budget": false,
+        "p95_within_single_inference_budget": false
+      },
+      {
+        "model": "ATTENTION",
+        "threads": 2,
+        "mean_ms": 240.28839140000002,
+        "p50_ms": 239.909037,
+        "p95_ms": 253.043511,
+        "max_rss_kib": 21012,
+        "delegate_nodes": 0,
+        "mean_within_single_inference_budget": false,
+        "p95_within_single_inference_budget": false
+      },
+      {
+        "model": "DETECTION",
+        "threads": 2,
+        "mean_ms": 147.63118426666668,
+        "p50_ms": 140.615755,
+        "p95_ms": 174.457268,
+        "max_rss_kib": 10288,
+        "delegate_nodes": 0,
+        "mean_within_single_inference_budget": false,
+        "p95_within_single_inference_budget": false
+      }
+    ]
+  },
+  "replay": {
+    "rows": 900,
+    "sha256": "f16d1d99516d1d28fecfdd4d03811ae2379dbe53ce34078cf5a31dadba26ae40",
+    "host_board_byte_equal": true,
+    "config_sha256": "8a480f594461276776630ae22a6acaa76ae406229c56be486300e0dd28eead39",
+    "synthetic": true,
+    "status_counts": {
+      "normal": 108,
+      "fatigue_risk": 639,
+      "adjust_posture": 88,
+      "unreliable": 60
+    },
+    "reject_counts": {
+      "-2": 2,
+      "-1": 1,
+      "-3": 2
+    }
+  },
+  "optimized": {
+    "path": "metrics\\logs\\autonomy_board_probe_xnn.log",
+    "sha256": "3f7bf8c4202c6d6ee87d55b0009b966e4f686fa51aea295ed75c35fadacc6161",
+    "probes": [
+      {
+        "model": "ATTENTION",
+        "threads": 1,
+        "mean_ms": 182.76821343333333,
+        "p50_ms": 182.718134,
+        "p95_ms": 182.937115,
+        "max_rss_kib": 25588,
+        "delegate_nodes": 3,
+        "mean_within_single_inference_budget": false,
+        "p95_within_single_inference_budget": false
+      },
+      {
+        "model": "DETECTION",
+        "threads": 1,
+        "mean_ms": 99.2299718,
+        "p50_ms": 99.177325,
+        "p95_ms": 99.392893,
+        "max_rss_kib": 9596,
+        "delegate_nodes": 1,
+        "mean_within_single_inference_budget": false,
+        "p95_within_single_inference_budget": false
+      },
+      {
+        "model": "ATTENTION",
+        "threads": 2,
+        "mean_ms": 99.75277936666666,
+        "p50_ms": 99.737755,
+        "p95_ms": 99.988861,
+        "max_rss_kib": 25336,
+        "delegate_nodes": 3,
+        "mean_within_single_inference_budget": false,
+        "p95_within_single_inference_budget": false
+      },
+      {
+        "model": "DETECTION",
+        "threads": 2,
+        "mean_ms": 50.952409900000006,
+        "p50_ms": 50.961883,
+        "p95_ms": 51.17001,
+        "max_rss_kib": 9472,
+        "delegate_nodes": 1,
+        "mean_within_single_inference_budget": false,
+        "p95_within_single_inference_budget": false
+      }
+    ]
+  }
+}

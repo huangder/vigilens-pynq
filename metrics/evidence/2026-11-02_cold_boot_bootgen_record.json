@@ -1,0 +1,6 @@
+{
+  "tool": "D:\\Xilinx\\2026.1\\Vitis\\bin\\bootgen.bat",
+  "payload_sha256": "41166d6d8a48e3d56bfe3a485af56fc7f9bc2ce3f321b909665606d634acaf17",
+  "image_sha256": "5b7009a35ccc0af9bca927b5ad4c82cb4894b4f78281b61958eafaa74c981384",
+  "physical_boot_verified": false
+}

@@ -1,0 +1,56 @@
+{
+  "kind": "native_full_board_realtime_gate",
+  "passed": false,
+  "errors": [
+    "capture 23.312938 fps below 28.5",
+    "analysis 15.59989 fps below 30.0",
+    "AUTONOMY_SUMMARY.skipped=390.0, required 0",
+    "AUTONOMY_SUMMARY.accepted=804.0, required 1194.0",
+    "AUTONOMY_SUMMARY.processed=804.0, required 1194.0",
+    "face-bearing coverage below configured face_visible_min",
+    "raw capture timestamps fail configured throughput",
+    "capture interval p95 exceeds configured jitter limit"
+  ],
+  "capture_fps": 23.312938,
+  "analysis_update_fps": 15.59989,
+  "capture_interval_p95_s": 0.0840752000000066,
+  "submitted": 1194.0,
+  "processed": 804.0,
+  "contract_frames": 803,
+  "face_bearing_ratio": 0.6438356164383562,
+  "face_bearing_frames": 517,
+  "face_bearing_update_fps": 10.043764794520548,
+  "native_camera_mode_verified": false,
+  "accuracy_verified": false,
+  "cold_boot_verified": false,
+  "hybrid_summary": {
+    "foreground_inferences": 315,
+    "accepted_lk_frames": 338
+  },
+  "background_model_frames": 44,
+  "background_detector_positive_frames": 44,
+  "background_valid_ert_frames": 44,
+  "status_counts": {
+    "adjust_posture": 795,
+    "normal": 2,
+    "unreliable": 6
+  },
+  "null_vitals_when_invisible": true,
+  "blink_states_visible": {
+    "OPEN": 338,
+    "CLOSING": 36,
+    "CLOSED": 91,
+    "OPENING": 52
+  },
+  "max_blink_count": 7,
+  "max_yawn_count": 1,
+  "landmark_cpu_ms_mean_by_path": {
+    "0": 20.662115384615383,
+    "10": 18.294118343195265,
+    "8": 46.150461538461535,
+    "9": 43.642916666666665
+  },
+  "action_accuracy_verified": false,
+  "includes_critical_first_order_optimization": false,
+  "camera_sha256": "feb3e21cd04892f822e1de1b6c1ff6588f34c4d4e9d8d14560464bb82eba1835"
+}

@@ -1,0 +1,54 @@
+{
+  "kind": "progressive_HR_filter_and_continuous_display_candidate_NOT_accuracy_certification",
+  "archive": ".tmp/autonomy/hr_continuous_20261102/vigilens_hr_continuous_candidate.zip",
+  "archive_sha256": "4fdceff8dbf0ebd9d61418061e7157ea60f4db3a728daf0cb346c23ff2a4a864",
+  "archive_bytes": 86484934,
+  "camera_sha256": "ea355f05d989821644f0c398e19b3fa93eff7f982f0f32356706811a3b0b53cd",
+  "config_sha256": "352c237d3e7510a4470970fc3854a51e8f2c155104a23c604a1ef34d2fb3e9c9",
+  "filter": {
+    "enabled": true,
+    "window": 3,
+    "alpha": 0.35,
+    "interval_s": 0.8,
+    "max_gap_s": 1.5,
+    "max_spread_bpm": 12.0,
+    "startup_samples": 1
+  },
+  "python_filter_window_packaging_passed": 24,
+  "linux_http_passed": 4,
+  "ctest_passed": 10,
+  "asan_ubsan_core_passed": true,
+  "frontend_checks_passed": 9,
+  "offline_passed": 26,
+  "offline_failed": 0,
+  "hardware_test_completed": true,
+  "same_run_filter_c_python_matched_frames": 2676,
+  "display_replay": [
+    {
+      "source": "2026-11-02_hr_continuous_live",
+      "contract_frames": 1786,
+      "first_display_frame_id": 1451,
+      "current_frames": 30,
+      "history_frames": 316,
+      "waiting_frames": 1440,
+      "blank_frames": 0,
+      "numeric_after_first_valid_without_gaps": true,
+      "disconnect_retains_marked_history": true
+    },
+    {
+      "source": "2026-11-02_hr_continuous_live2",
+      "contract_frames": 890,
+      "first_display_frame_id": 395,
+      "current_frames": 200,
+      "history_frames": 300,
+      "waiting_frames": 390,
+      "blank_frames": 0,
+      "numeric_after_first_valid_without_gaps": true,
+      "disconnect_retains_marked_history": true
+    }
+  ],
+  "live_browser_visual_qa_performed": false,
+  "continuous_current_measurement_verified": false,
+  "accuracy_verified": false,
+  "raw_face_media_saved_or_transferred": false
+}

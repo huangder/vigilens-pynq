@@ -1,0 +1,46 @@
+✔ exactly ten seconds does not alert; first sample beyond ten does, once (1.668ms)
+✔ heart rate must exceed the configured line, not equal it (0.7578ms)
+✔ fatigue status produces its own warning and practical advice (0.2774ms)
+✔ simultaneous sustained conditions produce one combined warning (0.1241ms)
+✔ normal readings reset timing instead of accumulating intermittent anomalies (0.173ms)
+✔ each condition keeps its timer when another condition starts or resolves (0.1266ms)
+✔ acknowledged episodes stay quiet until recovery and a fresh sustained episode (0.1863ms)
+✔ a new warning still appears when a different warning was acknowledged (0.1442ms)
+✔ invalid quality, light, motion or visibility cannot sustain warnings (1.0246ms)
+✔ missing or gated heart rate cannot alert while reliable fatigue still can (0.3289ms)
+✔ gaps longer than the configured disconnect timeout reset the clock (0.1425ms)
+✔ timestamps and frame IDs must advance; replays start fresh (0.1741ms)
+✔ disconnect with the same timestamp clears an already visible warning (0.1376ms)
+✔ policy changes, malformed frames and source tracker replacement reset timing (0.0771ms)
+✔ duration and gap settings must be valid and are respected (0.1384ms)
+✔ every sample of all three groups passes the existing contract and is reproducible (19.6365ms)
+✔ exercise recovers without inventing a seventh status or implying fatigue (0.1537ms)
+✔ rest and fatigue heart rates rise and fall inside a bounded band, while exercise recovers (1.1703ms)
+✔ prepared histories do not reuse a repeating wave or synchronize unrelated signals (3.9065ms)
+✔ fatigue playback has one full yawn with a single count increment at every supported duration (3.8897ms)
+✔ samples do not depend on generation order or the transport frame ID (1.3281ms)
+✔ only fatigue fixtures contain sustained eye and yawn evidence (0.1449ms)
+✔ rest stays quiet; exercise and fatigue exercise the latest GitHub alert logic (2.2081ms)
+✔ default round plays each group for 15 seconds, raises fatigue prompt and holds its last sample (0.6032ms)
+✔ pause consumes no samples, resume continues, and looping returns to the first sample (0.1835ms)
+✔ invalid groups and duration cannot produce a broken or runaway player (0.3793ms)
+✔ history and latest sample share one timestamp-based series (1.1331ms)
+✔ one sample is retained and genuine zero remains a number (0.1271ms)
+✔ null, no face, and disconnected samples break rather than zero-fill curves (0.165ms)
+✔ missing frames create a time gap instead of bridging a stale value (0.623ms)
+✔ invalid numeric values never reach the chart (0.1251ms)
+✔ disconnect is anchored to the last sample and never mutates the contract frame (0.1158ms)
+✔ a disconnect before the first measurement does not create history (0.0723ms)
+✔ duplicate frames do not accumulate and recovery is a new segment (0.0851ms)
+✔ a producer timestamp or frame-id reset starts a fresh history (0.1295ms)
+✔ both the 120-second time window and the point limit are enforced (0.2619ms)
+✔ ranges preserve units, cover all samples, and handle constant/zero values (0.208ms)
+✔ both yaw and pitch contribute to a shared degree scale (0.0632ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 151.2624

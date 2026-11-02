@@ -1,0 +1,46 @@
+{
+  "kind": "retained_sample_upper_bound_from_actual_gate_and_timestamps",
+  "assumption": "all visible frames have valid ROI; no physiological signal or estimate generated",
+  "max_retained_samples_upper_bound": 760,
+  "max_at_frame_id": 1294,
+  "required_samples": 900,
+  "visible_quality_refusals": 51,
+  "reset_transitions": [
+    {
+      "frame_id": 97,
+      "ts": 7694.371733,
+      "previous_retained": 72,
+      "face": false,
+      "quality": 0.6659
+    },
+    {
+      "frame_id": 521,
+      "ts": 7708.519433,
+      "previous_retained": 48,
+      "face": true,
+      "quality": 0.6809
+    },
+    {
+      "frame_id": 1297,
+      "ts": 7734.410999,
+      "previous_retained": 760,
+      "face": true,
+      "quality": 0.7337
+    },
+    {
+      "frame_id": 1671,
+      "ts": 7746.890741,
+      "previous_retained": 196,
+      "face": true,
+      "quality": 0.6891
+    },
+    {
+      "frame_id": 1677,
+      "ts": 7747.090624,
+      "previous_retained": 1,
+      "face": false,
+      "quality": 0.4082
+    }
+  ],
+  "config_sha256": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417"
+}

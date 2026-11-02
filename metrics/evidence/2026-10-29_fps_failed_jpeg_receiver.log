@@ -1,0 +1,10 @@
+=== VigiLens A 线：视频回放 → 契约 JSON ===
+config : D:\Desktop\AMD\config.yaml  (PyYAML=有)
+目标帧率: 30.0 fps；实时源按采集时间计时，离线源按 frame_id/fps 回放
+帧源   : board:169.254.73.29:9000 1280x720 RGB888 + verified PL
+板端源 : 同包 RGB/PL；保留板端时间与运动量，不二次采样/旋转
+[face_landmark] 使用 MediaPipe FaceMesh（478 点）。
+方向   : 原样（探测 0 帧，各角度检出帧数 未探测）
+推送   : http://127.0.0.1:8000/api/ingest（1.0 帧/秒，按逻辑时间节流；失败即报错，不静默丢帧）
+预览   : http://127.0.0.1:8000/api/preview（12 fps，同源 JPEG 旁路；失败不截断测量）
+[FAIL] board stream: RGB payload does not match same-packet PL channel sums

@@ -1,0 +1,525 @@
+{
+  "kind": "synthetic_onnx_ncnn_cortex_a9_board_comparison",
+  "source_model_sha256": "2121aacea9169ac27227508238237376fe64b96e2f2cc57082f26e88d650fbd2",
+  "reference": {
+    "kind": "synthetic_model_conversion_reference",
+    "runtime_version": "1.20.1",
+    "model_sha256": "2121aacea9169ac27227508238237376fe64b96e2f2cc57082f26e88d650fbd2",
+    "input_sha256": "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd",
+    "output_sha256": "511dd765e605485ce5ec01950ab6357e856de1d74921c73929dd2ef60141df5f",
+    "output_shape": [
+      1,
+      143
+    ],
+    "finite": true,
+    "synthetic": true,
+    "accuracy_verified": false,
+    "opencv_max_abs_difference": 1.1682510375976562e-05
+  },
+  "board_default_comparison": {
+    "elements": 143,
+    "max_abs_difference": 8.106231689453125e-06,
+    "mean_abs_difference": 5.823436316910323e-07,
+    "first_136_max_abs_difference": 1.1026859283447266e-06,
+    "sha256": "146eba7544fff9ea89da65b5396a33eabd7adc2e15b588bf09df4a47e6ad89a1"
+  },
+  "default_runs": [
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": true,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 60,
+      "threads": 1,
+      "mean_ms": 65.14181064999998,
+      "p50_ms": 65.103967,
+      "p95_ms": 65.283054,
+      "max_rss_kib": 8176,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ]
+    },
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": true,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 60,
+      "threads": 2,
+      "mean_ms": 36.29815086666666,
+      "p50_ms": 36.292878,
+      "p95_ms": 36.464263,
+      "max_rss_kib": 8144,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ]
+    }
+  ],
+  "kernel_sweep": [
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": true,
+      "kernel_policy": "default",
+      "winograd": true,
+      "sgemm": true,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 30,
+      "threads": 2,
+      "mean_ms": 36.35010636666667,
+      "p50_ms": 36.296346,
+      "p95_ms": 36.552331,
+      "max_rss_kib": 8140,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ],
+      "reference_comparison": {
+        "elements": 143,
+        "max_abs_difference": 8.106231689453125e-06,
+        "mean_abs_difference": 5.823436316910323e-07,
+        "first_136_max_abs_difference": 1.1026859283447266e-06,
+        "sha256": "146eba7544fff9ea89da65b5396a33eabd7adc2e15b588bf09df4a47e6ad89a1"
+      }
+    },
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": false,
+      "kernel_policy": "default",
+      "winograd": true,
+      "sgemm": true,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 30,
+      "threads": 2,
+      "mean_ms": 37.21465816666667,
+      "p50_ms": 37.194684,
+      "p95_ms": 37.395486,
+      "max_rss_kib": 7364,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ],
+      "reference_comparison": {
+        "elements": 143,
+        "max_abs_difference": 8.344650268554688e-06,
+        "mean_abs_difference": 5.933371457186613e-07,
+        "first_136_max_abs_difference": 1.1622905731201172e-06,
+        "sha256": "bd5207ae1ac8a6b0ebb63cf228be2507c80f30e12c2c9647d055ae7af73d1590"
+      }
+    },
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": true,
+      "kernel_policy": "winograd_only",
+      "winograd": true,
+      "sgemm": false,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 30,
+      "threads": 2,
+      "mean_ms": 36.15213793333333,
+      "p50_ms": 36.129877,
+      "p95_ms": 36.2064,
+      "max_rss_kib": 8140,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ],
+      "reference_comparison": {
+        "elements": 143,
+        "max_abs_difference": 8.106231689453125e-06,
+        "mean_abs_difference": 5.823436316910323e-07,
+        "first_136_max_abs_difference": 1.1026859283447266e-06,
+        "sha256": "146eba7544fff9ea89da65b5396a33eabd7adc2e15b588bf09df4a47e6ad89a1"
+      }
+    },
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": false,
+      "kernel_policy": "winograd_only",
+      "winograd": true,
+      "sgemm": false,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 30,
+      "threads": 2,
+      "mean_ms": 37.359302166666666,
+      "p50_ms": 37.339159,
+      "p95_ms": 37.562298,
+      "max_rss_kib": 7364,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ],
+      "reference_comparison": {
+        "elements": 143,
+        "max_abs_difference": 8.344650268554688e-06,
+        "mean_abs_difference": 5.933371457186613e-07,
+        "first_136_max_abs_difference": 1.1622905731201172e-06,
+        "sha256": "bd5207ae1ac8a6b0ebb63cf228be2507c80f30e12c2c9647d055ae7af73d1590"
+      }
+    },
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": true,
+      "kernel_policy": "sgemm_only",
+      "winograd": false,
+      "sgemm": true,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 30,
+      "threads": 2,
+      "mean_ms": 36.18887776666667,
+      "p50_ms": 36.137844,
+      "p95_ms": 36.630391,
+      "max_rss_kib": 8140,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ],
+      "reference_comparison": {
+        "elements": 143,
+        "max_abs_difference": 8.106231689453125e-06,
+        "mean_abs_difference": 5.823436316910323e-07,
+        "first_136_max_abs_difference": 1.1026859283447266e-06,
+        "sha256": "146eba7544fff9ea89da65b5396a33eabd7adc2e15b588bf09df4a47e6ad89a1"
+      }
+    },
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": false,
+      "kernel_policy": "sgemm_only",
+      "winograd": false,
+      "sgemm": true,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 30,
+      "threads": 2,
+      "mean_ms": 37.32645056666667,
+      "p50_ms": 37.313976,
+      "p95_ms": 37.453638,
+      "max_rss_kib": 7364,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ],
+      "reference_comparison": {
+        "elements": 143,
+        "max_abs_difference": 8.344650268554688e-06,
+        "mean_abs_difference": 5.933371457186613e-07,
+        "first_136_max_abs_difference": 1.1622905731201172e-06,
+        "sha256": "bd5207ae1ac8a6b0ebb63cf228be2507c80f30e12c2c9647d055ae7af73d1590"
+      }
+    },
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": true,
+      "kernel_policy": "direct",
+      "winograd": false,
+      "sgemm": false,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 30,
+      "threads": 2,
+      "mean_ms": 36.16345476666667,
+      "p50_ms": 36.097782,
+      "p95_ms": 36.415716,
+      "max_rss_kib": 8144,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ],
+      "reference_comparison": {
+        "elements": 143,
+        "max_abs_difference": 8.106231689453125e-06,
+        "mean_abs_difference": 5.823436316910323e-07,
+        "first_136_max_abs_difference": 1.1026859283447266e-06,
+        "sha256": "146eba7544fff9ea89da65b5396a33eabd7adc2e15b588bf09df4a47e6ad89a1"
+      }
+    },
+    {
+      "kind": "ncnn_model_tensor_probe",
+      "synthetic_input": false,
+      "input_kind": "file",
+      "input_provenance_verified": false,
+      "landmark_pipeline_verified": false,
+      "input_layout": "planar_float32",
+      "channel_order_verified": false,
+      "fp16": false,
+      "bf16": false,
+      "int8": false,
+      "packing": false,
+      "kernel_policy": "direct",
+      "winograd": false,
+      "sgemm": false,
+      "fresh_extractor_each_iteration": true,
+      "warmup_iterations": 1,
+      "input_blob": "input1",
+      "output_blob": "output1",
+      "input_shape_whc": [
+        160,
+        160,
+        3
+      ],
+      "iterations": 30,
+      "threads": 2,
+      "mean_ms": 37.3392884,
+      "p50_ms": 37.34493,
+      "p95_ms": 37.45053,
+      "max_rss_kib": 7364,
+      "outputs": [
+        {
+          "slot": 0,
+          "elements": 143,
+          "shape": [
+            143
+          ],
+          "source_dims": 1,
+          "source_w": 143,
+          "source_elempack": 1,
+          "storage": "little_endian_float32"
+        }
+      ],
+      "reference_comparison": {
+        "elements": 143,
+        "max_abs_difference": 8.344650268554688e-06,
+        "mean_abs_difference": 5.933371457186613e-07,
+        "first_136_max_abs_difference": 1.1622905731201172e-06,
+        "sha256": "bd5207ae1ac8a6b0ebb63cf228be2507c80f30e12c2c9647d055ae7af73d1590"
+      }
+    }
+  ],
+  "single_model_30fps_budget_met": false,
+  "full_pipeline_realtime_verified": false,
+  "accuracy_verified": false,
+  "landmark_pipeline_verified": false,
+  "model_tolerance_introduced": false
+}

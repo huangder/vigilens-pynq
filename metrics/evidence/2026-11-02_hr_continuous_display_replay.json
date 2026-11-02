@@ -1,0 +1,28 @@
+{
+  "kind": "actual_contract_replay_through_shared_display_state_NOT_live_browser_or_accuracy_test",
+  "results": [
+    {
+      "source": "2026-11-02_hr_continuous_live",
+      "contract_frames": 1786,
+      "first_display_frame_id": 1451,
+      "current_frames": 30,
+      "history_frames": 316,
+      "waiting_frames": 1440,
+      "blank_frames": 0,
+      "numeric_after_first_valid_without_gaps": true,
+      "disconnect_retains_marked_history": true
+    },
+    {
+      "source": "2026-11-02_hr_continuous_live2",
+      "contract_frames": 890,
+      "first_display_frame_id": 395,
+      "current_frames": 200,
+      "history_frames": 300,
+      "waiting_frames": 390,
+      "blank_frames": 0,
+      "numeric_after_first_valid_without_gaps": true,
+      "disconnect_retains_marked_history": true
+    }
+  ],
+  "accuracy_verified": false
+}

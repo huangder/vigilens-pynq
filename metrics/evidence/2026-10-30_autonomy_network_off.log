@@ -1,0 +1,37 @@
+
+# sh -c '
+> set -e
+> if [ -n "$(pidof vigi_camera_pl 2>/dev/null)" ]; then echo AUTONOMY_BUSY; exit
+ 10; fi
+> trap "ifconfig eth0 169.254.73.29 netmask 255.255.0.0 up" EXIT
+> echo AUTONOMY_NETWORK_OFF_BEGIN
+> ifconfig eth0 down
+> printf "ETH_OPERSTATE="
+> cat /sys/class/net/eth0/operstate
+> /tmp/vg_model_probe_xnn /tmp/attention.tflite --zeros /tmp/network_off_attenti
+on 10 2
+> cat /tmp/network_off_attention.json
+> /tmp/vg_measure_replay /tmp/synthetic_replay.txt > /tmp/network_off_replay.jso
+nl
+> echo "f16d1d99516d1d28fecfdd4d03811ae2379dbe53ce34078cf5a31dadba26ae40  /tmp/n
+etwork_off_replay.jsonl" | sha256sum -c -
+> wc -l /tmp/network_off_replay.jsonl
+> echo AUTONOMY_NETWORK_OFF_PASS
+> '
+ '\nVIGI_COMMAND_DONE\n'
+AUTONOMY_NETWORK_OFF_BEGIN
+[ 1886.868822] macb e000b000.ethernet eth0: Link is Down
+ETH_OPERSTATE=down
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+MODEL_PROBE_PASS outputs=7 synthetic=1 delegate_nodes=3 mean_ms=99.6976
+{"kind":"model_tensor_probe","synthetic_input":true,"landmark_pipeline_verified":false,"iterations":10,"threads":2,"input_bytes":442368,"delegate_nodes":3,"mean_ms":99.697628199999983,"p50_ms":99.660235,"p95_ms":99.979506999999998,"max_rss_kib":25344,"outputs":[{"slot":0,"elements":1404,"shape":[1,1,1,1404]},{"slot":1,"elements":160,"shape":[1,1,1,160]},{"slot":2,"elements":142,"shape":[1,1,1,142]},{"slot":3,"elements":142,"shape":[1,1,1,142]},{"slot":4,"elements":10,"shape":[1,1,1,10]},{"slot":5,"elements":10,"shape":[1,1,1,10]},{"slot":6,"elements":1,"shape":[1,1,1,1]}]}
+/tmp/network_off_replay.jsonl: OK
+900 /tmp/network_off_replay.jsonl
+AUTONOMY_NETWORK_OFF_PASS
+[ 1888.497724] macb e000b000.ethernet eth0: PHY [e000b000.ethernet-ffffffff:01] driver [RTL8211E Gigabit Ethernet] (irq=POLL)
+[ 1888.508832] macb e000b000.ethernet eth0: configuring for phy/rgmii-id link mode
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

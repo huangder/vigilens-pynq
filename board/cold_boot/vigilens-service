@@ -1,0 +1,149 @@
+#!/bin/sh
+# Single-owner supervisor. Models/programs remain on read-only SD; all mutable
+# state/logs are in RAM. Invalid HR never triggers a restart: only frame staleness.
+set -eu
+config=${VIGILENS_BOOT_CONFIG:-/etc/vigilens/boot.env}
+test -r "$config" || { echo "VIGILENS_FAIL boot_config_missing";exit 1; }
+. "$config"
+run=$VG_RUN_DIR
+app=$VG_APP_DIR
+mkdir -p "$run"
+lock=$run/service.lock
+camera_pid= http_pid=
+state() { printf '%s\n' "$*" > "$run/service.status";echo "VIGILENS_STATE $*"; }
+alive() { [ -n "$1" ] && kill -0 "$1" 2>/dev/null; }
+owner() {
+    [ -r "$lock/pid" ] || return 1
+    supervisor=$(cat "$lock/pid")
+    case "$supervisor" in ''|*[!0-9]*) return 1;; esac
+    alive "$supervisor" || return 1
+    case "$(tr '\000' ' ' < /proc/"$supervisor"/cmdline 2>/dev/null)" in
+        *vigilens-service*run*) return 0;; *) return 1;;
+    esac
+}
+check() {
+    test "$(cat "$VG_BOOT_ROOT/vigilens/READY")" = "$VG_RELEASE_ID" || return 1
+    test "$(sha256sum "$VG_BOOT_ROOT/vigilens/config.yaml" | cut -d ' ' -f 1)" = "$VG_CONFIG_SHA256" || return 1
+    (cd "$app" && sha256sum -c manifest.sha256) || return 1
+    test -x "$app/vigi_camera_autonomy" && test -x "$app/vg_metrics_http"
+}
+stop_child() {
+    child=$1
+    if alive "$child"; then
+        kill -TERM "$child" 2>/dev/null || true
+        remaining=$VG_STOP_GRACE_SECONDS
+        while alive "$child" && [ "$remaining" -gt 0 ]; do sleep 1;remaining=$((remaining-1));done
+        if alive "$child"; then kill -KILL "$child" 2>/dev/null || true;fi
+    fi
+    [ -z "$child" ] || wait "$child" 2>/dev/null || true
+}
+cleanup() {
+    trap - EXIT HUP INT TERM
+    stop_child "$camera_pid";stop_child "$http_pid"
+    rm -f "$lock/pid"
+    rmdir "$lock" 2>/dev/null || true
+    state stopped
+}
+rotate() {
+    for log in "$run/camera.log" "$run/http.log" "$run/supervisor.log";do
+        [ -f "$log" ] || continue
+        bytes=$(wc -c < "$log")
+        if [ "$bytes" -gt "$VG_LOG_MAX_BYTES" ];then
+            cp "$log" "$log.previous"
+            # Producers use O_APPEND. Truncation therefore cannot create holes.
+            : > "$log"
+        fi
+    done
+}
+case "${1:-status}" in
+    check) check;echo VIGILENS_PACKAGE_CHECK_PASS;exit 0;;
+    status)
+        if owner;then cat "$run/service.status" 2>/dev/null || true;echo "supervisor_pid=$supervisor";exit 0;fi
+        echo not_running;exit 1;;
+    stop)
+        if owner;then
+            kill -TERM "$supervisor";echo "stop_requested pid=$supervisor"
+            remaining=$((VG_STOP_GRACE_SECONDS*2+VG_HEALTH_POLL_SECONDS+1))
+            while owner && [ "$remaining" -gt 0 ];do sleep 1;remaining=$((remaining-1));done
+            if owner;then echo stop_timeout;exit 1;fi
+        fi
+        exit 0;;
+    restart) "$0" stop;exec "$0" start;;
+    start)
+        if owner;then echo "already_running pid=$supervisor";exit 0;fi
+        # An owner may have created the lock but not written its PID yet.
+        # Wait one configured health tick before classifying it as stale.
+        if [ -d "$lock" ];then
+            sleep "$VG_HEALTH_POLL_SECONDS"
+            if owner;then echo "already_running pid=$supervisor";exit 0;fi
+            if [ -r "$lock/pid" ];then
+                previous=$(cat "$lock/pid")
+                case "$previous" in ''|*[!0-9]*) ;; *)
+                    if alive "$previous";then echo ambiguous_live_lock;exit 1;fi;;
+                esac
+            fi
+            rm -f "$lock/pid";rmdir "$lock" 2>/dev/null || true
+        fi
+        "$0" run >> "$run/supervisor.log" 2>&1 &
+        echo "start_requested pid=$!";exit 0;;
+    run) ;;
+    *) echo 'usage: vigilens-service start|stop|restart|status|check';exit 2;;
+esac
+if ! mkdir "$lock" 2>/dev/null;then echo already_locked;exit 0;fi
+echo $$ > "$lock/pid"
+trap cleanup EXIT
+trap 'exit 143' HUP INT TERM
+if ! check;then state package_check_failed;exit 1;fi
+. "$app/runtime.env"
+export LD_LIBRARY_PATH="$app${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export VIGI_DETECTOR_DIR="$app" VIGI_LANDMARK_MODEL="$app/$VG_LANDMARK_FILE"
+export VIGI_CAMERA_FORMAT="$VG_CAMERA_FORMAT" OMP_WAIT_POLICY=PASSIVE GOMP_SPINCOUNT=0
+export VIGI_CONTRACT_LOG=/dev/null VIGI_CONTRACT_LATEST="$run/latest.json"
+export VIGI_JPEG_FAST=1 VIGI_PIPELINE=threaded VIGI_DECODE_WORKERS=2 VIGI_PL_WAIT=yield VIGI_AUDIT_EVERY=30
+unset VIGI_STREAM_BIND VIGI_VERIFY VIGI_LANDMARK_EVERY VIGI_ERT_SYNC VIGI_TRACKER_SYNC VIGI_ERT_TRACE
+if ! ifconfig "$VG_NETWORK_INTERFACE" "$VG_BOARD_IP" netmask "$VG_NETMASK" up;then
+    state network_configuration_failed
+fi
+rm -f "$run/latest.json"
+camera_started=0
+state waiting_for_camera
+while :;do
+    if ! alive "$http_pid";then
+        [ -z "$http_pid" ] || wait "$http_pid" 2>/dev/null || true
+        "$app/vg_metrics_http" --bind "$VG_HTTP_BIND" --port "$VG_HTTP_PORT" \
+            --latest "$run/latest.json" --display "$app/display.html" --stale-seconds "$VG_STALE_SECONDS" >> "$run/http.log" 2>&1 &
+        http_pid=$!
+        echo "HTTP_STARTED pid=$http_pid port=$VG_HTTP_PORT"
+    fi
+    if [ -n "$camera_pid" ] && ! alive "$camera_pid";then
+        rc=0;wait "$camera_pid" || rc=$?
+        echo "CAMERA_EXIT rc=$rc";camera_pid=
+        rm -f "$run/latest.json"
+        state camera_retry;sleep "$VG_RETRY_SECONDS"
+    fi
+    if [ -z "$camera_pid" ] && [ -c "$VG_CAMERA_DEVICE" ];then
+        # Never compete with an unrelated camera/PL owner.
+        if pidof vigi_camera_autonomy vigi_camera_pl >/dev/null 2>&1;then
+            state camera_owned_by_other_process
+        else
+            "$app/vigi_camera_autonomy" "$VG_CAMERA_DEVICE" "$VG_CAPTURE_WIDTH" "$VG_CAPTURE_HEIGHT" 0 "$VG_CAPTURE_FPS" "$VG_MOTION_THRESHOLD" >> "$run/camera.log" 2>&1 &
+            camera_pid=$!;camera_started=$(date +%s)
+            state "camera_starting pid=$camera_pid"
+        fi
+    fi
+    if alive "$camera_pid";then
+        now=$(date +%s)
+        if [ -f "$run/latest.json" ];then
+            modified=$(stat -c %Y "$run/latest.json")
+            if [ "$((now-modified))" -gt "$VG_FRAME_STALE_SECONDS" ];then
+                state frame_stream_stale;stop_child "$camera_pid";camera_pid=
+                rm -f "$run/latest.json";sleep "$VG_RETRY_SECONDS"
+            else state "running camera_pid=$camera_pid http_pid=$http_pid";fi
+        elif [ "$((now-camera_started))" -gt "$VG_STARTUP_GRACE_SECONDS" ];then
+            state camera_startup_timeout;stop_child "$camera_pid";camera_pid=
+            sleep "$VG_RETRY_SECONDS"
+        fi
+    fi
+    rotate
+    sleep "$VG_HEALTH_POLL_SECONDS"
+done

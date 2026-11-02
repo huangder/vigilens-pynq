@@ -10,9 +10,33 @@
     WS   /ws            1 帧/秒推送
     GET  /              直接托管 frontend/（省掉跨域与 file:// 的麻烦）
 
+**年龄档案旁路（不是契约的一部分，年龄分层疲劳功能用）**：
+    GET  /api/age               当前档案件（本地决定 + A 线观测）
+    POST /api/age               A 线推观测（body 含 schema=age-v1）或用户做决定（body 含 action）
+    GET  /api/age/events        档案事件审计轨迹（记录功能）
+    GET  /api/fatigue_db/summary 测量库汇总（库不存在时如实返回 exists=false）
+
+    为什么年龄也走旁路：契约 §1 把指标帧冻结为恰好 9 个顶层字段，加字段就是非法帧。
+    年龄档案与 `triggers`、旁路画面是同一个范式 —— **旁路不污染冻结契约**。
+    优先级刻意写死：**用户的决定 > 流水线的观测**（见 `age_sidecar()` 的注释）。
+
+**旁路视频（不是契约的一部分，C 线 OpenMV 链路用）**：
+    POST /api/frame         A 线（或串口收帧桥）把当前画面 JPEG（原始字节）推进来
+    GET  /api/video_status  画面源状态（带过期判定，前端据此决定是否显示真实画面）
+    GET  /video.mjpg        MJPEG 流（multipart/x-mixed-replace），可直接喂 run_pipeline --source
+
+    为什么画面必须走旁路而不是塞进帧：契约 §1 规定帧的顶层字段只能是那 9 个，
+    多一个字段就是**非法帧**、会被 validate_frame 拒收。而画面是"给人看的"，
+    不是测量数据 —— 与已有的 `triggers` 证据链旁路是**同一个范式**。
+    缺省不推画面时，本文件的行为与从前**逐字节一致**（前端退回占位画面）。
+
 数据源开关（《02》M2 只改这一处）：
     python backend/api.py                 # mock 模式：B 线独立开发
     python backend/api.py --no-mock       # 只广播 ingest 进来的真实帧：M2 集成后
+
+**mock 不会与真实数据混流**（台账 BUG-014）：mock 模式下只要收到一帧真实 ingest，
+mock 泵就自动停止并打印一行提示，`/api/status` 的 `source` / `mock_active` 反映实际状态。
+理由：两者进的是同一条总线，混在一起时网页上分不出哪个数字是测出来的 —— 那违反《05》铁律 1。
 """
 
 from __future__ import annotations
@@ -41,7 +65,7 @@ except ImportError:
 
 try:
     from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-    from fastapi.responses import JSONResponse, Response
+    from fastapi.responses import JSONResponse, Response, StreamingResponse
     from fastapi.staticfiles import StaticFiles
 
     HAVE_FASTAPI = True
@@ -51,6 +75,7 @@ except ImportError:
 HISTORY_MAX = 600          # 最近 10 分钟（1 Hz）
 EVENTS_MAX = 200
 PREVIEW_MAX_BYTES = 2_000_000
+JPEG_MAGIC = b"\xff\xd8"   # JPEG SOI；用来确认推进来的确实是 JPEG
 
 PREVIEW_HEADER_NAMES = {
     "frame_id": "x-vigilens-frame-id",
@@ -76,6 +101,25 @@ _last_status: str | None = None
 # 为什么是旁路：契约 §1 规定帧的顶层字段只能是那 9 个，多一个就是非法帧；
 # 而证据链是"给界面看的解释"，不是测量数据。详见 docs/08_B线给A线的接口请求.md。
 _latest_triggers: dict[str, Any] | None = None
+
+# mock 泵的停机闸（台账 BUG-014）：**真实帧一到就把 mock 关掉**。
+# 为什么必须关而不是"打一行提醒继续推"：mock 帧和真实帧进的是**同一条总线**，
+# 网页上分不出哪个数字是测出来的 —— 那正好踩《05》铁律 1（不报没测过的数字）。
+# 一旦收到非 mock 的来源，就置位；`_mock_pump` 的等待也用这个 Event，能被立刻唤醒。
+_MOCK_STOP = threading.Event()
+# 只用来保证"已停 mock"这句提示只打一次（真机连推几百帧不该刷屏）。
+_MOCK_YIELD_LOGGED = threading.Event()
+# 当前"有效"的 mock 泵代号。每建一个 app 就 +1，让**上一个 app 的泵线程自行退出**。
+# 为什么需要：模块级 Event 是进程单例，而测试会反复 create_app 并各自起线程；
+# 只清 Event 会让旧线程"复活"，两个泵同时往总线推帧。
+_MOCK_GEN = 0
+# 最近一帧真实数据的来源（`/api/status` 的 `source` 要看**实际收到什么**，不是启动参数）。
+_LAST_REAL_SOURCE: str | None = None
+
+# 旁路画面：只保留**最新一帧**（不排队）。
+# 为什么不排队：画面是给人看的，晚到的帧没有价值；排队只会在慢客户端后面堆内存。
+# 形状：{"jpeg": bytes, "frame_id": int|None, "ts": float, "recv_at": float, "bytes": int}
+_latest_frame_jpeg: dict[str, Any] | None = None
 
 
 class PreviewValidationError(ValueError):
@@ -235,9 +279,69 @@ def preview_response_headers(packet: dict[str, Any]) -> dict[str, str]:
     }
 
 
+def put_frame_jpeg(jpeg: bytes, *, frame_id: int | None = None,
+                   ts: float | None = None) -> dict:
+    """收下一帧旁路画面（只留最新）。返回该帧的元信息。"""
+    global _latest_frame_jpeg
+    meta = {
+        "jpeg": bytes(jpeg),
+        "bytes": len(jpeg),
+        "frame_id": frame_id,
+        "ts": ts,
+        "recv_at": time.time(),
+    }
+    with _lock:
+        _latest_frame_jpeg = meta
+    return {k: v for k, v in meta.items() if k != "jpeg"}
+
+
+def frame_jpeg_status(stale_after: float) -> dict:
+    """画面源状态。`stale_after` 秒内没收到新画面就视为无源。
+
+    为什么要"过期"判断而不是"有没有收到过"：推送端挂掉后 `_latest_frame_jpeg`
+    会一直留着最后一帧，前端若只判断"非空"就会**永远显示一张冻结的旧画面**，
+    看起来像视频卡住，实际是源已经死了。这与契约里 `disconnected` 的思路一致。
+    """
+    with _lock:
+        cur = _latest_frame_jpeg
+    if cur is None:
+        return {"ok": True, "has_video": False, "reason": "尚未收到任何画面（未推 /api/frame）"}
+    age = time.time() - cur["recv_at"]
+    has = age <= stale_after
+    return {
+        "ok": True,
+        "has_video": has,
+        "age_s": round(age, 3),
+        "stale_after_s": stale_after,
+        "bytes": cur["bytes"],
+        "frame_id": cur["frame_id"],
+        "ts": cur["ts"],
+        "reason": None if has else "画面已超过 %.1fs 未更新（推送端可能已停）" % stale_after,
+    }
+
+
+def stop_mock_pump(*, reason: str = "真实帧") -> bool:
+    """停掉 mock 泵（幂等）。返回"本次是否真的从在推变成已停"。
+
+    台账 BUG-014：mock 与真实帧进同一条总线时，网页分不清哪个数字是测出来的。
+    所以真实数据一旦出现，mock 必须**让位**，而不是"打个提醒继续推"。
+    """
+    if _MOCK_STOP.is_set():
+        return False
+    _MOCK_STOP.set()
+    if not _MOCK_YIELD_LOGGED.is_set():
+        _MOCK_YIELD_LOGGED.set()
+        print(f"[api] 收到{reason} → 已停止 mock 推送（mock 帧与真实测量不再混在一条总线上）",
+              flush=True)
+    return True
+
+
 def ingest(frame: dict, *, source: str = "unknown", triggers: list | None = None) -> dict:
     """接收一帧（来自 mock 循环、A 线 POST、或进程内 publish）。"""
-    global _last_status, _latest_triggers
+    global _last_status, _latest_triggers, _LAST_REAL_SOURCE
+    if source not in ("mock", "unknown"):
+        stop_mock_pump(reason=f"来自 {source} 的真实帧")
+        _LAST_REAL_SOURCE = source
     with _lock:
         _history.append(frame)
         if triggers is not None:
@@ -257,15 +361,81 @@ def ingest(frame: dict, *, source: str = "unknown", triggers: list | None = None
     return frame
 
 
-def _mock_pump(hz: float) -> None:
-    """后台线程：按 hz 把 mock 帧推进总线。用线程而不是 asyncio，A 线同步代码也能复用。"""
+def _mock_pump(hz: float, gen: int) -> None:
+    """后台线程：按 hz 把 mock 帧推进总线。用线程而不是 asyncio，A 线同步代码也能复用。
+
+    台账 BUG-014：这个循环**必须可停** —— 两个退出条件：
+      · `_MOCK_STOP` 置位（收到了真实帧）；
+      · `gen != _MOCK_GEN`（已被更新的 app 取代，别让旧线程"复活"）。
+    等待用 `Event.wait()` 而不是 `time.sleep()`，否则真实帧已经到了还要再推一秒 mock。
+    """
     period = 1.0 / hz if hz > 0 else 0.0
     fid = 0
-    while True:
+    while not _MOCK_STOP.is_set() and gen == _MOCK_GEN:
         ingest(mock_frame(fid), source="mock")
         fid += 1
-        if period:
-            time.sleep(period)
+        if period and _MOCK_STOP.wait(period):
+            break
+
+
+# ---------------------------------------------------------------------------
+# 年龄档案（旁路；与 triggers / 旁路画面同一范式，**不进 9 字段契约帧**）
+# ---------------------------------------------------------------------------
+# 两个数据来源在这里汇合，优先级刻意写死为：**用户的决定 > 流水线的观测**。
+#   · A 线（run_pipeline --age）把档案件 POST 到 /api/age（body 里带 schema=age-v1）→ 观测；
+#   · 用户在网页上输入/确认/点"接受推断" → POST /api/age（body 里带 action）→ 决定。
+# 为什么不是"以最后到达者为准"：那会让一个还在跑的测量进程把用户刚确认的年龄覆盖掉，
+# 而"一次正式确认后不再采用年龄推测"这条承诺会当场失效。
+_latest_age: dict[str, Any] | None = None
+_AGE_STORE: Any = None          # 懒建：AgeProfileStore（不需要 DB 也能工作）
+
+
+def age_store() -> Any:
+    """进程内单例。懒建的理由：没装 fastapi 的场景（离线 mock）不该 import 它。"""
+    global _AGE_STORE
+    if _AGE_STORE is None:
+        try:
+            from .age_infer import AgeProfileStore
+        except ImportError:
+            from age_infer import AgeProfileStore
+        _AGE_STORE = AgeProfileStore(load_config())
+    return _AGE_STORE
+
+
+def ingest_age_state(doc: dict, *, source: str = "ingest") -> dict:
+    """收下 A 线推来的年龄档案件（只保留最新一份，并把观测同步进本地 store）。"""
+    global _latest_age
+    with _lock:
+        _latest_age = doc
+    try:
+        age_store().apply_remote_state(doc)
+    except Exception:  # noqa: BLE001 —— 同步失败不许影响"收下这份档案件"
+        pass
+    return {"ok": True, "source": source, "frame_id": doc.get("frame_id")}
+
+
+def age_sidecar() -> dict:
+    """对外发布的档案件 = 本地决定 + 远端观测（字段级合并规则见上）。
+
+    没有收到任何 A 线档案件时，返回本地 store 的骨架 —— 这也让"B 线单独起服务"
+    的离线演示与"接了 A 线"的集成态走**同一条读取路径**，前端不需要两套逻辑。
+    """
+    store = age_store()
+    local = store.sidecar(ts=time.time(), frame_id=-1)
+    with _lock:
+        remote = _latest_age
+    if remote is None:
+        return local
+    merged = dict(remote)
+    # profile 是"用户的决定"：本地一旦有决定（已确认 / 已收录主体），就以本地为准。
+    if local["profile"]["confirmed"] or local["profile"].get("subject"):
+        merged["profile"] = local["profile"]
+    # 其余三段是"流水线的观测"：以远端为准（本地骨架没有真实观测）。
+    for key in ("enrollment", "estimate", "comparison"):
+        if remote.get(key) is not None:
+            merged[key] = remote[key]
+    merged["privacy"] = remote.get("privacy") or local["privacy"]
+    return merged
 
 
 def disconnect_frame(last: dict[str, Any] | None) -> dict[str, Any]:
@@ -303,7 +473,15 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
                   description="知倦 / VigiLens —— 无接触疲劳与生命体征趋势监测终端（后端接口）")
 
     if mock:
-        threading.Thread(target=_mock_pump, args=(hz,), daemon=True).start()
+        # 每次建 app 都从"在推"开始（模块级 Event 是进程单例，测试会反复 create_app）；
+        # 同时把 _MOCK_GEN +1，让上一个 app 留下的泵线程自行退出。
+        global _MOCK_GEN
+        _MOCK_STOP.clear()
+        _MOCK_YIELD_LOGGED.clear()
+        _MOCK_GEN += 1
+        threading.Thread(target=_mock_pump, args=(hz, _MOCK_GEN), daemon=True).start()
+        print("[api] mock 模式：页面上的数字**不是真实测量**（B 线独立开发用）；"
+              "收到真实 ingest 帧后会自动停止 mock", flush=True)
 
     def thresholds() -> dict[str, Any]:
         """门控阈值：**唯一来源是仓库根 `config.yaml`**，随 `/api/status` 下发给前端。
@@ -318,7 +496,8 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
         keys = (
             "perclos_warning", "face_visible_min", "quality_min_score", "light_score_min",
             "motion_score_max", "vital_require_quality", "fatigue_long_close_count",
-            "alert_duration_seconds", "hr_alert_high_bpm", "ws_disconnect_timeout_s",
+            "ws_disconnect_timeout_s",
+            "alert_duration_seconds", "hr_alert_high_bpm",
         )
         return {k: cfg[k] for k in keys if k in cfg}
 
@@ -330,14 +509,19 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
         with _lock:
             triggers = _latest_triggers
         preview = PREVIEW_STORE.summary(PREVIEW_STORE.latest())
+        # 台账 BUG-014：`source` 必须反映**实际收到了什么**，不是启动参数。
+        # 否则"页面显示 mock、实际跑的是真实管线"（或反过来）这种事，谁都看不出来。
+        mock_active = bool(mock) and not _MOCK_STOP.is_set()
         return {
             "ok": True,
-            "source": "mock" if mock else "ingest",
+            "source": "mock" if mock_active else (_LAST_REAL_SOURCE or "ingest"),
+            "mock_active": mock_active,
             "published": HUB.published,
             "subscribers": HUB.subscriber_count,
             "frame": latest,
             "triggers": triggers,
             "preview": preview,
+            "age": age_sidecar(),
             "thresholds": thresholds(),
             "server_time": round(time.time(), 3),
         }
@@ -366,6 +550,65 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
         with _lock:
             evs = list(_events)[-max(1, min(limit, EVENTS_MAX)):]
         return {"ok": True, "count": len(evs), "events": evs}
+
+    @app.post("/api/frame")
+    async def api_frame(request: Request, frame_id: int | None = None,
+                        ts: float | None = None) -> JSONResponse:
+        """旁路画面入口：A 线/串口收帧桥把当前画面的 JPEG **原始字节** POST 到这里。
+
+        刻意收 raw body 而不是 JSON+base64：base64 会平白胖 33%，而这是每秒好几帧的热路径。
+        帧号/时间戳走 query string（可缺省）——它们只用于前端把画面和指标对齐，不参与契约校验。
+        """
+        body = await request.body()
+        if not body:
+            return JSONResponse(status_code=422, content={"ok": False, "errors": ["空 body"]})
+        if not body.startswith(JPEG_MAGIC):
+            return JSONResponse(status_code=422, content={
+                "ok": False,
+                "errors": ["不是 JPEG（前两字节应为 FF D8）；本接口只收 JPEG 原始字节"],
+            })
+        meta = put_frame_jpeg(body, frame_id=frame_id, ts=ts)
+        return JSONResponse(content={"ok": True, **meta})
+
+    @app.get("/api/video_status")
+    def api_video_status() -> dict:
+        # 判定"过期"的阈值取两个画面周期的 3 倍，且至少 1.5s：
+        # 太紧会在正常抖动时闪"无画面"，太松会让停掉的推送端看起来还活着。
+        hz = float(cfg.get("video_push_hz") or 8.0)
+        stale_after = max(1.5, 3.0 / hz if hz > 0 else 1.5)
+        return frame_jpeg_status(stale_after)
+
+    @app.get("/video.mjpg")
+    def video_mjpg() -> StreamingResponse:
+        """MJPEG 流：浏览器 `<img src="/video.mjpg">` 可直接显示，无需前端解码。
+
+        两个刻意的行为：
+
+        1. **按节奏重发最新帧，而不是"有新帧才发"。** 后者会让客户端在下一次推送到来前
+           一直阻塞读（实测会直接把 `urlopen(...).read()` 拖到超时），中间的代理也会掐连接。
+           重发是 MJPEG 的常规做法。
+        2. 因此**"画面冻住了"这件事在流本身是看不出来的** —— 由前端轮询
+           `/api/video_status` 的 `has_video`（带过期判定）决定要不要把画面藏起来。
+           把"源死了"和"帧没变"分开表达，比在流里塞心跳更清楚。
+        """
+        hz = float(cfg.get("video_push_hz") or 8.0)
+        period = 1.0 / hz if hz > 0 else 0.125
+
+        def gen():
+            try:
+                while True:
+                    with _lock:
+                        cur = _latest_frame_jpeg
+                    if cur is not None:
+                        yield (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: "
+                               + str(cur["bytes"]).encode() + b"\r\n\r\n" + cur["jpeg"] + b"\r\n")
+                    time.sleep(period)
+            except GeneratorExit:
+                # 客户端关掉页面是**正常**路径，不要打日志、不要当异常
+                return
+
+        return StreamingResponse(gen(),
+                                 media_type="multipart/x-mixed-replace; boundary=frame")
 
     @app.post("/api/ingest")
     async def api_ingest(payload: dict) -> JSONResponse:
@@ -427,6 +670,100 @@ def create_app(*, mock: bool = True, hz: float = 1.0, mount_frontend: bool = Tru
             return Response(status_code=304, headers=headers)
         return Response(content=packet["jpeg"], media_type="image/jpeg", headers=headers)
 
+    # ---- 年龄档案旁路（**不进契约帧**：契约帧永远只有那 9 个字段）------------
+    @app.get("/api/age")
+    def api_age() -> dict:
+        """当前档案件：本地决定 + A 线观测（合并规则见 `age_sidecar()`）。"""
+        return {"ok": True, "age": age_sidecar(), "server_time": round(time.time(), 3)}
+
+    @app.post("/api/age")
+    async def api_age_post(payload: dict) -> JSONResponse:
+        """两个用途共用一个端点（靠 body 形状区分，不靠 URL）：
+
+        · **A 线推观测**：body 是完整档案件（含 `schema: age-v1`）→ 校验后收下；
+        · **用户做决定**：body 是 `{"action": ..., ...}` → 改本地档案并留事件。
+
+        为什么共用一个端点：两者都是"年龄档案的写入"，分成两个 URL 只会让人
+        把观测推到决定端点上去（症状：用户的确认被静默忽略，极难查）。
+        """
+        try:
+            from .age_contract import AGE_SCHEMA_VERSION, validate_age_state
+        except ImportError:
+            from age_contract import AGE_SCHEMA_VERSION, validate_age_state
+
+        store = age_store()
+        if payload.get("schema") == AGE_SCHEMA_VERSION:
+            errs = validate_age_state(payload)
+            if errs:
+                return JSONResponse(status_code=422, content={"ok": False, "errors": errs})
+            return JSONResponse(content=ingest_age_state(payload, source="a_line"))
+
+        action = payload.get("action")
+        ts = time.time()
+        try:
+            if action == "set_manual":
+                age = payload.get("age_years")
+                if isinstance(age, bool) or not isinstance(age, (int, float)):
+                    raise ValueError("set_manual 需要整数 age_years")
+                age = int(age)
+                if not (0 <= age <= 120):
+                    raise ValueError(f"年龄必须在 0~120，收到 {age}")
+                store.set_manual(age, ts=ts)
+            elif action == "accept_estimate":
+                store.accept_estimate(ts=ts)
+            elif action == "reject_estimate":
+                store.reject_estimate(ts=ts)
+            elif action == "enroll_decision":
+                accept = payload.get("accept")
+                if not isinstance(accept, bool):
+                    raise ValueError("enroll_decision 需要布尔 accept")
+                store.enroll_decision(accept, ts=ts)
+            elif action == "reset":
+                store.reset(ts=ts)
+            else:
+                return JSONResponse(status_code=422, content={
+                    "ok": False,
+                    "errors": [f"未知 action：{action!r}（可用：set_manual / accept_estimate / "
+                               f"reject_estimate / enroll_decision / reset）"]})
+        except ValueError as e:
+            return JSONResponse(status_code=422, content={"ok": False, "errors": [str(e)]})
+        event = store.events[-1] if store.events else None
+        return JSONResponse(content={"ok": True, "age": age_sidecar(), "event": event})
+
+    @app.get("/api/age/events")
+    def api_age_events(limit: int = 50) -> dict:
+        """档案事件（记录功能）：本次服务进程内的审计轨迹。"""
+        store = age_store()
+        evs = store.events[-max(1, min(limit, 500)):]
+        return {"ok": True, "count": len(evs), "events": evs}
+
+    @app.get("/api/fatigue_db/summary")
+    def api_fatigue_db_summary() -> Any:
+        """测量库汇总。库不存在时**如实返回 exists=false**，而不是报 500。"""
+        try:
+            from .fatigue_db import FatigueDB
+        except ImportError:
+            from fatigue_db import FatigueDB
+        path = REPO_ROOT / str(cfg.get("age_db_path")
+                               or "data/fatigue_db/vigilens_fatigue.sqlite3")
+        if not path.exists():
+            return {"ok": True, "db": {
+                "path": str(path), "exists": False, "counts": {}, "by_band": {},
+                "by_provenance": {}, "reference_version": None, "reference_rows": 0,
+                "note": "数据库尚未创建。跑一次：python backend/run_pipeline.py "
+                        "--source synthetic --pattern blink --seconds 30 --stub "
+                        "--age --db data/fatigue_db/vigilens_fatigue.sqlite3"},
+                "recent": []}
+        try:
+            with FatigueDB(path, cfg=cfg) as db:
+                summary = db.summary()
+                summary["exists"] = True
+        except Exception as e:  # noqa: BLE001 —— 读库失败要让人看得见原因
+            return JSONResponse(status_code=500,
+                                content={"ok": False, "errors": [f"读取数据库失败：{e}"]})
+        recent = summary.pop("recent", [])
+        return {"ok": True, "db": summary, "recent": recent}
+
     @app.websocket("/ws")
     async def ws_endpoint(websocket: WebSocket) -> None:
         await websocket.accept()
@@ -480,8 +817,11 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[api] http://{args.host}:{args.port}/          ← 仪表盘（托管 frontend/）")
     print(f"[api] http://{args.host}:{args.port}/api/status")
     print(f"[api] http://{args.host}:{args.port}/api/preview ← 同源 JPEG 旁路")
+    print(f"[api] http://{args.host}:{args.port}/api/age     ← 年龄档案旁路（GET 读 / POST 决定）")
+    print(f"[api] http://{args.host}:{args.port}/api/fatigue_db/summary ← 测量库汇总")
+    print(f"[api] http://{args.host}:{args.port}/video.mjpg ← 旁路画面（需 --push-video 或串口收帧桥）")
     print(f"[api] ws://{args.host}:{args.port}/ws           ← 1 帧/秒推送")
-    print(f"[api] 数据源：{'mock（B 线独立开发）' if not args.no_mock else 'ingest（M2 集成）'}")
+    print(f"[api] 数据源：{'mock（B 线独立开发；真实帧一到自动停）' if not args.no_mock else 'ingest（M2 集成）'}")
     uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
     return 0
 

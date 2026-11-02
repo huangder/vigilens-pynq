@@ -1,0 +1,53 @@
+{
+  "source": "metrics\\evidence\\2026-11-01_native_detection_tiered.log",
+  "frames": 658,
+  "rc0_frames": 601,
+  "detect_ms": {
+    "sum": 464.84,
+    "mean": 0.706,
+    "median": 0.448,
+    "max": 16.995
+  },
+  "total_ms": {
+    "sum": 996.245,
+    "mean": 1.514
+  },
+  "by_path": {
+    "0": {
+      "frames": 1,
+      "detect_ms_sum": 0.0,
+      "detect_ms_mean": 0.0,
+      "landmark_ms_sum": 0.0
+    },
+    "1": {
+      "frames": 5,
+      "detect_ms_sum": 13.05,
+      "detect_ms_mean": 2.61,
+      "landmark_ms_sum": 2.779
+    },
+    "2": {
+      "frames": 610,
+      "detect_ms_sum": 293.642,
+      "detect_ms_mean": 0.481,
+      "landmark_ms_sum": 423.017
+    },
+    "3": {
+      "frames": 40,
+      "detect_ms_sum": 131.819,
+      "detect_ms_mean": 3.295,
+      "landmark_ms_sum": 26.57
+    },
+    "4": {
+      "frames": 1,
+      "detect_ms_sum": 16.995,
+      "detect_ms_mean": 16.995,
+      "landmark_ms_sum": 1.434
+    },
+    "5": {
+      "frames": 1,
+      "detect_ms_sum": 9.334,
+      "detect_ms_mean": 9.334,
+      "landmark_ms_sum": 0.658
+    }
+  }
+}

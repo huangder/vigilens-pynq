@@ -1,0 +1,11 @@
+{
+  "kind": "synthetic_onnx_ncnn_board_comparison",
+  "elements": 196,
+  "max_abs_difference": 8.642673492431641e-07,
+  "mean_abs_difference": 2.407373822465235e-07,
+  "reference_sha256": "cd64139de5c508e1178de6b79a2312cd4c371211aa72672cac7e5552ae0666e8",
+  "board_sha256": "5acec6f853ead5f17459327341488ed4303034f5b41c80bb41c502dbbe2d2ae3",
+  "input_sha256": "4496218ecb68f2c690cef27a4d19a9ba5960045f93e30f353c9a48e1dea7e682",
+  "accuracy_verified": false,
+  "model_tolerance_introduced": false
+}

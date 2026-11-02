@@ -1,0 +1,104 @@
+{
+  "kind": "pnet_pyramid_width_benchmark",
+  "hardware_test": false,
+  "board_verified": false,
+  "source": "metrics\\evidence\\2026-11-01_pnet_min_face_raw.txt",
+  "runs": 45,
+  "min_face": {
+    "40": {
+      "runs": 15,
+      "median_ms": 25.298,
+      "min_ms": 7.716,
+      "max_ms": 335.475
+    },
+    "80": {
+      "runs": 15,
+      "median_ms": 4.5,
+      "min_ms": 2.039,
+      "max_ms": 208.762
+    },
+    "120": {
+      "runs": 15,
+      "median_ms": 3.799,
+      "min_ms": 1.078,
+      "max_ms": 25.774
+    }
+  },
+  "candidates": [
+    {
+      "frame": 0,
+      "min_face": 40.0,
+      "boxes": 65
+    },
+    {
+      "frame": 0,
+      "min_face": 80.0,
+      "boxes": 37
+    },
+    {
+      "frame": 0,
+      "min_face": 120.0,
+      "boxes": 26
+    },
+    {
+      "frame": 150,
+      "min_face": 40.0,
+      "boxes": 64
+    },
+    {
+      "frame": 150,
+      "min_face": 80.0,
+      "boxes": 34
+    },
+    {
+      "frame": 150,
+      "min_face": 120.0,
+      "boxes": 21
+    },
+    {
+      "frame": 300,
+      "min_face": 40.0,
+      "boxes": 47
+    },
+    {
+      "frame": 300,
+      "min_face": 80.0,
+      "boxes": 25
+    },
+    {
+      "frame": 300,
+      "min_face": 120.0,
+      "boxes": 16
+    },
+    {
+      "frame": 450,
+      "min_face": 40.0,
+      "boxes": 59
+    },
+    {
+      "frame": 450,
+      "min_face": 80.0,
+      "boxes": 36
+    },
+    {
+      "frame": 450,
+      "min_face": 120.0,
+      "boxes": 19
+    },
+    {
+      "frame": 570,
+      "min_face": 40.0,
+      "boxes": 47
+    },
+    {
+      "frame": 570,
+      "min_face": 80.0,
+      "boxes": 32
+    },
+    {
+      "frame": 570,
+      "min_face": 120.0,
+      "boxes": 22
+    }
+  ]
+}

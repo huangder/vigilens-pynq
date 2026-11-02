@@ -1,0 +1,27 @@
+{
+  "checkpoints": 8,
+  "accepted": 8,
+  "decision_mismatches": 0,
+  "max_abs_hr_delta": 0.0,
+  "max_abs_conf_delta": 0.0,
+  "first": {
+    "frame": 960,
+    "present": true,
+    "reject": null,
+    "hr_c": 68.0,
+    "hr_py": 68.0,
+    "conf_c": 0.9797,
+    "conf_py": 0.9797,
+    "decision_match": true
+  },
+  "last": {
+    "frame": 1170,
+    "present": true,
+    "reject": null,
+    "hr_c": 70.0,
+    "hr_py": 70.0,
+    "conf_c": 0.9797,
+    "conf_py": 0.9797,
+    "decision_match": true
+  }
+}

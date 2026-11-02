@@ -1,0 +1,11 @@
+{
+  "tag": "3.6.1",
+  "commit": "d407447ed56c4121a11ccbd266dc184ca1ead0c2",
+  "url": "https://codeload.github.com/alibaba/MNN/tar.gz/refs/tags/3.6.1",
+  "archive_sha256": "4b6065c4e2674318f5bf1dc75836ce4d30c17bfe598c4a1b11b7d0b2092b06e6",
+  "archive_bytes": 94212337,
+  "agents_files": [
+    "MNN-3.6.1/AGENTS.md",
+    "MNN-3.6.1/apps/mnncli/AGENTS.md"
+  ]
+}

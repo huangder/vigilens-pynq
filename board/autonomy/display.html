@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>知倦 · 板端指标</title>
+<style>
+body{font:16px system-ui,sans-serif;max-width:850px;margin:40px auto;padding:0 20px;background:#101920;color:#edf5f7}h1{font-size:26px}
+#state,.reading{padding:20px;border:1px solid #597482;border-radius:12px}.reading{margin:20px 0;background:#192932}
+#hrValue{font-size:64px;font-variant-numeric:tabular-nums;margin:8px 0;display:inline-block}#hrKind{color:#83d5b0}.history #hrKind,.history #hrValue{color:#e0bd7a}
+.waiting #hrValue{font-size:36px}pre{white-space:pre-wrap;overflow-wrap:anywhere}small,#hrNote{color:#b5c9d3}details{margin-top:24px}
+</style>
+<h1>知倦 · 板端指标</h1><p>疲劳趋势监测实验室原型。页面显示板端估计，准确性尚未验收。</p>
+<p id="state" role="status">正在连接开发板…</p>
+<section class="reading waiting" id="hrCard" aria-live="polite">
+ <div>心率趋势 <span id="hrKind">正在测量</span></div>
+ <strong id="hrValue">正在测量</strong> <span id="hrUnit"></span>
+ <p id="hrNote">取得有效心率后自动显示</p>
+</section>
+<p><small>信号中断时保留最近有效值并标注历史时间；历史值不是当前测量，不参与告警。</small></p>
+<details><summary>查看原始测量与状态</summary><pre id="metrics">等待首个测量帧</pre></details>
+<script>
+/* HR_DISPLAY_BUNDLE */
+/* HR_DISPLAY_CONFIG */
+const state=document.getElementById('state'),metrics=document.getElementById('metrics');
+const hr=document.getElementById('hrValue'),unit=document.getElementById('hrUnit'),kind=document.getElementById('hrKind'),note=document.getElementById('hrNote'),card=document.getElementById('hrCard');
+const display=VigiLensHrDisplay.create({freshMs:HR_DISPLAY_CONFIG.ws_disconnect_timeout_s*1000});
+let busy=false,connected=false;
+function paint(){const view=display.view(Date.now(),connected);hr.textContent=view.text;unit.textContent=view.unit;kind.textContent=view.label;note.textContent=view.note;card.className='reading '+view.kind;}
+async function update(){
+ if(busy)return;busy=true;
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),2000);
+ try{
+  const response=await fetch('/api/latest',{cache:'no-store',signal:controller.signal});
+  if(!response.ok)throw Error('unavailable');
+  const frame=await response.json();connected=true;
+  const eligible=frame.quality.overall>=HR_DISPLAY_CONFIG.vital_require_quality;
+  display.accept(frame,Date.now(),eligible);
+  state.textContent=frame.status+' · '+frame.advice;
+  metrics.textContent=JSON.stringify(frame,null,2);
+ }catch(error){connected=false;state.textContent='连接或当前测量不可用，等待恢复';metrics.textContent='当前测量不可用；心率卡保留带时间标记的历史值';}
+ finally{clearTimeout(timer);busy=false;paint();setTimeout(update,1000);}
+}
+setInterval(paint,1000);update();
+</script></html>

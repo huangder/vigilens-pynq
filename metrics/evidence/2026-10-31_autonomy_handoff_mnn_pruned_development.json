@@ -1,0 +1,39 @@
+{
+  "kind": "mnn_fp32_vs_ncnn_fp32_same_video_development",
+  "name": "peppa_mnn_pruned_development",
+  "frames": 99,
+  "point_displacement_original_crop_pixels": {
+    "n": 6732,
+    "mean": 2.0312851484121233e-05,
+    "p50": 1.9669532775878906e-05,
+    "p95": 5.128164859762311e-05,
+    "max": 9.672421668437582e-05
+  },
+  "coordinate_abs_difference_first136": {
+    "n": 13464,
+    "mean": 3.193611908865627e-08,
+    "p50": 2.9802322387695312e-08,
+    "p95": 1.1920928955078125e-07,
+    "max": 2.384185791015625e-07
+  },
+  "frame_rms_pixels": {
+    "n": 99,
+    "mean": 2.5585189787882614e-05,
+    "p50": 2.473176155907927e-05,
+    "p95": 3.310741714367788e-05,
+    "max": 3.6833627993842087e-05
+  },
+  "sha256": {
+    "model": "be908e37a2dba5fb1b43fcf242f54db5290800f999ff18c2406432726f19b138",
+    "host_probe": "c681548a70eb72d72f8fd607e560df50c0472493614b46b077035cd985b182cd",
+    "manifest": "c5866b0b3b3fef6a5a6bd0fd343dddda97516b67f2d5fc9679e3de950b5f6374"
+  },
+  "accuracy_verified": false,
+  "threshold_calibration_verified": false,
+  "full_pipeline_realtime_verified": false,
+  "limitations": [
+    "Host comparison, not board face-image error.",
+    "FP32 predictions are not human ground truth.",
+    "Same video development split already used for candidate selection."
+  ]
+}

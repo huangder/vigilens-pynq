@@ -1,0 +1,29 @@
+uptime
+ 02:46:10 up  2:46,  load average: 0.00, 0.00, 0.00
+# df -k /tmp
+Filesystem           1K-blocks      Used Available Use% Mounted on
+tmpfs                   238432    154784     83648  65% /tmp
+# grep -E 'MemAvailable|MemFree' /proc/meminfo
+MemFree:          270672 kB
+MemAvailable:     268040 kB
+# ps | grep -E 'vigi_camera|vg_metrics|autonomy|install' | grep -v grep
+# ifconfig eth0
+eth0      Link encap:Ethernet  HWaddr 4A:33:17:D3:43:C9  
+          inet addr:169.254.73.29  Bcast:169.254.255.255  Mask:255.255.0.0
+          inet6 addr: fe80::4833:17ff:fed3:43c9/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:140262 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:78327 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:196451541 (187.3 MiB)  TX bytes:7579038 (7.2 MiB)
+          Interrupt:39 Base address:0xb000 
+
+# test -e /tmp/vigilens_hr20 && echo HR20_DEST_ALREADY_EXISTS
+# test -f /tmp/vigilens_hr_temporal/manifest.sha256 && tail -n 2 /tmp/vigilens_h
+r_temporal/manifest.sha256
+93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962  det3.bin
+632dbe65200014a46b29a883588894799827ef769b9f6dd1a446d76b8fc18c0d  runtime.env
+# printf '\nHR20_PREFLIGHT_END\n'
+
+HR20_PREFLIGHT_END
+# 

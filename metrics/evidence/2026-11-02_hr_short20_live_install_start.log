@@ -1,0 +1,7 @@
+sh /tmp/hr20_install.sh > /tmp/hr20_install.log 2>&1 &
+# echo HR20_INSTALL_PID=$!
+HR20_INSTALL_PID=621
+# printf '\nHR20_INSTALL_LAUNCHED\n'
+
+HR20_INSTALL_LAUNCHED
+# 

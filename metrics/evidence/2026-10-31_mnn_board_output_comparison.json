@@ -1,0 +1,180 @@
+{
+  "kind": "mnn_board_output_comparison",
+  "source": "logged ARM serial transcripts (offline re-reading, not a new board run)",
+  "board_rerun": false,
+  "input": {
+    "path": ".tmp/autonomy/candidates/peppa_input_synthetic.f32",
+    "sha256": "1eebed2a407647faa48624fb9b0756b6afd1867bacbf9499643dc763fa7a47dd"
+  },
+  "board_outputs": {
+    "peppa_mnn_t2.output0.f32": {
+      "asset": "original",
+      "log": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_original.log",
+      "log_sha256": "11110600ee7031c58a2796f4562c44207fb59b4dd3cb61d09bdd8d16b9af6c9e",
+      "bytes": 572,
+      "sha256": "cde263832e4b17ea1f477df2d32b7799d1b047309a8382205a4979881a4996f7",
+      "all_finite": true,
+      "elements": 143,
+      "arm_timing_threads_2": {
+        "mean_ms": 31.210686773333315,
+        "p50_ms": 31.200804,
+        "p95_ms": 31.313899,
+        "max_rss_kib": 7740
+      }
+    },
+    "peppa_mnn_pruned_t2.output0.f32": {
+      "asset": "pruned",
+      "log": "metrics/evidence/2026-10-31_autonomy_handoff_mnn_pruned.log",
+      "log_sha256": "5fa7cc065c4bfaace0a8156d93d0bae380580c2d44c253ff356eead7bfa613ce",
+      "bytes": 572,
+      "sha256": "cde263832e4b17ea1f477df2d32b7799d1b047309a8382205a4979881a4996f7",
+      "all_finite": true,
+      "elements": 143,
+      "arm_timing_threads_2": {
+        "mean_ms": 27.59421111666667,
+        "p50_ms": 27.591289,
+        "p95_ms": 27.699823,
+        "max_rss_kib": 7040
+      }
+    }
+  },
+  "references": {
+    "original": [
+      {
+        "engine": "mnn_host",
+        "reference": ".tmp/autonomy/mnn/peppa_host.output0.f32",
+        "present": true,
+        "sha256": "651e37f6baff23f66e828641bd291ebc6e0c5fe669f2cdabe624fbf2da07d20d",
+        "elements": 143,
+        "max_abs_difference": 1.3709068298339844e-06,
+        "mean_abs_difference": 1.517209139737216e-07,
+        "max_first136_abs_difference": 3.5762786865234375e-07
+      },
+      {
+        "engine": "onnxruntime_host",
+        "reference": ".tmp/autonomy/candidates/peppa_output_onnxruntime.f32",
+        "present": true,
+        "sha256": "511dd765e605485ce5ec01950ab6357e856de1d74921c73929dd2ef60141df5f",
+        "elements": 143,
+        "max_abs_difference": 1.1444091796875e-05,
+        "mean_abs_difference": 6.563284180381082e-07,
+        "max_first136_abs_difference": 1.2516975402832031e-06
+      },
+      {
+        "engine": "opencv_dnn_host",
+        "reference": ".tmp/autonomy/candidates/peppa_output_opencv.f32",
+        "present": true,
+        "sha256": "6ab5363ba956f9e0d39f4ae3314ca18f25e4547ac7aa9dd3fe6ce9a1571a1295",
+        "elements": 143,
+        "max_abs_difference": 2.2649765014648438e-06,
+        "mean_abs_difference": 1.7000870271162552e-07,
+        "max_first136_abs_difference": 4.172325134277344e-07
+      }
+    ],
+    "pruned": [
+      {
+        "engine": "mnn_host",
+        "reference": ".tmp/autonomy/mnn/pruned/peppa_pruned_mnn_host.output0.f32",
+        "present": true,
+        "sha256": "78afbfd7e50bdc3b8f16b5ee61c73b932ab2f48d428200ade3b49143156f5781",
+        "elements": 143,
+        "max_abs_difference": 1.430511474609375e-06,
+        "mean_abs_difference": 1.5192932182258658e-07,
+        "max_first136_abs_difference": 3.8743019104003906e-07
+      },
+      {
+        "engine": "onnxruntime_host",
+        "reference": ".tmp/autonomy/mnn/pruned/peppa_pruned_ort.output0.f32",
+        "present": true,
+        "sha256": "569b79100f4b2394aa01a9011ee4f45dc38def7314892335be87900986d96b46",
+        "elements": 143,
+        "max_abs_difference": 2.6226043701171875e-06,
+        "mean_abs_difference": 1.1071666970953241e-07,
+        "max_first136_abs_difference": 2.086162567138672e-07
+      },
+      {
+        "engine": "ncnn_host",
+        "reference": ".tmp/autonomy/mnn/pruned/peppa_pruned_ncnn.output0.f32",
+        "present": true,
+        "sha256": "e42569dca9d0a92123034cdd11c6aa6ff511a45e882ff0578f08bc52cab7bb6c",
+        "elements": 143,
+        "max_abs_difference": 1.5497207641601562e-06,
+        "mean_abs_difference": 8.226899833945961e-08,
+        "max_first136_abs_difference": 2.086162567138672e-07
+      }
+    ]
+  },
+  "comparisons": {
+    "original": {
+      "mnn_host": {
+        "engine": "mnn_host",
+        "reference": ".tmp/autonomy/mnn/peppa_host.output0.f32",
+        "present": true,
+        "sha256": "651e37f6baff23f66e828641bd291ebc6e0c5fe669f2cdabe624fbf2da07d20d",
+        "elements": 143,
+        "max_abs_difference": 1.3709068298339844e-06,
+        "mean_abs_difference": 1.517209139737216e-07,
+        "max_first136_abs_difference": 3.5762786865234375e-07
+      },
+      "onnxruntime_host": {
+        "engine": "onnxruntime_host",
+        "reference": ".tmp/autonomy/candidates/peppa_output_onnxruntime.f32",
+        "present": true,
+        "sha256": "511dd765e605485ce5ec01950ab6357e856de1d74921c73929dd2ef60141df5f",
+        "elements": 143,
+        "max_abs_difference": 1.1444091796875e-05,
+        "mean_abs_difference": 6.563284180381082e-07,
+        "max_first136_abs_difference": 1.2516975402832031e-06
+      },
+      "opencv_dnn_host": {
+        "engine": "opencv_dnn_host",
+        "reference": ".tmp/autonomy/candidates/peppa_output_opencv.f32",
+        "present": true,
+        "sha256": "6ab5363ba956f9e0d39f4ae3314ca18f25e4547ac7aa9dd3fe6ce9a1571a1295",
+        "elements": 143,
+        "max_abs_difference": 2.2649765014648438e-06,
+        "mean_abs_difference": 1.7000870271162552e-07,
+        "max_first136_abs_difference": 4.172325134277344e-07
+      }
+    },
+    "pruned": {
+      "mnn_host": {
+        "engine": "mnn_host",
+        "reference": ".tmp/autonomy/mnn/pruned/peppa_pruned_mnn_host.output0.f32",
+        "present": true,
+        "sha256": "78afbfd7e50bdc3b8f16b5ee61c73b932ab2f48d428200ade3b49143156f5781",
+        "elements": 143,
+        "max_abs_difference": 1.430511474609375e-06,
+        "mean_abs_difference": 1.5192932182258658e-07,
+        "max_first136_abs_difference": 3.8743019104003906e-07
+      },
+      "onnxruntime_host": {
+        "engine": "onnxruntime_host",
+        "reference": ".tmp/autonomy/mnn/pruned/peppa_pruned_ort.output0.f32",
+        "present": true,
+        "sha256": "569b79100f4b2394aa01a9011ee4f45dc38def7314892335be87900986d96b46",
+        "elements": 143,
+        "max_abs_difference": 2.6226043701171875e-06,
+        "mean_abs_difference": 1.1071666970953241e-07,
+        "max_first136_abs_difference": 2.086162567138672e-07
+      },
+      "ncnn_host": {
+        "engine": "ncnn_host",
+        "reference": ".tmp/autonomy/mnn/pruned/peppa_pruned_ncnn.output0.f32",
+        "present": true,
+        "sha256": "e42569dca9d0a92123034cdd11c6aa6ff511a45e882ff0578f08bc52cab7bb6c",
+        "elements": 143,
+        "max_abs_difference": 1.5497207641601562e-06,
+        "mean_abs_difference": 8.226899833945961e-08,
+        "max_first136_abs_difference": 2.086162567138672e-07
+      }
+    }
+  },
+  "new_tolerance_introduced": false,
+  "accuracy_verified": false,
+  "full_pipeline_realtime_verified": false,
+  "board_original_vs_pruned": {
+    "byte_identical": true,
+    "max_abs_difference": 0.0
+  }
+}

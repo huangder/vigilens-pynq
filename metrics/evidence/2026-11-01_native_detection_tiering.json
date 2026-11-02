@@ -1,0 +1,105 @@
+{
+  "kind": "native_detection_tiering_ab",
+  "hardware_test": false,
+  "accuracy_verified": false,
+  "board_verified": false,
+  "purpose": "host replay of the board composition; board fps must be re-measured",
+  "baseline": {
+    "contract_frames": 605,
+    "visible_frames": 597,
+    "rejected_frames": 53,
+    "detect_ms_total": 581.823,
+    "contract_sha256": "6442106de1f8b266a318335566e570f8830b1e75cfd4c2473c63bda415b91076"
+  },
+  "tiered": {
+    "contract_frames": 601,
+    "visible_frames": 596,
+    "rejected_frames": 57,
+    "detect_ms_total": 464.84,
+    "contract_sha256": "44f01041b901e7a30c823a45205c0d78736eab4175361f3e6ad945c468a2de84",
+    "paths": {
+      "0": {
+        "frames": 1,
+        "detect_ms_total": 0.0,
+        "detect_ms_mean": 0.0
+      },
+      "1": {
+        "frames": 5,
+        "detect_ms_total": 13.05,
+        "detect_ms_mean": 2.61
+      },
+      "2": {
+        "frames": 610,
+        "detect_ms_total": 293.642,
+        "detect_ms_mean": 0.481
+      },
+      "3": {
+        "frames": 40,
+        "detect_ms_total": 131.819,
+        "detect_ms_mean": 3.295
+      },
+      "4": {
+        "frames": 1,
+        "detect_ms_total": 16.995,
+        "detect_ms_mean": 16.995
+      },
+      "5": {
+        "frames": 1,
+        "detect_ms_total": 9.334,
+        "detect_ms_mean": 9.334
+      }
+    }
+  },
+  "agreement": {
+    "common_frames": 597,
+    "visible_in_both": 594,
+    "baseline_only_visible": [
+      255
+    ],
+    "tiered_only_visible": [],
+    "byte_identical_rows": 126,
+    "bbox_x_delta_px": {
+      "median": 2.0,
+      "max": 22
+    },
+    "bbox_y_delta_px": {
+      "median": 5.0,
+      "max": 30
+    },
+    "bbox_w_delta_px": {
+      "median": 4.0,
+      "max": 32
+    },
+    "pose_yaw_delta_deg": {
+      "median": 0.508,
+      "max": 3.825
+    },
+    "status_pairs": [
+      [
+        "normal",
+        "normal",
+        579
+      ],
+      [
+        "adjust_posture",
+        "adjust_posture",
+        14
+      ],
+      [
+        "unreliable",
+        "unreliable",
+        2
+      ],
+      [
+        "adjust_posture",
+        "unreliable",
+        1
+      ],
+      [
+        "normal",
+        "adjust_posture",
+        1
+      ]
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "status": "interrupted_evidence_incomplete",
+  "capture_negotiated": {
+    "width": 640,
+    "height": 480,
+    "fourcc": "YUYV",
+    "interval_numerator": 1,
+    "interval_denominator": 30
+  },
+  "full30_verified": false,
+  "fps_result": null,
+  "face_coverage": null,
+  "complete_log_recovered": false,
+  "known_snapshot": {
+    "hardware_frame_n": 551,
+    "contract_lines": 400,
+    "source": "status1.log"
+  },
+  "camera_sha256": "14d33ad5d3959fbe773bf67c18b711c872c3f2c58732aba028732b68446e2740",
+  "cause_of_state_change_confirmed": false,
+  "no_raw_face_images_transferred": true
+}

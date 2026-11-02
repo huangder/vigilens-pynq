@@ -1,0 +1,50 @@
+SYNTHETIC_PL_INPUT source=procedural_yuyv camera_opened=0 performance_evidence=0
+ERT_READY mode=board_async config_sha256=459f1f2ada526e495f3b8960721f2bf8aaeee087d047aad955eb2a027816ea6e accuracy_verified=0
+AUTONOMY_READY measurement=board_native no_pc_producer=1
+PL_READY profile=720p-3of8 ram=0x12000000 bytes=16777216 fid0=3538 motion_threshold=16 pipeline=threaded audit_every=1 codec=raw decode_workers=2 pl_wait=yield
+CAMERA_GEOMETRY width=1280 height=720 gray_width=480 gray_height=270 input=yuyv stride=2560 limited=1
+JPEG_CONFIG method=ISLOW fancy_upsampling=1 cpu_reference=every_frame
+CAMERA_PL_FRAME n=1 seq=0 ts_us=1000000 mismatch=0 audit=1 roi_g=119145003 roi_count=921600 motion_valid=0 motion_ratio_q16=57685 decode_ms=75.946 reference_ms=36.195 transfer_pl_ms=23.802 decode_cpu_ms=49.588 transfer_pl_cpu_ms=9.931
+AUTONOMY_HANDOFF frame_id=0 gray_ms=1.137 submit_ms=5.991 accepted=1
+AUTONOMY_SAMPLE frame_id=0 ts=1.000000000 rc=-2 rejected=1 clear_rc=0 mean_luma=0.500543966 motion_q16=0 motion_valid=0
+CAMERA_PL_FRAME n=2 seq=1 ts_us=1033333 mismatch=0 audit=1 roi_g=119180224 roi_count=921600 motion_valid=1 motion_ratio_q16=3814 decode_ms=113.617 reference_ms=84.335 transfer_pl_ms=24.745 decode_cpu_ms=49.654 transfer_pl_cpu_ms=8.139
+AUTONOMY_HANDOFF frame_id=1 gray_ms=1.134 submit_ms=2.944 accepted=1
+AUTONOMY_SAMPLE frame_id=1 ts=1.033333000 rc=0 detections=0 visible=0 detector_ms=37.679 landmark_ms=0.007 total_ms=38.035 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=14.642 landmark_caller_cpu_ms=0.007 vital_hz=0.000 vital_reject=vitals_blocked
+CAMERA_PL_FRAME n=3 seq=2 ts_us=1066666 mismatch=0 audit=1 roi_g=119166294 roi_count=921600 motion_valid=1 motion_ratio_q16=4108 decode_ms=109.966 reference_ms=96.716 transfer_pl_ms=23.130 decode_cpu_ms=49.517 transfer_pl_cpu_ms=9.517
+AUTONOMY_SAMPLE frame_id=2 ts=1.066666000 rc=0 detections=0 visible=0 detector_ms=0.013 landmark_ms=0.004 total_ms=0.283 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.008 landmark_caller_cpu_ms=0.004 vital_hz=30.000 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=2 gray_ms=1.454 submit_ms=1.047 accepted=1
+CAMERA_PL_FRAME n=4 seq=3 ts_us=1100000 mismatch=0 audit=1 roi_g=119103672 roi_count=921600 motion_valid=1 motion_ratio_q16=4243 decode_ms=97.500 reference_ms=53.811 transfer_pl_ms=17.279 decode_cpu_ms=48.999 transfer_pl_cpu_ms=9.430
+AUTONOMY_HANDOFF frame_id=3 gray_ms=1.066 submit_ms=0.040 accepted=1
+AUTONOMY_SAMPLE frame_id=3 ts=1.100000000 rc=0 detections=0 visible=0 detector_ms=0.012 landmark_ms=0.004 total_ms=0.266 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.008 landmark_caller_cpu_ms=0.004 vital_hz=29.999 vital_reject=vitals_blocked
+CAMERA_PL_FRAME n=5 seq=4 ts_us=1133333 mismatch=0 audit=1 roi_g=119008303 roi_count=921600 motion_valid=1 motion_ratio_q16=4569 decode_ms=112.672 reference_ms=44.700 transfer_pl_ms=17.389 decode_cpu_ms=49.260 transfer_pl_cpu_ms=9.537
+AUTONOMY_SAMPLE frame_id=4 ts=1.133333000 rc=0 detections=0 visible=0 detector_ms=0.010 landmark_ms=0.004 total_ms=0.252 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.004 vital_hz=30.000 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=4 gray_ms=1.133 submit_ms=0.899 accepted=1
+CAMERA_PL_FRAME n=6 seq=5 ts_us=1166666 mismatch=0 audit=1 roi_g=118904763 roi_count=921600 motion_valid=1 motion_ratio_q16=3855 decode_ms=90.472 reference_ms=73.899 transfer_pl_ms=18.044 decode_cpu_ms=49.224 transfer_pl_cpu_ms=10.024
+AUTONOMY_SAMPLE frame_id=5 ts=1.166666000 rc=0 detections=0 visible=0 detector_ms=0.012 landmark_ms=0.004 total_ms=0.271 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.004 vital_hz=30.000 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=5 gray_ms=1.403 submit_ms=0.990 accepted=1
+CAMERA_PL_FRAME n=7 seq=6 ts_us=1200000 mismatch=0 audit=1 roi_g=118805904 roi_count=921600 motion_valid=1 motion_ratio_q16=4099 decode_ms=93.519 reference_ms=43.627 transfer_pl_ms=17.213 decode_cpu_ms=48.986 transfer_pl_cpu_ms=8.924
+AUTONOMY_SAMPLE AUTONOMY_SUMMARY submitted=12 accepted=12 skipped=0 processed=12 succeeded=11 rejected=1 failed=0 rc=0 camera_submit_fps=30.000055 analysis_update_fps=12.338684
+frame_id=6 ts=1.200000000 rc=0 detections=0 visible=0 detector_ms=0.014 landmark_ms=0.004 total_ms=0.277 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.009 landmark_caller_cpu_ms=0.004 vital_hz=29.999 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=6 gray_ms=1.275 submit_ms=1.053 accepted=1
+CAMERA_PL_FRAME n=8 seq=7 ts_us=1233333 mismatch=0 audit=1 roi_g=118723067 roi_count=921600 motion_valid=1 motion_ratio_q16=4146 decode_ms=74.213 reference_ms=43.608 transfer_pl_ms=17.483 decode_cpu_ms=48.145 transfer_pl_cpu_ms=9.340
+AUTONOMY_SAMPLE frame_id=7 ts=1.233333000 rc=0 detections=0 visible=0 detector_ms=0.012 landmark_ms=0.004 total_ms=0.253 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.004 vital_hz=30.000 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=7 gray_ms=1.086 submit_ms=0.889 accepted=1
+CAMERA_PL_FRAME n=9 seq=8 ts_us=1266666 mismatch=0 audit=1 roi_g=118654173 roi_count=921600 motion_valid=1 motion_ratio_q16=4264 decode_ms=74.424 reference_ms=43.685 transfer_pl_ms=18.283 decode_cpu_ms=48.244 transfer_pl_cpu_ms=10.296
+AUTONOMY_SAMPLE frame_id=8 ts=1.266666000 rc=0 detections=0 visible=0 detector_ms=0.012 landmark_ms=0.004 total_ms=0.249 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.004 vital_hz=30.000 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=8 gray_ms=1.012 submit_ms=0.930 accepted=1
+CAMERA_PL_FRAME n=10 seq=9 ts_us=1300000 mismatch=0 audit=1 roi_g=118588383 roi_count=921600 motion_valid=1 motion_ratio_q16=3843 decode_ms=89.115 reference_ms=43.376 transfer_pl_ms=17.373 decode_cpu_ms=49.092 transfer_pl_cpu_ms=9.248
+AUTONOMY_SAMPLE frame_id=9 ts=1.300000000 rc=0 detections=0 visible=0 detector_ms=0.011 landmark_ms=0.004 total_ms=0.252 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.004 vital_hz=29.999 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=9 gray_ms=1.129 submit_ms=0.839 accepted=1
+CAMERA_PL_FRAME n=11 seq=10 ts_us=1333333 mismatch=0 audit=1 roi_g=118510203 roi_count=921600 motion_valid=1 motion_ratio_q16=4122 decode_ms=57.835 reference_ms=43.600 transfer_pl_ms=17.389 decode_cpu_ms=47.674 transfer_pl_cpu_ms=9.264
+AUTONOMY_SAMPLE frame_id=10 ts=1.333333000 rc=0 detections=0 visible=0 detector_ms=0.011 landmark_ms=0.004 total_ms=0.261 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.004 vital_hz=30.000 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=10 gray_ms=1.134 submit_ms=0.961 accepted=1
+CAMERA_PL_FRAME n=12 seq=11 ts_us=1366666 mismatch=0 audit=1 roi_g=118407408 roi_count=921600 motion_valid=1 motion_ratio_q16=4287 decode_ms=48.090 reference_ms=43.809 transfer_pl_ms=18.068 decode_cpu_ms=47.602 transfer_pl_cpu_ms=9.882
+AUTONOMY_SAMPLE frame_id=11 ts=1.366666000 rc=0 detections=0 visible=0 detector_ms=0.011 landmark_ms=0.004 total_ms=0.265 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.004 vital_hz=30.000 vital_reject=vitals_blocked
+AUTONOMY_HANDOFF frame_id=11 gray_ms=1.166 submit_ms=0.960 accepted=1
+ERT_MODEL_FRAME frame_id=1 ts=1.033333000 visible=0 detector_ms=1100.007 landmark_ms=0.002 detections=0 geometry_failure=-1 detector_path=4
+ERT_HYBRID_SUMMARY foreground_inferences=0 accepted_lk_frames=0
+ERT_SUMMARY observations=11 visible=0 lost=11 model_submitted=1 model_completed=1
+DECODE_SUMMARY workers=2 frames=12 peak_active=2
+AUDIT_SUMMARY frames=12 audits=12 failures=0 reference_ms_total=644
+LOCAL_CAMERA_FINISH pl_frames=12 pixel_transport=disabled
+SYNTHETIC_PL_INPUT_PASS width=1280 height=720 frames=12

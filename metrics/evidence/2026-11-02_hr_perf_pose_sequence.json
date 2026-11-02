@@ -1,0 +1,17 @@
+{
+  "kind": "same_input_development_solver_comparison",
+  "solved_pairs": 614,
+  "reject_disagreements": 0,
+  "max_angle_differences_deg": [
+    1.5423209873688393e-06,
+    8.904516410446206e-06,
+    8.56229130485886e-07
+  ],
+  "median_angle_differences_deg": [
+    5.095672320210021e-08,
+    4.5265654757820073e-07,
+    2.5093388700270225e-08
+  ],
+  "posture_gate_disagreements": [],
+  "accuracy_verified": false
+}

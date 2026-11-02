@@ -1,0 +1,234 @@
+{
+  "url": "http://169.254.73.29:8080",
+  "metrics_only": true,
+  "samples": [
+    {
+      "elapsed_s": 0.15790439999909722,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 1.305126700000983,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 2.447408700001688,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 3.595142800000758,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 4.748665600000095,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 5.902568400000746,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 7.055308599999989,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 8.216560100001516,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 9.36141349999889,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 10.510424399999465,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 11.654418900001474,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 12.805423699999665,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 13.956636999999319,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 15.103341800000635,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 16.251769099999365,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 17.41197330000068,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 18.58330560000104,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 19.76642290000018,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 20.920512199998484,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 22.098529599999893,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 23.24496369999906,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 24.486384600000747,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 25.716700500001025,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 26.879538299999695,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 28.021533200000704,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 29.16367249999894,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 30.343540400001075,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 31.513317500000994,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 32.67130670000188,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 33.825074600001244,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 34.96961290000036,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 36.12473709999904,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 37.26992550000068,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 38.41383340000175,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 39.551786100000754,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 40.703626700000314,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 41.857818500000576,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 43.026168600001256,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 44.18150489999971,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 45.331943500001216,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 46.47673890000078,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 47.643980799999554,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 48.808768099999725,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 49.95837880000181,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 51.116389300001174,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 52.284993599998415,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 53.451006100000086,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 54.59500130000015,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 55.765507799998886,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 56.91850340000019,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 58.09133429999929,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 59.23477130000174,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 60.38433530000111,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 61.53607760000159,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 62.716002400000434,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 63.85295910000059,
+      "error": "HTTP Error 502: Bad Gateway"
+    },
+    {
+      "elapsed_s": 65.12284240000008,
+      "error": "HTTP Error 502: Bad Gateway"
+    }
+  ]
+}

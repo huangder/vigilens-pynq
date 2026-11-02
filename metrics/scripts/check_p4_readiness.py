@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import shutil
 import subprocess
 import sys
@@ -31,8 +32,8 @@ except Exception:  # noqa: BLE001
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# 契约 §0：640×480 RGB888 @45 fps；data/README.md：每段 20~30 s
-EXPECT_W, EXPECT_H, EXPECT_FPS = 640, 480, 45.0
+# 契约 §0：640×480 RGB888 @30 fps（v1.2 草案：45→30）；data/README.md：每段 20~30 s
+EXPECT_W, EXPECT_H, EXPECT_FPS = 640, 480, 30.0
 MIN_SECONDS, MAX_SECONDS = 18.0, 40.0      # 给转码留一点余量，但明显不对就报出来
 VIDEOS = ["still", "blink", "yawn", "turn"]
 EVENTS = {"blink", "long_close", "yawn", "turn", "occluded"}
@@ -80,7 +81,7 @@ def probe(path: Path, ffprobe: str | None) -> dict | None:
         return probe_with_opencv(path)
 
     cmd = [ffprobe, "-v", "error", "-select_streams", "v:0",
-           "-show_entries", "stream=width,height,r_frame_rate,duration",
+           "-show_entries", "stream=width,height,r_frame_rate,duration,nb_frames",
            "-of", "default=noprint_wrappers=1", str(path)]
     r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
@@ -93,6 +94,8 @@ def probe(path: Path, ffprobe: str | None) -> dict | None:
         k, v = k.strip(), v.strip()
         if k in ("width", "height"):
             info[k] = int(v)
+        elif k == "nb_frames" and v.isdigit():
+            info["frames"] = int(v)
         elif k == "r_frame_rate" and "/" in v:
             num, _, den = v.partition("/")
             info["fps"] = round(float(num) / float(den), 3) if float(den) else 0.0
@@ -148,6 +151,38 @@ def read_annotations(path: Path) -> tuple[dict[str, str], list[dict[str, str]]]:
     return meta, rows
 
 
+def annotation_problems(meta: dict, rows: list[dict], video: dict | None,
+                        expected_video: str) -> list[str]:
+    """Reject labels referring to another time base or frames outside the video."""
+    problems = []
+    if meta.get("video") and meta["video"] != expected_video:
+        problems.append(f"标注 video={meta['video']} 与 {expected_video} 不一致")
+    for i, row in enumerate(rows, 1):
+        try:
+            start, end = int(row["start_frame"]), int(row["end_frame"])
+        except (KeyError, TypeError, ValueError):
+            problems.append(f"第 {i} 条事件的起止帧不是整数")
+            continue
+        if start < 0 or end < start:
+            problems.append(f"第 {i} 条事件帧区间非法：{start}~{end}")
+        elif video and video.get("frames") and end >= video["frames"]:
+            problems.append(f"第 {i} 条事件结束帧 {end} 超过视频末帧 {video['frames'] - 1}")
+    if video:
+        for key, actual in (("fps", video.get("fps")), ("duration_s", video.get("duration"))):
+            if key not in meta or actual is None:
+                continue
+            try:
+                declared = float(meta[key])
+            except (TypeError, ValueError):
+                declared = math.nan
+            # One frame allows rounding in the duration metadata. FPS must refer
+            # to the same time base; no remapping old labels after transcoding.
+            tolerance = 1.0 / video["fps"] if key == "duration_s" and video.get("fps", 0) > 0 else 0
+            if not math.isfinite(declared) or abs(declared - actual) > tolerance:
+                problems.append(f"标注 {key}={meta[key]} 与视频 {actual:g} 不一致，须人工重新核对")
+    return problems
+
+
 def main() -> int:
     import argparse
 
@@ -174,6 +209,7 @@ def main() -> int:
         vpath = raw / f"{name}.mp4"
         apath = ann / f"{name}.csv"
         marks: list[str] = []
+        info = None
 
         if not vpath.exists():
             problems.append(f"{name}.mp4 不存在（放 {raw.relative_to(REPO_ROOT)}/，规范见 data/README.md）")
@@ -212,8 +248,10 @@ def main() -> int:
         else:
             meta, rows = read_annotations(apath)
             bad = [r for r in rows if r.get("event") not in EVENTS]
-            marks.append(f"标注 ✅ {len(rows)} 条事件"
+            mismatches = annotation_problems(meta, rows, info, vpath.name)
+            marks.append(f"标注 {'⚠️' if bad or mismatches else '✅'} {len(rows)} 条事件"
                          + (f"，其中 {len(bad)} 条 event 非法" if bad else ""))
+            problems.extend(f"{name}.csv：{problem}" for problem in mismatches)
             if bad:
                 problems.append(f"{name}.csv 有 {len(bad)} 条事件的 event 不在 {sorted(EVENTS)} 内")
             if not rows:

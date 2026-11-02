@@ -1,14 +1,19 @@
 """capture.py —— 帧源（《02》任务 A1）。
 
-三种输入，统一 yield Frame：
+四种输入，统一 yield Frame：
   1. 视频文件回放（A 线的主力测试方式，可无限次重复 → 结果可复现）
   2. USB 摄像头（有则更好，没有不影响）
   3. synthetic —— 连 OpenCV 都没装时的**确定性合成帧源**
+  4. mjpeg:URL —— 从网页的旁路 MJPEG 流取帧（OpenMV 这类"画面走串口"的相机用这条）
 
 为什么要有第 3 种：A 线第一周要证明"回放视频 → 契约 JSON"链路通，
 但"这台机器没装 opencv"不该成为卡住链路的理由。合成帧源的像素是
 由 frame_id 确定性生成的（同 frame_id 必得同画面），所以仍然满足
 《02》"重复运行结果一致"的验收口径。
+
+为什么要有第 4 种：**画面通道和指标通道本来就该分开**（契约 §1 禁止把图像塞进契约帧）。
+相机把 JPEG 推进旁路通道后，指标再从同一条旁路取回来 —— 两侧共用同一份像素，
+不需要 A 线去碰串口，也不需要相机的内存装得下 640×480 RGB888。
 
 **方向归一化（BUG-013）**：相机装反、手机倒着拿、竖屏视频被读成横屏时，
 mediapipe 的检出率会掉到 0（180° 倒置实测 0%）。所以这里提供
@@ -18,6 +23,7 @@ mediapipe 的检出率会掉到 0（180° 倒置实测 0%）。所以这里提�
 
 from __future__ import annotations
 
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,9 +35,124 @@ except ImportError:  # 直接以脚本方式运行
     from config import load_config
 
 VIDEO_SUFFIXES = {".mp4", ".avi", ".mov", ".mkv", ".flv", ".wmv", ".webm"}
+CLIP_PREFIX = "clip:"
+
+# `clip:` 源复用 board/video_link 的 manifest 读取；惰性加载，避免让没装 numpy 的
+# 合成帧源路径也去 import 它。
+_VIDEO_CLIP_MODULE: Any = None
+
+
+def _video_clip_module() -> Any:
+    global _VIDEO_CLIP_MODULE
+    if _VIDEO_CLIP_MODULE is not None:
+        return _VIDEO_CLIP_MODULE
+    import importlib.util
+
+    path = Path(__file__).resolve().parents[1] / "board" / "video_link" / "video_clip.py"
+    if not path.exists():
+        raise RuntimeError(f"缺少视频转运模块：{path}")
+    name = "vigilens_video_clip_for_capture"
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"无法加载视频转运模块：{path}")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod  # dataclass（Tier）要求模块已在 sys.modules 里
+    spec.loader.exec_module(mod)
+    _VIDEO_CLIP_MODULE = mod
+    return mod
+
+# 第 4 种帧源：**网页上正在显示的实时画面**（契约旁路通道，不是契约帧）。
+# 为什么不直接用相机：OpenMV H7 的内存装不下 640×480 RGB888（差 3.0 倍，见 docs/interface §0
+# 与 fpga/report/t6），而且本机 OpenCV 打不开任何摄像头。可相机**已经**能把 QVGA JPEG 通过
+# USB 虚拟串口送到 PC，再由旁路通道送进网页 —— 那就让 A 线从这里取帧：
+# 指标来自真相机像素，链路却只需要一个 HTTP 客户端。
+MJPEG_DEFAULT_URL = "http://127.0.0.1:8000/video.mjpg"
+MJPEG_MAX_FRAME_BYTES = 4 * 1024 * 1024
+
+# 第 5 种帧源：`uvc:<idx>` —— USB UVC 相机请求 720p MJPG，帧率取调用方/config。
+# 为什么单独做一个前缀：裸序号 `--source 0` 走 OpenCV 默认后端/默认尺寸，
+# 实测本机只给 640×480@30，会把"默认后端的降级结果"误当成"相机能力"。
+UVC_PREFIX = "uvc:"
+UVC_REQUEST_FOURCC = "MJPG"
+UVC_REQUEST_W, UVC_REQUEST_H = 1280, 720
 
 # 允许的旋转角度（顺时针，单位度）。0 = 不动。
 ROTATE_CHOICES = (0, 90, 180, 270)
+
+
+def iter_mjpeg_jpegs(chunks: Iterator[bytes], *, max_frame_bytes: int = MJPEG_MAX_FRAME_BYTES) -> Iterator[bytes]:
+    """从 `multipart/x-mixed-replace` 字节流里切出每一帧 JPEG 的载荷。
+
+    **纯函数**（只吃一个字节块迭代器），所以不需要网络、不需要摄像头就能测 ——
+    网络路径坏掉是难复现的，解析路径必须是可离线复现的那一半。
+
+    只认带 `Content-Length` 的部件（`backend/api.py` 的 `/video.mjpg` 恰好就是这种；
+    实测浏览器也接受）。分块边界可以落在任何位置：半个头部、JPEG 中间，都行。
+    """
+    buf = bytearray()
+    for chunk in chunks:
+        if not chunk:
+            continue
+        buf.extend(chunk)
+        while True:
+            head_end = buf.find(b"\r\n\r\n")
+            if head_end < 0:
+                # 头部还没收全。若已经长到不像是头部，就丢掉前面的字节防止无限增长。
+                if len(buf) > 65536:
+                    del buf[:-4096]
+                break
+            head = bytes(buf[:head_end])
+            n = None
+            for line in head.split(b"\r\n"):
+                if line.lower().startswith(b"content-length:"):
+                    try:
+                        n = int(line.split(b":", 1)[1].strip())
+                    except ValueError:
+                        n = None
+            if n is None or n <= 0 or n > max_frame_bytes:
+                # 不是我们认识的部件（或长度离谱）：跨过这个头部重找
+                del buf[: head_end + 4]
+                continue
+            end = head_end + 4 + n
+            if len(buf) < end:
+                break  # 载荷还没收全，等下一块
+            payload = bytes(buf[head_end + 4 : end])
+            del buf[:end]
+            if payload.startswith(b"\xff\xd8"):  # JPEG SOI：长度对但内容不对时不要瞎解
+                yield payload
+
+
+def _mjpeg_frames(url: str, limit: int | None, fps: float) -> Iterator[Frame]:
+    """连上 MJPEG 流，解成 BGR 帧。"""
+    import urllib.request
+
+    import cv2  # type: ignore
+    import numpy as np  # type: ignore
+
+    def _chunks() -> Iterator[bytes]:
+        try:
+            with urllib.request.urlopen(url, timeout=10) as resp:
+                while True:
+                    block = resp.read(8192)
+                    if not block:
+                        break
+                    yield block
+        except Exception as e:  # 连不上 / 中途断开：把原因说出来，别让管线静默地"跑完 0 帧"
+            print(f"[warn] MJPEG 流中断（{url}）：{e}")
+
+    n = 0
+    skipped = 0
+    for jpeg in iter_mjpeg_jpegs(_chunks()):
+        if limit is not None and n >= limit:
+            break
+        img = cv2.imdecode(np.frombuffer(jpeg, dtype=np.uint8), cv2.IMREAD_COLOR)
+        if img is None:
+            skipped += 1
+            continue
+        yield Frame(frame_id=n, ts=time.monotonic(), image=img)
+        n += 1
+    if skipped:
+        print(f"[warn] MJPEG 流里有 {skipped} 帧解不出来，已跳过")
 
 
 @dataclass
@@ -41,6 +162,7 @@ class Frame:
     frame_id: int
     ts: float
     image: Any
+    board_metadata: dict[str, Any] | None = None
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -132,13 +254,25 @@ def image_size(image: Any, *, fallback: tuple[int, int] = (640, 480)) -> tuple[i
 
 
 def choose_rotation(images: list[Any], detect: Any,
-                    *, candidates: tuple[int, ...] = ROTATE_CHOICES) -> tuple[int, dict[int, int]]:
+                    *, candidates: tuple[int, ...] = ROTATE_CHOICES,
+                    min_hits: int | None = None) -> tuple[int, dict[int, int]]:
     """在前几帧上试各种朝向，返回 `(最佳角度, 各角度的命中帧数)`。
 
     `detect(image) -> bool`：这一帧能不能检出人脸（由调用方注入，通常是 mediapipe）。
     **并列时选 0**（宁可不动）；一帧都检不出也返回 0 —— 宁可"没帮上忙"，
     也不要因为探测失败把一段本来正常的素材转错。
+
+    `min_hits`：非 0 角度**至少要有几帧**命中才敢采用（默认 `max(2, 帧数//4)`）。
+
+    ⚠️ 为什么需要 `min_hits`（2026-10-23 真机踩到）：
+    用笔记本内置相机跑 `--source 0`，画面里**没有人脸**（300 帧只可见 1 帧），
+    而 8 帧探测里 `{0:0, 90:0, 180:1, 270:0}` —— 仅凭**一帧偶发误检**，
+    整段 300 帧就被转成了 180°。朝向错了，ROI / 姿态 / rPPG 全部跟着错，
+    而且日志里只多一行"顺时针旋转 180°"，**看起来完全正常**。
+    所以规则改成"证据够才动"：默认至少 2 帧且不少于探测帧数的 1/4。
     """
+    if min_hits is None:
+        min_hits = max(2, len(images) // 4)
     scores: dict[int, int] = {}
     for deg in candidates:
         hits = 0
@@ -153,6 +287,9 @@ def choose_rotation(images: list[Any], detect: Any,
     for deg in candidates:                     # 顺序遍历 ⇒ 并列时天然偏向较小的角度，0 优先
         if scores[deg] > scores.get(best, -1):
             best = deg
+    if scores.get(best, 0) < int(min_hits):
+        # 证据不足：一个角度的零星命中多半是误检，按"不转"处理（0 不需要命中数）
+        return 0, scores
     return best, scores
 
 
@@ -212,9 +349,169 @@ class OrientingSource:
     def __iter__(self) -> Iterator[Frame]:
         self.prime()
         for fr in self._buffer:
-            yield Frame(frame_id=fr.frame_id, ts=fr.ts, image=rotate_frame(fr.image, self.degrees))
+            yield Frame(frame_id=fr.frame_id, ts=fr.ts, image=rotate_frame(fr.image, self.degrees),
+                        board_metadata=fr.board_metadata)
         for fr in self._frames:
-            yield Frame(frame_id=fr.frame_id, ts=fr.ts, image=rotate_frame(fr.image, self.degrees))
+            yield Frame(frame_id=fr.frame_id, ts=fr.ts, image=rotate_frame(fr.image, self.degrees),
+                        board_metadata=fr.board_metadata)
+
+
+def parse_uvc_index(source: str) -> int | None:
+    """把 `"uvc:0"` 解析成 `0`；不是 `uvc:` 形式返回 `None`。
+
+    为什么要有这个前缀（docs/37 W2）：裸序号 `--source 0` 走的是 OpenCV 默认后端、
+    默认尺寸（实测本机会给 640×480@30），而 USB 路线的判据是 **1280×720@60 MJPG**。
+    用 `uvc:` 明确表达"这是 UVC 相机，请按 720p60 口径协商"，避免把"默认后端的降级结果"
+    当成"相机能力"。
+    """
+    s = source.strip()
+    if not s.lower().startswith(UVC_PREFIX):
+        return None
+    tail = s[len(UVC_PREFIX):].strip()
+    if not tail.isdigit():
+        raise ValueError(f"uvc: 后面必须是设备序号，例如 uvc:0（收到 {source!r}）")
+    return int(tail)
+
+
+def fourcc_str(value: int) -> str | None:
+    """把 `CAP_PROP_FOURCC` 的整数读回转成 4 字符（不可读时返回 None）。
+
+    ⚠️ Windows/MSMF 实测恒返回 `0x16`（不可读），Linux/V4L2 才给真值 ——
+    所以**不可读时必须返回 None，不许编一个 "MJPG" 上去**。
+    """
+    if not value or value <= 0:
+        return None
+    try:
+        chars = [chr((value >> (8 * i)) & 0xFF) for i in range(4)]
+    except (ValueError, OverflowError):
+        return None
+    if not all(32 <= ord(c) < 127 for c in chars):
+        return None
+    return "".join(chars)
+
+
+def _uvc_backend(cv2_like: Any) -> tuple[int | None, str]:
+    """按平台挑后端：Windows → MSMF（实测唯一能开内置相机的），其它 → V4L2。"""
+    if sys.platform.startswith("win"):
+        api = getattr(cv2_like, "CAP_MSMF", None)
+        return (api, "MSMF") if api is not None else (None, "default")
+    api = getattr(cv2_like, "CAP_V4L2", None)
+    return (api, "V4L2") if api is not None else (None, "default")
+
+
+def open_uvc_capture(cv2_like: Any, index: int, *, width: int, height: int,
+                     fps: float, fourcc: str = UVC_REQUEST_FOURCC) -> tuple[Any, dict]:
+    """按调用方请求打开 MJPG 相机，返回 `(cap, info)`。
+
+    `info` 里区分 **请求** 与 **协商** 两套值 —— 这是 W1/W2 的核心纪律：
+    相机经常拒绝 60 fps 并静默回落到 30，若只记请求值，后面所有"帧率"结论都是假的。
+    """
+    api, api_name = _uvc_backend(cv2_like)
+    cap = cv2_like.VideoCapture(index, api) if api is not None else cv2_like.VideoCapture(index)
+    # 顺序有讲究：先 FOURCC 再尺寸/帧率 —— 有些 UVC 驱动只在 MJPG 模式下才开放 720p60。
+    try:
+        cap.set(getattr(cv2_like, "CAP_PROP_FOURCC"),
+                cv2_like.VideoWriter_fourcc(*fourcc))
+    except Exception as exc:  # pragma: no cover - 依赖驱动行为
+        print(f"[warn] 设置 FOURCC={fourcc} 失败（{exc}），继续按默认像素格式协商")
+    cap.set(getattr(cv2_like, "CAP_PROP_FRAME_WIDTH"), width)
+    cap.set(getattr(cv2_like, "CAP_PROP_FRAME_HEIGHT"), height)
+    cap.set(getattr(cv2_like, "CAP_PROP_FPS"), fps)
+
+    get = cap.get
+
+    def _get(prop: str, default: float = 0.0) -> float:
+        try:
+            value = get(getattr(cv2_like, prop))
+        except Exception:  # pragma: no cover
+            return default
+        return float(value) if value else default
+
+    info = {
+        "index": index,
+        "backend": api_name,
+        "requested": {"w": width, "h": height, "fps": float(fps), "fourcc": fourcc},
+        "negotiated": {
+            "w": int(_get("CAP_PROP_FRAME_WIDTH") or width),
+            "h": int(_get("CAP_PROP_FRAME_HEIGHT") or height),
+            "fps": _get("CAP_PROP_FPS", 0.0),
+            "fourcc": fourcc_str(int(_get("CAP_PROP_FOURCC", 0.0))),
+        },
+    }
+    return cap, info
+
+
+def describe_uvc(info: dict) -> str:
+    """把协商结果写成一行（**请求 vs 协商不一致时必须显式写出来**）。"""
+    req, got = info["requested"], info["negotiated"]
+    mode = f"uvc#{info['index']} [{info['backend']}] {got['w']}x{got['h']}@{got['fps']:.1f}"
+    mode += f" fourcc={got['fourcc'] or '不可读'}"
+    if (req["w"], req["h"]) != (got["w"], got["h"]) or abs(req["fps"] - got["fps"]) > 0.5:
+        outcome = ("已回落" if got["fps"] < req["fps"] or got["w"] < req["w"] or got["h"] < req["h"]
+                   else "协商值不同")
+        mode += f"（请求 {req['w']}x{req['h']}@{req['fps']:.0f} {req['fourcc']}，{outcome}）"
+    return mode
+
+
+def is_live_source(source: str) -> bool:
+    """这个帧源的 `Frame.ts` 是否等于**真实到达时间**（活帧源）。
+
+    为什么需要区分（docs/16 BUG-029 / docs/37 R14）：
+      · 摄像头（`0` / `uvc:0`）与网络流（`mjpeg:` / `http(s)://`）是**活**的 ——
+        它们的时间戳就是"这一帧什么时候到的"，rPPG 必须按它算真实采样率；
+      · `synthetic` 与视频文件是**离线**的 —— 一帧接一帧按解码速度读出来，
+        wall clock 差反映的是解码速度而不是采样间隔；对它们用 `frame_id / fps_nominal`
+        反而可复现（同一段回放跑两次，末帧 JSON 必须逐字节相同）。
+    """
+    low = source.strip().lower()
+    if low in ("synthetic", "demo"):
+        return False
+    if low.startswith(CLIP_PREFIX):
+        return False
+    if low.startswith((UVC_PREFIX, "board:")) or low.isdigit():
+        return True
+    if low == "mjpeg" or low.startswith(("mjpeg:", "http://", "https://", "rtsp://")):
+        return True
+    return False
+
+
+def will_be_synthetic(source: str) -> bool:
+    """`open_frame_source(source)` **最终**会不会返回合成帧源（不必真的打开它）。
+
+    用途：让调用方在**启动子进程之前**判断"旁路画面还推不推得动"。
+    `run_pipeline.py` 在合成帧源下会自动关掉 `--push-video`（`SyntheticImage` 没有像素），
+    所以横幅不能只看 `--no-video`（docs/16 BUG-001）。
+
+    判定必须与 `open_frame_source` 一致，否则又是"横幅说谎"：
+      · `synthetic` / `demo` → 合成；
+      · **缺 OpenCV 时任何源都会回退成 `synthetic(fallback)`** → 也算合成
+        （这正是 `run_pipeline` 用 `desc.startswith("synthetic")` 能兜住的情形）。
+    """
+    low = source.strip().lower()
+    if low in ("synthetic", "demo"):
+        return True
+    if low.startswith((CLIP_PREFIX, "board:")):
+        return False  # clip 由 numpy 读取，不需要 OpenCV
+    return not _have_cv2()
+
+
+def is_video_file_source(source: str) -> bool:
+    """`source` 是否会被 `open_frame_source` 当成**视频文件**。
+
+    只有视频文件源能"进程内循环"（`loop=True`）：摄像头 / MJPEG / 合成帧源都是活流或
+    无限流，回到"第 0 帧"没有意义（`docs/16` BUG-009 成因 A）。
+    判定与 `open_frame_source` 的分支顺序保持一致，否则又会出现"界面说循环、实际没循环"。
+    """
+    low = source.strip().lower()
+    if low in ("synthetic", "demo") or low.isdigit():
+        return False
+    if low.startswith((CLIP_PREFIX, "board:")):
+        return False
+    if low == "mjpeg" or low.startswith("mjpeg:") or low.startswith(("http://", "https://")):
+        return False
+    if parse_uvc_index(source) is not None:
+        return False
+    return True
 
 
 def open_frame_source(
@@ -224,22 +521,73 @@ def open_frame_source(
     height: int = 480,
     fps: float | None = None,
     limit: int | None = None,
+    loop: bool = False,
 ) -> tuple[Iterator[Frame], str]:
     """打开帧源。返回 (帧迭代器, 人类可读的来源描述)。
 
     source 取值：
       "synthetic" / "demo"  → 确定性合成帧源
       "0" / "1" ...         → 摄像头序号
+      "mjpeg" / "mjpeg:URL" → 网页旁路画面（默认 http://127.0.0.1:8000/video.mjpg）
+      "http(s)://...jpg"    → 同上，直接用给的 URL
+      "clip:<目录>"          → 视频转运 clip（frames.bin + manifest.json），PC 模拟用
       其它                   → 视频文件路径
 
     fps：**默认取 config.yaml 的 fps_nominal**（契约 §0 的唯一来源），
          不传就跟随契约，别在这里写死数字。
+
+    loop：**只在视频文件源上生效**（`docs/16` BUG-009 成因 A）。为 True 时读到文件尾
+          自动 seek 回第 0 帧继续读，**同一个进程、同一个 frame_id / ts 序列**，
+          于是 blink_count / yawn_count / long_close_count 与 CSV 都不会被重置。
+          摄像头 / MJPEG 是活流，loop 无意义（忽略）。
     """
     if fps is None:
         fps = float(load_config()["fps_nominal"])
     low = source.strip().lower()
     if low in ("synthetic", "demo"):
         return _synthetic_frames(width, height, limit, fps), f"synthetic {width}x{height}"
+
+    if low.startswith("board:"):
+        try:
+            from .board_source import BoardFrameSource
+        except ImportError:
+            from board_source import BoardFrameSource
+        source_cfg = load_config()
+        stream = BoardFrameSource(source, motion_threshold=int(source_cfg["motion_thresh_gray"]),
+                                  limit=limit)
+        return stream, f"{source} 1280x720 RGB888 + verified PL"
+
+    if low.startswith(CLIP_PREFIX):
+        clip_arg = source.strip()[len(CLIP_PREFIX):].strip()
+        if not clip_arg:
+            raise ValueError("clip: 源后面要跟 clip 目录（含 manifest.json）")
+        clip = Path(clip_arg)
+        mod = _video_clip_module()
+        vr = mod.verify_clip(clip)
+        if not vr.get("ok"):
+            raise RuntimeError("clip 校验失败：" + "；".join(vr.get("reasons", [])))
+        m = mod.load_manifest(clip)
+        n_frames = int(m["frames"])
+        clip_fps = float(m.get("fps") or fps)
+        clip_w, clip_h = int(m["width"]), int(m["height"])
+
+        def _clip_gen() -> Iterator[Frame]:
+            produced = 0
+            while limit is None or produced < limit:
+                got_any = False
+                for rgb in mod.iter_clip_frames(clip):
+                    if limit is not None and produced >= limit:
+                        break
+                    got_any = True
+                    # clip 存的是 RGB（契约通道序），OpenCV/MediaPipe 路径要 BGR
+                    bgr = rgb[:, :, ::-1].copy()
+                    yield Frame(frame_id=produced, ts=produced / clip_fps, image=bgr)
+                    produced += 1
+                if not loop or not got_any or n_frames == 0:
+                    break
+
+        desc = f"clip:{clip.name}  {clip_w}x{clip_h}  {n_frames} frames  PC 模拟帧源"
+        return _clip_gen(), desc
 
     if not _have_cv2():
         # 不抛异常：链路优先。但要**明确**告诉用户现在拿到的是假图。
@@ -251,6 +599,46 @@ def open_frame_source(
         return _synthetic_frames(width, height, limit, fps), f"synthetic(fallback) {width}x{height}"
 
     import cv2  # type: ignore
+
+    if low == "mjpeg" or low.startswith("mjpeg:") or low.startswith(("http://", "https://")):
+        if low.startswith(("http://", "https://")):
+            url = source.strip()
+        else:
+            url = source.strip().split(":", 1)[1].strip() or MJPEG_DEFAULT_URL
+        return _mjpeg_frames(url, limit, fps), f"mjpeg:{url}"
+
+    uvc_index = parse_uvc_index(source)
+    if uvc_index is not None:
+        # Request the configured analysis rate; report any negotiated difference.
+        # Timestamp sampling does not certify a native camera mode.
+        cap, info = open_uvc_capture(
+            cv2, uvc_index,
+            width=UVC_REQUEST_W, height=UVC_REQUEST_H, fps=fps,
+        )
+        if not cap.isOpened():
+            cap.release()
+            raise RuntimeError(
+                f"OpenCV 打不开 UVC 相机 {uvc_index}（被占用 / 序号不对 / 没有权限）。\n"
+                f"  先用 `python metrics/scripts/check_uvc_camera.py --list` 枚举可用设备。"
+            )
+        desc = describe_uvc(info)
+        print(f"[uvc] {desc}")
+
+        def _uvc_gen() -> Iterator[Frame]:
+            n = 0
+            try:
+                while limit is None or n < limit:
+                    ok, bgr = cap.read()
+                    if not ok:
+                        break
+                    # Monotonic arrival time: an OS wall-clock adjustment must
+                    # not change blink durations or the rPPG frequency axis.
+                    yield Frame(frame_id=n, ts=time.monotonic(), image=bgr)
+                    n += 1
+            finally:
+                cap.release()
+
+        return _uvc_gen(), desc
 
     if low.isdigit():
         cap = cv2.VideoCapture(int(low))
@@ -275,17 +663,27 @@ def open_frame_source(
 
     def _gen() -> Iterator[Frame]:
         n = 0
+        rewind = 0
         try:
             while limit is None or n < limit:
                 ok, bgr = cap.read()
                 if not ok:
-                    break
-                yield Frame(frame_id=n, ts=time.time(), image=bgr)
+                    if not loop:
+                        break
+                    # 文件尾：回到第 0 帧**继续同一个序列**（frame_id / ts 单调递增）。
+                    # 这样计数器与 CSV 都不重置 —— 与"重启进程再跑一轮"是两回事（BUG-009 成因 A）。
+                    if not cap.set(cv2.CAP_PROP_POS_FRAMES, 0):
+                        break
+                    ok, bgr = cap.read()
+                    if not ok:
+                        break
+                    rewind += 1
+                yield Frame(frame_id=n, ts=time.monotonic(), image=bgr)
                 n += 1
         finally:
             cap.release()
 
-    desc = f"{desc}  {real_fps:.1f}fps  {total or '?'} frames"
+    desc = f"{desc}  {real_fps:.1f}fps  {total or '?'} frames" + ("  loop" if loop else "")
     return _gen(), desc
 
 

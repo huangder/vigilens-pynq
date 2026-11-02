@@ -1,0 +1,239 @@
+{
+  "unattended1": {
+    "gate": {
+      "kind": "native_full_board_realtime_gate",
+      "passed": false,
+      "errors": [
+        "analysis 28.980987 fps below 30.0",
+        "no face-bearing workload",
+        "face-bearing coverage below configured face_visible_min"
+      ],
+      "capture_fps": 28.940224,
+      "analysis_update_fps": 28.980987,
+      "capture_interval_p95_s": 0.03615700000009383,
+      "submitted": 870.0,
+      "processed": 870.0,
+      "contract_frames": 869,
+      "face_bearing_ratio": 0.0,
+      "face_bearing_frames": 0,
+      "face_bearing_update_fps": 0.0,
+      "native_camera_mode_verified": true,
+      "accuracy_verified": false,
+      "cold_boot_verified": false
+    },
+    "sampling": [
+      {
+        "input": "900",
+        "kept": "870",
+        "dropped": "30",
+        "driver_sequence_gaps": "0",
+        "empty_slots": "31",
+        "input_fps": "29.939311",
+        "output_fps": "28.940224",
+        "native_30fps": "yes"
+      }
+    ],
+    "analysis": [
+      {
+        "submitted": "870",
+        "accepted": "870",
+        "skipped": "0",
+        "processed": "870",
+        "succeeded": "869",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "28.940224",
+        "analysis_update_fps": "28.980987"
+      }
+    ],
+    "background_detections_positive": 0,
+    "background_completed": 30,
+    "invalid_arriving_anchors": 0,
+    "heart_rate_frames": 0,
+    "vital_rejections": {
+      "vitals_blocked": 869
+    },
+    "mean_camera_cpu_ms": {
+      "decode_cpu_ms": 9.855642528735633,
+      "transfer_pl_cpu_ms": 2.966435632183908
+    }
+  },
+  "unattended2": {
+    "gate": {
+      "kind": "native_full_board_realtime_gate",
+      "passed": false,
+      "errors": [
+        "analysis 29.489747 fps below 30.0",
+        "AUTONOMY_SUMMARY.skipped=29.0, required 0",
+        "AUTONOMY_SUMMARY.accepted=1771.0, required 1800.0",
+        "AUTONOMY_SUMMARY.processed=1771.0, required 1800.0",
+        "no face-bearing workload",
+        "face-bearing coverage below configured face_visible_min"
+      ],
+      "capture_fps": 29.953903,
+      "analysis_update_fps": 29.489747,
+      "capture_interval_p95_s": 0.036016099999960714,
+      "submitted": 1800.0,
+      "processed": 1771.0,
+      "contract_frames": 1770,
+      "face_bearing_ratio": 0.0,
+      "face_bearing_frames": 0,
+      "face_bearing_update_fps": 0.0,
+      "native_camera_mode_verified": true,
+      "accuracy_verified": false,
+      "cold_boot_verified": false
+    },
+    "sampling": [
+      {
+        "input": "1800",
+        "kept": "1800",
+        "dropped": "0",
+        "driver_sequence_gaps": "0",
+        "empty_slots": "0",
+        "input_fps": "29.953903",
+        "output_fps": "29.953903",
+        "native_30fps": "yes"
+      }
+    ],
+    "analysis": [
+      {
+        "submitted": "1800",
+        "accepted": "1771",
+        "skipped": "29",
+        "processed": "1771",
+        "succeeded": "1770",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "29.953903",
+        "analysis_update_fps": "29.489747"
+      }
+    ],
+    "background_detections_positive": 1,
+    "background_completed": 57,
+    "invalid_arriving_anchors": 0,
+    "heart_rate_frames": 0,
+    "vital_rejections": {
+      "vitals_blocked": 1770
+    },
+    "mean_camera_cpu_ms": {
+      "decode_cpu_ms": 9.925804444444445,
+      "transfer_pl_cpu_ms": 2.9798905555555555
+    }
+  },
+  "unattended3": {
+    "gate": {
+      "kind": "native_full_board_realtime_gate",
+      "passed": false,
+      "errors": [
+        "analysis 29.977457 fps below 30.0",
+        "no face-bearing workload",
+        "face-bearing coverage below configured face_visible_min"
+      ],
+      "capture_fps": 29.95401,
+      "analysis_update_fps": 29.977457,
+      "capture_interval_p95_s": 0.03600910000031945,
+      "submitted": 1800.0,
+      "processed": 1800.0,
+      "contract_frames": 1799,
+      "face_bearing_ratio": 0.0,
+      "face_bearing_frames": 0,
+      "face_bearing_update_fps": 0.0,
+      "native_camera_mode_verified": true,
+      "accuracy_verified": false,
+      "cold_boot_verified": false
+    },
+    "sampling": [
+      {
+        "input": "1800",
+        "kept": "1800",
+        "dropped": "0",
+        "driver_sequence_gaps": "0",
+        "empty_slots": "0",
+        "input_fps": "29.954010",
+        "output_fps": "29.954010",
+        "native_30fps": "yes"
+      }
+    ],
+    "analysis": [
+      {
+        "submitted": "1800",
+        "accepted": "1800",
+        "skipped": "0",
+        "processed": "1800",
+        "succeeded": "1799",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "29.954010",
+        "analysis_update_fps": "29.977457"
+      }
+    ],
+    "background_detections_positive": 0,
+    "background_completed": 59,
+    "invalid_arriving_anchors": 0,
+    "heart_rate_frames": 0,
+    "vital_rejections": {
+      "vitals_blocked": 1799
+    },
+    "mean_camera_cpu_ms": {
+      "decode_cpu_ms": 9.856010555555555,
+      "transfer_pl_cpu_ms": 3.1247894444444446
+    }
+  },
+  "boundaries": {
+    "real_person_test_performed_this_revision": false,
+    "real_heart_rate_verified": false,
+    "all_board_30_fps_verified": false,
+    "respiration_implemented": false,
+    "thresholds_relaxed": false,
+    "raw_face_media_transferred": false
+  },
+  "config_sha256": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417",
+  "final_package": {
+    "files": {
+      "vigi_camera_autonomy": "fb16a9d633be290f6298f4048093b8c56509b3fe3d9329aadacb9de251d889d0",
+      "vg_vision_replay_arm": "1870198fa57ac591224d03bebdea02c223f2f051ba6722c7cd9885ebf6cceb7f",
+      "vg_metrics_http": "ec24e3e0f3faf48484f20031c19d84e3b5a258b2f7c45af02cdf85b27316e785",
+      "shape_predictor_68_face_landmarks.dat": "fbdc2cb80eb9aa7a758672cbfdda32ba6300efe9b6e6c7a299ff7e736b11b92f",
+      "libgomp.so.1": "2d25b3b1e4a3d8ac657c406a888395eda289cbeef85a13f94dadca0452922ac2",
+      "display.html": "d26ba34cea9b9e38bd216806327d1c69b7cf1322c8e3df11292ce8d236565f33",
+      "install_native.sh": "a0c650b1f6234dc6bb374281fa3562a4a3a4f908c36affae29e72d9871feaa36",
+      "run_native.sh": "d611b34060b659e9e3d2998cab56fac09d4a0ed2e451b4263ff16e89ebb20b4e",
+      "det1.param": "a9338e207dbbaa7ad56625492b551aeb4ecaf10ac279d098b02f17b0a62b1e0b",
+      "det1.bin": "8dedfdc5e37378d23131a6cb91d1e0a446ecb7751e2d3eadd5f086fdf18b5cec",
+      "det2.param": "e9f614c923b3fede02c236be0246465e83a34b37ceed0bc2bcb6bfda32461d25",
+      "det2.bin": "15a3f7df9dc7cc1ec0976fad36ef58128bf1b5de8c2abfb42ae722e803dbd842",
+      "det3.param": "b7fe7677d4840677aa0ea5690c7018630cc8d4a661be95290fe26814920bfad4",
+      "det3.bin": "93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962",
+      "runtime.env": "632dbe65200014a46b29a883588894799827ef769b9f6dd1a446d76b8fc18c0d"
+    },
+    "config_sha256": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417",
+    "runtime": "ert_temporal",
+    "capture": {
+      "width": 640,
+      "height": 480,
+      "format": "yuyv"
+    },
+    "full30_verified": false,
+    "local_only": true,
+    "hardware_boot_verified": false,
+    "accuracy_verified": false
+  },
+  "source_sha256": {
+    "board/w7_buildroot/yuyv_rgb.h": "d7b21e64f542a1c20bc086ad19596bfb17ad30e77b1ddc5fb2e0b48641e0eb8c",
+    "board/w7_buildroot/sample_gate.h": "a44463d1e96a99bebb7d1ab3035b02ba98ece77477641cc0804c3ecaab1efc85",
+    "board/w7_buildroot/uvc_probe.c": "7cfbb037d89a66e7c0c1590c556316d4f4e9b789a06da7bc746e1faa6aa112cf",
+    "board/autonomy/ert_runtime.cpp": "f77f77a2ef48bef1da1d52fd5e63085ed35d1a0db4ad5f760a6c2eb94e61ec28",
+    "board/autonomy/autonomy_engine.c": "58478458dd55192cc6ab799efc9193d2950256aeea50384a5a7866c99c849eb3",
+    "board/autonomy/autonomy_engine.h": "7b84efc208afe17083d8b45570b32905e162d132418b0d4de98f798d17e59c45",
+    "board/autonomy/pose_pnp.c": "6214b62d5f4b0faf1cfaf1adfc87322321e97e27744c93d6fed9c8d0fb08f74d",
+    "board/autonomy/pose_pnp.h": "fcc79a2e9a65401aadcd3291469954e3c266839ab3ab87f815d4a45095a6fa49",
+    "board/autonomy/vital.c": "b2240739f8e447a7bf5c5adb53659c846d2fccf53c798a0812351ead7d363ed5",
+    "board/autonomy/vital.h": "194f3e4ee7618f975a1ecbb64d3d5bbb10712c63432ac10c6c3be3dbafdafac4",
+    "board/autonomy/export_vital_config.py": "95096ceac45bbda3d4b6655b23195a89722ebfd666b1bd33153ceed83b47bd60",
+    "board/autonomy/build_native_vision.sh": "836b8c66db9eff5de339c6f36760221c1e1a2b3eab55d295463698159258267c",
+    "board/autonomy/package_native_vision.py": "e9808568d265242492bd616746e5c7e3d8ad608e7fdf2b782ed82244409b603d"
+  }
+}

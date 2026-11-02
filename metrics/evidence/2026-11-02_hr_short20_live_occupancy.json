@@ -1,0 +1,62 @@
+{
+  "kind": "actual_board_gate_counter_upper_bound_NOT_HR_measurement",
+  "assumption": "every visible frame has valid forehead ROI; constant values only for counting; never estimate HR",
+  "source": "metrics/evidence/2026-11-02_hr_short20_live.jsonl",
+  "source_sha256": "ed5a324378248d37ca509e8eaa0182e6fa9eea3b39bae53a1ad49495402c88b9",
+  "required_samples": 600,
+  "max_retained_samples_upper_bound": 422,
+  "max_at_frame_id": 1663,
+  "public_gate_allowed_full_counter_frames_upper_bound": 0,
+  "first_full_counter_frame_id": null,
+  "reset_count": 22,
+  "largest_reset_transitions": [
+    {
+      "at_frame_id": 1665,
+      "previous_retained": 422,
+      "visible": false,
+      "quality": 0.6666
+    },
+    {
+      "at_frame_id": 537,
+      "previous_retained": 107,
+      "visible": false,
+      "quality": 0.6672
+    },
+    {
+      "at_frame_id": 1234,
+      "previous_retained": 91,
+      "visible": true,
+      "quality": 0.8698
+    },
+    {
+      "at_frame_id": 1078,
+      "previous_retained": 87,
+      "visible": false,
+      "quality": 0.6656
+    },
+    {
+      "at_frame_id": 902,
+      "previous_retained": 76,
+      "visible": false,
+      "quality": 0.673
+    },
+    {
+      "at_frame_id": 812,
+      "previous_retained": 72,
+      "visible": false,
+      "quality": 0.6715
+    },
+    {
+      "at_frame_id": 608,
+      "previous_retained": 69,
+      "visible": false,
+      "quality": 0.6775
+    },
+    {
+      "at_frame_id": 248,
+      "previous_retained": 60,
+      "visible": false,
+      "quality": 0.6765
+    }
+  ]
+}

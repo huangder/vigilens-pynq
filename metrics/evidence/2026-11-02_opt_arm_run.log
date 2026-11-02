@@ -1,0 +1,15 @@
+# synthetic_roi.rgbstream: OK
+synthetic_jpeg.stream: OK
+ert_prefetch_arm: OK
+jpeg_baseline_arm: OK
+jpeg_o3_arm: OK
+ERT_PREFETCH_PROBE_PASS frames=24 variants=4 point_parity=exact full_pipeline=0
+{"frames":24,"point_parity":"exact","supplied_roi":true,"full_pipeline":false,"accuracy_verified":false,"variants":[{"prefetch_ahead":-1,"cpu_ms_mean":23.368025,"cpu_ms_p95":23.451854,"cpu_ms_max":23.549304},{"prefetch_ahead":0,"cpu_ms_mean":23.264965,"cpu_ms_p95":23.341828,"cpu_ms_max":23.349210},{"prefetch_ahead":4,"cpu_ms_mean":24.247127,"cpu_ms_p95":24.325545,"cpu_ms_max":24.326850},{"prefetch_ahead":8,"cpu_ms_mean":24.692257,"cpu_ms_p95":24.796195,"cpu_ms_max":24.830076}]}
+ERT_PREFETCH_PROBE_PASS frames=24 variants=4 point_parity=exact full_pipeline=0
+{"frames":24,"point_parity":"exact","supplied_roi":true,"full_pipeline":false,"accuracy_verified":false,"variants":[{"prefetch_ahead":-1,"cpu_ms_mean":23.365853,"cpu_ms_p95":23.455080,"cpu_ms_max":23.473158},{"prefetch_ahead":0,"cpu_ms_mean":23.263471,"cpu_ms_p95":23.347033,"cpu_ms_max":23.381364},{"prefetch_ahead":4,"cpu_ms_mean":24.243360,"cpu_ms_p95":24.334838,"cpu_ms_max":24.359400},{"prefetch_ahead":8,"cpu_ms_mean":24.679670,"cpu_ms_p95":24.780298,"cpu_ms_max":24.787812}]}
+ERT_PREFETCH_PROBE_PASS frames=24 variants=4 point_parity=exact full_pipeline=0
+{"frames":24,"point_parity":"exact","supplied_roi":true,"full_pipeline":false,"accuracy_verified":false,"variants":[{"prefetch_ahead":-1,"cpu_ms_mean":23.364347,"cpu_ms_p95":23.461475,"cpu_ms_max":23.479812},{"prefetch_ahead":0,"cpu_ms_mean":23.267401,"cpu_ms_p95":23.342258,"cpu_ms_max":23.410266},{"prefetch_ahead":4,"cpu_ms_mean":24.242129,"cpu_ms_p95":24.329704,"cpu_ms_max":24.342042},{"prefetch_ahead":8,"cpu_ms_mean":24.681966,"cpu_ms_p95":24.768523,"cpu_ms_max":24.769476}]}
+JPEG_SYNTHETIC_BYTE_PARITY_PASS=1
+JPEG_SYNTHETIC_BYTE_PARITY_PASS=2
+JPEG_SYNTHETIC_BYTE_PARITY_PASS=3
+OPT_CANDIDATES_END

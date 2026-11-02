@@ -1,0 +1,25 @@
+{
+  "hardware_invariants_pass": true,
+  "hardware_compare_pass": false,
+  "audit_compare_pass": true,
+  "audit_frames": 259,
+  "verification_mode": "audit",
+  "decode_workers": 2,
+  "decode_peak_active": 2,
+  "pl_wait": "yield",
+  "compared_frames": 7750,
+  "valid_motion_frames": 7749,
+  "native_camera_mode_verified": false,
+  "source_span_s": 259.8153710000006,
+  "selected_fps": 29.825025248409887,
+  "interval_p95_ms": 48.046599999543105,
+  "target_fps": 30.0,
+  "realtime_target_met": true,
+  "timing_median_ms": {
+    "decode_ms": 63.8185,
+    "reference_ms": 0.0,
+    "transfer_pl_ms": 28.17,
+    "decode_cpu_ms": 41.8365,
+    "transfer_pl_cpu_ms": 10.325
+  }
+}

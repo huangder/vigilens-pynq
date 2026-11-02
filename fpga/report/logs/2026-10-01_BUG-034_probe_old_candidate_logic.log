@@ -1,0 +1,20 @@
+
+****** vitis-run v2026.1 (64-bit)
+  **** SW Build 6511674 on 2026-06-16-13:14:00
+  **** Start of session at: Thu Oct  1 20:46:25 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+  **** HLS Build v2026.1 6493734
+Sourcing Tcl script 'D:/Desktop/AMD/fpga/_probe_cand.tcl'
+PROBE: ROI_DATA_DIR = 'D:\Desktop\AMD\fpga\sim\data_motion_720p60'
+PROBE: pwd          = 'D:/Desktop/AMD/fpga'
+PROBE: script       = 'D:/Desktop/AMD/fpga/_probe_cand.tcl'
+PROBE: candidate 'D:/Desktop/AMD/fpga/sim/data_motion_720p60'  golden_motion.csv exists = 1
+PROBE: candidate 'D:/Desktop/AMD/fpga/sim/data_motion'  golden_motion.csv exists = 1
+PROBE: candidate 'D:/Desktop/AMD/fpga/sim/data_motion'  golden_motion.csv exists = 1
+PROBE: candidate 'D:/Desktop/AMD/fpga/fpga/sim/data_motion'  golden_motion.csv exists = 0
+PROBE: CHOSEN = 'D:/Desktop/AMD/fpga/sim/data_motion_720p60'
+INFO: [HLS 200-112] Total CPU user time: 0 seconds. Total CPU system time: 0 seconds. Total elapsed time: 0.779 seconds; peak allocated memory: 29.797 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 2s
+INFO: [vitis-run 60-1662] Stopping dispatch session having empty uuid.

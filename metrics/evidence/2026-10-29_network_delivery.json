@@ -1,0 +1,10 @@
+{
+  "source": "ingest",
+  "mock_active": false,
+  "served_dashboard": true,
+  "websocket_equals_api": true,
+  "frame_id": 498,
+  "status": "done",
+  "preview_frame_id": 497,
+  "note": "HTTP/WS delivery checked; no screenshot or pixel data captured."
+}

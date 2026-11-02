@@ -1,0 +1,82 @@
+{
+  "kind": "native_rppg_feed_rate_boundary",
+  "hardware_test": false,
+  "accuracy_verified": false,
+  "design_fps": 30.0,
+  "fs_tol": 0.1,
+  "lowest_accepted_hz": 27.0,
+  "samples_per_case": 1200,
+  "synthetic_bpm": 72.0,
+  "rows": [
+    {
+      "feed_hz": 30.0,
+      "seconds_of_audio": 40.0,
+      "present": true,
+      "hr_bpm": 72.0,
+      "reject": null
+    },
+    {
+      "feed_hz": 29.0,
+      "seconds_of_audio": 41.38,
+      "present": true,
+      "hr_bpm": 71.5,
+      "reject": null
+    },
+    {
+      "feed_hz": 28.0,
+      "seconds_of_audio": 42.86,
+      "present": true,
+      "hr_bpm": 72.8,
+      "reject": null
+    },
+    {
+      "feed_hz": 27.0,
+      "seconds_of_audio": 44.44,
+      "present": true,
+      "hr_bpm": 72.1,
+      "reject": null
+    },
+    {
+      "feed_hz": 26.0,
+      "seconds_of_audio": 46.15,
+      "present": false,
+      "hr_bpm": null,
+      "reject": "sampling_too_slow"
+    },
+    {
+      "feed_hz": 24.0,
+      "seconds_of_audio": 50.0,
+      "present": false,
+      "hr_bpm": null,
+      "reject": "sampling_too_slow"
+    },
+    {
+      "feed_hz": 15.0,
+      "seconds_of_audio": 80.0,
+      "present": false,
+      "hr_bpm": null,
+      "reject": "sampling_too_slow"
+    },
+    {
+      "feed_hz": 10.0,
+      "seconds_of_audio": 120.0,
+      "present": false,
+      "hr_bpm": null,
+      "reject": "sampling_too_slow"
+    },
+    {
+      "feed_hz": 5.0,
+      "seconds_of_audio": 240.0,
+      "present": false,
+      "hr_bpm": null,
+      "reject": "sampling_too_slow"
+    },
+    {
+      "feed_hz": 1.667,
+      "seconds_of_audio": 719.86,
+      "present": false,
+      "hr_bpm": null,
+      "reject": "sampling_too_slow"
+    }
+  ]
+}

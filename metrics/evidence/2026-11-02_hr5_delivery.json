@@ -1,0 +1,36 @@
+{
+  "kind": "5s_board_candidate_delivery_NOT_accuracy_certification",
+  "archive": ".tmp/autonomy/hr5_20261102/vigilens_hr5_candidate.zip",
+  "archive_sha256": "0b1117dc6d993cb582d30d32c96ec7c9d2b29ddc2129365ef0748ae2c5e20ea6",
+  "archive_bytes": 86482190,
+  "config_sha256": "8033dadb9428fda03d330b6bff557ba3b13a0c0aeb399ad8119d68487c3fbb48",
+  "camera_sha256": "1e67f911d852a78a127f90adc61dea725af4cb6f3690850f4ab1b57edbc96bb2",
+  "window_s": 5,
+  "required_samples": 150,
+  "behavior_window_s": 30,
+  "targeted_tests_passed": 91,
+  "subtests_passed": 8,
+  "ctest_passed": 10,
+  "lifecycle_sanitized_passed": 5,
+  "offline_pass": 26,
+  "offline_fail": 0,
+  "real_board_output_verified": true,
+  "heart_rate_accuracy_verified": false,
+  "heart_rate_stability_verified": false,
+  "all_board_30fps_verified": false,
+  "raw_face_media_saved_or_transferred": false,
+  "real_board_runs": [
+    {
+      "heart_rate_nonnull_frames": 30,
+      "actual_retained_sample_max": 150,
+      "first_hr_delay_from_first_contract_s": 88.08616500000062,
+      "archive_sha256": "5cbc604e106fc316aa358141058ebc17e3ef3adccfa99cd7785afc8875ec676b"
+    },
+    {
+      "heart_rate_nonnull_frames": 579,
+      "actual_retained_sample_max": 150,
+      "first_hr_delay_from_first_contract_s": 6.1078639999996085,
+      "archive_sha256": "269730ceafbd170ae81da6570947ec128af6bf8ab6f03d79fd849c7c011fb6e3"
+    }
+  ]
+}

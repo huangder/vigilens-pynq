@@ -1,0 +1,45 @@
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: root
+Password: 
+# sh -c '
+> echo VIGI_AUTONOMY_CURRENT_BEGIN
+> uname -m
+> cat /proc/uptime
+> grep -E "Features|model name" /proc/cpuinfo
+> grep -E "MemTotal|MemAvailable" /proc/meminfo
+> ls -l /dev/video0 /usr/bin/vigi_camera_pl
+> pidof vigi_camera_pl || true
+> ifconfig eth0
+> command -v wget; command -v dropbear; command -v scp
+> echo VIGI_AUTONOMY_CURRENT_END
+> '
+'\nVIGI_COMMAND_DONE\n'
+VIGI_AUTONOMY_CURRENT_BEGIN
+armv7l
+61.09 116.34
+model name	: ARMv7 Processor rev 0 (v7l)
+Features	: half thumb fastmult vfp edsp thumbee neon vfpv3 tls vfpd32 
+model name	: ARMv7 Processor rev 0 (v7l)
+Features	: half thumb fastmult vfp edsp thumbee neon vfpv3 tls vfpd32 
+MemTotal:         476868 kB
+MemAvailable:     424232 kB
+crw-------    1 root     root       81,   0 Jan  1 00:00 [1;35m/dev/video0[m
+-rwxr-xr-x    1 root     root        185884 Oct 29  2026 [1;32m/usr/bin/vigi_camera_pl[m
+eth0      Link encap:Ethernet  HWaddr 26:53:57:E9:CD:7F  
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+          Interrupt:39 Base address:0xb000 
+
+/usr/bin/wget
+/usr/sbin/dropbear
+/usr/bin/scp
+VIGI_AUTONOMY_CURRENT_END
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

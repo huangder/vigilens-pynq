@@ -1,0 +1,954 @@
+{
+  "kind": "fused_ncnn_fp32_to_standard_onnx",
+  "onnx_version": "1.17.0",
+  "source_param_sha256": "223746b13c090a5f9efaa1a7e599fa15bdef17d8d1b52dd48b483b8f994b3976",
+  "source_weights_sha256": "f9c76eee62232147f2e53a7bfd1d2033b9a3eac147ce0493869655131f83199b",
+  "output_sha256": "81e56cbcbeeacaddadf8d90a1d822bc117fc4d2b20d6e4d63f3fcac912d8b3ff",
+  "output_bytes": 485503,
+  "input_shape_nchw": [
+    1,
+    3,
+    160,
+    160
+  ],
+  "output_shape": [
+    1,
+    143
+  ],
+  "opset": 13,
+  "ir_version": 8,
+  "checker_verified": true,
+  "shape_inference_verified": true,
+  "layers": [
+    {
+      "name": "153",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "input1"
+      ],
+      "tops": [
+        "155"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          2,
+          2
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "156",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "155"
+      ],
+      "tops": [
+        "158"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 16
+      }
+    },
+    {
+      "name": "159",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "158"
+      ],
+      "tops": [
+        "161"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "162",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "161"
+      ],
+      "tops": [
+        "164"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          2,
+          2
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 32
+      }
+    },
+    {
+      "name": "165",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "164"
+      ],
+      "tops": [
+        "167"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "168",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "167"
+      ],
+      "tops": [
+        "170"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 32
+      }
+    },
+    {
+      "name": "171",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "170"
+      ],
+      "tops": [
+        "173"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "174",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "173"
+      ],
+      "tops": [
+        "176"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          2,
+          2
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 32
+      }
+    },
+    {
+      "name": "177",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "176"
+      ],
+      "tops": [
+        "179"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "180",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "179"
+      ],
+      "tops": [
+        "182"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 64
+      }
+    },
+    {
+      "name": "183",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "182"
+      ],
+      "tops": [
+        "185"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "186",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "185"
+      ],
+      "tops": [
+        "188"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 64
+      }
+    },
+    {
+      "name": "189",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "188"
+      ],
+      "tops": [
+        "191"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "192",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "191"
+      ],
+      "tops": [
+        "194"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 60
+      }
+    },
+    {
+      "name": "195",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "194"
+      ],
+      "tops": [
+        "197"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "splitncnn_0",
+      "ncnn_type": "Split",
+      "bottoms": [
+        "197"
+      ],
+      "tops": [
+        "197_splitncnn_0",
+        "197_splitncnn_1"
+      ],
+      "onnx_attributes": {}
+    },
+    {
+      "name": "198",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "197_splitncnn_1"
+      ],
+      "tops": [
+        "200"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          2,
+          2
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 52
+      }
+    },
+    {
+      "name": "201",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "200"
+      ],
+      "tops": [
+        "203"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "204",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "203"
+      ],
+      "tops": [
+        "206"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 104
+      }
+    },
+    {
+      "name": "207",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "206"
+      ],
+      "tops": [
+        "209"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "210",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "209"
+      ],
+      "tops": [
+        "212"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 120
+      }
+    },
+    {
+      "name": "213",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "212"
+      ],
+      "tops": [
+        "215"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "splitncnn_1",
+      "ncnn_type": "Split",
+      "bottoms": [
+        "215"
+      ],
+      "tops": [
+        "215_splitncnn_0",
+        "215_splitncnn_1"
+      ],
+      "onnx_attributes": {}
+    },
+    {
+      "name": "216",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "215_splitncnn_1"
+      ],
+      "tops": [
+        "218"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          2,
+          2
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 96
+      }
+    },
+    {
+      "name": "219",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "218"
+      ],
+      "tops": [
+        "221"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "222",
+      "ncnn_type": "ConvolutionDepthWise",
+      "bottoms": [
+        "221"
+      ],
+      "tops": [
+        "224"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          3,
+          3
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "group": 164
+      }
+    },
+    {
+      "name": "225",
+      "ncnn_type": "Convolution",
+      "bottoms": [
+        "224"
+      ],
+      "tops": [
+        "227"
+      ],
+      "onnx_attributes": {
+        "kernel_shape": [
+          1,
+          1
+        ],
+        "strides": [
+          1,
+          1
+        ],
+        "dilations": [
+          1,
+          1
+        ],
+        "pads": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "group": 1
+      }
+    },
+    {
+      "name": "228",
+      "ncnn_type": "Reduction",
+      "bottoms": [
+        "197_splitncnn_0"
+      ],
+      "tops": [
+        "228"
+      ],
+      "onnx_attributes": {
+        "axes": [
+          3
+        ],
+        "keepdims": 0
+      }
+    },
+    {
+      "name": "229",
+      "ncnn_type": "Reduction",
+      "bottoms": [
+        "228"
+      ],
+      "tops": [
+        "229"
+      ],
+      "onnx_attributes": {
+        "axes": [
+          2
+        ],
+        "keepdims": 0
+      }
+    },
+    {
+      "name": "230",
+      "ncnn_type": "Reduction",
+      "bottoms": [
+        "215_splitncnn_0"
+      ],
+      "tops": [
+        "230"
+      ],
+      "onnx_attributes": {
+        "axes": [
+          3
+        ],
+        "keepdims": 0
+      }
+    },
+    {
+      "name": "231",
+      "ncnn_type": "Reduction",
+      "bottoms": [
+        "230"
+      ],
+      "tops": [
+        "231"
+      ],
+      "onnx_attributes": {
+        "axes": [
+          2
+        ],
+        "keepdims": 0
+      }
+    },
+    {
+      "name": "232",
+      "ncnn_type": "Reduction",
+      "bottoms": [
+        "227"
+      ],
+      "tops": [
+        "232"
+      ],
+      "onnx_attributes": {
+        "axes": [
+          3
+        ],
+        "keepdims": 0
+      }
+    },
+    {
+      "name": "233",
+      "ncnn_type": "Reduction",
+      "bottoms": [
+        "232"
+      ],
+      "tops": [
+        "233"
+      ],
+      "onnx_attributes": {
+        "axes": [
+          2
+        ],
+        "keepdims": 0
+      }
+    },
+    {
+      "name": "234",
+      "ncnn_type": "Concat",
+      "bottoms": [
+        "229",
+        "231",
+        "233"
+      ],
+      "tops": [
+        "234"
+      ],
+      "onnx_attributes": {
+        "axis": 1
+      }
+    },
+    {
+      "name": "output1",
+      "ncnn_type": "InnerProduct",
+      "bottoms": [
+        "234"
+      ],
+      "tops": [
+        "output1"
+      ],
+      "onnx_attributes": {
+        "transB": 1
+      }
+    }
+  ],
+  "weights_changed": false,
+  "fp16": false,
+  "quantized": false,
+  "runtime_tensor_parity_verified": false,
+  "original_onnx_equivalence_verified": false,
+  "accuracy_verified": false,
+  "full_pipeline_realtime_verified": false
+}

@@ -1,0 +1,33 @@
+{
+  "source_sha256": "e21bf2b5a61f3c58b76f7eef87fd55d4578eea27b84ee061feafdf31225aff44",
+  "groups": {
+    "behavior": {
+      "ear_close_threshold": 0.21,
+      "min_close_ms": 100.0,
+      "window_seconds": 30.0,
+      "long_close_ms": 500.0,
+      "mar_threshold": 0.6,
+      "yawn_min_duration_ms": 800.0
+    },
+    "quality": {
+      "light_target": 0.5,
+      "motion_score_gain": 4.0,
+      "weight_light": 0.5,
+      "weight_motion": 0.3,
+      "weight_face": 0.2
+    },
+    "decision": {
+      "quality_min_score": 0.6,
+      "face_visible_min": 0.7,
+      "pose_yaw_max_deg": 30.0,
+      "pose_pitch_max_deg": 25.0,
+      "perclos_warning": 0.25,
+      "fatigue_blink_rate_low": 10.0,
+      "vital_require_quality": 0.75,
+      "fatigue_yawn_count": 2,
+      "fatigue_long_close_count": 1,
+      "pose_hold_frames": 3
+    }
+  },
+  "thresholds_calibrated_by_export": false
+}

@@ -1,0 +1,23 @@
+{"source_sha256": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417", "groups": {"behavior": {"ear_close_threshold": 0.21, "min_close_ms": 100.0, "window_seconds": 30.0, "long_close_ms": 500.0, "mar_threshold": 0.6, "yawn_min_duration_ms": 800.0}, "quality": {"light_target": 0.5, "motion_score_gain": 4.0, "weight_light": 0.5, "weight_motion": 0.3, "weight_face": 0.2}, "decision": {"quality_min_score": 0.6, "face_visible_min": 0.7, "pose_yaw_max_deg": 30.0, "pose_pitch_max_deg": 25.0, "perclos_warning": 0.25, "fatigue_blink_rate_low": 10.0, "vital_require_quality": 0.75, "fatigue_yawn_count": 2, "fatigue_long_close_count": 1, "pose_hold_frames": 3}}, "thresholds_calibrated_by_export": false}
+{"config_sha256": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417", "vital": {"fps": 30.0, "fs_tol": 0.1, "window_seconds": 30.0, "color_window_seconds": 1.6, "f_lo": 0.7, "f_hi": 3.5, "harmonic_ratio_min": 0.05, "max_gap_s": 0.1, "jitter_ratio_max": 1.5, "recovery_s": 0.1, "recovery_samples": 3, "shift": 15}, "coeffs": 63, "thresholds_calibrated_by_export": false}
+{"config_sha256": "b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417", "board_vision": {"camera_width": 640, "camera_height": 480, "camera_format": "yuyv", "min_face": 40, "min_face_fast": 80, "fast_side_margin": 0.6, "scale_factor": 0.709, "score_p": 0.6, "score_r": 0.7, "score_o": 0.7, "nms_p_scale": 0.5, "nms_p": 0.7, "nms_r": 0.7, "nms_o": 0.7, "max_candidates": 64, "threads": 2, "detector_threads": 1, "landmark_threads": 1, "ncnn_packing": false, "analysis_nice": 0, "tracker_worker_nice": 10, "redetect_seconds": 5.0, "deep_detect_seconds": 30.0, "tracker_levels": 3, "tracker_radius": 3, "tracker_iterations": 12, "tracker_epsilon": 0.02, "tracker_min_eigen": 1.0, "tracker_max_error": 18.0, "tracker_fb_error": 2.0, "tracker_min_fraction": 0.7, "tracker_max_motion": 48.0, "tracker_model_hz": 1.0, "tracker_redetect_seconds": 30.0, "tracker_anchor_max_age_s": 5.0, "ert_patch_side": 32, "ert_patch_min_std": 6.0, "ert_patch_max_error": 18.0, "crop_scale": 1.4, "forehead_inset": 0.08, "forehead_top": 0.65, "forehead_bottom": 0.1, "forehead_min_pixels": 8}, "accuracy_verified": false}
+ERT_WORKER_FAIL ERT face detector inference failed
+ERT_READY mode=board_async config_sha256=b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417 accuracy_verified=0
+ERT_MODEL_FRAME frame_id=1 ts=0.100000000 visible=1 detector_ms=0.263 landmark_ms=8.230 detections=1 geometry_failure=0 detector_path=4
+ERT_HYBRID_SUMMARY foreground_inferences=0 accepted_lk_frames=0
+ERT_SUMMARY observations=2 visible=0 lost=2 model_submitted=2 model_completed=1
+ERT_LIFECYCLE_CASE worker_failure_discards_pending_success PASS
+ERT_READY mode=board_async config_sha256=b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417 accuracy_verified=0
+ERT_MODEL_FRAME frame_id=1 ts=0.100000000 visible=1 detector_ms=0.065 landmark_ms=5.317 detections=1 geometry_failure=0 detector_path=4
+ERT_MODEL_FRAME frame_id=3 ts=1.200000000 visible=1 detector_ms=2.597 landmark_ms=5.241 detections=1 geometry_failure=0 detector_path=2
+ERT_MODEL_FRAME frame_id=5 ts=6.400000000 visible=1 detector_ms=0.093 landmark_ms=5.143 detections=1 geometry_failure=0 detector_path=2
+ERT_HYBRID_SUMMARY foreground_inferences=2 accepted_lk_frames=1
+ERT_SUMMARY observations=6 visible=3 lost=3 model_submitted=3 model_completed=3
+ERT_LIFECYCLE_CASE expired_anchor_rejected_fresh_observation_recovers PASS
+ERT_READY mode=board_async config_sha256=b041a55dc4d1e813eddf6fda1ecd0d44072fac6b9848e471622aa59567600417 accuracy_verified=0
+ERT_MODEL_FRAME frame_id=1 ts=0.100000000 visible=1 detector_ms=0.108 landmark_ms=5.807 detections=1 geometry_failure=0 detector_path=4
+ERT_MODEL_FRAME frame_id=3 ts=0.300000000 visible=1 detector_ms=0.046 landmark_ms=5.866 detections=1 geometry_failure=0 detector_path=2
+ERT_HYBRID_SUMMARY foreground_inferences=1 accepted_lk_frames=0
+ERT_SUMMARY observations=3 visible=1 lost=2 model_submitted=2 model_completed=2
+ERT_LIFECYCLE_CASE invalid_epoch_discards_late_result_and_recovers PASS
+ERT_LIFECYCLE_PASS cases=3 local_only=1 accuracy_verified=0

@@ -18,6 +18,7 @@ decision.py 会把状态切成 `unreliable`，**并且不允许输出心率/呼�
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
 
 try:
@@ -35,25 +36,80 @@ def _numpy():
         return None
 
 
-def _decim_indices(height: int, width: int):
-    """按 `idx % 5 < 3` 生成保留的行/列下标（与 HLS `rgb2gray` v2 逐字一致）。"""
+# 现行档（契约 §0）：640×480 抽 3/5 → 384×288。缓存键里带 (den, num)，换档不会串味。
+DEFAULT_DECIM = (5, 3)
+
+
+def _decim_indices(height: int, width: int, decim: tuple[int, int] = DEFAULT_DECIM):
+    """按 `idx % den < num` 生成保留的行/列下标（与 HLS `rgb2gray` 逐字一致）。
+
+    `decim = (den, num)`：现行档 3/5 → `(5, 3)`；720p 主档 3/8 → `(8, 3)`；1080p 备档 1/4 → `(4, 1)`。
+    口径来自契约 §0 的档位表，**不是**这里自己定的。
+    """
+    den, num = decim
+    if den <= 0 or not (0 < num <= den):
+        raise ValueError(f"decim 非法：{decim!r}（要求 den>0 且 0<num<=den）")
     cache = _decim_indices.__dict__
-    key = (height, width)
+    key = (height, width, den, num)
     if key not in cache:
-        cache[key] = ([y for y in range(height) if y % 5 < 3],
-                      [x for x in range(width) if x % 5 < 3])
+        cache[key] = ([y for y in range(height) if y % den < num],
+                      [x for x in range(width) if x % den < num])
     return cache[key]
 
 
-def to_gray(image: Any) -> Any:
+def decim_for_size(width: int, height: int) -> tuple[int, int]:
+    """按**当前测量口径**给出该帧应使用的抽取比 `(den, num)`。
+
+    - 1280×720 → 720p 主档 → `tier_720p60_gray_decim: [3, 8]` ⇒ `(8, 3)`
+    - 1920×1080 → 1080p 备档 → `tier_1080p45_gray_decim: [1, 4]` ⇒ `(4, 1)`
+    - 其它（含现行 640×480） → 现行档 `(5, 3)`
+
+    ⚠️ 这三组数字**只从 `config.yaml` 的档位键读**（契约 §0 的唯一来源），读不到就回落现行档 ——
+    代码里不复制一份常量，否则改档位时会出现两处真相。
+    """
+    tier = "tier_720p60" if (width, height) == (1280, 720) else (
+        "tier_1080p45" if (width, height) == (1920, 1080) else None)
+    if tier is None:
+        return DEFAULT_DECIM
+    return _tier_decim(tier)
+
+
+@lru_cache(maxsize=4)
+def _tier_decim(tier: str):
+    """Cached per tier: load_config() parses YAML and costs ~17 ms per call.
+
+    to_gray() is per-frame in live loops; reloading the YAML every frame dominated
+    the PC pipeline (measured 31 ms/frame in cProfile). Tier values are static at
+    runtime, so caching changes no semantics. Config edits need a restart, which is
+    the same contract as every other cached config consumer.
+    """
+    try:
+        cfg = load_config()
+    except Exception:  # noqa: BLE001 —— 配置读不到不该让测量崩掉
+        return DEFAULT_DECIM
+    pair = cfg.get(f"{tier}_gray_decim")
+    if not (isinstance(pair, (list, tuple)) and len(pair) == 2):
+        return DEFAULT_DECIM
+    num, den = int(pair[0]), int(pair[1])
+    if den <= 0 or not (0 < num <= den):
+        return DEFAULT_DECIM
+    return (den, num)
+
+
+def to_gray(image: Any, decim: tuple[int, int] | None = None) -> Any:
     """把一帧转成**契约冻结口径**的灰度 + 缩放结果；拿不到 numpy 时返回 None（调用方走降级路径）。
 
-    ⚠️ **这里不是"随便转个灰度"，而是契约 §3.4 的两个冻结口径**，必须与 C 线的 `rgb2gray` v2 逐点相同：
+    ⚠️ **这里不是"随便转个灰度"，而是契约 §3.4 / 契约 §0 档位表的冻结口径**，必须与 C 线的
+    `rgb2gray` 逐点相同：
 
       1. 灰度：`Y = (77*R + 150*G + 29*B + 128) >> 8`
          —— 与"浮点系数四舍五入"差 1 LSB（纯红：浮点式给 76，本式给 77），**以本式为准**；
-      2. 缩放：3/5 相位点采样（保留 `x % 5 < 3` 且 `y % 5 < 3` 的像素，**先挑行再挑列**），
-         640×480 → **384×288**。不是插值，所以 `cv2.resize` 必然对不上。
+      2. 缩放：相位点采样（保留 `x % den < num` 且 `y % den < num` 的像素，**先挑行再挑列**）：
+         现行档 3/5 → 640×480 变 384×288；主档 3/8 → 1280×720 变 **480×270**；
+         备档 1/4 → 1920×1080 变 **480×270**。不是插值，所以 `cv2.resize` 必然对不上。
+
+    `decim=None` 时按**图像尺寸**取档位（`decim_for_size`），这样 720p 源进来就是 480×270，
+    不会继续按 3/5 抽出 768×432 那种"既不契约、也没人认"的尺寸。
 
     ⚠️ **通道序**：契约要求 R-G-B（`byte0=R`）；而 OpenCV 读到的 `bgr` 数组里**下标 0 是 B、2 是 R**。
        旧实现直接调 `cv2.cvtColor(BGR2GRAY)`，两处都偏离契约（灰度系数不同 + 不做抽取），
@@ -78,8 +134,11 @@ def to_gray(image: Any) -> Any:
     r = image[:, :, 2].astype(np.int32)
     full = (77 * r + 150 * g + 29 * b + 128) >> 8      # uint8 量程
 
-    ys, xs = _decim_indices(image.shape[0], image.shape[1])
+    if decim is None:
+        decim = decim_for_size(image.shape[1], image.shape[0])
+    ys, xs = _decim_indices(image.shape[0], image.shape[1], decim)
     return full[np.ix_(ys, xs)].astype(np.uint8)
+
 
 
 def frame_diff_motion(prev_gray: Any, cur_gray: Any, motion_thresh: int = 25) -> dict[str, int]:
@@ -158,6 +217,35 @@ class QualityScorer:
             "_motion_ratio": round(motion_ratio, 4),
             "_mode": self.mode,
         }
+
+    def apply_motion_ratio(
+        self, quality: dict[str, Any], motion_ratio: float, *, face_score: float | None = None
+    ) -> dict[str, Any]:
+        """用外部 PL/phase-10 的 motion_ratio 重算质量分。
+
+        只用于仿真闭环（`--pl-motion-json`）：`motion_ratio` 来自 HLS
+        `motion_quality` 的口径（0~1），不是契约新增字段。亮度仍用本帧像素统计，
+        人脸可见度仍取当帧检测结果；因此这是"用 PL 运动量替换软件帧差分量"，
+        不是伪造整帧质量。
+        """
+        ratio = _clamp01(float(motion_ratio))
+        light = _clamp01(float(quality.get("light_score", 0.0)))
+        face = _clamp01(float(face_score if face_score is not None else 0.0))
+        motion_score = _clamp01(ratio * self.motion_gain)
+
+        w = self.weights
+        wsum = max(1e-9, w["light"] + w["motion"] + w["face"])
+        overall = (w["light"] * light + w["motion"] * (1.0 - motion_score) + w["face"] * face) / wsum
+
+        out = dict(quality)
+        out.update({
+            "light_score": round(light, 4),
+            "motion_score": round(motion_score, 4),
+            "overall": round(_clamp01(overall), 4),
+            "_motion_ratio": round(ratio, 4),
+            "_motion_source": "pl_sim",
+        })
+        return out
 
     @staticmethod
     def strip_private(quality: dict[str, Any]) -> dict[str, Any]:

@@ -1,0 +1,257 @@
+{
+  "real_frames": 7750,
+  "required_samples": 900,
+  "gate_reset_frames": 755,
+  "gate_reasons_overlapping": {
+    "quality_below_vital_min": 531,
+    "yaw_out_of_range": 217,
+    "pitch_out_of_range": 28,
+    "face_not_visible": 274
+  },
+  "gate_valid_segments": 117,
+  "longest_gate_valid_segments": [
+    {
+      "start_frame": 6371,
+      "end_frame": 7612,
+      "samples": 1242,
+      "start_s": 213.103929,
+      "end_s": 255.13473,
+      "span_s": 42.030801
+    },
+    {
+      "start_frame": 1666,
+      "end_frame": 2807,
+      "samples": 1142,
+      "start_s": 55.667516,
+      "end_s": 93.810241,
+      "span_s": 38.142725000000006
+    },
+    {
+      "start_frame": 462,
+      "end_frame": 1331,
+      "samples": 870,
+      "start_s": 15.403735,
+      "end_s": 44.371144,
+      "span_s": 28.967409000000004
+    },
+    {
+      "start_frame": 1,
+      "end_frame": 460,
+      "samples": 460,
+      "start_s": 0.03601,
+      "end_s": 15.335727,
+      "span_s": 15.299717000000001
+    },
+    {
+      "start_frame": 1333,
+      "end_frame": 1664,
+      "samples": 332,
+      "start_s": 44.43914,
+      "end_s": 55.614908,
+      "span_s": 11.175767999999998
+    },
+    {
+      "start_frame": 5124,
+      "end_frame": 5453,
+      "samples": 330,
+      "start_s": 171.440409,
+      "end_s": 182.400892,
+      "span_s": 10.96048300000001
+    },
+    {
+      "start_frame": 3707,
+      "end_frame": 3943,
+      "samples": 237,
+      "start_s": 123.805933,
+      "end_s": 131.685121,
+      "span_s": 7.879188000000013
+    },
+    {
+      "start_frame": 3133,
+      "end_frame": 3355,
+      "samples": 223,
+      "start_s": 104.681947,
+      "end_s": 112.073868,
+      "span_s": 7.391921000000011
+    }
+  ],
+  "window_and_timing_eligibility_upper_bound": {
+    "reset_by_gate": 755,
+    "window_not_full": 5008,
+    "fs_mismatch": 40,
+    "sampling_jitter": 1704,
+    "could_reach_spectral_estimation": 243
+  },
+  "potential_full_window_frames_before_roi_checks": 586,
+  "scope": "Reconstructed from original frame metadata. Empty ROI may only shorten these segments.",
+  "fir": {
+    "taps": 63,
+    "shift": 15,
+    "design_fs": 30,
+    "sum_coeff": 897
+  },
+  "synthetic_periodic_reset": {
+    "max_samples": 600,
+    "required": 900,
+    "final": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "reject": "window_not_full"
+  },
+  "synthetic_cases": [
+    {
+      "kind": "synthetic_constant_ROI",
+      "mean_green": 0,
+      "first_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "steady_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      }
+    },
+    {
+      "kind": "synthetic_constant_ROI",
+      "mean_green": 64,
+      "first_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "steady_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      }
+    },
+    {
+      "kind": "synthetic_constant_ROI",
+      "mean_green": 128,
+      "first_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "steady_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      }
+    },
+    {
+      "kind": "synthetic_constant_ROI",
+      "mean_green": 160,
+      "first_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "steady_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      }
+    },
+    {
+      "kind": "synthetic_constant_ROI",
+      "mean_green": 200,
+      "first_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "steady_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      }
+    },
+    {
+      "kind": "synthetic_constant_ROI",
+      "mean_green": 255,
+      "first_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "steady_window": {
+        "hr_bpm": null,
+        "hr_conf": null,
+        "rr_per_min": null,
+        "rr_conf": null
+      }
+    },
+    {
+      "kind": "synthetic_known_sine",
+      "expected_bpm": 48.0,
+      "result": {
+        "hr_bpm": 48.0,
+        "hr_conf": 1.0,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "reject": null
+    },
+    {
+      "kind": "synthetic_known_sine",
+      "expected_bpm": 72.0,
+      "result": {
+        "hr_bpm": 72.0,
+        "hr_conf": 1.0,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "reject": null
+    },
+    {
+      "kind": "synthetic_known_sine",
+      "expected_bpm": 75.0,
+      "result": {
+        "hr_bpm": 74.0,
+        "hr_conf": 0.9797,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "reject": null
+    },
+    {
+      "kind": "synthetic_known_sine",
+      "expected_bpm": 120.0,
+      "result": {
+        "hr_bpm": 120.0,
+        "hr_conf": 1.0,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "reject": null
+    },
+    {
+      "kind": "synthetic_known_sine",
+      "expected_bpm": 180.0,
+      "result": {
+        "hr_bpm": 180.0,
+        "hr_conf": 1.0,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "reject": null
+    }
+  ]
+}

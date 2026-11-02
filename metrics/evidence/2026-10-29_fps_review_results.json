@@ -1,0 +1,128 @@
+{
+  "is_board_run": true,
+  "board": "Mizar-Z7020",
+  "boot": "RAM/JTAG; RAM-only binary update",
+  "binary_sha256": "af939db48df52626d1a3cbec283149c356ce954aa3f5b6174308785e43e18896",
+  "offline_passed": 26,
+  "offline_failed": 0,
+  "jpeg_diagnostic_frames": 29,
+  "jpeg_ifast_all_channel_sums_equal": true,
+  "cases": {
+    "short_jpeg": {
+      "hardware": {
+        "hardware_invariants_pass": true,
+        "hardware_compare_pass": false,
+        "audit_compare_pass": true,
+        "audit_frames": 7,
+        "verification_mode": "audit",
+        "compared_frames": 31,
+        "valid_motion_frames": 30,
+        "native_camera_mode_verified": false,
+        "source_span_s": 1.012057000000027,
+        "selected_fps": 29.64259918166585,
+        "interval_p95_ms": 36.05714999991392,
+        "target_fps": 30.0,
+        "realtime_target_met": true,
+        "timing_median_ms": {
+          "decode_ms": 36.752,
+          "reference_ms": 0.0,
+          "transfer_pl_ms": 17.668
+        }
+      },
+      "metric_posts": 3,
+      "preview_posts": 11,
+      "face_visible_frames": 0,
+      "wall_elapsed_s": 1.76,
+      "throughput_fps": 17.6,
+      "stream_end_received": true,
+      "board_source_error": null
+    },
+    "long_before": {
+      "hardware": {
+        "hardware_invariants_pass": true,
+        "hardware_compare_pass": false,
+        "audit_compare_pass": true,
+        "audit_frames": 9,
+        "verification_mode": "audit",
+        "compared_frames": 255,
+        "valid_motion_frames": 254,
+        "native_camera_mode_verified": false,
+        "source_span_s": 11.112316999999962,
+        "selected_fps": 22.857519273433333,
+        "interval_p95_ms": 101.4505500000098,
+        "target_fps": 30.0,
+        "realtime_target_met": false,
+        "timing_median_ms": {
+          "decode_ms": 37.118,
+          "reference_ms": 0.0,
+          "transfer_pl_ms": 16.667
+        }
+      },
+      "metric_posts": 12,
+      "preview_posts": 101,
+      "face_visible_frames": 0,
+      "wall_elapsed_s": 12.36,
+      "throughput_fps": 20.6,
+      "stream_end_received": true,
+      "board_source_error": null
+    },
+    "long_final": {
+      "hardware": {
+        "hardware_invariants_pass": true,
+        "hardware_compare_pass": false,
+        "audit_compare_pass": true,
+        "audit_frames": 8,
+        "verification_mode": "audit",
+        "compared_frames": 236,
+        "valid_motion_frames": 235,
+        "native_camera_mode_verified": false,
+        "source_span_s": 9.291854000000058,
+        "selected_fps": 25.290969918382117,
+        "interval_p95_ms": 68.0311000000188,
+        "target_fps": 30.0,
+        "realtime_target_met": false,
+        "timing_median_ms": {
+          "decode_ms": 36.647999999999996,
+          "reference_ms": 0.0,
+          "transfer_pl_ms": 16.649
+        }
+      },
+      "metric_posts": 11,
+      "preview_posts": 90,
+      "face_visible_frames": 0,
+      "wall_elapsed_s": 10.47,
+      "throughput_fps": 22.5,
+      "stream_end_received": true,
+      "board_source_error": null
+    },
+    "raw_regression": {
+      "hardware": {
+        "hardware_invariants_pass": true,
+        "hardware_compare_pass": true,
+        "audit_compare_pass": true,
+        "audit_frames": 9,
+        "verification_mode": "every_frame",
+        "compared_frames": 9,
+        "valid_motion_frames": 8,
+        "native_camera_mode_verified": false,
+        "source_span_s": 1.8883409999999685,
+        "selected_fps": 4.236522958512331,
+        "interval_p95_ms": 314.39225000000874,
+        "target_fps": 30.0,
+        "realtime_target_met": false,
+        "timing_median_ms": {
+          "decode_ms": 40.047,
+          "reference_ms": 22.222,
+          "transfer_pl_ms": 18.406
+        }
+      },
+      "metric_posts": 3,
+      "preview_posts": 7,
+      "face_visible_frames": 0,
+      "wall_elapsed_s": 3.11,
+      "throughput_fps": 2.9,
+      "stream_end_received": true,
+      "board_source_error": null
+    }
+  }
+}

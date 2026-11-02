@@ -1,0 +1,237 @@
+{
+  "validation": "host_vs_cortex_a9_board_tensor_execution",
+  "structural_match": true,
+  "outputs": [
+    {
+      "slot": 0,
+      "elements": 1404,
+      "max_abs_difference": 4.57763671875e-05,
+      "mean_abs_difference": 6.688180302622651e-06,
+      "identical": false
+    },
+    {
+      "slot": 1,
+      "elements": 160,
+      "max_abs_difference": 3.0517578125e-05,
+      "mean_abs_difference": 1.068115234375e-05,
+      "identical": false
+    },
+    {
+      "slot": 2,
+      "elements": 142,
+      "max_abs_difference": 3.0517578125e-05,
+      "mean_abs_difference": 6.2324631382042255e-06,
+      "identical": false
+    },
+    {
+      "slot": 3,
+      "elements": 142,
+      "max_abs_difference": 1.52587890625e-05,
+      "mean_abs_difference": 6.581695986465669e-06,
+      "identical": false
+    },
+    {
+      "slot": 4,
+      "elements": 10,
+      "max_abs_difference": 1.52587890625e-05,
+      "mean_abs_difference": 6.4849853515625e-06,
+      "identical": false
+    },
+    {
+      "slot": 5,
+      "elements": 10,
+      "max_abs_difference": 1.52587890625e-05,
+      "mean_abs_difference": 8.392333984375e-06,
+      "identical": false
+    },
+    {
+      "slot": 6,
+      "elements": 1,
+      "max_abs_difference": 5.7220458984375e-06,
+      "mean_abs_difference": 5.7220458984375e-06,
+      "identical": false
+    }
+  ],
+  "host": {
+    "kind": "model_tensor_probe",
+    "synthetic_input": true,
+    "landmark_pipeline_verified": false,
+    "iterations": 3,
+    "threads": 2,
+    "input_bytes": 442368,
+    "mean_ms": 6.521482333333334,
+    "p50_ms": 6.526798,
+    "p95_ms": 6.920831,
+    "max_rss_kib": 23340,
+    "outputs": [
+      {
+        "slot": 0,
+        "elements": 1404,
+        "shape": [
+          1,
+          1,
+          1,
+          1404
+        ]
+      },
+      {
+        "slot": 1,
+        "elements": 160,
+        "shape": [
+          1,
+          1,
+          1,
+          160
+        ]
+      },
+      {
+        "slot": 2,
+        "elements": 142,
+        "shape": [
+          1,
+          1,
+          1,
+          142
+        ]
+      },
+      {
+        "slot": 3,
+        "elements": 142,
+        "shape": [
+          1,
+          1,
+          1,
+          142
+        ]
+      },
+      {
+        "slot": 4,
+        "elements": 10,
+        "shape": [
+          1,
+          1,
+          1,
+          10
+        ]
+      },
+      {
+        "slot": 5,
+        "elements": 10,
+        "shape": [
+          1,
+          1,
+          1,
+          10
+        ]
+      },
+      {
+        "slot": 6,
+        "elements": 1,
+        "shape": [
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  "target": {
+    "kind": "model_tensor_probe",
+    "synthetic_input": true,
+    "landmark_pipeline_verified": false,
+    "iterations": 30,
+    "threads": 2,
+    "input_bytes": 442368,
+    "mean_ms": 240.28839140000002,
+    "p50_ms": 239.909037,
+    "p95_ms": 253.043511,
+    "max_rss_kib": 21012,
+    "outputs": [
+      {
+        "slot": 0,
+        "elements": 1404,
+        "shape": [
+          1,
+          1,
+          1,
+          1404
+        ]
+      },
+      {
+        "slot": 1,
+        "elements": 160,
+        "shape": [
+          1,
+          1,
+          1,
+          160
+        ]
+      },
+      {
+        "slot": 2,
+        "elements": 142,
+        "shape": [
+          1,
+          1,
+          1,
+          142
+        ]
+      },
+      {
+        "slot": 3,
+        "elements": 142,
+        "shape": [
+          1,
+          1,
+          1,
+          142
+        ]
+      },
+      {
+        "slot": 4,
+        "elements": 10,
+        "shape": [
+          1,
+          1,
+          1,
+          10
+        ]
+      },
+      {
+        "slot": 5,
+        "elements": 10,
+        "shape": [
+          1,
+          1,
+          1,
+          10
+        ]
+      },
+      {
+        "slot": 6,
+        "elements": 1,
+        "shape": [
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  "target_environment": "cortex_a9_board",
+  "hardware_runtime_verified": false,
+  "landmark_pipeline_verified": false,
+  "accuracy_verified": false,
+  "limitations": [
+    "Raw attention tensors have not been refined/projected into full-frame landmarks.",
+    "Environment labels are caller supplied; use the board transcript as hardware execution evidence.",
+    "No numerical tolerance or accuracy criterion is introduced by this report."
+  ],
+  "sha256": {
+    ".tmp\\autonomy\\deploy\\attention.tflite": "e06a804e0144f9929eda782122916b35d60c697c3c9344013ca2bbe76a6ce2b4",
+    ".tmp\\autonomy\\host\\vg_model_probe": "5ef2b22ab9ab582bdf048634d8c752979461aee0c6ecb475c4be34a7b4e7b7fc",
+    ".tmp\\autonomy\\deploy\\vg_model_probe": "89768c0882a1b6040fc46084131783d61f25b15c17aea4214a799d61c66abc69"
+  }
+}

@@ -1,0 +1,17 @@
+fcefa3e04b96925105aa87c7cb379a7d0e741cda02c6033964052594a31870a1  /mnt/d/Desktop/AMD/.tmp/dual_decode_20261029/vigi_camera_pl
+Image Name:   VigiLens-direct-loop
+Created:      Thu Oct 29 22:36:30 2026
+Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+Data Size:    11635828 Bytes = 11363.11 KiB = 11.10 MiB
+Load Address: 00000000
+Entry Point:  00000000
+Image Name:   VigiLens-direct-loop
+Created:      Thu Oct 29 22:36:30 2026
+Image Type:   ARM Linux Script (uncompressed)
+Data Size:    255 Bytes = 0.25 KiB = 0.00 MiB
+Load Address: 00000000
+Entry Point:  00000000
+Contents:
+   Image 0: 247 Bytes = 0.24 KiB = 0.00 MiB
+b916ec97c8254aaff38e7bfc760ae46848c381ff4b7b05a7d856042b97cd95d0  /mnt/d/Desktop/AMD/.tmp/dual_decode_20261029/uInitrd
+6661ed3defa296d82bdd5d50075ba6dc6b7df857472aed1e79219fb294413d87  /mnt/d/Desktop/AMD/.tmp/dual_decode_20261029/boot_jtag.scr

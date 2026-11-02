@@ -1,0 +1,11 @@
+
+# cp /tmp/vigi_camera_pl /usr/bin/vigi_camera_pl && sha256sum /usr/bin/vigi_came
+ra_pl; /usr/bin/network_ctl eth0
+printf '\nVIGI_COMMAND_DONE\n'
+55b062102cd5d29803c72004a759b2240cbc6b1c89a9a44dacb7afad0ef57e62  /usr/bin/vigi_camera_pl
+LINK_BEFORE speed=100 duplex=full autoneg=1 supported=0x000042cf advertising=0x000042cf partner=0x0000604f
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

@@ -1,0 +1,23 @@
+
+# set -eu
+# if pidof vigi_camera_autonomy vigi_history vigi_fine; then echo BENCH_REFUSE_A
+CTIVE_CAMERA; exit 1; fi
+T 10 -O # wget -q -T 10 -O /tmp/vg_rgb_mapping http://169.254.73.28:8094/vg_rgb_mapping
+od 755 /tmp/vg_rgb_mapping
+/tmp/vg_rgb_mapping
+
+printf '\nVIGI_COMMAND_DONE\n'
+# chmod 755 /tmp/vg_rgb_mapping
+# /tmp/vg_rgb_mapping
+DMA_RGB_MAPPING_SAMPLE mode=memcpy ms=7.453164 bytes=2764800 exact=1
+DMA_RGB_MAPPING_SAMPLE mode=neon ms=10.526460 bytes=2764800 exact=1
+DMA_RGB_MAPPING_SAMPLE mode=memcpy ms=5.925792 bytes=2764800 exact=1
+DMA_RGB_MAPPING_SAMPLE mode=neon ms=10.486902 bytes=2764800 exact=1
+DMA_RGB_MAPPING_SAMPLE mode=memcpy ms=5.872854 bytes=2764800 exact=1
+DMA_RGB_MAPPING_SAMPLE mode=neon ms=10.462056 bytes=2764800 exact=1
+DMA_RGB_MAPPING_PASS full_frame_exact=1 tails=129 guards=1
+# 
+# printf '\nVIGI_COMMAND_DONE\n'
+
+VIGI_COMMAND_DONE
+# 

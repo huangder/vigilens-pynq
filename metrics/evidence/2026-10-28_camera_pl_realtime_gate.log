@@ -1,0 +1,16 @@
+{
+  "hardware_compare_pass": true,
+  "compared_frames": 299,
+  "valid_motion_frames": 298,
+  "native_camera_mode_verified": false,
+  "source_span_s": 19.627601000000027,
+  "selected_fps": 15.18270113601757,
+  "interval_p95_ms": 68.10329999996725,
+  "target_fps": 30.0,
+  "realtime_target_met": false,
+  "timing_median_ms": {
+    "decode_ms": 29.728,
+    "reference_ms": 16.03,
+    "transfer_pl_ms": 19.544
+  }
+}

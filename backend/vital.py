@@ -120,7 +120,7 @@ def load_fir_coeffs(path: str | Path | None = None) -> tuple[list[int], int, int
     taps = _num("FIR_NUM_TAPS", len(coeffs))
     if len(coeffs) != taps:
         raise ValueError(f"系数个数 {len(coeffs)} 与 FIR_NUM_TAPS={taps} 不一致")
-    return coeffs, _num("FIR_COEFF_SHIFT", 15), _num("FIR_FS_HZ", 45)
+    return coeffs, _num("FIR_COEFF_SHIFT", 15), _num("FIR_FS_HZ", 30)
 
 
 def fir_process(samples, coeffs: list[int], shift: int = 15, hist=None):
@@ -174,7 +174,8 @@ def fir_process(samples, coeffs: list[int], shift: int = 15, hist=None):
 #   本模块在软件侧走**同一条链**，只是把最后一段从"输出滤波序列"延长到"估出 BPM"：
 #       ROI 绿通道累加 ──q15_from_roi_sum──▶ Q1.15 序列 ──fir_process──▶ 带通序列
 #                                     └──────────────▶ 频谱峰值 ──▶ BPM + 置信度
-#   这样 PL 与 PS 看到的是**同一串输入样本**，M4 的软硬件对比才有意义。
+#   时间戳估计另有一个处理分支：原始有效 Q1.15 → 等间隔化 → 同一冻结 FIR → FFT。
+#   对拍该分支时必须提供同一份派生输入，不能把它与非等间隔原序列逐点混比。
 # ===========================================================================
 
 
@@ -182,16 +183,22 @@ def forehead_roi(bbox, width: int, height: int) -> tuple[int, int, int, int]:
     """从人脸框里取**额头 ROI**（半开区间），返回 `(x0, y0, x1, y1)`。
 
     为什么取额头：皮肤暴露、运动伪影比脸颊小、避开眼睛与嘴（眨眼/说话是强干扰源）。
-    取人脸框**上部**的中间区域 —— 上 35% 高、中间 60% 宽，再裁剪到画面内。
+
+    **前提：`bbox` 是整张脸的外接框**（额头到下巴，见 `face_landmark.bbox_from_points`
+    与台账 BUG-010/011）。所以这里取框高的 **8%~30%**、框宽中间 **50%**：
+    · 上界不用 0（框顶就是发际线，贴着边容易吃头发）；
+    · 下界留到 30% —— 眼睛大约在整脸框的 40%~50% 高处，30% 以内不会碰到眼睛；
+    · 左右各留 25% —— 避开脸缘的高光/阴影与耳朵。
+
     人脸框无效（宽或高 <= 0）时返回空 ROI（四项相等，累加结果为 0）。
     """
     x, y, w, h = (int(v) for v in bbox)
     if w <= 0 or h <= 0:
         return 0, 0, 0, 0
-    x0 = x + int(w * 0.20)
-    x1 = x + int(w * 0.80)
-    y0 = y
-    y1 = y + int(h * 0.35)
+    x0 = x + int(w * 0.25)
+    x1 = x + int(w * 0.75)
+    y0 = y + int(h * 0.08)
+    y1 = y + int(h * 0.30)
     # 裁剪到画面内（与 roi_statistic 的 clamp 同义）
     return (max(0, min(x0, width)), max(0, min(y0, height)),
             max(0, min(x1, width)), max(0, min(y1, height)))
@@ -225,42 +232,136 @@ class GreenRppg:
     """流式 rPPG 估计器：逐帧喂 ROI 的绿通道 Q1.15 样本，定期给出心率与置信度。
 
     设计要点（都是为了让"报出来的数字"可辩护）：
-      · **滑窗填满才出数**：窗口长度取 `config.yaml` 的 `window_seconds`（契约 §1 的局部窗口），
+      · **滑窗填满才出数**：窗口长度取 `config.yaml` 的 `rppg_window_seconds`，缺省沿用 `window_seconds`，
         没填满一律返回 null —— 没测够就是没测够，不拿半个窗去猜；
-      · **带通复用冻结 FIR**：直接调 `fir_process`（同一组 Q15 系数、同一算术），
-        所以软件与 PL 看到的是同一串滤波后序列；
+      · **带通复用冻结 FIR**：有真实时间戳时先将原始有效样本等间隔化，再用同一组
+        Q15 系数与整数算术；未传时间戳的离线兼容路径保留流式 FIR；
       · **峰不过半就不报数**：判定"找到真峰"的条件是**峰值 ±1 个频点内的能量占带内总能量过半**。
         这是**结构性判据**（"这个峰是否占主导"），不是可调阈值，所以没有引入新的魔法数字；
-      · **丢弃的帧不补值**：契约 §4.6 规定 `count==0` 的帧必须丢弃，
-        所以人脸丢失/空 ROI 的那一帧不喂样本。窗口因此可能跨越多于 `window_seconds` 的真实时间，
-        `estimate()` 用窗口首尾帧号反推**有效采样率**再做 FFT —— 否则漏帧会把频率系统性抬高。
+      · **丢弃的帧不补成采集样本**：空 ROI/丢脸清窗，短时质量/姿态暂停期间拒报。
+        插值仅形成处理网格，窗口就绪仍以真实有效样本数计算，长缺口继续拒绝；
+      · **倍频歧义拒报**：主峰半频处有足够强的独立峰时，不把最高峰直接称作心率。
     """
 
     def __init__(self, *, fps: float, window_seconds: float, hr_band_hz,
-                 coeffs: list[int] | None = None, shift: int | None = None):
+                 coeffs: list[int] | None = None, shift: int | None = None,
+                 fs_tol: float = 0.10, jitter_ratio_max: float | None = None,
+                 max_gap_ms: float | None = None, recovery_ms: float = 0,
+                 recovery_samples: int | None = None, harmonic_ratio_min: float | None = None):
+        design_fps = None
         if coeffs is None or shift is None:
             coeffs, shift, _fs = load_fir_coeffs()
+            design_fps = float(_fs)
         self.coeffs = coeffs
         self.shift = shift
         self.fps = float(fps)
+        self.fir_design_fps = design_fps
+        # 真实采样率与标称值的相对偏差上限（`config.yaml: rppg_fs_tol`，默认 0.10）。
+        # 为什么必须有这条护栏：FIR 系数是按 `self.fps` 设计的，真实采样率偏 k 倍时
+        # 频率轴整体缩放 k 倍 ⇒ 报出来的是"看起来正常但错误的数"（docs/16 BUG-029：
+        # 13 fps 实测把 72 bpm 报成 166 bpm、conf 0.9998）。宁可 null，不报错数。
+        self.fs_tol = float(fs_tol)
+        try:
+            from .config import load_config
+        except ImportError:
+            from config import load_config
+        defaults = load_config()
+        if jitter_ratio_max is None:
+            jitter_ratio_max = defaults["realtime_jitter_ratio_max"]
+        self.jitter_ratio_max = float(jitter_ratio_max)
+        self.max_gap_s = float(defaults["rppg_max_gap_ms"] if max_gap_ms is None else max_gap_ms) / 1000
+        # Direct callers retain immediate-reset semantics unless explicitly
+        # enabled. The production from_config path enables bounded recovery.
+        self.recovery_s = float(recovery_ms) / 1000
+        self.recovery_samples = int(defaults["rppg_recovery_samples"] if recovery_samples is None else recovery_samples)
+        self.harmonic_ratio_min = float(defaults["rppg_harmonic_ratio_min"] if harmonic_ratio_min is None else harmonic_ratio_min)
         self.f_lo, self.f_hi = float(hr_band_hz[0]), float(hr_band_hz[1])
         self.need = max(2, int(round(float(window_seconds) * self.fps)))
+        if (not 0 < self.f_lo < self.f_hi < self.fps / 2 or self.max_gap_s <= 0
+                or not 0 <= self.recovery_s <= self.max_gap_s or self.recovery_samples < 1
+                or not 0 < self.harmonic_ratio_min < 1):
+            raise ValueError("invalid rPPG frequency/gap/recovery/harmonic configuration")
+        from collections import Counter
+        self._reject_counts = Counter()
+        self._reset_counts = Counter()
+        self._invalid_counts = Counter()
+        self.total_samples = self.max_segment_samples = self.max_window_samples = 0
+        self.resample_calls = self.soft_pause_frames = self.resumed_segments = 0
+        self.last_reset_reason = None
         self.reset()
 
     @classmethod
     def from_config(cls, cfg, fps: float | None = None) -> "GreenRppg":
         """按 `config.yaml` 建实例（采样率取 `fps_nominal`，与契约 §0 一致）。"""
+        try:
+            from .config import rppg_window_seconds
+        except ImportError:
+            from config import rppg_window_seconds
         return cls(fps=float(fps if fps is not None else cfg["fps_nominal"]),
-                   window_seconds=float(cfg["window_seconds"]),
-                   hr_band_hz=cfg["hr_band_hz"])
+                   window_seconds=rppg_window_seconds(cfg),
+                   hr_band_hz=cfg["hr_band_hz"],
+                   fs_tol=float(cfg.get("rppg_fs_tol", 0.10)),
+                   jitter_ratio_max=float(cfg["realtime_jitter_ratio_max"]),
+                   max_gap_ms=float(cfg["rppg_max_gap_ms"]), recovery_ms=float(cfg["rppg_recovery_ms"]),
+                   recovery_samples=int(cfg["rppg_recovery_samples"]),
+                   harmonic_ratio_min=float(cfg["rppg_harmonic_ratio_min"]))
 
-    def reset(self) -> None:
+    def reset(self, reason: str = "manual") -> None:
         from collections import deque
 
+        if getattr(self, "_valid", 0):
+            self._reset_counts[reason] += 1
+            self.last_reset_reason = reason
         self._win = deque(maxlen=self.need)      # 带通后的样本
-        self._fid = deque(maxlen=self.need)      # 对应的 frame_id（算有效采样率用）
+        self._fid = deque(maxlen=self.need)      # 对应的 frame_id（无时间戳时反推采样率用）
+        self._ts = deque(maxlen=self.need)       # 对应的**采集侧真实时间戳**（活帧源才有；离线为 None）
         self._hist = None                        # FIR 段间状态（连续流语义）
+        # Extra raw history supplies the fixed FIR's warmup before each window.
+        # Derived uniform-grid points are never counted as captured samples.
+        self._raw = deque()
+        # Memory is bounded even for malformed high-rate inputs. Normal
+        # retention is by elapsed warmup time, not an assumed local rate.
+        self._raw_limit = 2 * self.need + self.warmup_samples + 1
+        self._history_limited = False
+        self._blocked_reason = None
+        self._recovery_left = 0
         self._valid = 0                          # 累计有效样本数
+        self.last_fs_eff: float | None = None    # 最近一次 estimate() 用的有效采样率（诊断用）
+        self.last_time_base: str | None = None   # "source_ts" / "fid_nominal"（诊断用）
+        self.last_reject: str | None = None      # 最近一次"不报数"的原因（诊断用）
+        self.last_conf: float | None = None      # 最近一次"峰邻域能量占比"（诊断用）
+        self.last_interval_p95_s: float | None = None
+        self.last_uniform_samples = 0
+        self.last_harmonic_ratio = None
+        self.last_spectral_fs = None
+
+    def invalidate(self, reason: str, ts: float | None, *, allow_recovery: bool = False) -> None:
+        """Never reuse an estimate while invalid; retain only bounded soft gaps."""
+        import math
+        self._invalid_counts[reason] += 1
+        previous_ts = self._ts[-1] if self._ts else None
+        short = (allow_recovery and self.recovery_s > 0 and self.samples > 0
+                 and ts is not None and previous_ts is not None
+                 and math.isfinite(ts) and math.isfinite(previous_ts)
+                 and 0 < ts - previous_ts <= self.recovery_s)
+        if short:
+            self.soft_pause_frames += 1
+            self._recovery_left = self.recovery_samples
+        else:
+            self.reset(reason)
+        self._blocked_reason = reason
+
+    def stats(self) -> dict:
+        return {"estimate_calls": sum(self._reject_counts.values()),
+                "reject_counts": dict(self._reject_counts), "reset_counts": dict(self._reset_counts),
+                "invalid_counts": dict(self._invalid_counts), "raw_samples_total": self.total_samples,
+                "max_segment_samples": self.max_segment_samples, "max_window_samples": self.max_window_samples,
+                "soft_pause_frames": self.soft_pause_frames, "resumed_segments": self.resumed_segments,
+                "resample_calls": self.resample_calls, "last_uniform_samples": self.last_uniform_samples,
+                "last_spectral_fs": self.last_spectral_fs,
+                "raw_history_samples": len(self._raw),
+                "last_harmonic_ratio": self.last_harmonic_ratio, "last_reset_reason": self.last_reset_reason,
+                "recovery_samples_remaining": self._recovery_left}
 
     @property
     def samples(self) -> int:
@@ -272,16 +373,112 @@ class GreenRppg:
         """窗口是否已填满（填满才可能出数）。"""
         return len(self._win) >= self.need
 
-    def push(self, q15: int | None, frame_id: int) -> None:
-        """喂一个样本。`q15=None` 表示这一帧按契约被丢弃（不喂、不补值）。"""
+    @property
+    def last_sample_ts(self) -> float | None:
+        return self._ts[-1] if self._ts else None
+
+    @property
+    def warmup_samples(self) -> int:
+        return len(self.coeffs) - 1
+
+    @property
+    def nominal_history_samples(self) -> int:
+        return self.need
+
+    def push(self, q15: int | None, frame_id: int, ts: float | None = None) -> None:
+        """喂一个样本。`q15=None` 表示这一帧按契约被丢弃（不喂、不补值）。
+
+        `ts` 是**采集侧的真实到达时间**（`capture.Frame.ts`）。活帧源必须传：
+        只有这样 `estimate()` 才能按真实采样率算频率轴（docs/16 BUG-029 / docs/37 R14）。
+        离线回放（视频文件）传 `None`：那些源的 wall clock 反映的是解码速度，不是采样间隔，
+        用 `frame_id / fps_nominal` 反而可复现。
+        """
         if q15 is None:
             return
+        if self._blocked_reason is not None and self._recovery_left:
+            # A late recovery cannot reuse a history that was merely paused.
+            last = self._ts[-1]
+            if ts is None or last is None or not 0 < ts - last <= self.recovery_s:
+                self.reset("recovery_timeout")
+            else:
+                self.resumed_segments += 1
+        self._blocked_reason = None
+        if self._recovery_left:
+            self._recovery_left -= 1
         ys, _sat, self._hist = fir_process([int(q15)], self.coeffs, self.shift, self._hist)
         self._win.append(ys[0])
         self._fid.append(int(frame_id))
+        self._ts.append(None if ts is None else float(ts))
+        self._raw.append((None if ts is None else float(ts), int(q15)))
+        import math
+        first_ts = self._ts[0]
+        if first_ts is not None and math.isfinite(first_ts):
+            cutoff = first_ts - self.warmup_samples / self.fps
+            while (len(self._raw) > self.need and self._raw[1][0] is not None
+                   and math.isfinite(self._raw[1][0]) and self._raw[1][0] <= cutoff):
+                self._raw.popleft()
+        elif ts is None:
+            while len(self._raw) > self.nominal_history_samples:
+                self._raw.popleft()
+        while len(self._raw) > self._raw_limit:
+            self._raw.popleft()
+            self._history_limited = True
         self._valid += 1
+        self.total_samples += 1
+        self.max_segment_samples = max(self.max_segment_samples, self._valid)
+        self.max_window_samples = max(self.max_window_samples, self.samples)
 
     def estimate(self) -> dict:
+        result = self._estimate()
+        self._reject_counts[self.last_reject or "accepted"] += 1
+        return result
+
+    def _uniform_context(self, n: int):
+        """Return captured context and a uniform grid without extrapolation."""
+        import numpy as np
+        raw = list(self._raw)
+        # Only extend the window's warmup into a valid monotonic prefix.
+        first = len(raw) - n
+        while first > 0:
+            previous, current = raw[first - 1][0], raw[first][0]
+            if (previous is None or not np.isfinite(previous) or previous >= current
+                    or current - previous > self.max_gap_s):
+                break
+            first -= 1
+        context = raw[first:]
+        times = np.asarray([p[0] for p in context], dtype=np.float64)
+        end, start = times[-1], float(self._ts[0])
+        if self._history_limited and times[0] > start - self.warmup_samples / self.fps:
+            return None
+        # Endpoint-aligned grids need no extrapolation. A sub-ULP short window
+        # may have one fewer derived point; captured sample count is unchanged.
+        full_count = int(np.floor((end - times[0]) * self.fps)) + 1
+        count = int(np.floor((end - start) * self.fps)) + 1
+        grid = end - np.arange(full_count - 1, -1, -1) / self.fps
+        return first, times, grid, count
+
+    def _uniform_filtered(self, n: int):
+        """Re-grid raw valid samples at the frozen rate BEFORE FIR, no extrapolation."""
+        import numpy as np
+        context = self._uniform_context(n)
+        if context is None:
+            return None
+        first, times, grid, count = context
+        values = np.asarray([p[1] for p in list(self._raw)[first:]], dtype=np.float64)
+        sampled = np.interp(grid, times, values)
+        # Same half-away rounding as the frozen Q1.15 interface. These are
+        # derived processing samples, not fabricated camera observations.
+        quantized = np.where(sampled >= 0, np.floor(sampled + .5), np.ceil(sampled - .5)).astype(np.int64)
+        filtered, _, _ = fir_process(quantized, self.coeffs, self.shift)
+        self.resample_calls += 1
+        self.last_uniform_samples = count
+        return np.asarray(filtered[-count:], dtype=np.float64)
+
+    def _nominal_filtered(self, n: int):
+        import numpy as np
+        return np.asarray(self._win, dtype=np.float64)
+
+    def _estimate(self) -> dict:
         """返回契约要求的四个键（`hr_bpm` / `hr_conf` / `rr_per_min` / `rr_conf`）。
 
         出不了可信结果时**四项全为 None** —— 这是产品承诺（"先判断能不能测"），不是缺陷。
@@ -289,7 +486,24 @@ class GreenRppg:
         呼吸率必须由 PS 侧先降采样再用**另一组系数**，而那组系数尚未冻结（见 §3.5 已知限制）。
         """
         none4 = {"hr_bpm": None, "hr_conf": None, "rr_per_min": None, "rr_conf": None}
-        if not self.ready:
+        self.last_reject = None      # 每次重新判，避免上一次的原因粘住
+        self.last_conf = None        # 同上：避免上一次的置信度粘住
+        self.last_interval_p95_s = None
+        self.last_harmonic_ratio = None
+        self.last_uniform_samples = 0
+        self.last_spectral_fs = None
+        self._signal_error = None
+        if self._blocked_reason is not None:
+            self.last_reject = self._blocked_reason
+            return dict(none4)
+        if self._recovery_left:
+            self.last_reject = "recovering"
+            return dict(none4)
+
+        if self.fir_design_fps is not None and self.fps != self.fir_design_fps:
+            # A CLI rate override cannot silently turn the frozen 30 Hz FIR
+            # into a filter designed for 60 Hz (or another sampling rate).
+            self.last_reject = "fir_rate_mismatch"
             return dict(none4)
 
         import numpy as np
@@ -298,13 +512,66 @@ class GreenRppg:
         fids = np.asarray(self._fid, dtype=np.float64)
         n = y.size
 
-        # 有效采样率：窗口首尾帧号跨越的真实时间（漏帧时 < fps）
-        span_s = (fids[-1] - fids[0]) / self.fps
-        if span_s <= 0:
+        # ---- 时间基准（docs/16 BUG-029）------------------------------------
+        # 首选采集侧真实时间戳：漏帧/降速都会被如实反映。
+        # 没有时间戳（离线回放）才退回 frame_id/fps —— 那条路径**恒等于标称 fps**，
+        # 因此它只能证明"帧号连续"，不能证明"采样率正确"，诊断里如实标注。
+        #
+        # ⚠️ 这一段放在"窗口是否填满"之前：真机上窗口要 30 s 才填满（实测链路只有 8~17 fps），
+        # 如果只在填满后才算，运维要等半分钟才知道"采样率根本对不上"。
+        fs_eff = None
+        if n >= 2:
+            ts_list = list(self._ts)
+            has_any_ts = any(t is not None for t in ts_list)
+            has_ts = (len(ts_list) == n and all(t is not None for t in ts_list))
+            time_base = "fid_nominal"
+            span_s = (fids[-1] - fids[0]) / self.fps
+            if has_any_ts:
+                ts_arr = np.asarray(ts_list, dtype=np.float64)
+                if not has_ts or not np.all(np.isfinite(ts_arr)) or not np.all(np.diff(ts_arr) > 0):
+                    self.last_time_base = "invalid_source_ts"
+                    self.last_fs_eff = None
+                    self.last_reject = "invalid_timestamps"
+                    return dict(none4)
+                time_base = "source_ts"
+                span_s = float(ts_arr[-1] - ts_arr[0])
+                self.last_interval_p95_s = float(np.percentile(np.diff(ts_arr), 95))
+            self.last_time_base = time_base
+            if span_s <= 0:
+                self.last_fs_eff = None
+                self.last_reject = "no_time_span"
+                return dict(none4)
+            fs_eff = (n - 1) / span_s
+            self.last_fs_eff = float(fs_eff)
+            if time_base == "source_ts":
+                # 真实采样率偏离标称值过多：频率轴会整体缩放，报出来的 bpm 不可辩护 → 不报数。
+                if abs(fs_eff - self.fps) > self.fs_tol * self.fps:
+                    self.last_reject = "fs_mismatch"
+                    return dict(none4)
+                if self.last_interval_p95_s * self.fps > self.jitter_ratio_max:
+                    self.last_reject = "sampling_jitter"
+                    return dict(none4)
+                if float(np.diff(ts_arr).max()) > self.max_gap_s:
+                    self.last_reject = "sampling_gap"
+                    return dict(none4)
+            elif not (0 < fs_eff <= self.fps * 1.001):
+                self.last_reject = "fs_eff_implausible"
+                return dict(none4)
+
+        if not self.ready or fs_eff is None:
+            self.last_reject = self.last_reject or "window_not_full"
             return dict(none4)
-        fs_eff = (n - 1) / span_s
-        if not (0 < fs_eff <= self.fps * 1.001):
+        self.last_reject = None
+        if self.last_time_base == "source_ts":
+            y = self._uniform_filtered(n)
+            fs_eff = self.fps
+        else:
+            y = self._nominal_filtered(n)
+        if y is None:
+            self.last_reject = self._signal_error or "warmup_history_unavailable"
             return dict(none4)
+        n = y.size
+        self.last_spectral_fs = float(fs_eff)
 
         # 去直流 + Hann 窗（抑制谱泄漏）→ 实 FFT
         yw = (y - y.mean()) * np.hanning(n)
@@ -313,20 +580,48 @@ class GreenRppg:
 
         band = (freqs >= self.f_lo) & (freqs <= self.f_hi)
         if int(band.sum()) < 3:
+            # 诊断口径：**每一条 return 都必须写清原因**，否则运维只能看到 null，
+            # 分不清"没测够 / 没峰 / 采样率不对"（docs/16 BUG-041）。
+            self.last_reject = "band_too_narrow"
             return dict(none4)
         p_band = power[band]
         f_band = freqs[band]
         total = float(p_band.sum())
         if total <= 0:
+            # 带内一点能量都没有：典型是恒定输入（去直流后全 0）或整窗全被丢帧。
+            self.last_reject = "no_band_energy"
             return dict(none4)
 
         k = int(np.argmax(p_band))
         lo_i, hi_i = max(0, k - 1), min(p_band.size, k + 2)
         conf = float(p_band[lo_i:hi_i].sum()) / total
 
-        # 结构性判据：峰邻域的能量必须占带内**过半**，否则视为"没有真峰"
+        self.last_conf = float(conf)
+
+        # 结构性判据：峰邻域的能量必须占带内**过半**，否则视为"没有真峰"。
+        # ⚠️ 这一条是 BUG-041 的现场：以前它**静默返回**，`last_reject` 还是 None 或
+        # 上一轮的旧值，于是"窗口已满 900/900 却全 null"无法从 summary 里看出原因。
         if conf <= 0.5:
+            self.last_reject = "no_dominant_peak"
             return dict(none4)
+
+        half = float(f_band[k]) / 2
+        if self.f_lo <= half <= self.f_hi:
+            j = int(np.argmin(np.abs(f_band - half)))
+            # Require an actual local peak, not the dominant peak's Hann skirt
+            # leaking into the half-frequency neighborhood of a short window.
+            candidates = range(max(0, j - 1), min(p_band.size, j + 2))
+            j = max(candidates, key=lambda index: p_band[index])
+            local_peak = ((j == 0 or p_band[j] > p_band[j - 1])
+                          and (j + 1 == p_band.size or p_band[j] > p_band[j + 1]))
+            half_energy = float(p_band[max(0, j - 1):min(p_band.size, j + 2)].sum()) if local_peak else 0.0
+            dominant_energy = float(p_band[lo_i:hi_i].sum())
+            self.last_harmonic_ratio = half_energy / dominant_energy
+            if local_peak and self.last_harmonic_ratio >= self.harmonic_ratio_min:
+                # A strong half-frequency component makes the pulse rate
+                # ambiguous. Refuse rather than confidently double/halve it.
+                self.last_reject = "harmonic_ambiguity"
+                return dict(none4)
 
         return {
             "hr_bpm": round(float(f_band[k]) * 60.0, 1),

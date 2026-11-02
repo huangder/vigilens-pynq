@@ -1,0 +1,18 @@
+{
+  "kind": "native_vision_offline_development",
+  "input_frames": 658,
+  "contract_frames": 605,
+  "face_frames": 597,
+  "black_ids": [
+    328,
+    329
+  ],
+  "black_frames_clear_face_and_vitals": true,
+  "contract_valid": true,
+  "recovery_observed": true,
+  "elapsed_s_including_launch": 5.062,
+  "fps_source": 30.0,
+  "hardware_test": false,
+  "accuracy_verified": false,
+  "config_sha256": "25626b95042d1e59b7e91db6447419068ac0ebe31659d7f7239ddcab183e315b"
+}

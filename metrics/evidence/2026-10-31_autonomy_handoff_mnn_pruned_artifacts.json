@@ -1,0 +1,67 @@
+{
+  "kind": "peppa_pruned_fp32_export_artifacts",
+  "source_ncnn_param_sha256": "223746b13c090a5f9efaa1a7e599fa15bdef17d8d1b52dd48b483b8f994b3976",
+  "source_ncnn_weights_sha256": "f9c76eee62232147f2e53a7bfd1d2033b9a3eac147ce0493869655131f83199b",
+  "mnn_tag": "3.6.1",
+  "mnn_commit": "d407447ed56c4121a11ccbd266dc184ca1ead0c2",
+  "files": {
+    "conversion.log": {
+      "sha256": "c26da96d0fcd118d125ed9b463904dbc2f1f4be003839dfb434621ce01b5a128",
+      "bytes": 331
+    },
+    "export-audit.json": {
+      "sha256": "848158ebf9b2a91a354375811f6c473642f191b181d7c77894d886ffce2bc6f1",
+      "bytes": 15824
+    },
+    "mnn-host-comparison.json": {
+      "sha256": "6233c6d8f90aae5ed6b62dfdaa8b0c212f4cd7a91ca1cd98214acfa4aef637e2",
+      "bytes": 1058
+    },
+    "mnn-host.log": {
+      "sha256": "3cc2216d3c0c4884044ae74a1d7d0c3b4bfbbb190074ca7a18daa9bd73a8bc68",
+      "bytes": 106
+    },
+    "model-storage-audit.json": {
+      "sha256": "bfe88a33fb7b286b5be1f19533ea3f38f3fe1a32177dab0fb27b539ff587f81d",
+      "bytes": 257
+    },
+    "ncnn-host.log": {
+      "sha256": "c0310ad80fb26d4098cfb43505d3787f9a4a8ccb52f4f9143ab114543a61ab94",
+      "bytes": 64
+    },
+    "onnx-ncnn-comparison.json": {
+      "sha256": "4296477480928fdcb38b4460c5c399dd387a88cce843f3b225feeba0318ebe4f",
+      "bytes": 437
+    },
+    "peppa_pruned.mnn": {
+      "sha256": "be908e37a2dba5fb1b43fcf242f54db5290800f999ff18c2406432726f19b138",
+      "bytes": 483636
+    },
+    "peppa_pruned.onnx": {
+      "sha256": "81e56cbcbeeacaddadf8d90a1d822bc117fc4d2b20d6e4d63f3fcac912d8b3ff",
+      "bytes": 485503
+    },
+    "peppa_pruned_mnn_host.json": {
+      "sha256": "fc287414dc02e7ba7e00e456f429370c63b60bab8c4e1384e352a00cf0dba9cf",
+      "bytes": 801
+    },
+    "peppa_pruned_mnn_host.output0.f32": {
+      "sha256": "78afbfd7e50bdc3b8f16b5ee61c73b932ab2f48d428200ade3b49143156f5781",
+      "bytes": 572
+    },
+    "peppa_pruned_ncnn.json": {
+      "sha256": "0d5ee1503a894cc37e175ce759da6d5070272603da084e39fe389f12171b25f3",
+      "bytes": 817
+    },
+    "peppa_pruned_ncnn.output0.f32": {
+      "sha256": "e42569dca9d0a92123034cdd11c6aa6ff511a45e882ff0578f08bc52cab7bb6c",
+      "bytes": 572
+    },
+    "peppa_pruned_ort.output0.f32": {
+      "sha256": "569b79100f4b2394aa01a9011ee4f45dc38def7314892335be87900986d96b46",
+      "bytes": 572
+    }
+  },
+  "accuracy_verified": false,
+  "full_pipeline_realtime_verified": false
+}
