@@ -1,0 +1,194 @@
+{
+  "kind": "observed_independent_SD_cold_boot_and_preview_validation",
+  "recorded_at": "2026-11-03T13:50:53.557431+08:00",
+  "source_base_commit": "21c237f68f53695fa1189f8f27ae12f30c7bd219",
+  "branch": "codex/fix-sd-cold-boot-20261103",
+  "release_id": "VigiLens-SD-6a03c4d16a2ae34c",
+  "config_sha256": "6a03c4d16a2ae34ca5dac1aafa15e17a1086c146794593e9c71ea2c863eea39c",
+  "hardware_sd_boot_verified": true,
+  "jtag_used": false,
+  "user_reported_physical_powercycle": true,
+  "post_boot_RAM_patch_required": false,
+  "SD_application_mount_read_only": true,
+  "service_running": true,
+  "pc_update_server_stopped_before_final_HTTP_check": true,
+  "page_HTTP_200": true,
+  "metrics_HTTP_200_and_frame_ids_advance": true,
+  "preview_HTTP_200_JPEG_dimensions": [
+    640,
+    480
+  ],
+  "preview_content_changed": true,
+  "raw_face_media_saved_or_uploaded": false,
+  "accuracy_verified": false,
+  "physical_camera_unplug_recovery_verified": false,
+  "long_duration_stability_verified": false,
+  "software_validation": {
+    "check_all_passed": 26,
+    "check_all_failed": 0,
+    "root_pytest_passed": 561,
+    "root_pytest_warnings": 2,
+    "POSIX_service_fixture_tests_passed": 5,
+    "camera_queue_fixture_passed": true
+  },
+  "runtime_service_sha256": "d3997f866f2b2a8aa2fb61fc3d28e14463a41112a2646125e37c702aa81031ee",
+  "delivered_files": {
+    "BOOT.BIN": {
+      "sha256": "b754e5bb00baae9936c33d77ab6f6376611622c8e78751a19065a870a264cf7e",
+      "bytes": 127936
+    },
+    "boot.cmd": {
+      "sha256": "67f16e17c0c90e275a5b1db4e1d78e6bd44fc6fb8686d556f5d42d5171ae120c",
+      "bytes": 611
+    },
+    "boot.scr": {
+      "sha256": "64730b157f7fb78fb2583c32f11376b721db6a92cb94360fba4615cf13ef9c2b",
+      "bytes": 683
+    },
+    "system.bit": {
+      "sha256": "8a870b60cef820c98dc488c3508b85ab01d9b264368a174aea2a18b8841830fc",
+      "bytes": 4045769
+    },
+    "system.dtb": {
+      "sha256": "9e4d9b1e2f4fece1abc3343aee92ff3fa1721c0b4a08431ae99f6df18fef6f99",
+      "bytes": 67277
+    },
+    "u-boot.img": {
+      "sha256": "d5c7b31e71fac3ec88d261dd3ba9369e7cf50cd9b777b94c77b1ac18c2149011",
+      "bytes": 1051620
+    },
+    "uInitrd": {
+      "sha256": "945355f3a48c2effd0a7e3e899df4840c8d09ac93cb9977d15c6b1a85f69b528",
+      "bytes": 11604173
+    },
+    "vigilens/app/det1.bin": {
+      "sha256": "8dedfdc5e37378d23131a6cb91d1e0a446ecb7751e2d3eadd5f086fdf18b5cec",
+      "bytes": 26548
+    },
+    "vigilens/app/det1.param": {
+      "sha256": "a9338e207dbbaa7ad56625492b551aeb4ecaf10ac279d098b02f17b0a62b1e0b",
+      "bytes": 943
+    },
+    "vigilens/app/det2.bin": {
+      "sha256": "15a3f7df9dc7cc1ec0976fad36ef58128bf1b5de8c2abfb42ae722e803dbd842",
+      "bytes": 400736
+    },
+    "vigilens/app/det2.param": {
+      "sha256": "e9f614c923b3fede02c236be0246465e83a34b37ceed0bc2bcb6bfda32461d25",
+      "bytes": 1122
+    },
+    "vigilens/app/det3.bin": {
+      "sha256": "93fd2eb8f470ddaaa9733e5fe1322bddb1a38407b90bdec1cd380885c1525962",
+      "bytes": 1556192
+    },
+    "vigilens/app/det3.param": {
+      "sha256": "b7fe7677d4840677aa0ea5690c7018630cc8d4a661be95290fe26814920bfad4",
+      "bytes": 1522
+    },
+    "vigilens/app/display.html": {
+      "sha256": "10f7a6301d5bb30bc2f245abe67dbe37f2509f0e7f76a72b9843dd267e3775a5",
+      "bytes": 6132
+    },
+    "vigilens/app/install_native.sh": {
+      "sha256": "e55da5159a1d71ec5279de4430ff0da306384c79f8fe5da8f0f483bb195c4733",
+      "bytes": 1040
+    },
+    "vigilens/app/libgomp.so.1": {
+      "sha256": "2d25b3b1e4a3d8ac657c406a888395eda289cbeef85a13f94dadca0452922ac2",
+      "bytes": 1106460
+    },
+    "vigilens/app/manifest.sha256": {
+      "sha256": "1b9bcc3b3c43d96c30bd8ba714d1c9b6562517c9969525c10c6f491c55b64c6e",
+      "bytes": 1216
+    },
+    "vigilens/app/package.json": {
+      "sha256": "49b5461744c69eb101dd62f4a743a80621affd91c3c67b66d434b5a0bb70bb95",
+      "bytes": 1923
+    },
+    "vigilens/app/run_native.sh": {
+      "sha256": "d611b34060b659e9e3d2998cab56fac09d4a0ed2e451b4263ff16e89ebb20b4e",
+      "bytes": 1696
+    },
+    "vigilens/app/runtime.env": {
+      "sha256": "76c9b449f4e2c8fdd56ad093e95be8578083497bac6bb27acf07ac36eb6fe396",
+      "bytes": 315
+    },
+    "vigilens/app/shape_predictor_68_face_landmarks.dat": {
+      "sha256": "fbdc2cb80eb9aa7a758672cbfdda32ba6300efe9b6e6c7a299ff7e736b11b92f",
+      "bytes": 99693937
+    },
+    "vigilens/app/vg_metrics_http": {
+      "sha256": "e668ee22a43114ad14edb60b323b00194a6afdb0dcbd721fa1071f693d2d8e1a",
+      "bytes": 22256
+    },
+    "vigilens/app/vg_vision_replay_arm": {
+      "sha256": "54bed624ccab0a3dbb807f18c616f88ddd214df7c68043b768830850ea4606a5",
+      "bytes": 10603056
+    },
+    "vigilens/app/vigi_camera_autonomy": {
+      "sha256": "c84200ac3d5a11b23339db1146088500dcffac85b710b4274fe203b0eddf56bd",
+      "bytes": 10904716
+    },
+    "vigilens/boot.env": {
+      "sha256": "5e0b9f545507c6ac78bea5c413cb311e32719bf61bd802a28bbcd25c4474ce9b",
+      "bytes": 589
+    },
+    "vigilens/config.yaml": {
+      "sha256": "6a03c4d16a2ae34ca5dac1aafa15e17a1086c146794593e9c71ea2c863eea39c",
+      "bytes": 30060
+    },
+    "vigilens/READY": {
+      "sha256": "50f4a1fcb264f0b97dd2fa9cabe486c29067ce13331236671a7932f26f6bcffe",
+      "bytes": 29
+    },
+    "zImage": {
+      "sha256": "2c7654a4a0ded446e736f0fa75185584dc5eaea663c7115cc668474b34fb31ec",
+      "bytes": 10994176
+    }
+  },
+  "bootgen": {
+    "tool": "D:\\Xilinx\\2026.1\\Vitis\\bin\\bootgen.bat",
+    "payload_sha256": "a86030e0dfdc8af44fc191d8a450016d34a2388897f3b07fec80b05fa82ddd93",
+    "image_sha256": "b754e5bb00baae9936c33d77ab6f6376611622c8e78751a19065a870a264cf7e",
+    "physical_boot_verified": false
+  },
+  "known_kernel_log_warnings": [
+    "OPP table can't be empty",
+    "failed to register cpuidle driver"
+  ],
+  "evidence_files": {
+    "cold_boot.log": {
+      "path": "metrics/evidence/2026-11-03_sd_preview_cold_boot.log",
+      "sha256": "28b990c2e039b890734feffd8f42b109cbe207b1181e62d9721e065e4023c5b9"
+    },
+    "runtime.log": {
+      "path": "metrics/evidence/2026-11-03_sd_preview_runtime.log",
+      "sha256": "d96c2151ff1bc2f86d08c219636dd1282d9ad4e376a2fb330b487281195572fc"
+    },
+    "live.json": {
+      "path": "metrics/evidence/2026-11-03_sd_preview_live.json",
+      "sha256": "31fea5a88d543c628b7188a1d0c42ce1390e086e3f108fca6d0d77e52c18fba8"
+    },
+    "update.log": {
+      "path": "metrics/evidence/2026-11-03_sd_preview_update.log",
+      "sha256": "83b8719c3e54fadaef41da3ee5a434bf460dcef118f9816d1437eeb50adad05e"
+    },
+    "check_all.log": {
+      "path": "metrics/evidence/2026-11-03_sd_preview_check_all.log",
+      "sha256": "023fff66876f2e3bf79ebe43d04341673451c05d2bf2bad04c0236a8ff4928c8"
+    },
+    "pytest.log": {
+      "path": "metrics/evidence/2026-11-03_sd_preview_pytest.log",
+      "sha256": "240c16ef911aed7dc6b41b62b19caa08f0b8712abf129fc294257da1ba12592d"
+    },
+    "service_tests.log": {
+      "path": "metrics/evidence/2026-11-03_sd_preview_service_tests.log",
+      "sha256": "74ac34cb9b4bff7c3c433966e4e5fab4b642c08296b654ce7a0c9896b8044277"
+    },
+    "camera_queue_tests.log": {
+      "path": "metrics/evidence/2026-11-03_sd_preview_camera_queue_tests.log",
+      "sha256": "4e3b122f604b26f97bd618bf9c233fe688b4b36e069e8c15f163ee170b580441"
+    }
+  },
+  "scope": "One user-operated power cycle of the exact delivered files; functionality only, no accuracy or full-rate certification."
+}

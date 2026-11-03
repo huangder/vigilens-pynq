@@ -1,0 +1,38 @@
+
+# echo HR_HISTORY_DIAGNOSTICS_BEGIN
+HR_HISTORY_DIAGNOSTICS_BEGIN
+# tail -n 8000 /run/vigilens/camera.log | awk 'BEGIN {maxsamples=0;maxhistory=0;
+face=0;skipped=0} /^AUTONOMY_SAMPLE / {n++;for(i=1;i<=NF;i++){split($i,a,"=");v[
+a[1]]=a[2]}if(n==1){first=v["ts"];firstid=v["frame_id"]}last=v["ts"];lastid=v["f
+rame_id"];r[v["vital_reject"]]++;g[v["vital_gate"]]++;if(v["visible"]==1)face++;
+if(v["vital_samples"]+0>maxsamples)maxsamples=v["vital_samples"]+0;if(v["vital_h
+istory_samples"]+0>maxhistory)maxhistory=v["vital_history_samples"]+0;total+=v["
+total_ms"];land+=v["landmark_ms"];if(v["total_ms"]>1000/60)over60++} /^AUTONOMY_
+HANDOFF / {submitted++;if($NF=="accepted=0")skipped++} END {print "samples="n,"f
+irst_ts="first,"last_ts="last,"first_id="firstid,"last_id="lastid,"analysis_hz="
+(n-1)/(last-first),"max_vital_samples="maxsamples,"max_history_samples="maxhisto
+ry,"face_frames="face,"submitted="submitted,"skipped="skipped,"mean_analysis_ms=
+"total/n,"mean_landmark_ms="land/n,"over_60fps_budget="over60;for(k in r)print "
+reject",k,r[k];for(k in g)print "gate",k,g[k]}'
+tail -n 1500 /run/vigilens/camera.log | grep '^AUTONOMY_SAMPLE ' | tail -n 5
+echo HR_HISTORY_DIAGNOSTICS_END
+printf '\nHR_HISTORY_DIAGNOSTIC_SERIAL_END\n'
+samples=950 first_ts=370.829870000 last_ts=405.632636000 first_id=10400 last_id=11443 analysis_hz=27.2679 max_vital_samples=75 max_history_samples=114 face_frames=700 submitted=1042 skipped=93 mean_analysis_ms=16.9624 mean_landmark_ms=14.8137 over_60fps_budget=256
+reject vitals_blocked 464
+reject window_not_full 453
+reject - 33
+gate accepted 643
+gate face_missing 250
+gate quality_or_pose 57
+# tail -n 1500 /run/vigilens/camera.log | grep '^AUTONOMY_SAMPLE ' | tail -n 5
+AUTONOMY_SAMPLE frame_id=11472 ts=406.596770000 rc=0 detections=1 visible=1 detector_ms=0.013 landmark_ms=50.357 total_ms=51.923 detect_path=8 landmark_model_ms=41.737 detector_caller_cpu_ms=0.009 landmark_caller_cpu_ms=37.083 vital_hz=15.619 vital_reject=vitals_blocked roi_pixels=3000 vital_samples=6 vital_history_samples=6 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=11474 ts=406.664639000 rc=0 detections=1 visible=1 detector_ms=0.013 landmark_ms=42.816 total_ms=44.286 detect_path=8 landmark_model_ms=35.253 detector_caller_cpu_ms=0.010 landmark_caller_cpu_ms=34.259 vital_hz=14.734 vital_reject=vitals_blocked roi_pixels=3000 vital_samples=7 vital_history_samples=7 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=11476 ts=406.732632000 rc=0 detections=1 visible=1 detector_ms=0.012 landmark_ms=48.338 total_ms=50.800 detect_path=8 landmark_model_ms=40.826 detector_caller_cpu_ms=0.008 landmark_caller_cpu_ms=36.143 vital_hz=14.707 vital_reject=vitals_blocked roi_pixels=3100 vital_samples=8 vital_history_samples=8 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=11477 ts=406.764648000 rc=0 detections=1 visible=1 detector_ms=0.012 landmark_ms=48.587 total_ms=55.168 detect_path=8 landmark_model_ms=40.645 detector_caller_cpu_ms=0.009 landmark_caller_cpu_ms=35.250 vital_hz=31.234 vital_reject=vitals_blocked roi_pixels=3030 vital_samples=9 vital_history_samples=9 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=11479 ts=406.832629000 rc=0 detections=1 visible=1 detector_ms=0.014 landmark_ms=50.489 total_ms=52.170 detect_path=8 landmark_model_ms=40.746 detector_caller_cpu_ms=0.009 landmark_caller_cpu_ms=40.048 vital_hz=14.710 vital_reject=window_not_full roi_pixels=2828 vital_samples=10 vital_history_samples=10 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+# echo HR_HISTORY_DIAGNOSTICS_END
+HR_HISTORY_DIAGNOSTICS_END
+# printf '\nHR_HISTORY_DIAGNOSTIC_SERIAL_END\n'
+
+HR_HISTORY_DIAGNOSTIC_SERIAL_END
+# 

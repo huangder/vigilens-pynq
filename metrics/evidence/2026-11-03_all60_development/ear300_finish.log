@@ -1,0 +1,19 @@
+
+# pid=$(cat /tmp/vigilens-full60/numeric_http.pid)
+# case "$pid" in ""|*[!0-9]*) exit 2;; esac
+# cmd=$(tr '\000' ' ' < /proc/$pid/cmdline)
+# case "$cmd" in *vg_metrics_http*--port\ 8082*--assets\ /tmp/vigilens-full60*) 
+kill "$pid"; echo TEMP_EXPORT_STOPPED;; *) echo TEMP_EXPORT_PID_MISMATCH;; esac
+TEMP_EXPORT_STOPPED
+# VIGILENS_BOOT_CONFIG=/tmp/vigilens-ear300/boot.env /tmp/vigilens-ear300/vigile
+ns-service status
+ps | grep 'vigi_camera_autonomy /dev/video0'
+running camera_pid=21806 http_pid=21804
+supervisor_pid=21786
+# ps | grep 'vigi_camera_autonomy /dev/video0'
+21806 root     /tmp/vigilens-ear300/root/vigilens/app/vigi_camera_autonomy /dev/video0 640 480 0 60 16
+23115 root     grep vigi_camera_autonomy /dev/video0
+# printf '\nEAR300_FINISH_END\n'
+
+EAR300_FINISH_END
+# 

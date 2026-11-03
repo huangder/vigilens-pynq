@@ -1,0 +1,13 @@
+﻿parameter,value,scope
+release_id,VigiLens-SD-de8495c4860ac029,installed engineering candidate
+config_sha256,de8495c4860ac029205bf9ebf840b0a4465ea1549b9b22eaabdfe6bdf302fc11,installed engineering candidate
+capture,"{""width"": 640, ""height"": 480, ""format"": ""yuyv""}",installed engineering candidate
+fps_nominal,30,installed engineering candidate
+startup_samples,75,installed engineering candidate
+minimum_window_seconds,2.5,installed engineering candidate
+history_seconds,10.0,installed engineering candidate
+rppg_resample_jitter_ratio_max,3.0,installed engineering candidate
+rppg_max_gap_ms,200,installed engineering candidate
+rppg_recovery_ms,200,installed engineering candidate
+rppg_recovery_samples,3,installed engineering candidate
+blink_policy,"{""ear_threshold_mode"": ""absolute"", ""ear_close_absolute"": 0.4, ""ear_open_absolute"": 0.43, ""ear_close_ratio"": 0.65, ""ear_open_ratio"": 0.8, ""ear_baseline_tau_s"": 2.0, ""blink_min_close_ms"": 80, ""blink_min_open_ms"": 100, ""blink_long_close_ms"": 1500, ""blink_max_gap_ms"": 120, ""ear_baseline_reset_ms"": 1000}",installed engineering candidate

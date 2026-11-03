@@ -1,0 +1,35 @@
+﻿parameter,value,meaning
+release_id,VigiLens-SD-1f461bad8836002a,verified board release
+resolution,640x480,active configuration
+camera_format,yuyv,active configuration
+fps_nominal,30,"nominal target, not measured full-workload fps"
+ear_threshold_mode,absolute,board blink candidate
+ear_close_absolute,0.4,board blink candidate
+ear_open_absolute,0.43,board blink candidate
+ear_close_ratio,0.65,board blink candidate
+ear_open_ratio,0.8,board blink candidate
+ear_baseline_tau_s,2.0,board blink candidate
+blink_min_close_ms,80,board blink candidate
+blink_min_open_ms,100,board blink candidate
+blink_long_close_ms,1500,board blink candidate
+blink_max_gap_ms,120,board blink candidate
+ear_baseline_reset_ms,1000,board blink candidate
+rppg_samples,75,minimum actual valid samples
+rppg_window_s,2.5,nominal window
+rppg_method,green,green-channel candidate
+rppg_band_hz,"[0.7, 3.5]",algorithm search band
+rppg_short_window_min_conf,0.8,"engineering spectral indicator, not accuracy probability"
+metrics_hz,5.0,display only
+preview_hz,5.0,display only
+hr_display_transition_ms,1000,display only
+dashboard_animation_hz,30.0,display only
+hr_trend_bridge_seconds,30.0,display only
+hr_trend_hold_seconds,10.0,display only
+perclos_warning,0.25,"engineering prompt, not diagnosis"
+fatigue_long_close_count,1,"engineering prompt, not diagnosis"
+fatigue_yawn_count,2,"engineering prompt, not diagnosis"
+fatigue_blink_rate_low,10.0,"engineering prompt, not diagnosis"
+mar_threshold,0.6,"engineering prompt, not diagnosis"
+yawn_min_duration_ms,800,"engineering prompt, not diagnosis"
+alert_duration_seconds,10,"engineering prompt, not diagnosis"
+hr_alert_high_bpm,100.0,"engineering prompt, not diagnosis"

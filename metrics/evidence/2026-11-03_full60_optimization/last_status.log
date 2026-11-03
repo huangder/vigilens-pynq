@@ -1,0 +1,31 @@
+
+# for suffix in log contracts.jsonl; do gzip -c /tmp/vigilens-full60/pin2.$suffi
+x > /tmp/vigilens-full60/pin2.$suffix.js; done
+/usr/sbin/vigilens-service status
+cat /mnt/vigilens-boot/vigilens/app/runtime.env
+sha256sum /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy
+tail -n 3 /run/vigilens/camera.log
+printf '\nFULL60_EXPORT_LAST_END\n'
+# /usr/sbin/vigilens-service status
+running camera_pid=30364 http_pid=30362
+supervisor_pid=30351
+# cat /mnt/vigilens-boot/vigilens/app/runtime.env
+# Generated from config.yaml; source sha256 de8495c4860ac029205bf9ebf840b0a4465ea1549b9b22eaabdfe6bdf302fc11
+VG_CAPTURE_FPS=30
+VG_CAPTURE_WIDTH=640
+VG_CAPTURE_HEIGHT=480
+VG_CAMERA_FORMAT=yuyv
+VG_RUNTIME=ert_temporal
+VG_LANDMARK_FILE=shape_predictor_68_face_landmarks.dat
+VG_MOTION_THRESHOLD=16
+VG_STALE_SECONDS=3.0
+# sha256sum /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy
+1f0b5a85d71421abcf7fcdf36bf4347e8d676a7f12870b1c9c2fca92ee6f500b  /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy
+# tail -n 3 /run/vigilens/camera.log
+AUTONOMY_HANDOFF frame_id=3921 gray_ms=0.346 submit_ms=0.007 accepted=1
+CAPTURE_FRAME n=3925 sequence=3925 bytes=614400 ts=6328.717182
+SAMPLE_FRAME n=3925 source_sequence=3925 ts_us=6328717182
+# printf '\nFULL60_EXPORT_LAST_END\n'
+
+FULL60_EXPORT_LAST_END
+# 

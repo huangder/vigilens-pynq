@@ -19,6 +19,15 @@ static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static int hold, entered, fail_create, calls;
 static int released[3];
 static const unsigned char *leased_rgb[2];
+#ifdef VIGI_CAMERA_PREVIEW
+static int preview_calls;
+int vg_preview_publish(const char *path,const unsigned char *rgb,int w,int h,int quality) {
+    CHECK(path && w==2 && h==2 && quality==80);
+    for(int i=0;i<12;++i)CHECK(rgb[i]==rgb[0]);
+    ++preview_calls;
+    return 0;
+}
+#endif
 static void release_test(void *context) { ++released[(size_t)context]; }
 vg_vision *vg_vision_create(const char *directory, const char *model) {
     CHECK(!strcmp(directory,"det") && !strcmp(model,"model"));
@@ -64,6 +73,11 @@ int main(void) {
     snprintf(latest,sizeof(latest),"%s/latest.json",dir);
     snprintf(bad,sizeof(bad),"%s/missing/latest.json",dir);
     seed(latest); hold=1;
+#ifdef VIGI_CAMERA_PREVIEW
+    { char preview[256];
+      snprintf(preview,sizeof(preview),"%s/preview.jpg",dir);
+      CHECK(!setenv("VIGI_PREVIEW_LATEST",preview,1)); }
+#endif
     c=vg_camera_open("det","model",log,latest); CHECK(c); CHECK(access(latest,F_OK));
     CHECK(submit(c,1)==1);
     pthread_mutex_lock(&mutex);
@@ -74,6 +88,10 @@ int main(void) {
     CHECK(!vg_camera_finish(c,&s));
     CHECK(s.submitted==3 && s.accepted==2 && s.skipped==1 && s.processed==2 && s.succeeded==2);
     CHECK(s.failed==0 && s.rejected==0 && calls==2);
+#ifdef VIGI_CAMERA_PREVIEW
+    CHECK(preview_calls==1); /* both frames measured; only the first needs JPEG */
+    puts("PASS preview cadence skips encoding without skipping measurement");
+#endif
     CHECK(submit(c,4)<0); CHECK(!vg_camera_finish(c,&s));
     f=fopen(log,"r"); CHECK(f);
     CHECK(fgets(line,sizeof(line),f) && strstr(line,":1}"));

@@ -1,0 +1,38 @@
+{"source_sha256": "c4de11c7aba76917d0a25211d5f26f16a494cae0cf64a0bbaf743e3289bd8e73", "groups": {"behavior": {"ear_close_threshold": 0.21, "min_close_ms": 100.0, "window_seconds": 30.0, "long_close_ms": 500.0, "mar_threshold": 0.6, "yawn_min_duration_ms": 800.0}, "quality": {"light_target": 0.5, "motion_score_gain": 4.0, "weight_light": 0.5, "weight_motion": 0.3, "weight_face": 0.2}, "decision": {"quality_min_score": 0.6, "face_visible_min": 0.7, "pose_yaw_max_deg": 30.0, "pose_pitch_max_deg": 25.0, "perclos_warning": 0.25, "fatigue_blink_rate_low": 10.0, "vital_require_quality": 0.75, "fatigue_yawn_count": 2, "fatigue_long_close_count": 1, "pose_hold_frames": 3}}, "thresholds_calibrated_by_export": false}
+{"config_sha256": "c4de11c7aba76917d0a25211d5f26f16a494cae0cf64a0bbaf743e3289bd8e73", "fir_sha256": "d5fa3591136e1c160e68e6946fb3a6214ff377f8a340faef229dbd69ab41d8d6", "vital": {"fps": 60.0, "fs_tol": 0.1, "window_seconds": 2.5, "color_window_seconds": 1.6, "f_lo": 0.7, "f_hi": 3.5, "harmonic_ratio_min": 0.05, "max_gap_s": 0.2, "jitter_ratio_max": 3.0, "history_seconds": 10.0, "recovery_s": 0.2, "recovery_samples": 3, "method": 1, "short_window_seconds": 3.0, "short_window_min_conf": 0.8, "shift": 15}, "coeffs": 125, "hr_filter": {"enabled": true, "window": 3, "alpha": 0.2, "interval_s": 0.8, "max_gap_s": 1.5, "max_spread_bpm": 12.0, "startup_samples": 1}, "thresholds_calibrated_by_export": false}
+{"config_sha256": "c4de11c7aba76917d0a25211d5f26f16a494cae0cf64a0bbaf743e3289bd8e73", "board_vision": {"camera_width": 640, "camera_height": 480, "camera_format": "mjpg", "tracker_image_mode": "roi_half", "tracker_region_expansion": 1.4, "min_face": 40, "min_face_fast": 80, "fast_side_margin": 0.6, "scale_factor": 0.709, "score_p": 0.6, "score_r": 0.7, "score_o": 0.7, "nms_p_scale": 0.5, "nms_p": 0.7, "nms_r": 0.7, "nms_o": 0.7, "max_candidates": 64, "threads": 2, "detector_threads": 1, "landmark_threads": 1, "ncnn_packing": false, "analysis_nice": 0, "tracker_worker_nice": 10, "redetect_seconds": 5.0, "deep_detect_seconds": 30.0, "tracker_levels": 3, "tracker_radius": 3, "tracker_iterations": 12, "tracker_epsilon": 0.02, "tracker_min_eigen": 1.0, "tracker_max_error": 18.0, "tracker_fb_error": 2.0, "tracker_min_fraction": 0.7, "tracker_max_motion": 48.0, "tracker_model_hz": 1.0, "tracker_redetect_seconds": 30.0, "tracker_anchor_max_age_s": 5.0, "ert_patch_side": 32, "ert_patch_min_std": 6.0, "ert_patch_max_error": 18.0, "analysis_slots": 4, "preview_async": true, "preview_worker_nice": 10, "preview_hz": 5.0, "dashboard_metrics_hz": 5.0, "ear_threshold_mode": "absolute", "ear_close_absolute": 0.4, "ear_open_absolute": 0.43, "ear_close_ratio": 0.65, "ear_open_ratio": 0.8, "ear_baseline_tau_s": 2.0, "blink_min_close_ms": 80, "blink_min_open_ms": 100, "blink_long_close_ms": 1500, "blink_max_gap_ms": 120, "ear_baseline_reset_ms": 1000, "hr_trend_bridge_seconds": 30.0, "hr_trend_hold_seconds": 10.0, "hr_display_transition_ms": 1000, "dashboard_animation_hz": 30.0, "crop_scale": 1.4, "forehead_inset": 0.08, "forehead_top": 0.65, "forehead_bottom": 0.1, "forehead_min_pixels": 8}, "accuracy_verified": false}
+In file included from /root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/vector:69,
+                 from /mnt/d/Desktop/AMD/.tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/serialize.h:225,
+                 from /mnt/d/Desktop/AMD/.tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/geometry/rectangle.h:10,
+                 from /mnt/d/Desktop/AMD/.tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/geometry.h:6,
+                 from .tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/image_processing/full_object_detection.h:6,
+                 from .tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/image_processing/shape_predictor.h:7,
+                 from board/autonomy/ert_landmark.hpp:3,
+                 from board/autonomy/ert_runtime.cpp:5:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/vector.tcc: In member function ‘void std::vector<_Tp, _Alloc>::_M_realloc_insert(std::vector<_Tp, _Alloc>::iterator, _Args&& ...) [with _Args = {const double&}; _Tp = double; _Alloc = std::allocator<double>]’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/vector.tcc:413:7: note: parameter passing for argument of type ‘std::vector<double>::iterator’ {aka ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’} changed in GCC 7.1
+       vector<_Tp, _Alloc>::
+       ^~~~~~~~~~~~~~~~~~~
+In file included from /root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/vector:64,
+                 from /mnt/d/Desktop/AMD/.tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/serialize.h:225,
+                 from /mnt/d/Desktop/AMD/.tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/geometry/rectangle.h:10,
+                 from /mnt/d/Desktop/AMD/.tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/geometry.h:6,
+                 from .tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/image_processing/full_object_detection.h:6,
+                 from .tmp/autonomy/ert_20261102/dlib-19.24.6/dlib/image_processing/shape_predictor.h:7,
+                 from board/autonomy/ert_landmark.hpp:3,
+                 from board/autonomy/ert_runtime.cpp:5:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_vector.h: In member function ‘bool vg_ert::Patch::make(const unsigned char*, int, int, const std::array<int, 4>&, int)’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_vector.h:1085:4: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+    _M_realloc_insert(end(), __x);
+    ^~~~~~~~~~~~~~~~~
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_vector.h: In member function ‘{anonymous}::Anchor {anonymous}::Detector::run(const {anonymous}::Job&, const vg_ert::Model&)’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_vector.h:1085:4: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+    _M_realloc_insert(end(), __x);
+    ^~~~~~~~~~~~~~~~~
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_vector.h: In function ‘int vg_vision_update(vg_vision*, const vg_vision_frame*, char*, size_t, vg_vision_info*)’:
+/root/vigilens/autonomy-20261030/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/bits/stl_vector.h:1085:4: note: parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<double*, std::vector<double> >’ changed in GCC 7.1
+    _M_realloc_insert(end(), __x);
+    ^~~~~~~~~~~~~~~~~
+NATIVE_VISION_BUILD_PASS mode=arm runtime=ert_temporal executable=.tmp/autonomy/full60_20261103/rows/vg_vision_replay_arm
+NATIVE_CAMERA_BUILD_PASS executable=.tmp/autonomy/full60_20261103/rows/vigi_camera_autonomy
+PL_ONLY_BUILD_PASS executable=.tmp/autonomy/full60_20261103/rows/vigi_camera_pl_only

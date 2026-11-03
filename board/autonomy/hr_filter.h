@@ -2,9 +2,9 @@
 #define VG_HR_FILTER_H
 #include <math.h>
 #include <string.h>
-/* Output filter only. A rejected raw estimate MUST call reset immediately.
+/* Output filter only. Hard losses reset; bounded pauses hide current output.
  * Nine is a storage bound, not a measurement threshold; window is configured. */
-typedef struct { int enabled,window; double alpha,interval_s,max_gap_s,max_spread_bpm; int startup_samples; } vg_hr_filter_config;
+typedef struct { int enabled,window; double alpha,interval_s,max_gap_s,max_spread_bpm; int startup_samples; double min_bpm; } vg_hr_filter_config;
 typedef struct {
     vg_hr_filter_config cfg;
     double values[9],confs[9],last_ts,last_seen,ema,value,conf;
@@ -16,14 +16,26 @@ static inline void vg_hr_filter_reset(vg_hr_filter *f) {
 }
 static inline int vg_hr_filter_init(vg_hr_filter *f,const vg_hr_filter_config *c) {
     if(!f||!c||(c->enabled!=0&&c->enabled!=1))return -1;
+    if(!isfinite(c->min_bpm)||c->min_bpm<0)return -1;
     if(c->enabled&&(c->window<3||c->window>9||c->window%2!=1||
         !isfinite(c->alpha)||!(c->alpha>0&&c->alpha<=1)||!isfinite(c->interval_s)||c->interval_s<=0||
         !isfinite(c->max_gap_s)||c->max_gap_s<c->interval_s||!isfinite(c->max_spread_bpm)||c->max_spread_bpm<=0||
         c->startup_samples<0||c->startup_samples>c->window))return -1;
     memset(f,0,sizeof(*f));f->cfg=*c;f->reason="warming";return 0;
 }
+/* Do not advance last_ts: repeated pauses cannot renew old evidence. A new
+ * valid estimate must reach interval_s before it can produce current output. */
+static inline int vg_hr_filter_pause(vg_hr_filter *f,double ts) {
+    if(!f->cfg.enabled||!isfinite(ts)||!f->have_ts||
+       (f->have_seen&&ts<f->last_seen)||ts-f->last_ts>f->cfg.max_gap_s) {
+        vg_hr_filter_reset(f);return 0;
+    }
+    f->last_seen=ts;f->have_seen=1;f->present=0;
+    f->value=f->conf=NAN;f->reason="paused";return 1;
+}
 static inline int vg_hr_filter_update(vg_hr_filter *f,double bpm,double conf,double ts) {
     double sorted[9],minimum=conf;int i,j;
+    if(isfinite(bpm)&&bpm<f->cfg.min_bpm){vg_hr_filter_reset(f);f->reason="below_report_min";return 0;}
     if(!f->cfg.enabled){f->value=bpm;f->conf=conf;f->present=1;f->reason="disabled";return 1;}
     if(!isfinite(bpm)||!isfinite(conf)||!isfinite(ts)||bpm<=0||conf<0||conf>1) {
         vg_hr_filter_reset(f);f->reason="invalid_input";return 0;

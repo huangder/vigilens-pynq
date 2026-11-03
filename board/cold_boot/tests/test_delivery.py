@@ -3,8 +3,13 @@ import copy,struct,sys,tempfile,unittest,zlib
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3];sys.path.insert(0,str(ROOT))
 from backend.config import load_config
-from board.cold_boot.delivery import environment,legacy_image
+from board.cold_boot.delivery import environment,legacy_image,write_ready_marker
 class Delivery(unittest.TestCase):
+ def test_ready_marker_matches_shell_token_on_windows_and_linux(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   marker=Path(tmp)/'READY'
+   write_ready_marker(marker,'VigiLens-SD-fixture')
+   self.assertEqual(marker.read_bytes(),b'VigiLens-SD-fixture\n')
  def test_environment_uses_actual_configuration_and_rejects_invalid_operations(self):
   cfg=load_config();env=environment(cfg)
   self.assertEqual(env['VG_HTTP_PORT'],str(cfg['cold_boot']['http_port']))

@@ -1,0 +1,56 @@
+{
+  "valid": 40,
+  "face": 0,
+  "hr": 0,
+  "blink_counts": [
+    0
+  ],
+  "hr_note_removed_in_served_app": true,
+  "camera_jpeg_decoded_size": [
+    640,
+    480
+  ],
+  "latest": {
+    "ts": 10051.307101,
+    "frame_id": 2422,
+    "face": {
+      "visible": 0,
+      "bbox": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pose": {
+        "yaw": 0,
+        "pitch": 0,
+        "roll": 0
+      }
+    },
+    "behavior": {
+      "ear_left": 0,
+      "ear_right": 0,
+      "blink_state": "OPEN",
+      "blink_count": 0,
+      "blink_rate_per_min": 0,
+      "perclos": 0,
+      "long_close_count": 0,
+      "mar": 0,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.7588,
+      "motion_score": 0.0061,
+      "overall": 0.6776
+    },
+    "status": "adjust_posture",
+    "advice": "请正对摄像头，保持面部完整出现在画面内",
+    "reason": "人脸可见率 0.00 低于下限 0.70"
+  }
+}

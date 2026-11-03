@@ -1,0 +1,56 @@
+
+# wget -T 15 -O /tmp/vigilens_history_patch_install.sh http://169.254.73.28:8771
+/install.sh
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+saving to '/tmp/vigilens_history_patch_install.sh'
+vigilens_history_pat 100% |********************************|  1205  0:00:00 ETA
+'/tmp/vigilens_history_patch_install.sh' saved
+# sh /tmp/vigilens_history_patch_install.sh
+printf '\nHISTORY_PATCH_DONE rc=%s\n' "$?"
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+saving to '/tmp/vigilens-signal30-history-patch/candidate.tar.gz'
+candidate.tar.gz     100% |********************************|  2327  0:00:00 ETA
+'/tmp/vigilens-signal30-history-patch/candidate.tar.gz' saved
+/tmp/vigilens-signal30-history-patch/candidate.tar.gz: OK
+/tmp/vigilens-signal30-history-patch/board_hr_history.js: OK
+runtime.env: OK
+vg_metrics_http: OK
+shape_predictor_68_face_landmarks.dat: OK
+libgomp.so.1: OK
+det1.param: OK
+det1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+vigi_camera_autonomy: OK
+vg_vital_config.json: OK
+ui/alerts.js: OK
+ui/app.js: OK
+ui/board_config.js: OK
+ui/board_hr_motion.js: OK
+ui/board_hr_trend.js: OK
+ui/board_layout.css: OK
+ui/board_transport.js: OK
+ui/hr_display.js: OK
+ui/icons/camera.svg: OK
+ui/icons/LICENSE: OK
+ui/icons/pulse.svg: OK
+ui/icons/shield-checkmark.svg: OK
+ui/icons/trend.svg: OK
+ui/index.html: OK
+ui/mock.js: OK
+ui/preview.js: OK
+ui/recording.js: OK
+ui/style.css: OK
+ui/trends.js: OK
+ui/ui_state.js: OK
+ui/board_hr_history.js: OK
+VIGILENS_PACKAGE_CHECK_PASS
+running camera_pid=12041 http_pid=12039
+supervisor_pid=12022
+HISTORY_PATCH_INSTALLED_CAMERA_UNINTERRUPTED
+# printf '\nHISTORY_PATCH_DONE rc=%s\n' "$?"
+
+HISTORY_PATCH_DONE rc=0
+# 

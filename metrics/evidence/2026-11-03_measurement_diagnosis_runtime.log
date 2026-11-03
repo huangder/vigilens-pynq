@@ -1,0 +1,52 @@
+
+# echo DIAG_COMPACT_BEGIN
+DIAG_COMPACT_BEGIN
+# tail -n 18000 /run/vigilens/camera.log | awk '/^AUTONOMY_SAMPLE / {n++; for(i=
+
+1;i<=NF;i++){split($i,a,"="); v[a[1]]=a[2]} if(n==1){first_ts=v["ts"];first_id=v
+
+["frame_id"]} last_ts=v["ts"];last_id=v["frame_id"]; reason[v["vital_reject"]]++
+
+; gate[v["vital_gate"]]++; path[v["detect_path"]]++; if(v["vital_samples"]+0>max
+
+samples)maxsamples=v["vital_samples"]+0} /^AUTONOMY_HANDOFF / {submitted++;if($N
+
+F=="accepted=0")skipped++} END {print "samples="n,"first_ts="first_ts,"last_ts="
+
+last_ts,"first_frame_id="first_id,"last_frame_id="last_id,"processed_rate="(n-1)
+
+/(last_ts-first_ts),"max_vital_samples="maxsamples,"submitted="submitted,"skippe
+
+d="skipped;for(k in reason)print "reject",k,reason[k];for(k in gate)print "gate"
+
+,k,gate[k];for(k in path)print "path",k,path[k]}'
+tail -n 1000 /run/vigilens/camera.log | grep '^AUTONOMY_SAMPLE ' | tail -n 8
+echo DIAG_COMPACT_END
+printf '\nCOMPACT_SERIAL_END\n'
+samples=1481 first_ts=3136.444932000 last_ts=3206.183363000 first_frame_id=93256 last_frame_id=95346 processed_rate=21.2222 max_vital_samples=146 submitted=2089 skipped=609
+reject vitals_blocked 62
+reject window_not_full 933
+reject sampling_too_slow 486
+gate sampling_gap 40
+gate accepted 1427
+gate face_missing 12
+gate quality_or_pose 2
+path 10 1337
+path 0 12
+path 8 69
+path 9 63
+# tail -n 1000 /run/vigilens/camera.log | grep '^AUTONOMY_SAMPLE ' | tail -n 8
+AUTONOMY_SAMPLE frame_id=95390 ts=3207.651444000 rc=0 detections=1 visible=1 detector_ms=0.010 landmark_ms=10.801 total_ms=12.775 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=10.543 vital_hz=14.740 vital_reject=sampling_too_slow roi_pixels=6068 vital_samples=1 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=95394 ts=3207.783345000 rc=0 detections=1 visible=1 detector_ms=0.009 landmark_ms=15.522 total_ms=22.544 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=9.820 vital_hz=7.581 vital_reject=sampling_too_slow roi_pixels=6031 vital_samples=0 vital_gate=sampling_gap raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=95396 ts=3207.851331000 rc=0 detections=1 visible=1 detector_ms=0.032 landmark_ms=18.203 total_ms=20.221 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.030 landmark_caller_cpu_ms=10.410 vital_hz=14.709 vital_reject=sampling_too_slow roi_pixels=5994 vital_samples=1 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=95399 ts=3207.951336000 rc=0 detections=1 visible=1 detector_ms=0.011 landmark_ms=10.540 total_ms=12.336 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.008 landmark_caller_cpu_ms=10.285 vital_hz=10.000 vital_reject=sampling_too_slow roi_pixels=6031 vital_samples=0 vital_gate=sampling_gap raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=95400 ts=3207.983317000 rc=0 detections=1 visible=1 detector_ms=5.698 landmark_ms=20.444 total_ms=27.973 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.036 landmark_caller_cpu_ms=10.105 vital_hz=31.269 vital_reject=sampling_too_slow roi_pixels=6031 vital_samples=1 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=95402 ts=3208.051337000 rc=0 detections=1 visible=1 detector_ms=0.013 landmark_ms=9.650 total_ms=11.657 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.009 landmark_caller_cpu_ms=9.552 vital_hz=14.702 vital_reject=sampling_too_slow roi_pixels=6068 vital_samples=2 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=95404 ts=3208.115779000 rc=0 detections=1 visible=1 detector_ms=0.008 landmark_ms=12.890 total_ms=24.168 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=10.144 vital_hz=15.518 vital_reject=sampling_too_slow roi_pixels=6031 vital_samples=3 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=95405 ts=3208.151332000 rc=0 detections=1 visible=1 detector_ms=0.011 landmark_ms=27.397 total_ms=29.088 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=9.967 vital_hz=28.127 vital_reject=sampling_too_slow roi_pixels=6194 vital_samples=4 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming
+# echo DIAG_COMPACT_END
+DIAG_COMPACT_END
+# printf '\nCOMPACT_SERIAL_END\n'
+
+COMPACT_SERIAL_END
+# 

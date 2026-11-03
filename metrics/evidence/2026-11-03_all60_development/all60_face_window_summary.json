@@ -1,0 +1,12 @@
+{
+  "frames": 968,
+  "visible": 968,
+  "analysis_hz": 53.7471340188385,
+  "rejects": {
+    "sampling_too_slow": 505,
+    "no_dominant_peak": 350,
+    "warmup_history_unavailable": 113
+  },
+  "mean_total_ms": 14.74222417355372,
+  "mean_landmark_ms": 8.495430785123967
+}

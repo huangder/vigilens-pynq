@@ -1,0 +1,94 @@
+
+# (
+> set -eu
+> stage=/run/vigilens-layout-20261103
+> test ! -e "$stage"
+> wget -T 30 -O /tmp/layout-update.tar http://169.254.73.28:8765/layout-update.t
+ar
+> printf '%s\n' 'afdadb976ba1cbf65ee8e3cd07cb5de1f55b9e30ac6c50c594ca78415197f6f
+4  /tmp/layout-update.tar' | sha256sum -c -
+> mkdir "$stage"
+> tar -xf /tmp/layout-update.tar -C "$stage"
+> rm /tmp/layout-update.tar
+> cd "$stage"
+> sha256sum -c delta.sha256
+> trap 'sync; mount -o remount,ro /mnt/vigilens-boot' EXIT HUP INT TERM
+> mount -o remount,rw /mnt/vigilens-boot
+> while IFS= read -r name; do cp "$name" "/mnt/vigilens-boot/$name.vg-update"; m
+v "/mnt/vigilens-boot/$name.vg-update" "/mnt/vigilens-boot/$name"; done < files.
+list
+> sync
+> mount -o remount,ro /mnt/vigilens-boot
+> trap - EXIT HUP INT TERM
+> cd /mnt/vigilens-boot
+> sha256sum -c "$stage/all.sha256"
+> mount | while IFS= read -r line; do case "$line" in *vigilens-boot*) echo "$li
+ne";; esac; done
+> /usr/sbin/vigilens-service status
+> echo LAYOUT_UPDATE_VERIFIED
+> )
+Connecting to 169.254.73.28:8765 (169.254.73.28:8765)
+saving to '/tmp/layout-update.tar'
+layout-update.tar    100% |********************************|  110k  0:00:00 ETA
+'/tmp/layout-update.tar' saved
+printf '\nSD_REPAIR_COMMAND_END\n'
+/tmp/layout-update.tar: OK
+vigilens/app/ui/app.js: OK
+vigilens/app/ui/board_layout.css: OK
+vigilens/app/ui/index.html: OK
+vigilens/app/manifest.sha256: OK
+vigilens/app/package.json: OK
+BOOT.BIN: OK
+boot.cmd: OK
+boot.scr: OK
+system.bit: OK
+system.dtb: OK
+u-boot.img: OK
+uInitrd: OK
+vigilens/app/det1.bin: OK
+vigilens/app/det1.param: OK
+vigilens/app/det2.bin: OK
+vigilens/app/det2.param: OK
+vigilens/app/det3.bin: OK
+vigilens/app/det3.param: OK
+vigilens/app/display.html: OK
+vigilens/app/install_native.sh: OK
+vigilens/app/libgomp.so.1: OK
+vigilens/app/manifest.sha256: OK
+vigilens/app/package.json: OK
+vigilens/app/run_native.sh: OK
+vigilens/app/runtime.env: OK
+vigilens/app/shape_predictor_68_face_landmarks.dat: OK
+vigilens/app/ui/alerts.js: OK
+vigilens/app/ui/app.js: OK
+vigilens/app/ui/board_config.js: OK
+vigilens/app/ui/board_transport.js: OK
+vigilens/app/ui/hr_display.js: OK
+vigilens/app/ui/icons/camera.svg: OK
+vigilens/app/ui/icons/LICENSE: OK
+vigilens/app/ui/icons/pulse.svg: OK
+vigilens/app/ui/icons/shield-checkmark.svg: OK
+vigilens/app/ui/icons/trend.svg: OK
+vigilens/app/ui/index.html: OK
+vigilens/app/ui/mock.js: OK
+vigilens/app/ui/preview.js: OK
+vigilens/app/ui/recording.js: OK
+vigilens/app/ui/style.css: OK
+vigilens/app/ui/trends.js: OK
+vigilens/app/ui/ui_state.js: OK
+vigilens/app/vg_metrics_http: OK
+vigilens/app/vg_vision_replay_arm: OK
+vigilens/app/vigi_camera_autonomy: OK
+vigilens/boot.env: OK
+vigilens/config.yaml: OK
+vigilens/READY: OK
+zImage: OK
+vigilens/app/ui/board_layout.css: OK
+/dev/mmcblk0p1 on /mnt/vigilens-boot type vfat (ro,nosuid,nodev,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro)
+running camera_pid=132 http_pid=130
+supervisor_pid=120
+LAYOUT_UPDATE_VERIFIED
+# printf '\nSD_REPAIR_COMMAND_END\n'
+
+SD_REPAIR_COMMAND_END
+# 

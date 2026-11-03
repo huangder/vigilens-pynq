@@ -1,0 +1,46 @@
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: root
+Password: 
+# echo SD_COLD_RUNTIME_CHECK_BEGIN
+SD_COLD_RUNTIME_CHECK_BEGIN
+# cat /proc/uptime
+231.65 81.53
+# cat /proc/cmdline
+console=ttyPS0,115200 root=/dev/ram0 rw mem=512M cpuidle.off=1 cma=128M usbcore.autosuspend=-1 clk_ignore_unused vigilens.autostart=1
+# grep '^/dev/mmcblk0p1 /mnt/vigilens-boot vfat ' /proc/mounts
+/dev/mmcblk0p1 /mnt/vigilens-boot vfat ro,nosuid,nodev,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0
+# /usr/sbin/vigilens-service status
+running camera_pid=131 http_pid=129
+supervisor_pid=119
+# cat /run/vigilens/service.status
+running camera_pid=131 http_pid=129
+# sha256sum /usr/sbin/vigilens-service
+d3997f866f2b2a8aa2fb61fc3d28e14463a41112a2646125e37c702aa81031ee  /usr/sbin/vigilens-service
+# sha256sum /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy /mnt/vigilens-b
+oot/vigilens/app/vg_metrics_http
+cat /mnt/vigilens-boot/vigilens/READY
+wc -c /mnt/vigilens-boot/vigilens/READY
+if test ! -e /tmp/vigilens-service-fixed; then echo RAM_DIAGNOSTIC_PATCH_ABSENT; fi
+tail -n 3 /run/vigilens/camera.log
+echo SD_COLD_RUNTIME_CHECK_END
+printf '\nSD_REPAIR_COMMAND_END\n'
+c84200ac3d5a11b23339db1146088500dcffac85b710b4274fe203b0eddf56bd  /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy
+e668ee22a43114ad14edb60b323b00194a6afdb0dcbd721fa1071f693d2d8e1a  /mnt/vigilens-boot/vigilens/app/vg_metrics_http
+# cat /mnt/vigilens-boot/vigilens/READY
+VigiLens-SD-6a03c4d16a2ae34c
+# wc -c /mnt/vigilens-boot/vigilens/READY
+29 /mnt/vigilens-boot/vigilens/READY
+# if test ! -e /tmp/vigilens-service-fixed; then echo RAM_DIAGNOSTIC_PATCH_ABSEN
+T; fi
+RAM_DIAGNOSTIC_PATCH_ABSENT
+# tail -n 3 /run/vigilens/camera.log
+CAMERA_PL_FRAME n=6286 seq=6285 ts_us=233820054 mismatch=0 audit=0 roi_g=37898444 roi_count=307200 motion_valid=1 motion_ratio_q16=2022 decode_ms=10.230 reference_ms=0.000 transfer_pl_ms=18.293 decode_cpu_ms=10.099 transfer_pl_cpu_ms=3.076
+AUTONOMY_HANDOFF frame_id=6285 gray_ms=10.567 submit_ms=0.009 accepted=1
+ERT_TRACK_REJECT frame_id=6284 reason=no_anchor geometry_failure=-1 corrected=0
+# echo SD_COLD_RUNTIME_CHECK_END
+SD_COLD_RUNTIME_CHECK_END
+# printf '\nSD_REPAIR_COMMAND_END\n'
+
+SD_REPAIR_COMMAND_END
+# 

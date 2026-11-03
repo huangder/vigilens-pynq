@@ -1,0 +1,9 @@
+test_recommended_groups_match_single_rows_exactly (test_jpeg_rows.JpegRows.test_recommended_groups_match_single_rows_exactly) ... JPEG_ROWS_BENCH grouped=0 frames=60 elapsed_ms=125.712
+JPEG_ROWS_BENCH grouped=1 frames=60 elapsed_ms=126.572
+JPEG_ROWS_TEST_PASS exact_RGB_cases=18 sampling=444,422,420 fast_and_accurate=1 odd_dimensions=1
+ok
+
+----------------------------------------------------------------------
+Ran 1 test in 1.181s
+
+OK

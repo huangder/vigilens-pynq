@@ -1,0 +1,1 @@
+POINT_PATCH_PASS scalar_bit_exact=1 cases=4000 radii=1..8

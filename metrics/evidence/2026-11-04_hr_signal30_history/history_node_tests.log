@@ -1,0 +1,28 @@
+✔ store genuine eligible observations, deduplicate and enforce interval (0.7198ms)
+✔ reload persists, filters ranges, caps count and separates restarted sessions (2.1058ms)
+✔ disconnect placeholders do not create a session or re-save an old frame (0.1884ms)
+✔ storage failure and clock rollback do not block live measurements (0.1402ms)
+✔ history UI renders safe text, binds range selection and exports (12.3528ms)
+✔ injected renderer draws dashed bridges without changing sample count or missing values (1.3242ms)
+✔ injected historical tail is labeled and is removed on disconnect (1.2585ms)
+✔ actual injected card animates without recreating the removed note (0.7143ms)
+✔ actual board card builder removes the HR note element (0.4346ms)
+✔ board adapter records eligible incoming frames while keeping nulls and transport input unchanged (1.0264ms)
+✔ short null gaps receive only dashed endpoint annotations; frames stay unchanged (1.0532ms)
+✔ valid adjacent samples require no bridge (0.1102ms)
+✔ missing frames can bridge within configured age, never across long absence (0.0844ms)
+✔ tail is explicitly historical and expires instead of extending indefinitely (0.1086ms)
+✔ disconnect cancels a tail and cannot bridge to a recovered measurement (0.0819ms)
+✔ producer timestamp or ID rollback resets presentation continuity (0.5851ms)
+✔ no initial estimate means no historical values or artificial zero (0.1054ms)
+✔ measurement eligibility is supplied by the original card gate (0.101ms)
+BOARD_HTTP_TRANSPORT_PASS exact_frames_dedup_disconnect_invalid_restart_stop
+✔ board\autonomy\tests\board_transport.test.js (53.5591ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 87.8422

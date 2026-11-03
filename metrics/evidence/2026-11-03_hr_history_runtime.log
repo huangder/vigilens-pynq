@@ -1,0 +1,74 @@
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: root
+Password: 
+# echo BLINK75_POST_REBOOT_BEGIN
+BLINK75_POST_REBOOT_BEGIN
+# cat /proc/uptime
+59.88 46.36
+# cat /etc/vigilens/boot.env
+VG_BOARD_IP=169.254.73.29
+VG_NETMASK=255.255.0.0
+VG_NETWORK_INTERFACE=eth0
+VG_CAMERA_DEVICE=/dev/video0
+VG_HTTP_BIND=0.0.0.0
+VG_HTTP_PORT=8080
+VG_MOUNT_WAIT_SECONDS=30
+VG_RETRY_SECONDS=3
+VG_HEALTH_POLL_SECONDS=1
+VG_STARTUP_GRACE_SECONDS=45
+VG_FRAME_STALE_SECONDS=10
+VG_STOP_GRACE_SECONDS=10
+VG_LOG_MAX_BYTES=2097152
+VG_BOOT_ENABLED=1
+VG_BOOT_DEVICE=/dev/mmcblk0p1
+VG_BOOT_ROOT=/mnt/vigilens-boot
+VG_APP_DIR=/mnt/vigilens-boot/vigilens/app
+VG_RUN_DIR=/run/vigilens
+VG_CONFIG_SHA256=de8495c4860ac029205bf9ebf840b0a4465ea1549b9b22eaabdfe6bdf302fc11
+VG_RELEASE_ID=VigiLens-SD-de8495c4860ac029
+# cat /mnt/vigilens-boot/vigilens/READY
+VigiLens-SD-de8495c4860ac029
+# sha256sum /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy /mnt/vigilens-b
+oot/uInitrd
+/usr/sbin/vigilens-service status
+cat /run/vigilens/service.status
+tail -n 7 /run/vigilens/supervisor.log
+tail -n 3 /run/vigilens/http.log
+tail -n 6 /run/vigilens/camera.log
+grep '^/dev/mmcblk0p1 /mnt/vigilens-boot vfat ' /proc/mounts
+echo BLINK75_POST_REBOOT_END
+printf '\nHR_HISTORY_POST_SERIAL_END\n'
+1f0b5a85d71421abcf7fcdf36bf4347e8d676a7f12870b1c9c2fca92ee6f500b  /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy
+0a511855ea28f62bc985ff22189021e71debf050d7d3f80db373c57e37fd342a  /mnt/vigilens-boot/uInitrd
+# /usr/sbin/vigilens-service status
+running camera_pid=130 http_pid=128
+supervisor_pid=118
+# cat /run/vigilens/service.status
+running camera_pid=130 http_pid=128
+# tail -n 7 /run/vigilens/supervisor.log
+VIGILENS_STATE running camera_pid=130 http_pid=128
+VIGILENS_STATE running camera_pid=130 http_pid=128
+VIGILENS_STATE running camera_pid=130 http_pid=128
+VIGILENS_STATE running camera_pid=130 http_pid=128
+VIGILENS_STATE running camera_pid=130 http_pid=128
+VIGILENS_STATE running camera_pid=130 http_pid=128
+VIGILENS_STATE running camera_pid=130 http_pid=128
+# tail -n 3 /run/vigilens/http.log
+METRICS_HTTP_READY bind=0.0.0.0 port=8080 latest=/run/vigilens/latest.json stale_seconds=3 read_only=1
+# tail -n 6 /run/vigilens/camera.log
+CAPTURE_FRAME n=1194 sequence=1193 bytes=614400 ts=63.632194
+SAMPLE_FRAME n=1194 source_sequence=1193 ts_us=63632194
+CAMERA_PL_FRAME n=1193 seq=1192 ts_us=63596223 mismatch=0 audit=0 roi_g=44834303 roi_count=307200 motion_valid=1 motion_ratio_q16=744 decode_ms=22.920 reference_ms=0.000 transfer_pl_ms=10.849 decode_cpu_ms=10.209 transfer_pl_cpu_ms=3.220
+AUTONOMY_HANDOFF frame_id=1192 gray_ms=0.397 submit_ms=0.007 accepted=1
+CAPTURE_FRAME n=1195 sequence=1194 bytes=614400 ts=63.664397
+SAMPLE_FRAME n=1195 source_sequenc[   63.775473] random: crng init done
+e=1194 ts_us=63664397
+# grep '^/dev/mmcblk0p1 /mnt/vigilens-boot vfat ' /proc/mounts
+/dev/mmcblk0p1 /mnt/vigilens-boot vfat ro,nosuid,nodev,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0
+# echo BLINK75_POST_REBOOT_END
+BLINK75_POST_REBOOT_END
+# printf '\nHR_HISTORY_POST_SERIAL_END\n'
+
+HR_HISTORY_POST_SERIAL_END
+# 

@@ -14,14 +14,18 @@ class HrFilterConfig:
     max_gap_s: float = 0.0
     max_spread_bpm: float = 0.0
     startup_samples: int = 0
+    min_bpm: float = 0.0
 
     @classmethod
     def from_config(cls, cfg):
+        minimum = float(cfg.get("hr_report_min_bpm", 0))
+        if not math.isfinite(minimum) or minimum < 0:
+            raise ValueError("invalid HR report minimum")
         enabled = cfg.get("hr_stabilizer_enabled", False)
         if not isinstance(enabled, bool):
             raise ValueError("hr_stabilizer_enabled must be boolean")
         if not enabled:
-            return cls()
+            return cls(min_bpm=minimum)
         window = cfg["hr_stabilizer_window"]
         startup = cfg.get("hr_stabilizer_startup_samples", window)
         values = {name: float(cfg["hr_stabilizer_" + name]) for name in (
@@ -32,7 +36,7 @@ class HrFilterConfig:
                 or not 0 < values["alpha"] <= 1 or values["interval_s"] <= 0
                 or values["max_gap_s"] < values["interval_s"] or values["max_spread_bpm"] <= 0):
             raise ValueError("invalid HR stabilizer configuration")
-        return cls(True, window, **values, startup_samples=startup)
+        return cls(True, window, **values, startup_samples=startup, min_bpm=minimum)
 
 
 class HrStabilizer:
@@ -48,7 +52,28 @@ class HrStabilizer:
         self.value = self.conf = None
         self.reason = "warming"
 
+    def pause(self, ts):
+        """Hide the current value while retaining bounded internal evidence.
+
+        A pause never advances last_ts: repeated failures cannot keep old votes
+        alive. Resuming still needs a fresh accepted estimate at interval_s.
+        Hard losses must call reset(), not this method.
+        """
+        if (not self.cfg.enabled or ts is None or not math.isfinite(ts)
+                or self.last_ts is None
+                or (self.last_seen is not None and ts < self.last_seen)
+                or ts - self.last_ts > self.cfg.max_gap_s):
+            self.reset()
+            return False
+        self.last_seen = ts
+        self.value = self.conf = None
+        self.reason = "paused"
+        return True
+
     def update(self, bpm, conf, ts):
+        if bpm is not None and math.isfinite(bpm) and bpm < self.cfg.min_bpm:
+            self.reset(); self.reason = "below_report_min"
+            return None, None
         if not self.cfg.enabled:
             self.value, self.conf = bpm, conf
             self.reason = "disabled"

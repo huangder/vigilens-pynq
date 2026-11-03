@@ -1,0 +1,15 @@
+
+# pid=$(cat /tmp/vigilens-full60/numeric_http.pid)
+# case "$pid" in ""|*[!0-9]*) exit 2;; esac
+# cmd=$(tr '\000' ' ' < /proc/$pid/cmdline)
+# case "$cmd" in *vg_metrics_http*--port\ 8082*--assets\ /tmp/vigilens-full60*) 
+kill "$pid"; echo NUMERIC_EXPORT_STOPPED_pid=$pid;; *) echo NUMERIC_EXPORT_PID_M
+ISMATCH; exit 2;; esac
+NUMERIC_EXPORT_STOPPED_pid=13851
+# /usr/sbin/vigilens-service status
+running camera_pid=30364 http_pid=30362
+supervisor_pid=30351
+# printf '\nFULL60_CLEANUP_END\n'
+
+FULL60_CLEANUP_END
+# 

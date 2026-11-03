@@ -1,0 +1,102 @@
+{
+  "recorded_at": "2026-11-03T15:16:45.489589+08:00",
+  "kind": "live_board_numeric_diagnosis_and_synthetic_state_machine_probe",
+  "source_branch": "codex/fix-sd-cold-boot-20261103",
+  "source_config_sha256": "6a03c4d16a2ae34ca5dac1aafa15e17a1086c146794593e9c71ea2c863eea39c",
+  "board_runtime": "ert_temporal (includes VIGI_ERT_HYBRID by build script)",
+  "board_camera_binary_sha256": "c84200ac3d5a11b23339db1146088500dcffac85b710b4274fe203b0eddf56bd",
+  "collection": {
+    "board_HTTP": "http://169.254.73.29:8080/api/latest",
+    "serial": "COM11, read-only shell commands; no service restart or JTAG",
+    "raw_face_media_saved_or_uploaded": false
+  },
+  "heart_rate": {
+    "required_samples": 150,
+    "minimum_average_rate_hz": 27.0,
+    "runtime_log_sample_count": 1481,
+    "first_ts": 3136.444932,
+    "last_ts": 3206.183363,
+    "first_frame_id": 93256,
+    "last_frame_id": 95346,
+    "analysis_hz_from_source_timestamps": 21.22215798058312,
+    "max_vital_samples_in_log_slice": 146,
+    "submitted_handoffs_in_tail_slice": 2089,
+    "skipped_handoffs_in_tail_slice": 609,
+    "reject_counts": {
+      "vitals_blocked": 62,
+      "window_not_full": 933,
+      "sampling_too_slow": 486
+    },
+    "gate_counts": {
+      "sampling_gap": 40,
+      "accepted": 1427,
+      "face_missing": 12,
+      "quality_or_pose": 2
+    },
+    "diagnosis_verified": "Slow/interrupted analysis sampling plus visibility/pose resets prevents filling a valid HR window. Non-null HR was absent from both polled sessions.",
+    "HR_accuracy_verified": false
+  },
+  "blink_initial_session": {
+    "observed_seconds": 31.66377999999986,
+    "unique_HTTP_frames": 326,
+    "first_count": 28,
+    "last_count": 28,
+    "ear_left_range": {
+      "min": 0.3039,
+      "max": 0.7047
+    },
+    "ear_right_range": {
+      "min": 0.3165,
+      "max": 0.6513
+    }
+  },
+  "blink_followup_session": {
+    "observed_seconds": 64.76259400000026,
+    "unique_HTTP_frames": 927,
+    "hr_nonnull": 0,
+    "eye_states": {
+      "OPEN": 905,
+      "CLOSING": 8,
+      "OPENING": 10,
+      "CLOSED": 4
+    },
+    "first_count": 28,
+    "last_count": 29,
+    "first_long_count": 27,
+    "last_long_count": 27,
+    "mean_bilateral_EAR_min": 0.1669,
+    "mean_bilateral_EAR_max": 0.6335500000000001,
+    "ground_truth_action_completion_confirmed": false,
+    "limitation": "User replied presence and agreement, without an explicit completion timestamp or independent event annotations. HTTP polling subsamples measurements; do not infer recall/precision."
+  },
+  "findings": {
+    "verified": [
+      "API returns blink_rate_per_min=0 numerically; the front end reads this field directly.",
+      "Blink CLOSED states and an incremented cumulative blink count were observed in the followup session.",
+      "Python and C both miss the synthetic minimum-duration closure when confirmation time is reached only on reopening.",
+      "config.yaml marks the EAR threshold as an uncalibrated placeholder.",
+      "JPEG encoding/publishing runs inline in the analysis worker after vg_vision_update and before publishing/releasing its slot."
+    ],
+    "hypotheses": [
+      "Synchronous per-frame preview JPEG encoding and frame logging contribute to queue saturation; separate timing or a controlled A/B run is required to quantify.",
+      "Eyelid-point LK drift or model correction jumps may contribute to the high/unstable EAR baseline; no landmark-overlay ground truth was captured."
+    ],
+    "uncertain": [
+      "Real blink precision/recall and HR accuracy.",
+      "The relative contributions of model inference, preview encoding, HTTP load and logging to current processing loss."
+    ]
+  },
+  "validation": {
+    "command": "python -m pytest board/autonomy/tests/test_behavior.py board/autonomy/tests/test_vital_c.py board/autonomy/tests/test_native_realtime_gate.py -q",
+    "result": "31 passed, 10 subtests passed in 3.35s",
+    "execution": "Outside restricted sandbox after base interpreter ACL prevented launch; no assertions modified.",
+    "synthetic_reproducer": "2026-11-03_measurement_diagnosis_repro.json"
+  },
+  "changes": "No algorithm, threshold, contract or board service modifications. Numeric/log evidence only.",
+  "next_steps": [
+    "Measure and remove preview/logging stalls from the measurement worker while preserving same-frame ownership. Keep the frozen FIR rate and rejection guards.",
+    "Correct the minimum-duration reopening boundary with explicit gap/face-loss handling and targeted regressions; synchronize Python and C through A/C owners.",
+    "Calibrate EAR with local independently labeled open/closed-eye sequences on this model, then recheck blink event accuracy and rates.",
+    "Retest HR with contiguous valid samples and a synchronized reference; do not treat display or synthetic output as accuracy evidence."
+  ]
+}

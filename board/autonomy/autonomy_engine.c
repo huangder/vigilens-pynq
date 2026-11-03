@@ -1,6 +1,7 @@
 #include "autonomy_engine.h"
 #include "face68_3d.h"
 #include "pose_pnp.h"
+#include "rgb_sampler.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +15,7 @@ struct vg_autonomy {
     double raw_hr,raw_hr_conf;
     double pose_model[68][3];
     vg_pose_seed pose_seed;
-    int pose_tracking,quality_recovery;
+    int pose_tracking,quality_recovery,vital_recovery_enabled;
     double vital_max_gap_s;
     double reproj_max_frac;
     double vital_min_rate_hz;
@@ -26,11 +27,14 @@ struct vg_autonomy {
     uint64_t last_id;
     double last_ts;
     int started;
+    vg_rgb_sampler sampler;
+    int aggregate_rgb;
 };
 void vg_autonomy_invalidate(vg_autonomy *e) {
     if (!e) return;
     e->pose_seed.valid=0;
     vg_vital_reset(e->vital);
+    vg_rgb_sampler_reset(&e->sampler);
     vg_hr_filter_reset(&e->hr_filter);e->raw_hr=e->raw_hr_conf=NAN;
     e->vital_gate="invalid_frame";
     memset(&e->held, 0, sizeof(e->held));
@@ -53,8 +57,10 @@ vg_autonomy *vg_autonomy_create(const vg_measure_config *m,
     e->gate = vg_decision_create(&m->decision);
     if (!e->measure || !e->vital || !e->gate) { vg_autonomy_destroy(e); return NULL; }
     e->reproj_max_frac = reproj; e->vital_every = every; e->pose_pnp = pnp;
-    e->vital_min_rate_hz = v->fps * (1.0 - v->fs_tol);
+    e->vital_min_rate_hz = vg_vital_required_hz(e->vital);
     e->vital_max_gap_s=v->max_gap_s;
+    e->vital_recovery_enabled=v->recovery_s>0;
+    vg_rgb_sampler_init(&e->sampler,v->fps,v->max_gap_s);
     memcpy(e->pose_model,VG_FACE68_MODEL,sizeof(e->pose_model));
     return e;
 }
@@ -70,6 +76,13 @@ int vg_autonomy_configure_temporal(vg_autonomy *e,const double model[68][3],int 
 int vg_autonomy_configure_hr_filter(vg_autonomy *e,const vg_hr_filter_config *cfg) {
     if(!e||e->started)return -1;
     return vg_hr_filter_init(&e->hr_filter,cfg);
+}
+int vg_autonomy_configure_blink(vg_autonomy *e,const vg_blink_config *c) {
+    return e && !e->started ? vg_measure_configure_blink(e->measure,c) : -1;
+}
+int vg_autonomy_configure_capture_rate(vg_autonomy *e,double fps) {
+    if(!e||e->started||!isfinite(fps)||fps<e->sampler.fps)return -1;
+    e->aggregate_rgb=fps>e->sampler.fps;return 0;
 }
 static void build_input(const vg_autonomy_frame *f, vg_measure_input *i) {
     int k;
@@ -138,12 +151,16 @@ int vg_autonomy_update(vg_autonomy *e, const vg_autonomy_frame *f, vg_autonomy_r
     }
     if (!f->count || !vg_decision_vitals_allowed(e->gate,r.measure.quality.overall,
             &input.face,r.measure.decision.status)) {
+        vg_rgb_sampler_reset(&e->sampler);
         e->vital_gate=f->visible<=0?"face_missing":(!f->count?"roi_empty":"quality_or_pose");
-        vg_hr_filter_reset(&e->hr_filter);e->raw_hr=e->raw_hr_conf=NAN;
+        e->raw_hr=e->raw_hr_conf=NAN;
         if(e->quality_recovery&&f->visible>0&&f->count) {
             vg_vital_invalidate(e->vital,"vitals_blocked",f->ts,1);
+            if(vg_vital_samples(e->vital)>0) vg_hr_filter_pause(&e->hr_filter,f->ts);
+            else vg_hr_filter_reset(&e->hr_filter);
             memset(&e->held,0,sizeof(e->held));
         } else {
+            vg_hr_filter_reset(&e->hr_filter);
             vg_vital_reset(e->vital);memset(&e->held,0,sizeof(e->held));
         }
         e->vital_reject="vitals_blocked";
@@ -155,6 +172,7 @@ int vg_autonomy_update(vg_autonomy *e, const vg_autonomy_frame *f, vg_autonomy_r
            skip the push/reset work instead of waiting for a window that cannot
            fill (the board runs this path on every frame). */
         vg_vital_invalidate(e->vital,"sampling_too_slow",f->ts,0);
+        vg_rgb_sampler_reset(&e->sampler);
         memset(&e->held,0,sizeof(e->held));
         e->vital_reject="sampling_too_slow";
         vg_hr_filter_reset(&e->hr_filter);e->raw_hr=e->raw_hr_conf=NAN;
@@ -162,7 +180,14 @@ int vg_autonomy_update(vg_autonomy *e, const vg_autonomy_frame *f, vg_autonomy_r
         e->vital_rate_hz=1.0/cadence;
     } else {
         e->vital_gate="accepted";
-        if (vg_vital_push_rgb(e->vital,f->sums,f->count,f->frame_id,f->ts)) {
+        uint32_t sums[3],count=f->count;double sample_ts=f->ts;
+        const uint32_t *sample_sums=f->sums;
+        int emit=1;
+        if(e->aggregate_rgb) {
+            emit=vg_rgb_sampler_push(&e->sampler,f->sums,f->count,f->frame_id,f->ts,sums,&count,&sample_ts);
+            sample_sums=sums;
+        }
+        if (emit<0 || (emit&&vg_vital_push_rgb(e->vital,sample_sums,count,f->frame_id,sample_ts))) {
             rc=-2; goto reject;
         }
         e->vital_rate_hz=cadence>0 ? 1.0/cadence : 0.0;
@@ -179,7 +204,12 @@ int vg_autonomy_update(vg_autonomy *e, const vg_autonomy_frame *f, vg_autonomy_r
                         e->held.present[0]=e->held.present[1]=1;
                     } else e->vital_reject=e->hr_filter.reason;
                 } else {
-                    vg_hr_filter_reset(&e->hr_filter);
+                    const char *why=estimate.reject;
+                    int soft=e->quality_recovery&&e->vital_recovery_enabled&&why&&
+                        (!strcmp(why,"recovering")||!strcmp(why,"no_dominant_peak")||
+                         !strcmp(why,"short_window_low_confidence")||!strcmp(why,"harmonic_ambiguity"));
+                    if(soft) vg_hr_filter_pause(&e->hr_filter,f->ts);
+                    else vg_hr_filter_reset(&e->hr_filter);
                     e->vital_reject=estimate.reject;
                 }
             }
@@ -208,6 +238,9 @@ double vg_autonomy_vital_rate_hz(const vg_autonomy *e) {
 }
 int vg_autonomy_vital_samples(const vg_autonomy *e) {
     return e ? vg_vital_samples(e->vital) : 0;
+}
+int vg_autonomy_vital_history_samples(const vg_autonomy *e) {
+    return e ? vg_vital_history_samples(e->vital) : 0;
 }
 const char *vg_autonomy_vital_gate(const vg_autonomy *e) {
     return e ? e->vital_gate : NULL;

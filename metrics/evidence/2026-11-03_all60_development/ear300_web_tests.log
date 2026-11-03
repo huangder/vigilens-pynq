@@ -1,0 +1,29 @@
+✔ first current value starts without a fabricated zero and later changes interpolate (0.9986ms)
+✔ transition is monotonic and bounded and accepts a changed target mid-animation (0.4325ms)
+✔ duplicate target frames do not keep restarting the transition (0.1279ms)
+✔ viewport moves between packet timestamps without advancing beyond measured time (0.2797ms)
+✔ missing HR and disconnect do not become animated current measurements (0.1822ms)
+✔ brief missing data can finish a labeled historical transition without a current value (0.1535ms)
+✔ long absence, restart and explicit reset cannot animate from an old subject value (0.1231ms)
+✔ injected renderer draws dashed bridges without changing sample count or missing values (2.3349ms)
+✔ injected historical tail is labeled and is removed on disconnect (1.0309ms)
+✔ actual injected card animates without recreating the removed note (0.7409ms)
+✔ actual board card builder removes the HR note element (0.4492ms)
+✔ short null gaps receive only dashed endpoint annotations; frames stay unchanged (1.0638ms)
+✔ valid adjacent samples require no bridge (0.0797ms)
+✔ missing frames can bridge within configured age, never across long absence (0.0796ms)
+✔ tail is explicitly historical and expires instead of extending indefinitely (0.1054ms)
+✔ disconnect cancels a tail and cannot bridge to a recovered measurement (0.0803ms)
+✔ producer timestamp or ID rollback resets presentation continuity (0.7994ms)
+✔ no initial estimate means no historical values or artificial zero (0.1148ms)
+✔ measurement eligibility is supplied by the original card gate (0.1071ms)
+BOARD_HTTP_TRANSPORT_PASS exact_frames_dedup_disconnect_invalid_restart_stop
+✔ board\autonomy\tests\board_transport.test.js (61.3271ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 118.6193

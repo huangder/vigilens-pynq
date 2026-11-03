@@ -1,0 +1,13 @@
+{
+  "input": "actual HTTP scalar frames replayed in Node with isolated mock localStorage",
+  "observations": 300,
+  "nonnull_HR_observations": 12,
+  "saved_records": 5,
+  "no_low_or_null_records": true,
+  "all_records_match_actual_frames": true,
+  "refresh_reload_matches": true,
+  "duplicate_endpoint_not_saved": true,
+  "csv_rows": 5,
+  "actual_browser_storage_inspected": false,
+  "reference_HR_available": false
+}

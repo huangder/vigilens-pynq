@@ -1,0 +1,11 @@
+
+# wget -T 15 -O /tmp/vigilens_signal30_install.sh http://169.254.73.28:8771/inst
+all.sh
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+wget: can't connect to remote host (169.254.73.28): Connection refused
+# sh /tmp/vigilens_signal30_install.sh
+sh: can't open '/tmp/vigilens_signal30_install.sh': No such file or directory
+# printf '\nSIGNAL30_INSTALL_DONE rc=%s\n' "$?"
+
+SIGNAL30_INSTALL_DONE rc=2
+# 

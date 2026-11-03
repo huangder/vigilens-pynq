@@ -1,0 +1,1624 @@
+{
+  "kind": "physical_board_full_pipeline_performance_experiments",
+  "date_local": "2026-11-03",
+  "timezone": "Asia/Shanghai",
+  "full60_verified": false,
+  "human_accuracy_verified": false,
+  "continuous_hr_verified": false,
+  "per_run_input_frames": 900,
+  "nominal_fps": 60,
+  "analysis_rate_definition": "succeeded contracts / analysis wall time, includes queue drain; excludes model initialization",
+  "selected_time_preserving_filter": {
+    "taps": 125,
+    "fs_hz": 60,
+    "group_delay_s": 1.0333333333333334,
+    "golden_samples_exact": 4094
+  },
+  "early_filter_warning": "baseline through fast4 use 63 taps at 60 Hz; filter duration/response differ from installed 63 taps at 30 Hz; memcpy peak is not a production acceptance",
+  "historical_source_archive_complete": false,
+  "production_restored": {
+    "valid_contracts": 3,
+    "frame_ids": [
+      9950,
+      9964,
+      9973
+    ],
+    "face_visible": [
+      0,
+      0,
+      0
+    ]
+  },
+  "production_binary_sha256": "1f0b5a85d71421abcf7fcdf36bf4347e8d676a7f12870b1c9c2fca92ee6f500b",
+  "runs": {
+    "baseline": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "510",
+        "skipped": "390",
+        "processed": "510",
+        "succeeded": "509",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "58.241601",
+        "analysis_update_fps": "32.914603"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "17",
+        "empty_slots": "0",
+        "input_fps": "58.241601",
+        "output_fps": "58.241601",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "804"
+      },
+      "contracts_validated": 509,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 427,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 18.80687819253438,
+          "p50": 17.371,
+          "p95_nearest_rank": 39.407,
+          "max": 85.118,
+          "samples": 509
+        },
+        "landmark_ms": {
+          "mean": 13.35841257367387,
+          "p50": 10.588,
+          "p95_nearest_rank": 31.754,
+          "max": 65.951,
+          "samples": 509
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 9.009371316306483,
+          "p50": 9.228,
+          "p95_nearest_rank": 11.623,
+          "max": 35.578,
+          "samples": 509
+        },
+        "decode_ms": {
+          "mean": 21.974787777777777,
+          "p50": 21.4985,
+          "p95_nearest_rank": 33.675,
+          "max": 65.711,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.488085555555555,
+          "p50": 13.1335,
+          "p95_nearest_rank": 15.265,
+          "max": 19.023,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 8.327728888888888,
+          "p50": 6.686999999999999,
+          "p95_nearest_rank": 17.251,
+          "max": 30.932,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 2.971071111111111,
+          "p50": 2.8675,
+          "p95_nearest_rank": 4.066,
+          "max": 5.863,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "da87d6af876afdf7e545489bb16e9a3512dbf86be7aa3aed9c09d9ba7fc29045",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "roi": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "583",
+        "skipped": "317",
+        "processed": "583",
+        "succeeded": "582",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "58.360798",
+        "analysis_update_fps": "37.767485"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "15",
+        "empty_slots": "0",
+        "input_fps": "58.360798",
+        "output_fps": "58.360798",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "832"
+      },
+      "contracts_validated": 582,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 514,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 15.31434879725086,
+          "p50": 13.203,
+          "p95_nearest_rank": 36.238,
+          "max": 85.932,
+          "samples": 582
+        },
+        "landmark_ms": {
+          "mean": 9.110841924398626,
+          "p50": 6.112,
+          "p95_nearest_rank": 29.638,
+          "max": 63.565,
+          "samples": 582
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 6.440671821305842,
+          "p50": 5.8614999999999995,
+          "p95_nearest_rank": 7.769,
+          "max": 31.327,
+          "samples": 582
+        },
+        "decode_ms": {
+          "mean": 22.044584444444446,
+          "p50": 21.387999999999998,
+          "p95_nearest_rank": 34.76,
+          "max": 53.129,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.598851111111111,
+          "p50": 13.281,
+          "p95_nearest_rank": 15.055,
+          "max": 18.02,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 9.299225555555555,
+          "p50": 7.6240000000000006,
+          "p95_nearest_rank": 18.013,
+          "max": 30.475,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.611623333333333,
+          "p50": 3.4725,
+          "p95_nearest_rank": 4.751,
+          "max": 5.39,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "a6628943a4f433694f5266a03b582cba8676e2826da04c47801d434487de1ccf",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "prof": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "616",
+        "skipped": "284",
+        "processed": "616",
+        "succeeded": "615",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "58.682473",
+        "analysis_update_fps": "40.223352"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "10",
+        "empty_slots": "0",
+        "input_fps": "58.682473",
+        "output_fps": "58.682473",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "849"
+      },
+      "contracts_validated": 615,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 559,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 14.874237398373984,
+          "p50": 12.691,
+          "p95_nearest_rank": 31.15,
+          "max": 80.172,
+          "samples": 615
+        },
+        "landmark_ms": {
+          "mean": 9.40129593495935,
+          "p50": 6.216,
+          "p95_nearest_rank": 20.455,
+          "max": 65.727,
+          "samples": 615
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 6.253629268292683,
+          "p50": 5.882,
+          "p95_nearest_rank": 6.924,
+          "max": 33.166,
+          "samples": 615
+        },
+        "preview_ms": {
+          "mean": 4.456357723577236,
+          "p50": 0.0,
+          "p95_nearest_rank": 37.891,
+          "max": 77.828,
+          "samples": 615
+        },
+        "publish_ms": {
+          "mean": 0.4678617886178862,
+          "p50": 0.334,
+          "p95_nearest_rank": 0.547,
+          "max": 20.542,
+          "samples": 615
+        },
+        "worker_ms": {
+          "mean": 19.9321837398374,
+          "p50": 14.976,
+          "p95_nearest_rank": 61.709,
+          "max": 99.904,
+          "samples": 615
+        },
+        "decode_ms": {
+          "mean": 21.682166666666667,
+          "p50": 21.034,
+          "p95_nearest_rank": 33.565,
+          "max": 50.183,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.402272222222223,
+          "p50": 13.086,
+          "p95_nearest_rank": 15.003,
+          "max": 16.876,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 9.103863333333333,
+          "p50": 7.4935,
+          "p95_nearest_rank": 17.877,
+          "max": 29.453,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.5016844444444444,
+          "p50": 3.309,
+          "p95_nearest_rank": 4.545,
+          "max": 5.268,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "242d62bee51dffb9f5570c32ebcbdfc02b31af887d84be52f505a15ff48714af",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "asynchronous": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "663",
+        "skipped": "237",
+        "processed": "663",
+        "succeeded": "662",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "58.753366",
+        "analysis_update_fps": "43.141447"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "9",
+        "empty_slots": "0",
+        "input_fps": "58.753366",
+        "output_fps": "58.753366",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "843"
+      },
+      "contracts_validated": 662,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 560,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 15.792422960725075,
+          "p50": 14.0,
+          "p95_nearest_rank": 32.273,
+          "max": 86.145,
+          "samples": 662
+        },
+        "landmark_ms": {
+          "mean": 9.201398791540786,
+          "p50": 6.589,
+          "p95_nearest_rank": 21.367,
+          "max": 69.767,
+          "samples": 662
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 5.727859516616314,
+          "p50": 5.9805,
+          "p95_nearest_rank": 7.059,
+          "max": 30.772,
+          "samples": 662
+        },
+        "preview_ms": {
+          "mean": 0.6672175226586102,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.417,
+          "max": 17.351,
+          "samples": 662
+        },
+        "publish_ms": {
+          "mean": 0.5384335347432024,
+          "p50": 0.339,
+          "p95_nearest_rank": 0.911,
+          "max": 17.755,
+          "samples": 662
+        },
+        "worker_ms": {
+          "mean": 17.08362839879154,
+          "p50": 15.4765,
+          "p95_nearest_rank": 34.776,
+          "max": 86.467,
+          "samples": 662
+        },
+        "decode_ms": {
+          "mean": 22.83501,
+          "p50": 21.629,
+          "p95_nearest_rank": 37.501,
+          "max": 48.614,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.308062222222222,
+          "p50": 12.964500000000001,
+          "p95_nearest_rank": 14.868,
+          "max": 18.419,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 10.651863333333333,
+          "p50": 9.398499999999999,
+          "p95_nearest_rank": 20.24,
+          "max": 32.494,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.8760966666666667,
+          "p50": 4.0835,
+          "p95_nearest_rank": 4.77,
+          "max": 5.9,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "21286f8fb34da8f5a96b338eacf0f27772d053823f23fe74bfbd0e73208d744c",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "oneworker": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "824",
+        "skipped": "76",
+        "processed": "824",
+        "succeeded": "823",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "57.925079",
+        "analysis_update_fps": "52.949034"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "22",
+        "empty_slots": "0",
+        "input_fps": "57.925079",
+        "output_fps": "57.925079",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "635"
+      },
+      "contracts_validated": 823,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 768,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 12.42940461725395,
+          "p50": 12.232,
+          "p95_nearest_rank": 21.206,
+          "max": 91.37,
+          "samples": 823
+        },
+        "landmark_ms": {
+          "mean": 8.501916160388822,
+          "p50": 6.547,
+          "p95_nearest_rank": 15.854,
+          "max": 56.523,
+          "samples": 823
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 6.045647630619684,
+          "p50": 5.898,
+          "p95_nearest_rank": 6.708,
+          "max": 30.43,
+          "samples": 823
+        },
+        "preview_ms": {
+          "mean": 0.5639684082624544,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.438,
+          "max": 18.35,
+          "samples": 823
+        },
+        "publish_ms": {
+          "mean": 0.6223560145808019,
+          "p50": 0.334,
+          "p95_nearest_rank": 1.389,
+          "max": 20.528,
+          "samples": 823
+        },
+        "worker_ms": {
+          "mean": 13.740843256379101,
+          "p50": 12.894,
+          "p95_nearest_rank": 24.701,
+          "max": 92.976,
+          "samples": 823
+        },
+        "decode_ms": {
+          "mean": 16.22580111111111,
+          "p50": 15.9235,
+          "p95_nearest_rank": 22.497,
+          "max": 42.702,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.762268888888888,
+          "p50": 13.817,
+          "p95_nearest_rank": 15.217,
+          "max": 20.511,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 8.913783333333333,
+          "p50": 7.6735,
+          "p95_nearest_rank": 14.795,
+          "max": 27.328,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.9371,
+          "p50": 4.118,
+          "p95_nearest_rank": 4.728,
+          "max": 5.489,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "21286f8fb34da8f5a96b338eacf0f27772d053823f23fe74bfbd0e73208d744c",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "buffer4": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "839",
+        "skipped": "61",
+        "processed": "839",
+        "succeeded": "838",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "56.943038",
+        "analysis_update_fps": "52.889275"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "38",
+        "empty_slots": "0",
+        "input_fps": "56.943038",
+        "output_fps": "56.943038",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "694"
+      },
+      "contracts_validated": 838,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 779,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 14.249951073985681,
+          "p50": 12.9835,
+          "p95_nearest_rank": 26.117,
+          "max": 121.06,
+          "samples": 838
+        },
+        "landmark_ms": {
+          "mean": 9.716918854415274,
+          "p50": 7.4035,
+          "p95_nearest_rank": 20.003,
+          "max": 78.727,
+          "samples": 838
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 6.7695238663484485,
+          "p50": 6.376,
+          "p95_nearest_rank": 7.491,
+          "max": 32.036,
+          "samples": 838
+        },
+        "preview_ms": {
+          "mean": 0.54768138424821,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.491,
+          "max": 14.621,
+          "samples": 838
+        },
+        "publish_ms": {
+          "mean": 0.5821336515513127,
+          "p50": 0.333,
+          "p95_nearest_rank": 1.051,
+          "max": 19.581,
+          "samples": 838
+        },
+        "worker_ms": {
+          "mean": 15.50476968973747,
+          "p50": 13.674,
+          "p95_nearest_rank": 27.878,
+          "max": 121.348,
+          "samples": 838
+        },
+        "queue_ms": {
+          "mean": 22.587021479713602,
+          "p50": 19.1465,
+          "p95_nearest_rank": 70.449,
+          "max": 151.384,
+          "samples": 838
+        },
+        "decode_ms": {
+          "mean": 16.3105,
+          "p50": 15.92,
+          "p95_nearest_rank": 22.529,
+          "max": 38.711,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.715667777777778,
+          "p50": 13.781500000000001,
+          "p95_nearest_rank": 15.064,
+          "max": 20.701,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 9.586095555555556,
+          "p50": 8.5085,
+          "p95_nearest_rank": 16.592,
+          "max": 33.843,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 4.084741111111111,
+          "p50": 4.142,
+          "p95_nearest_rank": 4.722,
+          "max": 5.491,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "d64a8dfd63a8638dda7df5bd0f24629d24ea0569418b49c97862369d366e469e",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "memcpy": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "894",
+        "skipped": "6",
+        "processed": "894",
+        "succeeded": "893",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "55.756329",
+        "analysis_update_fps": "55.334725"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "58",
+        "empty_slots": "0",
+        "input_fps": "55.756329",
+        "output_fps": "55.756329",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "592"
+      },
+      "contracts_validated": 893,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 801,
+      "hr_nonnull_frames": 120,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 11.30022620380739,
+          "p50": 9.935,
+          "p95_nearest_rank": 21.378,
+          "max": 81.073,
+          "samples": 893
+        },
+        "landmark_ms": {
+          "mean": 7.948029115341545,
+          "p50": 6.676,
+          "p95_nearest_rank": 15.427,
+          "max": 61.038,
+          "samples": 893
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 6.33963829787234,
+          "p50": 6.323,
+          "p95_nearest_rank": 7.41,
+          "max": 31.724,
+          "samples": 893
+        },
+        "preview_ms": {
+          "mean": 0.5165744680851064,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.733,
+          "max": 14.181,
+          "samples": 893
+        },
+        "publish_ms": {
+          "mean": 0.519468085106383,
+          "p50": 0.339,
+          "p95_nearest_rank": 0.967,
+          "max": 9.101,
+          "samples": 893
+        },
+        "worker_ms": {
+          "mean": 12.446998880179171,
+          "p50": 11.479,
+          "p95_nearest_rank": 22.994,
+          "max": 81.509,
+          "samples": 893
+        },
+        "queue_ms": {
+          "mean": 7.655585666293393,
+          "p50": 0.677,
+          "p95_nearest_rank": 37.771,
+          "max": 75.844,
+          "samples": 893
+        },
+        "decode_ms": {
+          "mean": 16.757185555555555,
+          "p50": 16.235500000000002,
+          "p95_nearest_rank": 22.988,
+          "max": 37.014,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.90656,
+          "p50": 13.775,
+          "p95_nearest_rank": 15.722,
+          "max": 22.565,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 7.051261111111111,
+          "p50": 6.403,
+          "p95_nearest_rank": 11.669,
+          "max": 22.934,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.0801177777777777,
+          "p50": 3.0465,
+          "p95_nearest_rank": 3.972,
+          "max": 5.305,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "d64a8dfd63a8638dda7df5bd0f24629d24ea0569418b49c97862369d366e469e",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "fast4": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "849",
+        "skipped": "51",
+        "processed": "849",
+        "succeeded": "848",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "55.687403",
+        "analysis_update_fps": "52.281230"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "59",
+        "empty_slots": "0",
+        "input_fps": "55.687403",
+        "output_fps": "55.687403",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "634"
+      },
+      "contracts_validated": 848,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 746,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 13.882905660377359,
+          "p50": 11.859,
+          "p95_nearest_rank": 36.623,
+          "max": 78.366,
+          "samples": 848
+        },
+        "landmark_ms": {
+          "mean": 10.829732311320754,
+          "p50": 8.323,
+          "p95_nearest_rank": 34.96,
+          "max": 61.885,
+          "samples": 848
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 8.432939858490567,
+          "p50": 7.2305,
+          "p95_nearest_rank": 30.924,
+          "max": 39.672,
+          "samples": 848
+        },
+        "preview_ms": {
+          "mean": 0.49664504716981134,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.37,
+          "max": 12.891,
+          "samples": 848
+        },
+        "publish_ms": {
+          "mean": 0.46378419811320754,
+          "p50": 0.3345,
+          "p95_nearest_rank": 0.935,
+          "max": 11.991,
+          "samples": 848
+        },
+        "worker_ms": {
+          "mean": 14.896872641509434,
+          "p50": 12.692,
+          "p95_nearest_rank": 37.931,
+          "max": 78.622,
+          "samples": 848
+        },
+        "queue_ms": {
+          "mean": 17.347053066037734,
+          "p50": 5.939,
+          "p95_nearest_rank": 68.106,
+          "max": 151.256,
+          "samples": 848
+        },
+        "decode_ms": {
+          "mean": 16.57603,
+          "p50": 16.23,
+          "p95_nearest_rank": 22.439,
+          "max": 45.787,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.595015555555555,
+          "p50": 13.475999999999999,
+          "p95_nearest_rank": 15.411,
+          "max": 19.047,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 7.829287777777778,
+          "p50": 6.538,
+          "p95_nearest_rank": 13.65,
+          "max": 30.942,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.0813733333333335,
+          "p50": 3.085,
+          "p95_nearest_rank": 3.954,
+          "max": 5.489,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "f0ac1e37a3b0abb64432dcb89b44233ab0301084bfb65f81103a1779cb0709bd",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "fir125": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "855",
+        "skipped": "45",
+        "processed": "855",
+        "succeeded": "854",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "56.640975",
+        "analysis_update_fps": "53.844552"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "43",
+        "empty_slots": "0",
+        "input_fps": "56.640975",
+        "output_fps": "56.640975",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "667"
+      },
+      "contracts_validated": 854,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 747,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 12.900690866510539,
+          "p50": 11.649,
+          "p95_nearest_rank": 27.674,
+          "max": 98.744,
+          "samples": 854
+        },
+        "landmark_ms": {
+          "mean": 9.49991100702576,
+          "p50": 7.640499999999999,
+          "p95_nearest_rank": 21.57,
+          "max": 65.55,
+          "samples": 854
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 7.2323337236533956,
+          "p50": 6.926,
+          "p95_nearest_rank": 8.592,
+          "max": 36.525,
+          "samples": 854
+        },
+        "preview_ms": {
+          "mean": 0.5388290398126464,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.702,
+          "max": 18.414,
+          "samples": 854
+        },
+        "publish_ms": {
+          "mean": 0.529927400468384,
+          "p50": 0.334,
+          "p95_nearest_rank": 1.026,
+          "max": 11.632,
+          "samples": 854
+        },
+        "worker_ms": {
+          "mean": 14.051607728337236,
+          "p50": 12.654,
+          "p95_nearest_rank": 30.325,
+          "max": 99.18,
+          "samples": 854
+        },
+        "queue_ms": {
+          "mean": 15.271985948477752,
+          "p50": 4.4815000000000005,
+          "p95_nearest_rank": 63.022,
+          "max": 141.717,
+          "samples": 854
+        },
+        "decode_ms": {
+          "mean": 15.706616666666667,
+          "p50": 15.0315,
+          "p95_nearest_rank": 22.56,
+          "max": 38.77,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.103034444444445,
+          "p50": 12.699,
+          "p95_nearest_rank": 14.808,
+          "max": 17.408,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 7.218901111111111,
+          "p50": 6.34,
+          "p95_nearest_rank": 13.024,
+          "max": 21.338,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 2.8756477777777776,
+          "p50": 2.74,
+          "p95_nearest_rank": 3.904,
+          "max": 5.35,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "e94a8a0177f8d48be4c1c8724868622570efa2b80afe493a2e1c69ad5f16e3b6",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "affinity": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "870",
+        "skipped": "30",
+        "processed": "870",
+        "succeeded": "869",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "54.668801",
+        "analysis_update_fps": "52.740285"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "77",
+        "empty_slots": "0",
+        "input_fps": "54.668801",
+        "output_fps": "54.668801",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "695"
+      },
+      "contracts_validated": 869,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 699,
+      "hr_nonnull_frames": 60,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 12.062590333716916,
+          "p50": 11.88,
+          "p95_nearest_rank": 24.273,
+          "max": 82.747,
+          "samples": 869
+        },
+        "landmark_ms": {
+          "mean": 8.512291139240507,
+          "p50": 7.728,
+          "p95_nearest_rank": 17.28,
+          "max": 66.328,
+          "samples": 869
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 6.2928527042577675,
+          "p50": 6.985,
+          "p95_nearest_rank": 8.227,
+          "max": 33.197,
+          "samples": 869
+        },
+        "preview_ms": {
+          "mean": 0.4963647871116226,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.199,
+          "max": 18.77,
+          "samples": 869
+        },
+        "publish_ms": {
+          "mean": 0.514162255466053,
+          "p50": 0.335,
+          "p95_nearest_rank": 0.992,
+          "max": 10.506,
+          "samples": 869
+        },
+        "worker_ms": {
+          "mean": 13.180338319907941,
+          "p50": 12.718,
+          "p95_nearest_rank": 25.602,
+          "max": 83.901,
+          "samples": 869
+        },
+        "queue_ms": {
+          "mean": 15.784627157652475,
+          "p50": 8.792,
+          "p95_nearest_rank": 51.109,
+          "max": 132.833,
+          "samples": 869
+        },
+        "decode_ms": {
+          "mean": 16.65100111111111,
+          "p50": 15.9965,
+          "p95_nearest_rank": 24.285,
+          "max": 45.552,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.28935888888889,
+          "p50": 12.8945,
+          "p95_nearest_rank": 15.089,
+          "max": 18.635,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 7.826288888888889,
+          "p50": 6.5905000000000005,
+          "p95_nearest_rank": 13.851,
+          "max": 27.008,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.046987777777778,
+          "p50": 2.9815,
+          "p95_nearest_rank": 3.976,
+          "max": 5.051,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "e94a8a0177f8d48be4c1c8724868622570efa2b80afe493a2e1c69ad5f16e3b6",
+      "exclude_from_comparable_fps": true,
+      "exclusion_reason": "affinity_tool_missing_and_service_overlap"
+    },
+    "pinned": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "900",
+        "skipped": "0",
+        "processed": "900",
+        "succeeded": "899",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "50.768984",
+        "analysis_update_fps": "50.620758"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "152",
+        "empty_slots": "0",
+        "input_fps": "50.768984",
+        "output_fps": "50.768984",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "927"
+      },
+      "contracts_validated": 899,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 0,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 0.3775305895439377,
+          "p50": 0.238,
+          "p95_nearest_rank": 0.334,
+          "max": 14.119,
+          "samples": 899
+        },
+        "landmark_ms": {
+          "mean": 0.004731924360400445,
+          "p50": 0.005,
+          "p95_nearest_rank": 0.005,
+          "max": 0.009,
+          "samples": 899
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 0.004791991101223582,
+          "p50": 0.005,
+          "p95_nearest_rank": 0.005,
+          "max": 0.009,
+          "samples": 899
+        },
+        "preview_ms": {
+          "mean": 0.4714983314794216,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.2,
+          "max": 15.161,
+          "samples": 899
+        },
+        "publish_ms": {
+          "mean": 0.3487830923248053,
+          "p50": 0.305,
+          "p95_nearest_rank": 0.494,
+          "max": 10.531,
+          "samples": 899
+        },
+        "worker_ms": {
+          "mean": 1.2563236929922135,
+          "p50": 0.599,
+          "p95_nearest_rank": 5.038,
+          "max": 17.57,
+          "samples": 899
+        },
+        "queue_ms": {
+          "mean": 0.4106963292547275,
+          "p50": 0.047,
+          "p95_nearest_rank": 2.203,
+          "max": 11.501,
+          "samples": 899
+        },
+        "decode_ms": {
+          "mean": 16.740303333333333,
+          "p50": 15.509,
+          "p95_nearest_rank": 23.409,
+          "max": 30.623,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.834057777777778,
+          "p50": 13.4455,
+          "p95_nearest_rank": 15.521,
+          "max": 21.851,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 7.042437777777778,
+          "p50": 5.923,
+          "p95_nearest_rank": 12.033,
+          "max": 18.712,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 2.75594,
+          "p50": 2.7175000000000002,
+          "p95_nearest_rank": 3.613,
+          "max": 6.09,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "e94a8a0177f8d48be4c1c8724868622570efa2b80afe493a2e1c69ad5f16e3b6",
+      "exclude_from_comparable_fps": true,
+      "exclusion_reason": "no_face_workload"
+    },
+    "candidate": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "797",
+        "skipped": "103",
+        "processed": "797",
+        "succeeded": "796",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "54.551947",
+        "analysis_update_fps": "48.133549"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "79",
+        "empty_slots": "0",
+        "input_fps": "54.551947",
+        "output_fps": "54.551947",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "572"
+      },
+      "contracts_validated": 796,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 550,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 14.143420854271357,
+          "p50": 9.818000000000001,
+          "p95_nearest_rank": 35.694,
+          "max": 78.016,
+          "samples": 796
+        },
+        "landmark_ms": {
+          "mean": 12.215977386934673,
+          "p50": 6.129,
+          "p95_nearest_rank": 35.211,
+          "max": 54.425,
+          "samples": 796
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 10.435634422110553,
+          "p50": 5.8375,
+          "p95_nearest_rank": 31.019,
+          "max": 37.979,
+          "samples": 796
+        },
+        "preview_ms": {
+          "mean": 0.5253103015075377,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.439,
+          "max": 18.454,
+          "samples": 796
+        },
+        "publish_ms": {
+          "mean": 0.4501708542713568,
+          "p50": 0.339,
+          "p95_nearest_rank": 0.897,
+          "max": 7.74,
+          "samples": 796
+        },
+        "worker_ms": {
+          "mean": 15.18099120603015,
+          "p50": 10.9265,
+          "p95_nearest_rank": 38.627,
+          "max": 78.453,
+          "samples": 796
+        },
+        "queue_ms": {
+          "mean": 22.09340326633166,
+          "p50": 1.82,
+          "p95_nearest_rank": 97.054,
+          "max": 155.544,
+          "samples": 796
+        },
+        "decode_ms": {
+          "mean": 16.736693333333335,
+          "p50": 16.3405,
+          "p95_nearest_rank": 23.848,
+          "max": 46.215,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.858308888888889,
+          "p50": 13.602,
+          "p95_nearest_rank": 15.74,
+          "max": 20.508,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 7.313306666666667,
+          "p50": 6.4559999999999995,
+          "p95_nearest_rank": 12.987,
+          "max": 24.701,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.1158155555555553,
+          "p50": 3.064,
+          "p95_nearest_rank": 4.012,
+          "max": 4.902,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "7bc4edec1791ac2ff7daa9488129a6ef4a0a8a946c813521edbeaf4f6188bb35",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "rows": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "749",
+        "skipped": "151",
+        "processed": "749",
+        "succeeded": "748",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "51.608290",
+        "analysis_update_fps": "42.859405"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "135",
+        "empty_slots": "0",
+        "input_fps": "51.608290",
+        "output_fps": "51.608290",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "648"
+      },
+      "contracts_validated": 748,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 650,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 18.818708556149733,
+          "p50": 12.101500000000001,
+          "p95_nearest_rank": 53.723,
+          "max": 80.287,
+          "samples": 748
+        },
+        "landmark_ms": {
+          "mean": 15.417974598930481,
+          "p50": 8.77,
+          "p95_nearest_rank": 44.548,
+          "max": 64.282,
+          "samples": 748
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 12.438330213903743,
+          "p50": 7.648,
+          "p95_nearest_rank": 33.051,
+          "max": 35.342,
+          "samples": 748
+        },
+        "preview_ms": {
+          "mean": 0.5406310160427807,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.307,
+          "max": 10.795,
+          "samples": 748
+        },
+        "publish_ms": {
+          "mean": 0.4726390374331551,
+          "p50": 0.332,
+          "p95_nearest_rank": 1.012,
+          "max": 10.44,
+          "samples": 748
+        },
+        "worker_ms": {
+          "mean": 19.90012165775401,
+          "p50": 13.23,
+          "p95_nearest_rank": 54.85,
+          "max": 82.701,
+          "samples": 748
+        },
+        "queue_ms": {
+          "mean": 34.23943181818182,
+          "p50": 20.162,
+          "p95_nearest_rank": 116.211,
+          "max": 151.281,
+          "samples": 748
+        },
+        "decode_ms": {
+          "mean": 16.286086666666666,
+          "p50": 15.896,
+          "p95_nearest_rank": 22.545,
+          "max": 34.696,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 13.106814444444444,
+          "p50": 12.616,
+          "p95_nearest_rank": 15.195,
+          "max": 20.214,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 7.985953333333334,
+          "p50": 6.5465,
+          "p95_nearest_rank": 14.398,
+          "max": 25.862,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 3.112311111111111,
+          "p50": 3.1715,
+          "p95_nearest_rank": 3.937,
+          "max": 5.139,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "b396345d08cffa8205029d88adf5aa94432b7fde3ff715762f76b8ef138ddb10",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    },
+    "pin2": {
+      "summary": {
+        "submitted": "900",
+        "accepted": "773",
+        "skipped": "127",
+        "processed": "773",
+        "succeeded": "772",
+        "rejected": "1",
+        "failed": "0",
+        "rc": "0",
+        "camera_submit_fps": "54.327857",
+        "analysis_update_fps": "46.270227"
+      },
+      "capture": {
+        "input": "900",
+        "kept": "900",
+        "dropped": "0",
+        "driver_sequence_gaps": "83",
+        "empty_slots": "0",
+        "input_fps": "54.327857",
+        "output_fps": "54.327857",
+        "native_30fps": "no",
+        "requested_fps": "60",
+        "native_requested_fps": "yes"
+      },
+      "audit": {
+        "frames": "900",
+        "audits": "30",
+        "failures": "0",
+        "reference_ms_total": "702"
+      },
+      "contracts_validated": 772,
+      "timestamps_strictly_increasing": true,
+      "same_frame_scalar_contract_match": true,
+      "face_frames": 597,
+      "hr_nonnull_frames": 0,
+      "timings_ms": {
+        "total_ms": {
+          "mean": 16.492045336787566,
+          "p50": 11.3255,
+          "p95_nearest_rank": 44.763,
+          "max": 69.628,
+          "samples": 772
+        },
+        "landmark_ms": {
+          "mean": 14.148272020725388,
+          "p50": 9.024000000000001,
+          "p95_nearest_rank": 38.052,
+          "max": 67.559,
+          "samples": 772
+        },
+        "landmark_caller_cpu_ms": {
+          "mean": 12.274597150259067,
+          "p50": 7.9254999999999995,
+          "p95_nearest_rank": 33.238,
+          "max": 62.934,
+          "samples": 772
+        },
+        "preview_ms": {
+          "mean": 0.4999831606217617,
+          "p50": 0.0,
+          "p95_nearest_rank": 4.341,
+          "max": 17.678,
+          "samples": 772
+        },
+        "publish_ms": {
+          "mean": 0.4570544041450777,
+          "p50": 0.329,
+          "p95_nearest_rank": 1.027,
+          "max": 3.818,
+          "samples": 772
+        },
+        "worker_ms": {
+          "mean": 17.495848445595854,
+          "p50": 11.9945,
+          "p95_nearest_rank": 45.892,
+          "max": 69.918,
+          "samples": 772
+        },
+        "queue_ms": {
+          "mean": 29.417281088082902,
+          "p50": 13.227,
+          "p95_nearest_rank": 103.92,
+          "max": 139.706,
+          "samples": 772
+        },
+        "decode_ms": {
+          "mean": 15.134682222222223,
+          "p50": 13.575,
+          "p95_nearest_rank": 23.3,
+          "max": 33.015,
+          "samples": 900
+        },
+        "decode_cpu_ms": {
+          "mean": 12.126955555555556,
+          "p50": 12.0855,
+          "p95_nearest_rank": 12.57,
+          "max": 14.271,
+          "samples": 900
+        },
+        "transfer_pl_ms": {
+          "mean": 7.516994444444444,
+          "p50": 6.332,
+          "p95_nearest_rank": 13.589,
+          "max": 29.151,
+          "samples": 900
+        },
+        "transfer_pl_cpu_ms": {
+          "mean": 2.9141488888888887,
+          "p50": 2.8064999999999998,
+          "p95_nearest_rank": 3.854,
+          "max": 5.496,
+          "samples": 900
+        }
+      },
+      "binary_sha256": "b396345d08cffa8205029d88adf5aa94432b7fde3ff715762f76b8ef138ddb10",
+      "exclude_from_comparable_fps": false,
+      "exclusion_reason": null
+    }
+  }
+}

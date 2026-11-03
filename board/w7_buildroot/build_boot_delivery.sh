@@ -31,6 +31,10 @@ for symbol in ENV_IS_IN_FAT ENV_IS_IN_NAND ENV_IS_IN_SPI_FLASH; do
   "$u/scripts/config" --file "$u/.config" --disable "$symbol"
 done
 "$u/scripts/config" --file "$u/.config" --enable ENV_IS_NOWHERE
+# This delivery always loads u-boot.img, then boot.scr loads Linux/PL/initrd.
+# Zynq's SPL_OS_BOOT selects Falcon Linux loading first, which bypasses that
+# policy and attempts uImage/system.dtb instead of the delivered boot chain.
+"$u/scripts/config" --file "$u/.config" --disable SPL_OS_BOOT
 # scripts/config uses a sed replacement and does not escape '&'. Nested hush
 # conditionals preserve fail-closed behavior without corrupting the C string.
 "$u/scripts/config" --file "$u/.config" --set-str BOOTCOMMAND 'if mmc dev 0; then if mmc rescan; then if fatload mmc 0:1 0x03000000 boot.scr; then source 0x03000000; else echo VIGILENS_SD_SCRIPT_MISSING; fi; fi; fi'

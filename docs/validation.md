@@ -40,13 +40,15 @@ python fpga/sim/gen_frames.py
 | 板端真人短测 | 900 相机输入，分析 29.672780 fps，队列跳过 9 帧；890 合法契约、857 帧有人脸、200 帧 HR 非空；PL 审计 30 次、失败 0 次 |
 | 首次 HR | 距首契约 13.147723 秒；没有同步参考心率，不报告准确率 |
 | 显示状态回放 | 两轮真实契约回放，区分当前值、历史值及正在测量；属于显示逻辑验证 |
-| SD 交付 | 构建与文件级检查已有记录；本版物理断电启动尚未验收 |
+| SD 冷启动与预览（2026-11-03） | 一次用户操作的物理断电启动，无 JTAG 补发；从 SPL 经 U-Boot/Linux 自动启动相机与HTTP。网页、递增指标帧和变化的640×480 JPEG均实测通过；SD只读，电脑更新服务器关闭后仍可访问。只证明该包的本次功能运行 |
 
 出处：[短测原始汇总](../metrics/evidence/2026-11-02_hr_continuous_live2_results.json)、[显示回放](../metrics/evidence/2026-11-02_hr_continuous_display_replay.json)、[C/Python 对拍](../metrics/evidence/2026-11-02_hr_continuous_live2_raw_verification.json)、[当版总检查](../metrics/evidence/2026-11-02_hr_continuous_check_all.json)、[SD 文件核验](../metrics/evidence/2026-11-02_cold_boot_delivery.json)。
 
+2026-11-03 冷启动与预览：[文件哈希和验证摘要](../metrics/evidence/2026-11-03_sd_preview_verification.json)、[上电串口](../metrics/evidence/2026-11-03_sd_preview_cold_boot.log)、[运行状态](../metrics/evidence/2026-11-03_sd_preview_runtime.log)、[本地JPEG解码与指标检查](../metrics/evidence/2026-11-03_sd_preview_live.json)。主机 JPEG 编解码与 HTTP 回归使用合成像素/传输夹具，不作为人体或准确性结果。
+
 ## 尚需物理验收
 
-1. 不用 JTAG 补发初始化，从完整断电状态 SD 启动，保存串口与服务日志。
+1. 扩展重复断电启动及不同上电条件下的稳定性验证；继续保留对应文件哈希、串口与服务日志。
 2. 最新持续版在有人脸、无人脸、断网及相机拔插时运行，核对契约更新、拒报、重连与日志上限。
 3. 同时报出采集、分析与有效测量的帧率、队列跳过和抖动，不以单项吞吐代替完整 30 fps。
 4. 心率使用同步参考、行为使用独立人工标注；不同人物/姿态/光照分别统计，先确定指标再计算结果。

@@ -1,0 +1,25 @@
+
+# VIGILENS_BOOT_CONFIG=/tmp/vigilens-ear300/boot.env /tmp/vigilens-ear300/vigile
+ns-service status
+running camera_pid=21806 http_pid=21804
+supervisor_pid=21786
+# ps | grep -E 'vigi_camera_autonomy|vg_metrics_http|vigilens-service' | grep -v
+ grep
+sha256sum /tmp/vigilens-ear300/root/vigilens/app/vigi_camera_autonomy /tmp/vigilens-ear300/root/vigilens/config.yaml
+21786 root     {vigilens-servic} /bin/sh /tmp/vigilens-ear300/vigilens-service run
+21804 root     /tmp/vigilens-ear300/root/vigilens/app/vg_metrics_http --bind 0.0.0.0 --port 8080 --latest /run/vigilens-ear300/latest.json --display /tmp/vigilens-ear300/root/vigilens/app/ui/index.html --assets /tmp/vigilens-ear300/root/vigilens/app/ui --preview /run/vigilens-ear300/preview.jpg --stale-seconds 3.0
+21806 root     /tmp/vigilens-ear300/root/vigilens/app/vigi_camera_autonomy /dev/video0 640 480 0 60 16
+# sha256sum /tmp/vigilens-ear300/root/vigilens/app/vigi_camera_autonomy /tmp/vig
+ilens-ear300/root/vigilens/config.yaml
+tail -n 3 /run/vigilens-ear300/camera.log
+printf '\nROLLING_PROBE_DONE rc=%s\n' "$?"
+6dcaafd589dc4dd3e5a897ddfa44c0192eb7530d5c438705ec7ab4efb7915f5c  /tmp/vigilens-ear300/root/vigilens/app/vigi_camera_autonomy
+154a66e043c1b72fc60d10869571166a78cdd1f76214c1c6689644d6752aa4f3  /tmp/vigilens-ear300/root/vigilens/config.yaml
+# tail -n 3 /run/vigilens-ear300/camera.log
+AUTONOMY_SAMPLE frame_id=104895 ts=12578.534809000 rc=0 detections=1 visible=1 detector_ms=0.012 landmark_ms=6.525 total_ms=12.954 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.008 landmark_caller_cpu_ms=6.528 vital_hz=31.257 vital_reject=sampling_too_slow roi_pixels=4840 vital_samples=75 vital_history_samples=534 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming preview_ms=0.000 publish_ms=0.285 worker_ms=13.342 queue_ms=40.517
+CAMERA_PL_FRAME n=104897 seq=111038 ts_us=12578554850 mismatch=0 audit=0 roi_g=38333423 roi_count=307200 motion_valid=1 motion_ratio_q16=870 decode_ms=22.029 reference_ms=0.000 transfer_pl_ms=6.914 decode_cpu_ms=12.007 transfer_pl_cpu_ms=3.301
+AUTONOMY_HANDOFF frame_id=104896 gray_ms=0.302 submit_ms=0.022 accepted=1
+# printf '\nROLLING_PROBE_DONE rc=%s\n' "$?"
+
+ROLLING_PROBE_DONE rc=0
+# 

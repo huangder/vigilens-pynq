@@ -12,6 +12,15 @@
 #include <unistd.h>
 #include "sample_gate.h"
 #include "capture_budget.h"
+static unsigned requested_fps(void) {
+    const char *text=getenv("VIGI_CAMERA_FPS");
+    char *end=NULL;
+    unsigned long rate;
+    if(!text)return 30; /* legacy CLI default; deployed profiles set this explicitly */
+    if(!*text||*text<'0'||*text>'9')return 0;
+    errno=0;rate=strtoul(text,&end,10);
+    return errno||!end||*end||rate<1||rate>120?0:(unsigned)rate;
+}
 #ifdef VIGI_CAMERA_PL
 #include "camera_pl.h"
 #endif
@@ -38,6 +47,8 @@ int main(int argc, char **argv) {
     const char *input_format=getenv("VIGI_CAMERA_FORMAT");
     if(input_format&&strcmp(input_format,"mjpg")&&strcmp(input_format,"yuyv"))return 2;
     int yuyv=input_format&&!strcmp(input_format,"yuyv");
+    const unsigned capture_fps=requested_fps();
+    if(!capture_fps)return 2;
     unsigned fourcc=yuyv?V4L2_PIX_FMT_YUYV:V4L2_PIX_FMT_MJPEG;
     if (argc != 5 && argc != 6
 #ifdef VIGI_CAMERA_PL
@@ -72,7 +83,7 @@ int main(int argc, char **argv) {
         if (!gate.fps || gate.fps > 120) return 2;
         printf("SAMPLE_REQUEST target_fps=%u time_base=v4l2_buffer no_padding=1\n", gate.fps);
     }
-    printf("CAPTURE_REQUEST %s %ux%u %s 30fps frames=%u\n", argv[1], w, h, yuyv?"YUYV":"MJPG",want);
+    printf("CAPTURE_REQUEST %s %ux%u %s %ufps frames=%u\n", argv[1], w, h, yuyv?"YUYV":"MJPG",capture_fps,want);
     fd = open(argv[1], O_RDWR | O_NONBLOCK);
     if (fd < 0 || call(fd, VIDIOC_QUERYCAP, &cap) < 0) goto fail;
     caps = (cap.capabilities & V4L2_CAP_DEVICE_CAPS) ? cap.device_caps : cap.capabilities;
@@ -92,15 +103,15 @@ int main(int argc, char **argv) {
     fmt.fmt.pix.pixelformat = fourcc; fmt.fmt.pix.field = V4L2_FIELD_ANY;
     if (call(fd, VIDIOC_S_FMT, &fmt) < 0) goto fail;
     rate.parm.capture.timeperframe.numerator = 1;
-    rate.parm.capture.timeperframe.denominator = 30;
+    rate.parm.capture.timeperframe.denominator = capture_fps;
     if (call(fd, VIDIOC_S_PARM, &rate) < 0) goto fail;
     printf("CAPTURE_MODE %ux%u fourcc=0x%08x interval=%u/%u\n", fmt.fmt.pix.width,
            fmt.fmt.pix.height, fmt.fmt.pix.pixelformat, rate.parm.capture.timeperframe.numerator,
            rate.parm.capture.timeperframe.denominator);
     matched = fmt.fmt.pix.width == w && fmt.fmt.pix.height == h &&
         fmt.fmt.pix.pixelformat == fourcc && rate.parm.capture.timeperframe.numerator &&
-        rate.parm.capture.timeperframe.denominator == 30 * rate.parm.capture.timeperframe.numerator;
-    if (!matched) puts("CAPTURE_MODE_MISMATCH: verify frames, but do not certify requested 30fps mode");
+        rate.parm.capture.timeperframe.denominator == capture_fps * rate.parm.capture.timeperframe.numerator;
+    if (!matched) puts("CAPTURE_MODE_MISMATCH: negotiated rate/geometry does not match request");
     if(gate.fps) {
         if(sample_gate_set_interval(&gate,rate.parm.capture.timeperframe.numerator,
             rate.parm.capture.timeperframe.denominator)){errno=EINVAL;goto fail;}
@@ -172,9 +183,9 @@ int main(int argc, char **argv) {
     if (gate.fps) {
         double input_fps = last_us > first_us ? (n - 1) * 1e6 / (last_us - first_us) : 0;
         double output_fps = kept_last > kept_first ? (gate.kept - 1) * 1e6 / (kept_last - kept_first) : 0;
-        printf("SAMPLE_RESULT input=%u kept=%llu dropped=%llu driver_sequence_gaps=%u empty_slots=%llu input_fps=%.6f output_fps=%.6f native_30fps=%s\n",
+        printf("SAMPLE_RESULT input=%u kept=%llu dropped=%llu driver_sequence_gaps=%u empty_slots=%llu input_fps=%.6f output_fps=%.6f native_30fps=%s requested_fps=%u native_requested_fps=%s\n",
                n, (unsigned long long)gate.kept, (unsigned long long)gate.dropped,
-               driver_gaps, (unsigned long long)gate.empty, input_fps, output_fps, matched ? "yes" : "no");
+               driver_gaps, (unsigned long long)gate.empty, input_fps, output_fps, matched&&capture_fps==30 ? "yes" : "no",capture_fps,matched ? "yes" : "no");
     }
 #ifdef VIGI_CAMERA_PL
     if (camera_pl_finish()) { errno = EIO; goto fail; }

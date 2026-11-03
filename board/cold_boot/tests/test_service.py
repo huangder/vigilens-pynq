@@ -57,6 +57,8 @@ while True:time.sleep(.1)
   try:self.command('stop',check=False)
   finally:self.temp.cleanup()
  def test_null_measurement_is_healthy_and_duplicate_start_is_single_owner(self):
+  # Match the SD rootfs: a standalone stat command is unavailable.
+  (self.bin/'stat').write_text('#!/bin/sh\nexit 127\n');(self.bin/'stat').chmod(0o755)
   self.start();self.command('start');time.sleep(3)
   self.assertEqual(len(self.starts()),1);self.assertIn(' 0 30 16',self.starts()[0])
   self.assertIsNone(json.loads((self.run/'latest.json').read_text())['vital']['hr_bpm'])
@@ -73,5 +75,8 @@ while True:time.sleep(.1)
   self.assertLess((self.run/'camera.log').stat().st_size,4096)
  def test_package_corruption_fails_before_executing_camera(self):
   (self.app/'runtime.env').write_text('tampered\n');self.command('start')
+  self.wait_for(lambda:'package_check_failed' in self.log());self.assertEqual(self.starts(),[])
+ def test_crlf_ready_marker_fails_before_executing_camera(self):
+  (self.root/'vigilens/READY').write_bytes(b'test-fixture\r\n');self.command('start')
   self.wait_for(lambda:'package_check_failed' in self.log());self.assertEqual(self.starts(),[])
 if __name__=='__main__':unittest.main(verbosity=2)

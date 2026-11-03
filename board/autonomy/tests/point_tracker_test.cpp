@@ -113,6 +113,24 @@ int main() {
         ++cases;
     }
     std::vector<uint8_t> black(static_cast<size_t>(width)*height*3,0);
+    {
+        const int box[]={60,60,540,420};
+        auto a_rgb=image(width,height,0,0);
+        auto a=vg_track::from_rgb_half_region(a_rgb.data(),width,height,box,1,3);
+        auto fast=policy;
+        for(int dx:{-8,0,8})for(int dy:{-4,0,4}) {
+            auto b_rgb=image(width,height,dx,dy);
+            auto b=vg_track::from_rgb_half_region(b_rgb.data(),width,height,box,1,3);
+            const bool ok=vg_track::update(a,b,points,fast,out);
+            if(!ok)std::fprintf(stderr,"ROI motion refused dx=%d dy=%d point=%d stage=%d observed=%d\n",dx,dy,out.rejected_index,out.rejected_stage,out.count);
+            assert(ok);
+            for(int i=0;i<68;++i) {
+                assert(std::fabs(out.points[i*2]-points[i*2]-dx)<0.5);
+                assert(std::fabs(out.points[i*2+1]-points[i*2+1]-dy)<0.5);
+            }
+        }
+        std::puts("POINT_TRACKER_ROI_MOTION_PASS translation_cases=9 error_bound=0.5 levels=3 radius=3 iterations=12");
+    }
     const auto blank=vg_track::from_rgb(black.data(),width,height,3);
     assert(!vg_track::update(first,blank,points,policy,out));
     assert(!vg_track::update(blank,blank,points,policy,out));

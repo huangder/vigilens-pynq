@@ -1,0 +1,39 @@
+
+# echo POST_UPDATE_BEGIN
+POST_UPDATE_BEGIN
+# /usr/sbin/vigilens-service status
+running camera_pid=29657 http_pid=29655
+supervisor_pid=29645
+# cat /run/vigilens/service.status
+running camera_pid=29657 http_pid=29655
+# tail -n 5 /run/vigilens/supervisor.log
+VIGILENS_STATE running camera_pid=29657 http_pid=29655
+VIGILENS_STATE running camera_pid=29657 http_pid=29655
+VIGILENS_STATE running camera_pid=29657 http_pid=29655
+VIGILENS_STATE running camera_pid=29657 http_pid=29655
+VIGILENS_STATE running camera_pid=29657 http_pid=29655
+# tail -n 4 /run/vigilens/http.log
+METRICS_HTTP_READY bind=0.0.0.0 port=8080 latest=/run/vigilens/latest.json stale_seconds=3 read_only=1
+METRICS_HTTP_READY bind=0.0.0.0 port=8080 latest=/run/vigilens/latest.json stale_seconds=3 read_only=1
+METRICS_HTTP_READY bind=0.0.0.0 port=8080 latest=/run/vigilens/latest.json stale_seconds=3 read_only=1
+# tail -n 5 /run/vigilens/camera.log
+CAPTURE_FRAME n=1645 sequence=1644 bytes=614400 ts=5921.504404
+SAMPLE_FRAME n=1645 source_sequence=1644 ts_us=5921504404
+AUTONOMY_SAMPLE frame_id=1643 ts=5921.471975000 rc=0 detections=1 visible=1 detector_ms=0.009 landmark_ms=9.193 total_ms=10.710 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=9.197 vital_hz=27.956 vital_reject=- roi_pixels=4818 vital_samples=100 vital_gate=accepted raw_hr=87.400000 raw_hr_conf=0.559900 hr_filter=accepted
+CAMERA_PL_FRAME n=1645 seq=1644 ts_us=5921504404 mismatch=0 audit=0 roi_g=35903706 roi_count=307200 motion_valid=1 motion_ratio_q16=263 decode_ms=10.832 reference_ms=0.000 transfer_pl_ms=5.349 decode_cpu_ms=9.726 transfer_pl_cpu_ms=2.586
+AUTONOMY_HANDOFF frame_id=1644 gray_ms=0.313 submit_ms=0.023 accepted=1
+# grep '^/dev/mmcblk0p1 /mnt/vigilens-boot vfat ' /proc/mounts
+/dev/mmcblk0p1 /mnt/vigilens-boot vfat ro,nosuid,nodev,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0
+# sha256sum /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy
+cat /mnt/vigilens-boot/vigilens/READY
+echo POST_UPDATE_END
+printf '\nPOST_UPDATE_SERIAL_END\n'
+988b3d8d689998a64e7080f7655fad526485d7b128679a35ebc48cf9e088ef3f  /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy
+# cat /mnt/vigilens-boot/vigilens/READY
+VigiLens-SD-ff0ebe1975a31d50
+# echo POST_UPDATE_END
+POST_UPDATE_END
+# printf '\nPOST_UPDATE_SERIAL_END\n'
+
+POST_UPDATE_SERIAL_END
+# 

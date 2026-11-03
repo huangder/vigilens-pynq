@@ -1,0 +1,77 @@
+
+# ls -ld /tmp/vigilens-sampling45/root /tmp/vigilens-sampling45/incoming
+drwxr-xr-x    2 root     root           140 Jan  1 03:50 [1;34m/tmp/vigilens-sampling45/incoming[m
+drwxr-xr-x    3 root     root            60 Jan  1 02:57 [1;34m/tmp/vigilens-sampling45/root[m
+# ls /tmp/vigilens-sampling45/incoming
+[0;0mREADY[m                 [0;0mconfig.yaml[m           [0;0mvigi_camera_autonomy[m
+[0;0mboot.env[m              [0;0mvg_vital_config.json[m
+# cat /tmp/vigilens-sampling45/boot.env
+VG_BOARD_IP=169.254.73.29
+VG_NETMASK=255.255.0.0
+VG_NETWORK_INTERFACE=eth0
+VG_CAMERA_DEVICE=/dev/video0
+VG_HTTP_BIND=0.0.0.0
+VG_HTTP_PORT=8080
+VG_MOUNT_WAIT_SECONDS=30
+VG_RETRY_SECONDS=3
+VG_HEALTH_POLL_SECONDS=1
+VG_STARTUP_GRACE_SECONDS=45
+VG_FRAME_STALE_SECONDS=10
+VG_STOP_GRACE_SECONDS=10
+VG_LOG_MAX_BYTES=2097152
+VG_BOOT_ENABLED=1
+VG_BOOT_DEVICE=/dev/mmcblk0p1
+VG_BOOT_ROOT=/tmp/vigilens-sampling45/root
+VG_APP_DIR=/tmp/vigilens-sampling45/root/vigilens/app
+VG_RUN_DIR=/run/vigilens-sampling45
+VG_CONFIG_SHA256=c9cfab59e46462f73d0d3c40175124b220d5f6e5eaf87be5bb392b1af4ad2bac
+VG_RELEASE_ID=VigiLens-DEV-Sampling45-c9cfab59e46462f7
+# cat /tmp/vigilens-sampling45/root/vigilens/READY
+VigiLens-DEV-Sampling45-c9cfab59e46462f7
+# sha256sum /tmp/vigilens-sampling45/root/vigilens/config.yaml
+c9cfab59e46462f73d0d3c40175124b220d5f6e5eaf87be5bb392b1af4ad2bac  /tmp/vigilens-sampling45/root/vigilens/config.yaml
+# VIGILENS_BOOT_CONFIG=/tmp/vigilens-sampling45/boot.env sh -x /tmp/vigilens-sam
+pling45/vigilens-service check
++ set -eu
++ config=/tmp/vigilens-sampling45/boot.env
++ test -r /tmp/vigilens-sampling45/boot.env
++ . /tmp/vigilens-sampling45/boot.env
++ VG_BOARD_IP=169.254.73.29
++ VG_NETMASK=255.255.0.0
++ VG_NETWORK_INTERFACE=eth0
++ VG_CAMERA_DEVICE=/dev/video0
++ VG_HTTP_BIND=0.0.0.0
++ VG_HTTP_PORT=8080
++ VG_MOUNT_WAIT_SECONDS=30
++ VG_RETRY_SECONDS=3
++ VG_HEALTH_POLL_SECONDS=1
++ VG_STARTUP_GRACE_SECONDS=45
++ VG_FRAME_STALE_SECONDS=10
++ VG_STOP_GRACE_SECONDS=10
++ VG_LOG_MAX_BYTES=2097152
++ VG_BOOT_ENABLED=1
++ VG_BOOT_DEVICE=/dev/mmcblk0p1
++ VG_BOOT_ROOT=/tmp/vigilens-sampling45/root
++ VG_APP_DIR=/tmp/vigilens-sampling45/root/vigilens/app
++ VG_RUN_DIR=/run/vigilens-sampling45
++ VG_CONFIG_SHA256=c9cfab59e46462f73d0d3c40175124b220d5f6e5eaf87be5bb392b1af4ad2bac
++ VG_RELEASE_ID=VigiLens-DEV-Sampling45-c9cfab59e46462f7
++ run=/run/vigilens-sampling45
++ app=/tmp/vigilens-sampling45/root/vigilens/app
++ mkdir -p /run/vigilens-sampling45
++ lock=/run/vigilens-sampling45/service.lock
++ camera_pid= http_pid=
++ check
+VIGILENS_BOOT_CONFIG=/tmp/vigilens-ear300/boot.env /tmp/vigilens-ear300/vigilens-service status
++ cat /tmp/vigilens-sampling45/root/vigilens/READY
++ test 'VigiLens-DEV-Sampling45-c9cfab59e46462f7' '=' VigiLens-DEV-Sampling45-c9cfab59e46462f7
++ return 1
+# VIGILENS_BOOT_CONFIG=/tmp/vigilens-ear300/boot.env /tmp/vigilens-ear300/vigile
+ns-service status
+printf '\nSAMPLING45_CHECK_DONE rc=%s\n' "$?"
+running camera_pid=21806 http_pid=21804
+supervisor_pid=21786
+# printf '\nSAMPLING45_CHECK_DONE rc=%s\n' "$?"
+
+SAMPLING45_CHECK_DONE rc=0
+# 

@@ -1,0 +1,10 @@
+warning: in the working copy of 'board/autonomy/vg_native.py', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'board/autonomy/vital.h', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'board/cold_boot/vigilens-service', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'board/w7_buildroot/uvc_probe.c', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'docs/README.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'docs/architecture.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'docs/interface.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'docs/limitations.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'docs/usage.md', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'docs/validation.md', CRLF will be replaced by LF the next time Git touches it

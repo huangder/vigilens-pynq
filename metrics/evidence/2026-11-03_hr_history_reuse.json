@@ -1,0 +1,345 @@
+{
+  "recorded_at": "2026-11-03T20:39:41.534624+08:00",
+  "kind": "installed_history_reuse_candidate_and_full60_feasibility_check",
+  "parameters": {
+    "release_id": "VigiLens-SD-de8495c4860ac029",
+    "config_sha256": "de8495c4860ac029205bf9ebf840b0a4465ea1549b9b22eaabdfe6bdf302fc11",
+    "capture": {
+      "width": 640,
+      "height": 480,
+      "format": "yuyv"
+    },
+    "fps_nominal": 30,
+    "startup_samples": 75,
+    "minimum_window_seconds": 2.5,
+    "history_seconds": 10.0,
+    "rppg_resample_jitter_ratio_max": 3.0,
+    "rppg_max_gap_ms": 200,
+    "rppg_recovery_ms": 200,
+    "rppg_recovery_samples": 3,
+    "blink_policy": {
+      "ear_threshold_mode": "absolute",
+      "ear_close_absolute": 0.4,
+      "ear_open_absolute": 0.43,
+      "ear_close_ratio": 0.65,
+      "ear_open_ratio": 0.8,
+      "ear_baseline_tau_s": 2.0,
+      "blink_min_close_ms": 80,
+      "blink_min_open_ms": 100,
+      "blink_long_close_ms": 1500,
+      "blink_max_gap_ms": 120,
+      "ear_baseline_reset_ms": 1000
+    }
+  },
+  "deployment": {
+    "installed": true,
+    "release_id": "VigiLens-SD-de8495c4860ac029",
+    "camera_sha256": "1f0b5a85d71421abcf7fcdf36bf4347e8d676a7f12870b1c9c2fca92ee6f500b",
+    "uInitrd_sha256": "0a511855ea28f62bc985ff22189021e71debf050d7d3f80db373c57e37fd342a",
+    "update_tar_sha256": "8b1b2fe1ad869ffc1fce0bba8fdcacf1a7652c5369a565cce430a069e3b63d9c",
+    "software_reboot_verified": true,
+    "physical_cold_boot_verified": false,
+    "SD_mount": "read-only",
+    "service_restored_after_capture_probe": true
+  },
+  "tests": {
+    "backend_pytest": "576 passed, 2 warnings in 30.49s",
+    "board_related": "76 passed, 14 subtests passed in 9.93s",
+    "check_all": {
+      "when": "2026-11-03T20:25:04",
+      "elapsed_s": 76.4,
+      "passed": 26,
+      "failed": 0,
+      "rows": [
+        {
+          "section": "环境",
+          "name": "Python",
+          "status": "INFO",
+          "detail": "3.12.13 @ D:\\Desktop\\AMD\\.venv\\Scripts\\python.exe"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 cv2",
+          "status": "PASS",
+          "detail": "4.11.0"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 numpy",
+          "status": "PASS",
+          "detail": "1.26.4"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 mediapipe",
+          "status": "PASS",
+          "detail": "0.10.21"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 yaml",
+          "status": "PASS",
+          "detail": "6.0.3"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 fastapi",
+          "status": "PASS",
+          "detail": "0.141.1"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 uvicorn",
+          "status": "PASS",
+          "detail": "0.52.4"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 pytest",
+          "status": "PASS",
+          "detail": "9.1.1"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 pyserial",
+          "status": "INFO",
+          "detail": "未安装 —— Python 串口工具不可用；现有板端 PowerShell 串口工具不依赖它"
+        },
+        {
+          "section": "环境",
+          "name": "node",
+          "status": "PASS",
+          "detail": "C:\\Program Files\\nodejs\\node.EXE"
+        },
+        {
+          "section": "A 线",
+          "name": "check_a_line_all（A~E 五段）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 52.6s | ============================================================== | A 线自检全部通过：17 项（用时 52.4s）"
+        },
+        {
+          "section": "B 线",
+          "name": "B 线门控阈值一处定义 → /api/status → 前端兜底三处一致",
+          "status": "PASS",
+          "detail": "退出码 0，用时 2.1s | B 线阈值守卫检查：通过 —— 4/4（config.yaml → /api/status → app.js 兜底，三处一致）"
+        },
+        {
+          "section": "B 线",
+          "name": "B 线 /ws 断流兜底（发合法契约的 disconnected，序号不倒退）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 8.4s | B 线 /ws 断流兜底检查：通过 —— 5/5"
+        },
+        {
+          "section": "B 线",
+          "name": "旁路画面链路 + 契约未被污染（15 项）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 6.3s | 全部通过：15/15 项通过"
+        },
+        {
+          "section": "B 线",
+          "name": "年龄档案旁路（年龄档案/收录/同龄基线比对 + Python↔JS 校验一致）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 0.7s | RESULT: PASS (33/33 PASS, 0 FAIL, 0 SKIP)"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/contract.py",
+          "status": "PASS",
+          "detail": "退出码 0"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/config.py",
+          "status": "PASS",
+          "detail": "fpga.device              = xc7z020clg400-1"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/publish.py",
+          "status": "PASS",
+          "detail": "本地契约校验：坏帧会被拦下 —— 拦住了： True 1 条错误"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/regmap.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/bringup_check.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/hw_sw_compare.py --selftest",
+          "status": "PASS",
+          "detail": "⚠️ 本自检只证明'数据与档位配套'；PL 侧数值一致性仍必须上板跑本脚本正文。"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/dma_test.py --selftest",
+          "status": "PASS",
+          "detail": "⚠️ 本自检只证明'测试图可复现 + 黄金参考配套'；DMA 回环/长跑本身必须上板跑。"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/overlay/mmap_overlay.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "metrics/scripts/check_uvc_camera.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS (21/21)"
+        },
+        {
+          "section": "工具自检",
+          "name": "metrics/scripts/probe_rppg_timebase.py",
+          "status": "PASS",
+          "detail": "✅ 全部档位符合验收判据（容差内报数、容差外 null）"
+        },
+        {
+          "section": "语法",
+          "name": "7 个 Python 目标可解析",
+          "status": "PASS",
+          "detail": "全部 OK"
+        },
+        {
+          "section": "语法",
+          "name": "frontend/app.js（node --check）",
+          "status": "PASS",
+          "detail": "OK"
+        },
+        {
+          "section": "语法",
+          "name": "frontend/preview.js 坐标换算自检（含 720p）",
+          "status": "PASS",
+          "detail": "\"failures\": [], | \"ok\": true | }"
+        },
+        {
+          "section": "就绪",
+          "name": "P4 标定素材（4 视频 + 4 标注）",
+          "status": "INFO",
+          "detail": "· turn.csv 标注不存在（放 data\\annotations/，格式见 data/README.md） | → 补齐后重跑本脚本；再按 backend/P4_CALIBRATION_GUIDE.md 逐项标定。"
+        },
+        {
+          "section": "就绪",
+          "name": "board/bitstream/ 里的 bitstream",
+          "status": "INFO",
+          "detail": "找到 2 个文件"
+        },
+        {
+          "section": "就绪",
+          "name": "Vitis HLS 工具链",
+          "status": "INFO",
+          "detail": "已安装"
+        },
+        {
+          "section": "就绪",
+          "name": "data/raw/ 真实视频",
+          "status": "INFO",
+          "detail": "3 个：['blink.mp4', 'blink_1080p_src.mp4', '_probe_rot90.mp4']"
+        }
+      ]
+    },
+    "native_C_engine": "Linux compiled real C engine: PASS autonomy native integration (tool output)",
+    "Linux_preview_cadence": "1 test passed; fake vision fixture; no hardware FPS claim",
+    "frontend_mock": "22 passed",
+    "frontend_wiring": "passed",
+    "video_bypass": "15/15 synthetic fixture checks passed"
+  },
+  "live_capture": {
+    "started_at": "2026-11-03T20:30:56.536663+08:00",
+    "ended_at": "2026-11-03T20:32:26.549726+08:00",
+    "source_url": "http://169.254.73.29:8080/api/latest",
+    "duration_requested_s": 90,
+    "http_samples": 448,
+    "unique_frames": 448,
+    "request_errors": [],
+    "visible_frames": 378,
+    "valid_hr_frames": 18,
+    "status_counts": {
+      "unreliable": 9,
+      "fatigue_risk": 374,
+      "adjust_posture": 65
+    },
+    "hr_range_bpm": [
+      59.5,
+      80.4
+    ],
+    "human_actions_independently_annotated": false,
+    "accuracy_claimed": false,
+    "raw_face_media_requested_saved_or_uploaded": false,
+    "first_source_ts": 148.546254,
+    "last_source_ts": 238.400657,
+    "first_frame_id": 3738,
+    "last_frame_id": 6431,
+    "blink_count_first": 0,
+    "blink_count_last": 6,
+    "long_close_first": 1,
+    "long_close_last": 6,
+    "device_counters_reset": false
+  },
+  "live_capture_validation": {
+    "contract_valid_frames": 448,
+    "source_ids_and_timestamps_increase": true
+  },
+  "rolling_runtime_slice": {
+    "samples": "950",
+    "first_ts": "370.829870000",
+    "last_ts": "405.632636000",
+    "first_id": "10400",
+    "last_id": "11443",
+    "analysis_hz": "27.2679",
+    "max_vital_samples": "75",
+    "max_history_samples": "114",
+    "face_frames": "700",
+    "submitted": "1042",
+    "skipped": "93",
+    "mean_analysis_ms": "16.9624",
+    "mean_landmark_ms": "14.8137",
+    "over_60fps_budget": "256",
+    "reject_counts": {
+      "vitals_blocked": 464,
+      "window_not_full": 453,
+      "-": 33
+    },
+    "scope": "A separate rolling log slice; not the complete 90-second numeric capture."
+  },
+  "full_60fps": {
+    "requested_scope": "complete detection chain",
+    "implemented": false,
+    "camera_only_probe": {
+      "input": "300",
+      "kept": "300",
+      "dropped": "0",
+      "driver_sequence_gaps": "0",
+      "empty_slots": "0",
+      "input_fps": "59.185653",
+      "output_fps": "59.185653",
+      "native_60fps": "yes"
+    },
+    "probe_format": "640x480 MJPEG requested 60fps; no video saved",
+    "full_chain_measured_analysis_hz": 27.2679,
+    "mean_analysis_ms": 16.9624,
+    "budget_at_60fps_ms": 16.666666666666668,
+    "reason": "The camera can supply about 60fps but the current full pipeline is slower; some observed ERT frames take 43-55ms. Camera-only throughput is not full-chain throughput.",
+    "production_mode_retained": "640x480 YUYV, nominal 30fps, history-reuse build"
+  },
+  "limitations": [
+    "90-second live HR output is still intermittent: 18 non-null HTTP observations out of 448.",
+    "The old and new captures used different human actions/visibility; no comparative accuracy or improvement percentage is claimed.",
+    "No synchronized reference HR or independent blink annotations are available.",
+    "Reusing valid history does not permit reporting stale HR as a fresh measurement; face/ROI loss still clears the window."
+  ],
+  "candidate_unsigned": true,
+  "contract_version_upgraded": false,
+  "raw_face_media_saved_or_uploaded": false,
+  "sources": {
+    "overlapping_windows_reference": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9044207/",
+    "reference_scope": "Overlapping-window design and reference-sensor evaluation; candidate thresholds not taken from this paper."
+  }
+}

@@ -33,7 +33,9 @@ typedef struct {
     double vital_rate_hz;
     const char *vital_reject;
     uint32_t roi_pixels;
+    uint32_t roi_sums[3]; /* anonymous same-frame RGB statistics; never image pixels */
     int vital_samples;
+    int vital_history_samples;
     const char *vital_gate;
     double raw_hr,raw_hr_conf;
     const char *hr_filter_reason;

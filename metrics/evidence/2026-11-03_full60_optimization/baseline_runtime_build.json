@@ -1,0 +1,6 @@
+{
+  "runtime": "ert_temporal",
+  "mode": "arm",
+  "config_sha256": "7b668afe1d0dc481a99ae48295897bbb478ec878f1bcdeca5bb7dc48a88aaedc",
+  "camera_sha256": "da87d6af876afdf7e545489bb16e9a3512dbf86be7aa3aed9c09d9ba7fc29045"
+}

@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from backend.config import load_config, rppg_window_seconds
 from backend.hr_filter import HrFilterConfig
+from board.autonomy.package_dashboard import package_dashboard
 
 
 def package(build: Path, models: Path, landmark: Path, gomp: Path, output: Path, runtime: str='native'):
@@ -30,6 +31,9 @@ def package(build: Path, models: Path, landmark: Path, gomp: Path, output: Path,
     for source in mapping.values():
         if not source.is_file(): raise FileNotFoundError(source)
     config=load_config()
+    physiological=json.loads((build/'vg_vital_config.json').read_text(encoding='utf-8')).get('vital',{})
+    vital_fps=float(physiological.get('fps',config['fps_nominal']))
+    vital_seconds=float(physiological.get('window_seconds',rppg_window_seconds(config)))
     digest=hashlib.sha256((ROOT/"config.yaml").read_bytes()).hexdigest()
     if runtime!='native' or (build/'runtime_build.json').is_file():
         recorded=json.loads((build/'runtime_build.json').read_text(encoding='utf-8'))
@@ -43,10 +47,11 @@ def package(build: Path, models: Path, landmark: Path, gomp: Path, output: Path,
     for name,source in mapping.items(): shutil.copyfile(source,output/name)
     display=(output/'display.html').read_text(encoding='utf-8')
     display=display.replace('/* HR_DISPLAY_BUNDLE */',(ROOT/'frontend/hr_display.js').read_text(encoding='utf-8'))
-    display=display.replace('/* HR_DISPLAY_CONFIG */','const HR_DISPLAY_CONFIG='+json.dumps({k:config[k] for k in ('ws_disconnect_timeout_s','vital_require_quality')})+';')
+    display=display.replace('/* HR_DISPLAY_CONFIG */','const HR_DISPLAY_CONFIG='+json.dumps({k:config[k] for k in ('ws_disconnect_timeout_s','vital_require_quality','fps_nominal')})+';')
     (output/'display.html').write_text(display,encoding='utf-8',newline='\n')
     env=(f"# Generated from config.yaml; source sha256 {digest}\n"
-         f"VG_CAPTURE_FPS={int(config['fps_nominal'])}\n"
+         f"VG_CAPTURE_FPS={int(config['board_vision'].get('capture_fps',config['fps_nominal']))}\n"
+         f"VG_DECODE_WORKERS={int(config['board_vision'].get('decode_workers',2))}\n"
          f"VG_CAPTURE_WIDTH={int(config['board_vision']['camera_width'])}\n"
          f"VG_CAPTURE_HEIGHT={int(config['board_vision']['camera_height'])}\n"
          f"VG_CAMERA_FORMAT={config['board_vision']['camera_format']}\n"
@@ -54,11 +59,20 @@ def package(build: Path, models: Path, landmark: Path, gomp: Path, output: Path,
          f"VG_MOTION_THRESHOLD={int(config['motion_thresh_gray'])}\n"
          f"VG_STALE_SECONDS={float(config['ws_disconnect_timeout_s'])}\n")
     (output/"runtime.env").write_text(env,encoding="utf-8",newline="\n")
-    hashes={name:hashlib.sha256((output/name).read_bytes()).hexdigest() for name in (*mapping,"runtime.env")}
+    dashboard_files=package_dashboard(output,config)
+    hashes={name:hashlib.sha256((output/name).read_bytes()).hexdigest() for name in (*mapping,"runtime.env",*dashboard_files)}
     (output/"manifest.sha256").write_text("".join(f"{digest}  {name}\n" for name,digest in hashes.items()),encoding="ascii",newline="\n")
     summary={"files":hashes,"config_sha256":digest,"runtime":runtime,
-             "heart_rate_window_seconds":rppg_window_seconds(config),
-             "required_hr_samples":round(rppg_window_seconds(config)*config['fps_nominal']),
+             "heart_rate_window_seconds":vital_seconds,
+             "required_hr_samples":round(vital_seconds*vital_fps),
+             "heart_rate_sampling_hz":vital_fps,
+             "hr_history_seconds":max(rppg_window_seconds(config),float(config.get('rppg_history_seconds',0))),
+             "hr_resample_jitter_ratio_max":float(config.get('rppg_resample_jitter_ratio_max',config['realtime_jitter_ratio_max'])),
+             "blink_policy":{k:v for k,v in config['board_vision'].items() if k.startswith(('ear_','blink_'))},
+             "preview_hz":config['board_vision']['preview_hz'],
+             "dashboard_metrics_hz":config['board_vision']['dashboard_metrics_hz'],
+             "hr_trend":{k:config['board_vision'][k] for k in ('hr_trend_bridge_seconds','hr_trend_hold_seconds')},
+             "hr_display_animation":{k:config['board_vision'][k] for k in ('hr_display_transition_ms','dashboard_animation_hz')},
              "hr_filter":HrFilterConfig.from_config(config).__dict__,
              "capture":{"width":config['board_vision']['camera_width'],'height':config['board_vision']['camera_height'],'format':config['board_vision']['camera_format']},
              "full30_verified":False,

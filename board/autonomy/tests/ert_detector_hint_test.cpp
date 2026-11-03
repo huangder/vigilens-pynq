@@ -41,14 +41,16 @@ int main(int argc,char **argv) {
     confirm=false;observe(3);assert(full_calls>1&&refine_calls==2);
     const int previous_refines=refine_calls;observe(4);assert(refine_calls==previous_refines);
     vg_vision_destroy(v);
-    // Cold search is wide once. A blind stream then stays narrow until the
-    // existing deep-search period elapses, rather than two searches every job.
+    // Cold search is wide once. Without any retained hint, retry the wider
+    // search at the configured loss-refresh interval rather than waiting 30s.
     v=vg_vision_create("stub",argv[1]);assert(v);
     full_calls=0;refine_calls=0;
     observe(1);assert(full_calls==1&&last_min_face==40);
     observe(2);assert(full_calls==2&&last_min_face==80);
-    observe(27);assert(full_calls==3&&last_min_face==80);
-    observe(30);assert(full_calls==4&&last_min_face==40);
+    observe(6);assert(full_calls==4&&last_min_face==40);
+    observe(7);assert(full_calls==5&&last_min_face==80);
+    observe(11);assert(full_calls==7&&last_min_face==40);
+    observe(12);assert(full_calls==8&&last_min_face==80);
     vg_vision_destroy(v);
     std::puts("ERT_DETECTOR_HINT_PASS retained_after_landmark_rejection cleared_after_detector_loss no_false_visible=1");
 }

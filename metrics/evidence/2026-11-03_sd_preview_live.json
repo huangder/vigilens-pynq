@@ -1,0 +1,57 @@
+{
+  "phase": "clean_independent_sd_cold_boot",
+  "time": "2026-11-03T13:48:41.191739+08:00",
+  "checks": [
+    {
+      "metrics_status": 200,
+      "frame_id": 6114,
+      "ts": 228.116209,
+      "face_visible": 0,
+      "preview_status": 200,
+      "content_type": "image/jpeg",
+      "jpeg_bytes": 55075,
+      "dimensions": [
+        640,
+        480
+      ],
+      "format": "JPEG",
+      "sha256": "6ffa59359adfd3f37e0e23a9dbe531ddc68d66b2fcf829152df6e4da5046979d"
+    },
+    {
+      "metrics_status": 200,
+      "frame_id": 6149,
+      "ts": 229.284121,
+      "face_visible": 0,
+      "preview_status": 200,
+      "content_type": "image/jpeg",
+      "jpeg_bytes": 54853,
+      "dimensions": [
+        640,
+        480
+      ],
+      "format": "JPEG",
+      "sha256": "63f18cc34af1cce6f781ea3b0ae50814cc09d3a4bfb76aa34182bd983c04bc2f"
+    },
+    {
+      "metrics_status": 200,
+      "frame_id": 6182,
+      "ts": 230.384289,
+      "face_visible": 0,
+      "preview_status": 200,
+      "content_type": "image/jpeg",
+      "jpeg_bytes": 54788,
+      "dimensions": [
+        640,
+        480
+      ],
+      "format": "JPEG",
+      "sha256": "65c998cfc887251239e5499c79c4b1f85bbfa9714086b0c62debbdf97d0d5031"
+    }
+  ],
+  "raw_face_media_saved": false,
+  "jtag_used": false,
+  "page_status": 200,
+  "page_has_preview": true,
+  "frame_id_advanced": true,
+  "preview_changed": true
+}

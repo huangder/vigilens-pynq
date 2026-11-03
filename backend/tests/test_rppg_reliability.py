@@ -138,7 +138,9 @@ def test_fir_warmup_history_is_retained_by_time_not_local_sample_count():
 
 
 def test_pathological_prefix_has_bounded_storage_and_refuses_incomplete_warmup():
-    est = GreenRppg.from_config(CFG)
+    # Preserve this fixed-window storage/warmup regression independently of
+    # the optional growing-history policy tested in test_rppg_history.py.
+    est = GreenRppg.from_config({**CFG,'rppg_history_seconds':0})
     prefix = np.arange(3 * est.need) / 10000
     times = np.r_[prefix, 1 + np.arange(1, est.need + 1) / est.fps]
     for fid, ts in enumerate(times):

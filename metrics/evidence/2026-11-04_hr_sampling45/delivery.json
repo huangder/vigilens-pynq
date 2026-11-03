@@ -1,0 +1,11 @@
+{
+  "config_sha256": "c9cfab59e46462f73d0d3c40175124b220d5f6e5eaf87be5bb392b1af4ad2bac",
+  "camera_sha256": "135b4e4051a869fce2ccfc528d140eb935c6597824fd05c1c486ce1acffbef3c",
+  "archive_sha256": "6a5873351181a3ab2d88e5634e79f1a11af9058fa6f1cde78d706f5f748a4453",
+  "source_min_hz": 45,
+  "processing_fps": 60,
+  "release_id": "VigiLens-DEV-Sampling45-c9cfab59e46462f7",
+  "archive_bytes": 1269676,
+  "contains_raw_face_media": false,
+  "contains_models": false
+}

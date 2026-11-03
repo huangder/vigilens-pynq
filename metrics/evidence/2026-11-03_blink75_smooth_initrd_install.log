@@ -1,0 +1,21 @@
+
+# wget -T 30 -O /tmp/install-initrd-1f461bad.sh http://169.254.73.28:8766/instal
+l_matching_initrd.sh
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/install-initrd-1f461bad.sh'
+install-initrd-1f461 100% |********************************|  1082  0:00:00 ETA
+'/tmp/install-initrd-1f461bad.sh' saved
+# sh /tmp/install-initrd-1f461bad.sh
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/vigilens-initrd-1f461bad/uInitrd'
+printf '\nBLINK75_INITRD_SERIAL_END\n'
+uInitrd               27% |********                        | 3112k  0:00:02 ETAuInitrd              100% |********************************| 11.0M  0:00:00 ETA
+'/tmp/vigilens-initrd-1f461bad/uInitrd' saved
+/tmp/vigilens-initrd-1f461bad/uInitrd: OK
+242382d4a46dcbd95878f7e1e16583ec2ad132040e47a9587dc0c0bc2bacfb64  /tmp/vigilens-initrd-1f461bad/uInitrd.previous
+/mnt/vigilens-boot/uInitrd: OK
+BLINK75_MATCHING_INITRD_INSTALLED
+# printf '\nBLINK75_INITRD_SERIAL_END\n'
+
+BLINK75_INITRD_SERIAL_END
+# 

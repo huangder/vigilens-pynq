@@ -1,0 +1,29 @@
+== gen_fir_vectors: taps=125 shift=15 fs=60 Hz band=0.70~3.50 Hz (scale=1.00) ==
+   系数来源：D:\Desktop\AMD\.tmp\autonomy\full60_20261103\fir60_125_q15.h
+   系数：偶对称 ✅  Σh=898  Σ|h|=54694  |acc|上界=1792212992 < 2^31=True
+已写 .tmp/autonomy/full60_20261103/fir125_vectors\series.bin  (16 段 / 4094 样本 / 8188 B)
+已写 .tmp/autonomy/full60_20261103/fir125_vectors\golden_fir.csv  (16 段)
+已写 .tmp/autonomy/full60_20261103/fir125_vectors\golden_fir_out.csv  (4094 行)
+已写 .tmp/autonomy/full60_20261103/fir125_vectors\meta.txt
+-- 冲激响应自检（与硬件/黄金参考无关的结构性质）--
+   峰值下标 = 62（期望群延迟 62）OK
+   偶对称 out[k]==out[N-1-k]：OK
+-- 各段实测增益（整数实现、跳过前 124 个瞬态样本）--
+   impulse          n=125   reset=1 增益=    n/a    饱和样本=0
+   dc_pos           n=240   reset=1 增益=  -31.3 dB 饱和样本=0
+   dc_neg           n=240   reset=1 增益=  -31.2 dB 饱和样本=0
+   nyquist_alt      n=240   reset=1 增益=  -83.3 dB 饱和样本=0
+   sine_1p5hz       n=300   reset=1 增益=   -0.1 dB 饱和样本=0
+   sine_0p8hz       n=300   reset=1 增益=   -4.7 dB 饱和样本=0
+   sine_3p2hz       n=300   reset=1 增益=   -2.0 dB 饱和样本=0
+   sine_0p2hz       n=300   reset=1 增益=  -22.1 dB 饱和样本=0
+   sine_8hz         n=300   reset=1 增益=  -77.4 dB 饱和样本=0
+   square_1hz_full  n=300   reset=1 增益=   -2.1 dB 饱和样本=12
+   saturate_matched n=125   reset=1 增益=    0.0 dB 饱和样本=7
+   sine_small_amp   n=300   reset=1 增益=   -0.0 dB 饱和样本=0
+   random_full      n=512   reset=1 增益=  -11.4 dB 饱和样本=0
+   split_part1      n=200   reset=1 增益=  -11.8 dB 饱和样本=0
+   split_part2      n=200   reset=0 增益=  -11.1 dB 饱和样本=0
+   split_part3      n=112   reset=0 增益=    n/a    饱和样本=0
+[numpy 对拍] PASS —— 4094 个样本与 numpy np.convolve 独立实现逐样本相等
+== 完成 ==

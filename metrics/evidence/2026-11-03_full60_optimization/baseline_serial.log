@@ -1,0 +1,31 @@
+
+# wget -T 15 -O /tmp/full60_baseline_run.sh http://169.254.73.28:8767/baseline_r
+un.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/full60_baseline_run.sh'
+full60_baseline_run. 100% |********************************|  1867  0:00:00 ETA
+'/tmp/full60_baseline_run.sh' saved
+# sh /tmp/full60_baseline_run.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/vigilens-full60/baseline'
+printf '\nFULL60_BASELINE_SERIAL_END\n'
+baseline             100% |********************************| 10.4M  0:00:00 ETA
+'/tmp/vigilens-full60/baseline' saved
+da87d6af876afdf7e545489bb16e9a3512dbf86be7aa3aed9c09d9ba7fc29045  /tmp/vigilens-full60/baseline
+stop_requested pid=2282
+CAPTURE_MODE 640x480 fourcc=0x47504a4d interval=1/60
+SAMPLE_RESULT input=900 kept=900 dropped=0 driver_sequence_gaps=17 empty_slots=0 input_fps=58.241601 output_fps=58.241601 native_30fps=no requested_fps=60 native_requested_fps=yes
+AUTONOMY_SUMMARY submitted=900 accepted=510 skipped=390 processed=510 succeeded=509 rejected=1 failed=0 rc=0 camera_submit_fps=58.241601 analysis_update_fps=32.914603
+AUDIT_SUMMARY frames=900 audits=30 failures=0 reference_ms_total=804
+CAMERA_PL_PASS compared_frames=900 native_camera_mode_verified=1
+FULL60_WORKLOAD frames=510 face=427 mean_analysis_ms=18.77 max_history=308
+reject  1
+reject vitals_blocked 120
+reject window_not_full 120
+reject sampling_too_slow 269
+start_requested pid=8871
+FULL60_BASELINE_FINISHED_rc=0
+# printf '\nFULL60_BASELINE_SERIAL_END\n'
+
+FULL60_BASELINE_SERIAL_END
+# 

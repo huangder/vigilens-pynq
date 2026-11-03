@@ -24,6 +24,10 @@ typedef struct {
     int shift;
     int recovery_samples;       /* rppg_recovery_samples */
     int method;                 /* 0 = POS (legacy ABI default), 1 = green */
+    double short_window_seconds, short_window_min_conf; /* both zero: legacy guard */
+    double history_seconds;     /* 0: fixed window; otherwise bounded growing overlap */
+    double source_min_hz;       /* 0: strict nominal tolerance; >0: timestamp re-grid input minimum */
+    int green_center_before_fir; /* explicit candidate; 0 keeps the frozen reference */
 } vg_vital_config;
 
 typedef struct {
@@ -49,9 +53,9 @@ void vg_vital_invalidate(vg_vital *vital, const char *reason, double ts, int all
 void vg_vital_reset(vg_vital *vital);
 /* Sample count currently retained for the measurement window. */
 int vg_vital_samples(const vg_vital *vital);
-/* Lowest feed rate the frozen FIR accepts: fps * (1 - fs_tol). Callers that
- * sample slower than this can never produce an estimate; report that instead
- * of waiting for a window that cannot fill. */
+int vg_vital_history_samples(const vg_vital *vital);
+/* Minimum captured-sample density: explicit source_min_hz in timestamp mode,
+ * otherwise fps * (1 - fs_tol). The processing/FIR grid remains cfg.fps. */
 double vg_vital_required_hz(const vg_vital *vital);
 /* 0 = evaluated (check result->present), -1 = invalid argument. */
 int vg_vital_estimate(vg_vital *vital, vg_vital_result *out);

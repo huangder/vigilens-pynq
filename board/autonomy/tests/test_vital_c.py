@@ -34,7 +34,9 @@ class Config(ct.Structure):
                 ("max_gap_s", ct.c_double), ("jitter_ratio_max", ct.c_double),
                 ("recovery_s", ct.c_double),
                 ("coeffs", ct.POINTER(ct.c_short)), ("taps", ct.c_int), ("shift", ct.c_int),
-                ("recovery_samples", ct.c_int),("method",ct.c_int)]
+                ("recovery_samples", ct.c_int),("method",ct.c_int),
+                ("short_window_seconds",ct.c_double),("short_window_min_conf",ct.c_double),
+                ("history_seconds",ct.c_double),("source_min_hz",ct.c_double),("green_center_before_fir",ct.c_int)]
 
 
 class Result(ct.Structure):
@@ -94,6 +96,86 @@ def reference(stream, cfg, coeffs, shift, checkpoints, timestamps=False):
 
 
 class VitalParity(unittest.TestCase):
+    def test_expired_samples_do_not_fill_startup_including_during_pause(self):
+        from backend.rppg_color import make_rppg
+        for method in (0, 1):
+            with self.subTest(method=method):
+                handle = self.make(method=method, window_seconds=2.5, history_seconds=10)
+                ref = make_rppg({**self.cfg, 'rppg_method': 'green' if method else 'pos'})
+                sums, count = [122000, 118000, 112000], 1000
+                for i in range(ref.need):
+                    ts = 1 + i
+                    self.assertEqual(self.push(handle, sums, count, i, ts), 0)
+                    if method: ref.push(q15_from_roi_sum(sums[1], count), i, ts)
+                    else: ref.push_rgb(sums, count, i, ts)
+                    self.assertEqual(self.lib.vg_vital_samples(handle), ref.samples)
+                    self.assertEqual(self.lib.vg_vital_history_samples(handle), len(ref._win))
+                self.assertLess(ref.samples, ref.need)
+                self.assertFalse(self.estimate(handle)[0])
+                pause = ref.last_sample_ts + ref.recovery_s / 2
+                self.invalidate(handle, 'quality_or_pose', pause, 1)
+                ref.invalidate('quality_or_pose', pause, allow_recovery=True)
+                self.assertEqual(self.lib.vg_vital_history_samples(handle), len(ref._win))
+                self.assertEqual(self.lib.vg_vital_samples(handle), ref.samples)
+                self.assertFalse(self.estimate(handle)[0])
+
+    def test_growing_history_short_gap_and_expiry_match_python(self):
+        from backend.rppg_color import make_rppg
+        for method in (0,1):
+            with self.subTest(method=method):
+                handle=self.make(method=method,window_seconds=2.5,
+                                 history_seconds=10,jitter_ratio=self.cfg['rppg_resample_jitter_ratio_max'])
+                ref=make_rppg({**self.cfg,'rppg_method':'green' if method else 'pos'})
+                for i,(sums,count) in enumerate(rgb_stream(900,30,69)):
+                    if i%120 in (60,61,62):continue
+                    ts=1+i/30
+                    self.push(handle,sums,count,i,ts)
+                    if method:ref.push(q15_from_roi_sum(sums[1],count),i,ts)
+                    else:ref.push_rgb(sums,count,i,ts)
+                    if i in (74,224,450,899):
+                        actual,expected=self.estimate(handle),ref.estimate()
+                        self.assertEqual(actual[0],expected['hr_bpm'] is not None)
+                        self.assertEqual(self.lib.vg_vital_history_samples(handle),len(ref._win))
+                        if actual[0]:
+                            self.assertAlmostEqual(actual[1],expected['hr_bpm'],places=6)
+                            self.assertAlmostEqual(actual[2],expected['hr_conf'],places=6)
+                self.assertGreater(self.lib.vg_vital_history_samples(handle),75)
+                self.assertLessEqual(self.lib.vg_vital_history_samples(handle),300)
+                pause=1+900/30
+                self.invalidate(handle,'quality_or_pose',pause,1)
+                ref.invalidate('quality_or_pose',pause,allow_recovery=True)
+                self.assertEqual(self.core_samples(handle),75)
+                self.assertFalse(self.estimate(handle)[0])
+                stream=rgb_stream(906,30,69)
+                for i in (903,904,905):
+                    sums,count=stream[i];ts=1+i/30
+                    self.push(handle,sums,count,i,ts)
+                    if method:ref.push(q15_from_roi_sum(sums[1],count),i,ts)
+                    else:ref.push_rgb(sums,count,i,ts)
+                    actual,expected=self.estimate(handle),ref.estimate()
+                    self.assertEqual(actual[0],expected['hr_bpm'] is not None)
+                    if i<905:self.assertEqual(actual[3],'recovering')
+                    if actual[0]:self.assertAlmostEqual(actual[1],expected['hr_bpm'],places=6)
+                self.assertTrue(actual[0],actual[3])
+                self.invalidate(handle,'quality_or_pose',ts+.25,1)
+                self.assertEqual(self.core_samples(handle),0)
+                self.assertFalse(self.estimate(handle)[0])
+
+    def test_75_sample_noise_guard_matches_python_without_relaxing_refusal(self):
+        import numpy as np
+        cfg={**load_config(),'rppg_window_seconds':2.5}
+        ref=GreenRppg.from_config(cfg)
+        handle=self.make(method=1,window_seconds=2.5)
+        rng=np.random.default_rng(7)
+        for i in range(75):
+            value=int(max(-32768,min(32767,round(float(rng.normal(0,6000))))))
+            ref.push(value,i)
+            self.assertEqual(self.push(handle,[120*256,128*256+value,112*256],256,i),0)
+        self.assertIsNone(ref.estimate()['hr_bpm'])
+        actual=self.estimate(handle)
+        self.assertFalse(actual[0])
+        self.assertEqual(actual[3],'short_window_low_confidence')
+        self.assertEqual(actual[3],ref.last_reject)
     def test_non_nominal_valid_source_rates_match_python(self):
         for method in (0,1):
             for rate in (27.5,28.5,29.95):
@@ -145,21 +227,25 @@ class VitalParity(unittest.TestCase):
         cls.lib.vg_vital_invalidate.argtypes = [ct.c_void_p, ct.c_char_p, ct.c_double, ct.c_int]
         cls.lib.vg_vital_samples.argtypes = [ct.c_void_p]
         cls.lib.vg_vital_samples.restype = ct.c_int
+        cls.lib.vg_vital_history_samples.argtypes = [ct.c_void_p]
+        cls.lib.vg_vital_history_samples.restype = ct.c_int
         cls.cfg = load_config()
         cls.coeffs, cls.shift, cls.fs = load_fir_coeffs()
         cls.array = (ct.c_short * len(cls.coeffs))(*cls.coeffs)
 
-    def make(self, fps=30.0, color_window=None,method=0, window_seconds=None):
+    def make(self, fps=30.0, color_window=None,method=0, window_seconds=None, history_seconds=0, jitter_ratio=None):
         cfg = Config(fps=fps, fs_tol=float(self.cfg["rppg_fs_tol"]),
                      window_seconds=float(self.cfg["window_seconds"] if window_seconds is None else window_seconds),
                      color_window_seconds=float(color_window or self.cfg["rppg_color_window_seconds"]),
                      f_lo=float(self.cfg["hr_band_hz"][0]), f_hi=float(self.cfg["hr_band_hz"][1]),
                      harmonic_ratio_min=float(self.cfg["rppg_harmonic_ratio_min"]),
                      max_gap_s=float(self.cfg["rppg_max_gap_ms"]) / 1000.0,
-                     jitter_ratio_max=float(self.cfg["realtime_jitter_ratio_max"]),
+                     jitter_ratio_max=float(self.cfg["realtime_jitter_ratio_max"] if jitter_ratio is None else jitter_ratio),
                      recovery_s=float(self.cfg["rppg_recovery_ms"]) / 1000.0,
                      coeffs=self.array, taps=len(self.coeffs), shift=self.shift,
-                     recovery_samples=int(self.cfg["rppg_recovery_samples"]),method=method)
+                     recovery_samples=int(self.cfg["rppg_recovery_samples"]),method=method,
+                     short_window_seconds=float(self.cfg['rppg_short_window_seconds']),
+                     short_window_min_conf=float(self.cfg['rppg_short_window_min_conf']),history_seconds=history_seconds)
         handle = self.lib.vg_vital_create(ct.byref(cfg))
         self.assertTrue(handle, "vg_vital_create returned NULL")
         self.addCleanup(self.lib.vg_vital_destroy, handle)
@@ -214,12 +300,13 @@ class VitalParity(unittest.TestCase):
         from backend.rppg_color import make_rppg
         values = exported(ROOT / "config.yaml")
         self.assertEqual(self.cfg["window_seconds"], 30)
-        self.assertEqual(values["window_seconds"], 5)
+        self.assertEqual(values["window_seconds"], 75/30)
         need = round(values["window_seconds"] * values["fps"])
-        self.assertEqual(need, 150)
+        self.assertEqual(need, 75)
         for method in (0, 1):
             with self.subTest(method=method):
-                handle = self.make(method=method, window_seconds=values["window_seconds"])
+                handle = self.make(method=method, window_seconds=values["window_seconds"],
+                                   history_seconds=values['history_seconds'],jitter_ratio=values['jitter_ratio_max'])
                 ref = make_rppg({**self.cfg, "rppg_method": "green" if method else "pos"})
                 self.assertEqual(ref.need, need)
                 for i, (sums, count) in enumerate(rgb_stream(need + 150, 30, 69)):

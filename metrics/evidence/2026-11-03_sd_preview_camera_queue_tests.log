@@ -1,0 +1,23 @@
+AUTONOMY_SUMMARY submitted=3 accepted=2 skipped=1 processed=2 succeeded=2 rejected=0 failed=0 rc=0 camera_submit_fps=10.000000 analysis_update_fps=7535.056852
+AUTONOMY_SUMMARY submitted=2 accepted=2 skipped=0 processed=2 succeeded=1 rejected=0 failed=1 rc=-10 camera_submit_fps=10.000000 analysis_update_fps=21498.441363
+AUTONOMY_SUMMARY submitted=2 accepted=2 skipped=0 processed=2 succeeded=0 rejected=2 failed=0 rc=0 camera_submit_fps=10.000000 analysis_update_fps=0.000000
+AUTONOMY_SUMMARY submitted=1 accepted=1 skipped=0 processed=1 succeeded=0 rejected=0 failed=1 rc=-5 camera_submit_fps=0.000000 analysis_update_fps=0.000000
+AUTONOMY_SUMMARY submitted=3 accepted=2 skipped=1 processed=2 succeeded=2 rejected=0 failed=0 rc=0 camera_submit_fps=10.000000 analysis_update_fps=25846.137941
+AUTONOMY_INIT rc=-19
+AUTONOMY_SUMMARY submitted=0 accepted=0 skipped=0 processed=0 succeeded=0 rejected=0 failed=0 rc=-19 camera_submit_fps=0.000000 analysis_update_fps=0.000000
+AUTONOMY_SAMPLE frame_id=1 ts=0.100000000 rc=0 detections=0 visible=0 detector_ms=0.000 landmark_ms=0.000 total_ms=0.000 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.000 landmark_caller_cpu_ms=0.000 vital_hz=0.000 vital_reject=- roi_pixels=0 vital_samples=0 vital_gate=- raw_hr=0.000000 raw_hr_conf=0.000000 hr_filter=-
+AUTONOMY_SAMPLE frame_id=2 ts=0.200000000 rc=0 detections=0 visible=0 detector_ms=0.000 landmark_ms=0.000 total_ms=0.000 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.000 landmark_caller_cpu_ms=0.000 vital_hz=0.000 vital_reject=- roi_pixels=0 vital_samples=0 vital_gate=- raw_hr=0.000000 raw_hr_conf=0.000000 hr_filter=-
+PASS owned slots / same-frame metadata / full skip / FIFO drain / repeated finish
+AUTONOMY_SAMPLE frame_id=4 ts=0.400000000 rc=0 detections=0 visible=0 detector_ms=0.000 landmark_ms=0.000 total_ms=0.000 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.000 landmark_caller_cpu_ms=0.000 vital_hz=0.000 vital_reject=- roi_pixels=0 vital_samples=0 vital_gate=- raw_hr=0.000000 raw_hr_conf=0.000000 hr_filter=-
+AUTONOMY_SAMPLE frame_id=5 ts=0.500000000 rc=-10 rejected=0 clear_rc=0 mean_luma=0.050000000 motion_q16=10 motion_valid=1
+PASS runtime failure removes prior successful latest and returns error
+AUTONOMY_SAMPLE frame_id=6 ts=0.600000000 rc=-2 rejected=1 clear_rc=0 mean_luma=0.060000000 motion_q16=12 motion_valid=0
+AUTONOMY_SAMPLE frame_id=7 ts=0.700000000 rc=-4 rejected=1 clear_rc=0 mean_luma=0.070000000 motion_q16=14 motion_valid=1
+PASS invalid motion / PnP rejection remove latest without hard fault
+AUTONOMY_SAMPLE frame_id=8 ts=0.800000000 rc=-5 rejected=0 clear_rc=0 mean_luma=0.080000000 motion_q16=16 motion_valid=1
+PASS publish IO failure surfaces and drains cleanly
+AUTONOMY_SAMPLE frame_id=9 ts=0.900000000 rc=0 detections=0 visible=0 detector_ms=0.000 landmark_ms=0.000 total_ms=0.000 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.000 landmark_caller_cpu_ms=0.000 vital_hz=0.000 vital_reject=- roi_pixels=0 vital_samples=0 vital_gate=- raw_hr=0.000000 raw_hr_conf=0.000000 hr_filter=-
+AUTONOMY_SAMPLE frame_id=10 ts=1.000000000 rc=0 detections=0 visible=0 detector_ms=0.000 landmark_ms=0.000 total_ms=0.000 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.000 landmark_caller_cpu_ms=0.000 vital_hz=0.000 vital_reject=- roi_pixels=0 vital_samples=0 vital_gate=- raw_hr=0.000000 raw_hr_conf=0.000000 hr_filter=-
+PASS zero-copy leases preserve pointer identity, release once after use, no release on skip
+PASS model initialization failure clears old latest
+AUTONOMY_CAMERA_TEST_PASS (fake vision; no accuracy/board FPS claim)

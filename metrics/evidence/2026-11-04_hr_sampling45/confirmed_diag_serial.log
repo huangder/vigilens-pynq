@@ -1,0 +1,65 @@
+
+# cat /run/vigilens-sampling45/camera.log.previous /run/vigilens-sampling45/came
+ra.log | awk '
+> /^AUTONOMY_SAMPLE / {
+>  for(i=2;i<=NF;i++){split($i,a,"=");v[a[1]]=a[2]}
+>  if(v["rc"]!=0 || v["ts"]+0<14173.703857000 || v["ts"]+0>14233.530789000)next
+>  n++;if(n==1){first=v["ts"];fid=v["frame_id"]}
+>  last=v["ts"];lastid=v["frame_id"]
+>  faces+=v["visible"]==1
+>  reasons[v["vital_reject"]]++;gates[v["vital_gate"]]++;filters[v["hr_filter"]]
+++
+>  if(v["vital_history_samples"]+0>hist)hist=v["vital_history_samples"]+0
+>  if(v["vital_samples"]+0>samples)samples=v["vital_samples"]+0
+>  roi+=v["roi_pixels"]+0
+>  if(v["raw_hr"]!="nan")hr++
+>  for(i=1;i<=6;i++){key=keys[i];sum[key]+=v[key];if(v[key]+0>maximum[key])maxim
+um[key]=v[key]+0}
+> }
+> BEGIN {keys[1]="worker_ms";keys[2]="total_ms";keys[3]="landmark_ms";keys[4]="q
+ueue_ms";keys[5]="publish_ms";keys[6]="landmark_model_ms"}
+> END {
+>  printf "ROLLING_DIAG samples=%d faces=%d first_ts=%.9f last_ts=%.9f first_id=
+%d last_id=%d analysis_hz=%.6f max_samples=%d max_history=%d raw_hr_finite=%d me
+an_roi=%.2f\n",n,faces,first,last,fid,lastid,(n-1)/(last-first),samples,hist,hr,
+roi/n
+>  for(k in reasons)printf "REJECT %s %d\n",k,reasons[k]
+>  for(k in gates)printf "GATE %s %d\n",k,gates[k]
+>  for(k in filters)printf "FILTER %s %d\n",k,filters[k]
+>  for(i=1;i<=6;i++){k=keys[i];printf "TIMING %s mean=%.6f max=%.6f\n",k,sum[k]/
+n,maximum[k]}
+> }'
+tail -n 6 /run/vigilens-sampling45/camera.log
+printf '\nSAMPLING45_CONFIRMED_DONE rc=%s\n' "$?"
+ROLLING_DIAG samples=1077 faces=1076 first_ts=14211.779645000 last_ts=14233.530789000 first_id=14687 last_id=15863 analysis_hz=49.468662 max_samples=75 max_history=525 raw_hr_finite=207 mean_roi=4677.46
+REJECT vitals_blocked 1
+REJECT window_not_full 74
+REJECT short_window_low_confidence 109
+REJECT harmonic_ambiguity 22
+REJECT sampling_too_slow 17
+REJECT - 199
+REJECT no_dominant_peak 647
+REJECT unstable 8
+GATE accepted 1076
+GATE face_missing 1
+FILTER warming 591
+FILTER accepted 199
+FILTER paused 279
+FILTER unstable 8
+TIMING worker_ms mean=17.901243 max=101.090000
+TIMING total_ms mean=17.246933 max=100.667000
+TIMING landmark_ms mean=10.840703 max=68.069000
+TIMING queue_ms mean=23.765769 max=172.631000
+TIMING publish_ms mean=0.495418 max=7.563000
+TIMING landmark_model_ms mean=2.183918 max=64.919000
+# tail -n 6 /run/vigilens-sampling45/camera.log
+CAMERA_PL_FRAME n=18048 seq=20010 ts_us=14273861753 mismatch=0 audit=0 roi_g=42110030 roi_count=307200 motion_valid=1 motion_ratio_q16=1177 decode_ms=25.915 reference_ms=0.000 transfer_pl_ms=5.393 decode_cpu_ms=13.484 transfer_pl_cpu_ms=2.919
+AUTONOMY_HANDOFF frame_id=18047 gray_ms=0.325 submit_ms=0.025 accepted=1
+ERT_TRACK_REJECT frame_id=18047 reason=no_anchor geometry_failure=-1 corrected=0
+AUTONOMY_SAMPLE frame_id=18047 ts=14273.861753000 rc=0 detections=0 visible=0 detector_ms=0.008 landmark_ms=0.004 total_ms=0.237 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.004 vital_hz=52.021 vital_reject=vitals_blocked roi_pixels=0 vital_samples=0 vital_history_samples=0 vital_gate=face_missing raw_hr=nan raw_hr_conf=nan hr_filter=warming preview_ms=0.000 publish_ms=0.465 worker_ms=0.764 queue_ms=0.135
+CAPTURE_FRAME n=18053 sequence=20017 bytes=42465 ts=14273.978395
+SAMPLE_FRAME n=18053 source_sequence=20017 ts_us=14273978395
+# printf '\nSAMPLING45_CONFIRMED_DONE rc=%s\n' "$?"
+
+SAMPLING45_CONFIRMED_DONE rc=0
+# 

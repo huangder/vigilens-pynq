@@ -1,0 +1,136 @@
+ M backend/rppg_color.py
+ M backend/tests/test_hr_filter.py
+ M backend/tests/test_rppg_color.py
+ M backend/tests/test_rppg_reliability.py
+ M backend/tests/test_rppg_window.py
+ M backend/tests/test_vital.py
+ M backend/vital.py
+ M board/autonomy/autonomy_camera.c
+ M board/autonomy/autonomy_camera.h
+ M board/autonomy/autonomy_engine.c
+ M board/autonomy/autonomy_engine.h
+ M board/autonomy/behavior.c
+ M board/autonomy/behavior.h
+ M board/autonomy/build_native_vision.sh
+ M board/autonomy/display.html
+ M board/autonomy/ert_runtime.cpp
+ M board/autonomy/export_vision_config.py
+ M board/autonomy/export_vital_config.py
+ M board/autonomy/measure.c
+ M board/autonomy/measure.h
+ M board/autonomy/metrics_http.c
+ M board/autonomy/package_native_vision.py
+ M board/autonomy/point_tracker.cpp
+ M board/autonomy/point_tracker.hpp
+ M board/autonomy/run_native.sh
+ M board/autonomy/tests/autonomy_camera_test.c
+ M board/autonomy/tests/hr_display_page.test.js
+ M board/autonomy/tests/point_tracker_test.cpp
+ M board/autonomy/tests/test_export_vision_config.py
+ M board/autonomy/tests/test_metrics_http.py
+ M board/autonomy/tests/test_package_native_vision.py
+ M board/autonomy/tests/test_vital_c.py
+ M board/autonomy/vg_native.py
+ M board/autonomy/vision_runtime.h
+ M board/autonomy/vital.c
+ M board/autonomy/vital.h
+ M board/cold_boot/README.md
+ M board/cold_boot/delivery.py
+ M board/cold_boot/tests/test_delivery.py
+ M board/cold_boot/tests/test_service.py
+ M board/cold_boot/vigilens-service
+ M board/w7_buildroot/build_boot_delivery.sh
+ M board/w7_buildroot/camera_pl.c
+ M board/w7_buildroot/tests/run_camera_pipeline_tests.sh
+ M board/w7_buildroot/uvc_probe.c
+ M config.yaml
+ M docs/README.md
+ M docs/architecture.md
+ M docs/interface.md
+ M docs/limitations.md
+ M docs/usage.md
+ M docs/validation.md
+?? backend/tests/test_rppg_history.py
+?? board/autonomy/board_dashboard_adapter.js
+?? board/autonomy/board_hr_motion.js
+?? board/autonomy/board_hr_trend.js
+?? board/autonomy/board_transport.js
+?? board/autonomy/camera_preview.c
+?? board/autonomy/camera_preview.h
+?? board/autonomy/package_dashboard.py
+?? board/autonomy/tests/autonomy_buffered_test.c
+?? board/autonomy/tests/board_hr_motion.test.js
+?? board/autonomy/tests/board_hr_render.test.js
+?? board/autonomy/tests/board_hr_trend.test.js
+?? board/autonomy/tests/board_transport.test.js
+?? board/autonomy/tests/camera_preview_test.c
+?? board/autonomy/tests/test_blink_adaptive.py
+?? board/autonomy/tests/test_camera_preview.py
+?? board/autonomy/tests/test_experimental_fir_export.py
+?? board/autonomy/tests/test_preview_cadence.py
+?? board/w7_buildroot/jpeg_rows.h
+?? board/w7_buildroot/tests/capture_fps_test.c
+?? board/w7_buildroot/tests/jpeg_rows_test.c
+?? board/w7_buildroot/tests/test_jpeg_rows.py
+?? docs/ear_sensitivity.md
+?? docs/full60_optimization.md
+?? docs/hr_history_reuse.md
+?? docs/video_demo_parameters.md
+?? metrics/evidence/2026-11-03_blink75_smooth.json
+?? metrics/evidence/2026-11-03_blink75_smooth_arm_build.log
+?? metrics/evidence/2026-11-03_blink75_smooth_board_tests.log
+?? metrics/evidence/2026-11-03_blink75_smooth_check_all.json
+?? metrics/evidence/2026-11-03_blink75_smooth_http_assets.json
+?? metrics/evidence/2026-11-03_blink75_smooth_initrd_install.log
+?? metrics/evidence/2026-11-03_blink75_smooth_install.log
+?? metrics/evidence/2026-11-03_blink75_smooth_live.jsonl
+?? metrics/evidence/2026-11-03_blink75_smooth_pytest.log
+?? metrics/evidence/2026-11-03_blink75_smooth_resume_diagnosis.log
+?? metrics/evidence/2026-11-03_blink75_smooth_runtime.log
+?? metrics/evidence/2026-11-03_blink75_smooth_software_reboot.log
+?? metrics/evidence/2026-11-03_ear400_trend.json
+?? metrics/evidence/2026-11-03_ear400_trend_arm_build.log
+?? metrics/evidence/2026-11-03_ear400_trend_check_all.json
+?? metrics/evidence/2026-11-03_ear400_trend_install.log
+?? metrics/evidence/2026-11-03_ear400_trend_pytest.log
+?? metrics/evidence/2026-11-03_ear400_trend_runtime.log
+?? metrics/evidence/2026-11-03_full60_optimization/
+?? metrics/evidence/2026-11-03_hr_history_arm_build.log
+?? metrics/evidence/2026-11-03_hr_history_board_tests.log
+?? metrics/evidence/2026-11-03_hr_history_camera60_probe.log
+?? metrics/evidence/2026-11-03_hr_history_camera_modes.log
+?? metrics/evidence/2026-11-03_hr_history_check_all.json
+?? metrics/evidence/2026-11-03_hr_history_diagnostics.log
+?? metrics/evidence/2026-11-03_hr_history_initrd_build.log
+?? metrics/evidence/2026-11-03_hr_history_install.log
+?? metrics/evidence/2026-11-03_hr_history_parameters.csv
+?? metrics/evidence/2026-11-03_hr_history_pytest.log
+?? metrics/evidence/2026-11-03_hr_history_restored_service.log
+?? metrics/evidence/2026-11-03_hr_history_reuse.json
+?? metrics/evidence/2026-11-03_hr_history_runtime.log
+?? metrics/evidence/2026-11-03_hr_history_software_reboot.log
+?? metrics/evidence/2026-11-03_measurement_diagnosis.json
+?? metrics/evidence/2026-11-03_measurement_diagnosis_repro.json
+?? metrics/evidence/2026-11-03_measurement_diagnosis_runtime.log
+?? metrics/evidence/2026-11-03_measurement_sensitivity.json
+?? metrics/evidence/2026-11-03_measurement_sensitivity_arm_build.log
+?? metrics/evidence/2026-11-03_measurement_sensitivity_check_all.json
+?? metrics/evidence/2026-11-03_measurement_sensitivity_install.log
+?? metrics/evidence/2026-11-03_measurement_sensitivity_live_slice.log
+?? metrics/evidence/2026-11-03_measurement_sensitivity_pytest.log
+?? metrics/evidence/2026-11-03_measurement_sensitivity_runtime.log
+?? metrics/evidence/2026-11-03_sd_dashboard_layout.json
+?? metrics/evidence/2026-11-03_sd_dashboard_layout_install.log
+?? metrics/evidence/2026-11-03_sd_preview_camera_queue_tests.log
+?? metrics/evidence/2026-11-03_sd_preview_check_all.log
+?? metrics/evidence/2026-11-03_sd_preview_cold_boot.log
+?? metrics/evidence/2026-11-03_sd_preview_live.json
+?? metrics/evidence/2026-11-03_sd_preview_pytest.log
+?? metrics/evidence/2026-11-03_sd_preview_runtime.log
+?? metrics/evidence/2026-11-03_sd_preview_service_tests.log
+?? metrics/evidence/2026-11-03_sd_preview_update.log
+?? metrics/evidence/2026-11-03_sd_preview_verification.json
+?? metrics/evidence/2026-11-03_video_demo_board_parameters.log
+?? metrics/evidence/2026-11-03_video_demo_parameters.csv
+?? metrics/evidence/2026-11-03_video_demo_runtime_slice.log
+?? metrics/evidence/2026-11-03_video_demo_test.json

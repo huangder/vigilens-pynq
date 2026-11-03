@@ -19,7 +19,7 @@ fps_nominal: 30                     # 标称帧率，仅用于时间序列换算
                                     #      两者不同改 = rPPG 频率轴错位（backend/tests/test_vital.py 会拦住）
 
 # ---- A 线：眼部指标 ---------------------------------------------------------
-ear_close_threshold: 0.21           # EAR 闭眼判定阈值
+ear_close_threshold: 0.21           # PC参考旧策略阈值；ERT板端候选采用board_vision中的EAR策略
                                     #   ⚠️ 占位值，必须用 MediaPipe 实测重标定（《04》7.1 原注）
 min_close_ms: 100                   # 连续闭眼 ≥ 此毫秒数才记为"闭眼"（**与帧率无关**）
                                     #   依据：旧口径 min_close_frames=3 在契约 30 fps 下 = 3/30 s = 100 ms；
@@ -52,9 +52,23 @@ pose_hold_frames: 3                 # 姿态越界迟滞：连续 N 帧越界才
 
 # ---- 板端视觉后端（PS 移植；不改变 PL 契约）---------------------------------
 board_vision:                       # 板端 MTCNN + Peppa 工程初值，非真人准确性标定
-  camera_width: 640                # 最终候选：720p真人未达标；此档最高可用原生YUYV30，真人复验待做
+  camera_width: 640                # 当前60fps开发档；实际有人脸吞吐须独立实测
   camera_height: 480               # 可切回1280x720+mjpg；960x720尾包审计失败，当前明确禁用
-  camera_format: yuyv              # 保留原生640x480亮度细节并省掉JPEG解码；不表示整机已达30fps
+  camera_format: mjpg              # 60fps开发档；请求模式不等于实际完整链路吞吐
+  capture_fps: 60                  # 板端完整链路开发时基；根fps_nominal保留PC/正式旧契约参考
+  vital_fps: 60                   # 用户要求心率同样60Hz，禁止60→30Hz汇聚
+  vital_source_min_hz: 30.0       # 用户指定候选：真实时间戳输入密度下限；重采样/FIR仍60Hz，不证明完整60fps达标
+  vital_green_center_before_fir: true # 工程候选：Green去除上下文亮度基线后再FIR，避免零初态直流瞬态；非补值
+  vital_min_samples: 75           # 75个真实有效输入启动；60Hz对应1.25秒，历史继续滚动增长
+  vital_fir_header: board/autonomy/fir_coeffs_60hz_q15.h
+  decode_workers: 1               # 双核实测减少解码争用；实际吞吐仍须真人日志验证
+  tracker_image_mode: roi_half
+  tracker_region_expansion: 1.4
+  analysis_slots: 4
+  preview_async: true
+  preview_worker_nice: 10
+  preview_source: camera_mjpeg     # 复用已解码验证的相机JPEG，省掉RGB预览重复编码
+  hr_estimate_hz: 60.0            # 每个新观测重估重叠有效历史；实际吞吐须板测
   min_face: 40                     # 原图最小检测边长（px）；降低会增加图像金字塔成本
   min_face_fast: 80                # 跟随时全图重检的下限边长（px，须 ≥ min_face）；只用于换框阶段，
                                    # 冷启动/长时间失脸仍回落到 min_face 深检。近景人脸约 250px，未在真板标定
@@ -92,6 +106,27 @@ board_vision:                       # 板端 MTCNN + Peppa 工程初值，非真
   ert_patch_side: 32              # 仅 ert 实验入口：检测确认的人脸外观采样网格
   ert_patch_min_std: 6.0          # 灰度标准差下限；工程初值，未标定，不代表人脸分类置信度
   ert_patch_max_error: 18.0       # 去均值后的外观 MAE 上限；未标定，防止黑屏/明显掉脸仍报点位
+  preview_hz: 5.0                 # 预览降为5Hz；不降低指标采样率，减少分析线程内JPEG编码
+  dashboard_metrics_hz: 5.0       # 板端HTTP页面轮询频率；不改变ws_push_hz或板端HR估计计算节奏
+  ear_threshold_mode: absolute    # 用户最新要求0.300绝对阈值
+  ear_close_absolute: 0.300       # 双眼EAR均值严格低于0.300开始闭合；用户“300”按0.300解释
+  ear_open_absolute: 0.300        # 达到0.300开始重睁确认；仍须持续100ms
+  ear_close_ratio: 0.65           # 板端ERT候选：低于各自睁眼基线65%，双眼同时闭合；非文献标定值
+  ear_open_ratio: 0.80            # 迟滞：双眼回到基线80%才确认睁开；原始EAR仍照常输出
+  ear_baseline_tau_s: 2.0         # 仅稳定睁眼时更新基线，闭眼期间冻结；启动请睁眼
+  blink_min_close_ms: 80          # 用户要求延长眨眼确认时间：30→80ms，抑制短暂点位波动
+  blink_min_open_ms: 100          # 重睁确认60→100ms；等待重睁时间不计入闭眼时长
+  blink_long_close_ms: 1500       # 板端长闭眼界线500→1500ms，减少眨眼被归为长闭眼；未标定
+  blink_max_gap_ms: 120           # 更长观测缺口取消未完成事件，不能把缺帧算作持续闭眼
+  ear_baseline_reset_ms: 1000     # 长失脸/缺口后重新学习；不是身份识别或人物切换检测
+  hr_trend_bridge_seconds: 30.0   # 仅绘图：短缺测前后真实点间虚线连接上限，不生成测量样本
+  hr_trend_hold_seconds: 10.0     # 仅绘图：最新缺测时短暂虚线延续历史值，超时/断网后停止
+  hr_display_transition_ms: 1000  # 有效心率数字的显示动画；保留真实目标值说明，不进入告警
+  hr_history_retention_seconds: 86400 # 浏览器本地历史最多24小时，仅保存有效测量标量
+  hr_history_max_records: 5000        # 同时按条数限制存储，不保证连续保存满24小时
+  hr_history_interval_seconds: 1.0    # 每秒最多保存一个新的有效观测
+  hr_history_list_limit: 100          # 历史列表显示最近100条，导出包含筛选后的全部记录
+  dashboard_animation_hz: 30.0    # PC页面绘制节奏；不改变采样、估计或HTTP轮询频率
   crop_scale: 1.4                 # Peppa ONNX 作者裁剪倍数，沿用 peppa_pipeline.py
   forehead_inset: 0.08            # 沿用 live_hybrid_demo.py 眉间 ROI 几何启发式
   forehead_top: 0.65              # 眉眼间距向上延伸倍数；不是皮肤检测/准确率保证
@@ -136,22 +171,27 @@ rr_band_hz: [0.1, 0.5]             # 呼吸带通
 vital_require_quality: 0.75         # 只有在质量高于此值时**才允许**输出心率/呼吸趋势
                                     #   否则 vital.* 输出 null（前端必须优雅渲染"暂无"）
 rppg_method: green                 # 默认保留实测基线；pos 为可选实验路径，见 docs/52 的同源对比
-rppg_window_seconds: 5             # 用户选择5秒心率短窗候选；行为/质量仍为30秒
-                                    # 用户要求进一步缩窗；pyVHR示例6秒、yarPPG示例5秒，详见docs/75
-                                    # 5秒×30Hz=150；FFT名义间距12bpm，非准确性标定；缺省沿用window_seconds
+rppg_window_seconds: 2.5            # 用户要求75个有效样本：75/30秒；行为/质量仍为30秒
+                                    # 75点名义频率网格间距30/75*60=24bpm，非准确率
+                                    # 插值/平滑不增加真实信息量；缺省沿用window_seconds
 rppg_color_window_seconds: 1.6      # POS 的局部投影窗；不是最终心率测量窗
+rppg_history_seconds: 10.0         # 用户要求复用有效历史：75点启动后逐渐扩展，最近最多10秒；不跨失脸/长缺口
+rppg_resample_jitter_ratio_max: 3.0 # 算法重采样p95间隔/标称周期上限；不改变实时性验收1.5；工程候选
+rppg_short_window_seconds: 3.0     # ≤3秒启用额外短窗谱质量候选，避免少数频点使噪声占比虚高
+rppg_short_window_min_conf: 0.80   # 工程候选：75点seed7噪声0.7561、合成脉动0.92以上；非真人准确率标定
 rppg_fs_tol: 0.10                   # 真实采样率与 fps_nominal 的相对偏差上限（超过 → vital.* 全 null）
                                     #   依据：FIR 系数是按 fps_nominal 设计的，采样率偏 k 倍时频率轴整体
                                     #   缩放 k 倍（docs/16 BUG-029：13 fps 下 72 bpm 被报成 166 bpm）。
                                     #   0.10 = 允许 ±10%，已覆盖实测 30.14 fps vs 标称 30（+0.5%）
-rppg_max_gap_ms: 100                # 等间隔化仅覆盖短间隔；更长缺口拒报/重新积窗（工程策略，非真人标定值）
-rppg_recovery_ms: 100               # 仅质量/姿态短时失效可暂停保留原始有效样本；丢脸/空 ROI 立即清窗
+rppg_max_gap_ms: 200                # 真实采样率门控内覆盖短缺口；更长缺口重新积窗；插值不计为真实样本
+rppg_recovery_ms: 200               # 短时质量/姿态暂停保留原始有效样本，恢复后检查；丢脸/空ROI立即清窗
 rppg_recovery_samples: 3            # 短暂停后须有新的连续有效样本再重新计算，期间不输出旧心率
 rppg_harmonic_ratio_min: 0.05       # 主峰半频邻域/主峰邻域能量比达到此值 → 倍频歧义拒报，非准确率
 hr_stabilizer_enabled: true        # 用户要求的输出稳定候选；不代替FIR，不提高频谱质量/准确率
+hr_report_min_bpm: 60.0            # 用户选择的原型展示下限：先估计主峰再舍弃低值；非诊断/真实性判据
 hr_stabilizer_window: 3            # 最近3次有效估计的中值/一致性窗口；拒报依旧清除当前测量
 hr_stabilizer_startup_samples: 1   # 用户要求更快显示：首个有效值启动，设3恢复原严格确认；不生成缺失值
-hr_stabilizer_alpha: 0.35          # 实际EMA步长=alpha×当前谱置信指标；工程权重，不是准确率
+hr_stabilizer_alpha: 0.20          # 用户要求更平缓：0.35→0.20；实际EMA步长还乘谱置信指标，增加响应延迟
 hr_stabilizer_interval_s: 0.8      # 纳入新估计的最短间隔，容纳1Hz源时钟抖动；重复帧不累计确认
 hr_stabilizer_max_gap_s: 1.5       # 超过该时间没有新有效估计则清空滤波，不续用旧数
 hr_stabilizer_max_spread_bpm: 12.0 # 3次原始估计范围上限，取5秒名义一个FFT间距；非生理诊断阈值

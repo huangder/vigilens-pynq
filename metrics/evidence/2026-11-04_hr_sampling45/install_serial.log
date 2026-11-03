@@ -1,0 +1,45 @@
+
+# wget -T 15 -O /tmp/vigilens_sampling45_install.sh http://169.254.73.28:8771/in
+stall.sh
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+saving to '/tmp/vigilens_sampling45_install.sh'
+vigilens_sampling45_ 100% |********************************|  1566  0:00:00 ETA
+'/tmp/vigilens_sampling45_install.sh' saved
+# sh /tmp/vigilens_sampling45_install.sh
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+printf '\nSAMPLING45_INSTALL_DONE rc=%s\n' "$?"
+saving to '/tmp/vigilens-sampling45/candidate.tar.gz'
+candidate.tar.gz     100% |********************************| 1239k  0:00:00 ETA
+'/tmp/vigilens-sampling45/candidate.tar.gz' saved
+/tmp/vigilens-sampling45/candidate.tar.gz: OK
+tar: invalid option -- 'z'
+BusyBox v1.37.0 (2026-10-25 20:04:51 CST) multi-call binary.
+
+Usage: tar c|x|t [-ahvokO] [-f TARFILE] [-C DIR] [-T FILE] [-X FILE] [LONGOPT]... [FILE]...
+
+Create, extract, or list files from a tar file
+
+	c	Create
+	x	Extract
+	t	List
+	-f FILE	Name of TARFILE ('-' for stdin/out)
+	-C DIR	Change to DIR before operation
+	-v	Verbose
+	-O	Extract to stdout
+	-o	Don't restore user:group
+	-k	Don't replace existing files
+	-a	(De)compress based on extension
+	-h	Follow symlinks
+	-T FILE	File with names to include
+	-X FILE	File with glob patterns to exclude
+	--exclude PATTERN	Glob pattern to exclude
+	--overwrite		Replace existing files
+	--strip-components NUM	NUM of leading components to strip
+	--no-recursion		Don't descend in directories
+	--numeric-owner		Use numeric user:group
+	--no-same-permissions	Don't restore access permissions
+	--to-command COMMAND	Pipe files to COMMAND
+# printf '\nSAMPLING45_INSTALL_DONE rc=%s\n' "$?"
+
+SAMPLING45_INSTALL_DONE rc=1
+# 

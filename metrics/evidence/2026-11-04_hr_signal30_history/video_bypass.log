@@ -1,0 +1,37 @@
+=== 旁路画面链路检查 ===
+服务地址: http://127.0.0.1:49435
+解释器  : D:\Desktop\AMD\.venv\Scripts\python.exe
+
+==============================================================================
+  [PASS] T1 未推画面时 has_video=False（不是空画面冒充有画面）
+          HTTP 200 {'ok': True, 'has_video': False, 'reason': '尚未收到任何画面（未推 /api/frame）'}
+  [PASS] T0 测试用 JPEG 造好了
+          1829 B
+  [PASS] T2 POST /api/frame 收下 JPEG 并回显字节数与 frame_id
+          bytes=1829 frame_id=42
+  [PASS] T3 推过之后 has_video=True（过期判定之内）
+          age_s=0.001 stale_after_s=1.5
+  [PASS] T4 非 JPEG 被 422 拒收（并说明原因）
+          HTTP 422 {"ok":false,"errors":["不是 JPEG（前两字节应为 FF D8）；本接口只收 JPEG 原始字节"]}
+  [PASS] T5 /video.mjpg 返回 multipart MJPEG 且含 JPEG 数据
+          Content-Type=multipart/x-mixed-replace; boundary=frame 首块 4096 B
+  [PASS] T6 停推超过 stale 之后 has_video 变回 False（不显示冻结旧画面）
+          age_s=2.156 / stale=1.5s / reason=画面已超过 1.5s 未更新（推送端可能已停）
+  [PASS] T7 契约帧仍能正常 ingest（旁路没有干扰它）
+          HTTP 200 {"ok":true,"published":1}
+  [PASS] T8 旁路开启后 /api/metrics 仍返回契约帧
+          latest.frame_id=9001
+  [PASS] T9 契约帧字段仍恰好是那 9 个（图像没有混进来）
+          ['advice', 'behavior', 'face', 'frame_id', 'quality', 'reason', 'status', 'ts', 'vital']
+  [PASS] T10 validate_frame 对 mock 帧仍然无错
+          []
+  [PASS] T12 旁路画面统计里没有 'ok' 字段（它不参与退出码判定）
+          keys=['dropped', 'encoded', 'errors', 'hz', 'last_frame_id', 'max_width', 'note', 'offered', 'posted', 'quality', 'url']
+  [PASS] T11 端到端 --push-video：run_pipeline 真的把画面推到了 B 线
+          video: 投递 45 / 编码 3 / 送达 3 / 丢弃 42
+  [PASS] T13 网页带同源预览面板（#previewImage/#videoBadge/#previewFreshness/#previewSync）并加载 preview.js
+          HTTP 200 9738 B；缺 id=[] 含 preview.js=True
+  [PASS] T14 app.js 用 PREVIEW_STALE_MS 清掉过期画面（停推不显示冻结旧帧），且画面走 /api/preview/latest
+          HTTP 200 61098 B；{'PREVIEW_STALE_MS': True, 'updatePreviewFreshness': True, '画面已过期': True, 'previewMeta = null': True, '/api/preview/latest': True}
+==============================================================================
+全部通过：15/15 项通过

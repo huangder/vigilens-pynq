@@ -1,0 +1,272 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "viewport": [
+        1366,
+        650
+      ],
+      "bodyClass": "board-layout",
+      "source": "板端原生",
+      "connection": "板端已连接",
+      "received": "已接收 1 帧",
+      "visibleCards": 13,
+      "cardsWithinViewport": true,
+      "scroll": [
+        1366,
+        650
+      ],
+      "statusVisible": false,
+      "blinkVisible": false,
+      "recordingControlsVisible": false,
+      "developerVisible": false,
+      "gate": {
+        "x": 20,
+        "y": 553.5,
+        "width": 680.1875,
+        "height": 84.5,
+        "bottom": 638,
+        "right": 700.1875
+      },
+      "video": {
+        "x": 124.421875,
+        "y": 157,
+        "width": 471.328125,
+        "height": 353.484375,
+        "bottom": 510.484375,
+        "right": 595.75
+      },
+      "preview": [
+        640,
+        480
+      ],
+      "previewReady": true,
+      "rrVisible": false,
+      "passed": true
+    },
+    {
+      "viewport": [
+        1366,
+        768
+      ],
+      "bodyClass": "board-layout",
+      "source": "板端原生",
+      "connection": "板端已连接",
+      "received": "已接收 1 帧",
+      "visibleCards": 13,
+      "cardsWithinViewport": true,
+      "scroll": [
+        1366,
+        768
+      ],
+      "statusVisible": false,
+      "blinkVisible": false,
+      "recordingControlsVisible": false,
+      "developerVisible": false,
+      "gate": {
+        "x": 20,
+        "y": 671.5,
+        "width": 680.1875,
+        "height": 84.5,
+        "bottom": 756,
+        "right": 700.1875
+      },
+      "video": {
+        "x": 45.765625,
+        "y": 157,
+        "width": 628.65625,
+        "height": 471.484375,
+        "bottom": 628.484375,
+        "right": 674.421875
+      },
+      "preview": [
+        640,
+        480
+      ],
+      "previewReady": true,
+      "rrVisible": false,
+      "passed": true
+    },
+    {
+      "viewport": [
+        1440,
+        900
+      ],
+      "bodyClass": "board-layout",
+      "source": "板端原生",
+      "connection": "板端已连接",
+      "received": "已接收 2 帧",
+      "visibleCards": 13,
+      "cardsWithinViewport": true,
+      "scroll": [
+        1440,
+        900
+      ],
+      "statusVisible": false,
+      "blinkVisible": false,
+      "recordingControlsVisible": false,
+      "developerVisible": false,
+      "gate": {
+        "x": 20,
+        "y": 803.5,
+        "width": 718.609375,
+        "height": 84.5,
+        "bottom": 888,
+        "right": 738.609375
+      },
+      "video": {
+        "x": 33,
+        "y": 199.015625,
+        "width": 692.609375,
+        "height": 519.453125,
+        "bottom": 718.46875,
+        "right": 725.609375
+      },
+      "preview": [
+        640,
+        480
+      ],
+      "previewReady": true,
+      "rrVisible": false,
+      "passed": true
+    },
+    {
+      "viewport": [
+        1536,
+        864
+      ],
+      "bodyClass": "board-layout",
+      "source": "板端原生",
+      "connection": "板端已连接",
+      "received": "已接收 2 帧",
+      "visibleCards": 13,
+      "cardsWithinViewport": true,
+      "scroll": [
+        1536,
+        864
+      ],
+      "statusVisible": false,
+      "blinkVisible": false,
+      "recordingControlsVisible": false,
+      "developerVisible": false,
+      "gate": {
+        "x": 20,
+        "y": 767.5,
+        "width": 768.453125,
+        "height": 84.5,
+        "bottom": 852,
+        "right": 788.453125
+      },
+      "video": {
+        "x": 33,
+        "y": 162.328125,
+        "width": 742.453125,
+        "height": 556.828125,
+        "bottom": 719.15625,
+        "right": 775.453125
+      },
+      "preview": [
+        640,
+        480
+      ],
+      "previewReady": true,
+      "rrVisible": false,
+      "passed": true
+    },
+    {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "bodyClass": "board-layout",
+      "source": "板端原生",
+      "connection": "板端已连接",
+      "received": "已接收 3 帧",
+      "visibleCards": 13,
+      "cardsWithinViewport": true,
+      "scroll": [
+        1920,
+        1080
+      ],
+      "statusVisible": false,
+      "blinkVisible": false,
+      "recordingControlsVisible": false,
+      "developerVisible": false,
+      "gate": {
+        "x": 20,
+        "y": 983.5,
+        "width": 967.84375,
+        "height": 84.5,
+        "bottom": 1068,
+        "right": 987.84375
+      },
+      "video": {
+        "x": 33,
+        "y": 195.5625,
+        "width": 941.84375,
+        "height": 706.375,
+        "bottom": 901.9375,
+        "right": 974.84375
+      },
+      "preview": [
+        640,
+        480
+      ],
+      "previewReady": true,
+      "rrVisible": false,
+      "passed": true
+    },
+    {
+      "viewport": [
+        1280,
+        720
+      ],
+      "bodyClass": "board-layout",
+      "source": "板端原生",
+      "connection": "板端已连接",
+      "received": "已接收 3 帧",
+      "visibleCards": 13,
+      "cardsWithinViewport": true,
+      "scroll": [
+        1280,
+        720
+      ],
+      "statusVisible": false,
+      "blinkVisible": false,
+      "recordingControlsVisible": false,
+      "developerVisible": false,
+      "gate": {
+        "x": 20,
+        "y": 623.5,
+        "width": 635.53125,
+        "height": 84.5,
+        "bottom": 708,
+        "right": 655.53125
+      },
+      "video": {
+        "x": 55.4375,
+        "y": 157,
+        "width": 564.65625,
+        "height": 423.484375,
+        "bottom": 580.484375,
+        "right": 620.09375
+      },
+      "preview": [
+        640,
+        480
+      ],
+      "previewReady": true,
+      "rrVisible": false,
+      "passed": true
+    }
+  ],
+  "hashes": {
+    "index.html": "21e275ce6acb0b37d25d4b1e376698b59a21db59c89b7a566834859a5848cffd",
+    "app.js": "1f74598833bd06d8f270e3eca2372bf5d60bb096f599ba213925406fdbc4c567",
+    "style.css": "d04a13bbe03e523f9ca4e5342f273b9c98113a5d144c6754a52133491ef7197a",
+    "board_layout.css": "b9e68b76e71a49039696b81dc87b4f8c7725814efc3852f70d9a5825d4234c36"
+  },
+  "runtimeErrors": [],
+  "raw_face_media_saved": false,
+  "measurement_mode": "live_board_http"
+}

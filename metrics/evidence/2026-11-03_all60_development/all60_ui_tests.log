@@ -1,0 +1,12 @@
+✔ injected renderer draws dashed bridges without changing sample count or missing values (1.2061ms)
+✔ injected historical tail is labeled and is removed on disconnect (0.7523ms)
+✔ actual injected card animates without recreating the removed note (0.7993ms)
+✔ actual board card builder removes the HR note element (0.4483ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.7289

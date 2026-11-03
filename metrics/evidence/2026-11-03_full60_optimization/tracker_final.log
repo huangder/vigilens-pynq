@@ -1,0 +1,8 @@
+POINT_TRACKER_BOX_PASS reversible_motion=1000 rotation_cycle=1 invalid_rejected=1
+POINT_TRACKER_RGB_GRAY_PASS cases=32 scalar_neon_exact=1
+POINT_TRACKER_PL_GRID_PASS actual_3of8_coordinates=1 invalid_profile=1
+POINT_TRACKER_HISTORY_PASS expired_source=1 bounded=1 nonmonotonic_clear=1
+POINT_TRACKER_ROI_MOTION_PASS translation_cases=9 error_bound=0.5 levels=3 radius=3 iterations=12
+POINT_TRACKER_BRIDGE_PASS intermediate_steps=16 total_motion=64 black_rejected=1
+POINT_TRACKER_ROI_ORIGIN_PASS different_origins=1 full_resolution=1
+POINT_TRACKER_TEST_PASS translation_cases=15 black_loss=1 flat_rejected=1 malformed=1

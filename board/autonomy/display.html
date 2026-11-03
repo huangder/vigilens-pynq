@@ -6,9 +6,11 @@ body{font:16px system-ui,sans-serif;max-width:850px;margin:40px auto;padding:0 2
 #state,.reading{padding:20px;border:1px solid #597482;border-radius:12px}.reading{margin:20px 0;background:#192932}
 #hrValue{font-size:64px;font-variant-numeric:tabular-nums;margin:8px 0;display:inline-block}#hrKind{color:#83d5b0}.history #hrKind,.history #hrValue{color:#e0bd7a}
 .waiting #hrValue{font-size:36px}pre{white-space:pre-wrap;overflow-wrap:anywhere}small,#hrNote{color:#b5c9d3}details{margin-top:24px}
+#preview{display:block;width:100%;height:auto;border-radius:12px;background:#080d11}#preview[hidden]{display:none}.preview{margin:24px 0}
 </style>
 <h1>知倦 · 板端指标</h1><p>疲劳趋势监测实验室原型。页面显示板端估计，准确性尚未验收。</p>
 <p id="state" role="status">正在连接开发板…</p>
+<section class="preview"><h2>相机画面</h2><img id="preview" hidden alt="USB 摄像头当前画面"><p id="previewState" role="status">等待相机画面…</p></section>
 <section class="reading waiting" id="hrCard" aria-live="polite">
  <div>心率趋势 <span id="hrKind">正在测量</span></div>
  <strong id="hrValue">正在测量</strong> <span id="hrUnit"></span>
@@ -21,6 +23,10 @@ body{font:16px system-ui,sans-serif;max-width:850px;margin:40px auto;padding:0 2
 /* HR_DISPLAY_CONFIG */
 const state=document.getElementById('state'),metrics=document.getElementById('metrics');
 const hr=document.getElementById('hrValue'),unit=document.getElementById('hrUnit'),kind=document.getElementById('hrKind'),note=document.getElementById('hrNote'),card=document.getElementById('hrCard');
+const preview=document.getElementById('preview'),previewState=document.getElementById('previewState');
+function refreshPreview(){preview.src='/api/frame.jpg?t='+Date.now();}
+preview.onload=()=>{preview.hidden=false;previewState.textContent='相机画面已连接';setTimeout(refreshPreview,1000/HR_DISPLAY_CONFIG.fps_nominal);};
+preview.onerror=()=>{preview.hidden=true;previewState.textContent='当前画面不可用，等待相机恢复';setTimeout(refreshPreview,HR_DISPLAY_CONFIG.ws_disconnect_timeout_s*1000);};
 const display=VigiLensHrDisplay.create({freshMs:HR_DISPLAY_CONFIG.ws_disconnect_timeout_s*1000});
 let busy=false,connected=false;
 function paint(){const view=display.view(Date.now(),connected);hr.textContent=view.text;unit.textContent=view.unit;kind.textContent=view.label;note.textContent=view.note;card.className='reading '+view.kind;}
@@ -38,5 +44,5 @@ async function update(){
  }catch(error){connected=false;state.textContent='连接或当前测量不可用，等待恢复';metrics.textContent='当前测量不可用；心率卡保留带时间标记的历史值';}
  finally{clearTimeout(timer);busy=false;paint();setTimeout(update,1000);}
 }
-setInterval(paint,1000);update();
+setInterval(paint,1000);update();refreshPreview();
 </script></html>

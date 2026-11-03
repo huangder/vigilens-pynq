@@ -1,0 +1,4 @@
+PREVIEW_PASSTHROUGH_PASS exact_encoded_bytes=1 original_rgb_encoder_retained=1
+PREVIEW_ASYNC_END submitted=1001 encoded=2 replaced=999 failed=0 buffers=2
+PREVIEW_ASYNC_PASS latest_pending_drained=1 caller_rgb_reused_immediately=1 private_buffers=2
+PREVIEW_JPEG_PASS synthetic_RGB_color_dimensions_atomic_readers_and_errors

@@ -1,0 +1,56 @@
+
+# wget -T 15 -O /tmp/vigilens_sampling45_install.sh http://169.254.73.28:8771/in
+stall.sh
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+saving to '/tmp/vigilens_sampling45_install.sh'
+vigilens_sampling45_ 100% |********************************|  1590  0:00:00 ETA
+'/tmp/vigilens_sampling45_install.sh' saved
+# sh /tmp/vigilens_sampling45_install.sh
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+printf '\nSAMPLING45_INSTALL_DONE rc=%s\n' "$?"
+saving to '/tmp/vigilens-sampling45/candidate.tar.gz'
+candidate.tar.gz     100% |********************************| 1239k  0:00:00 ETA
+'/tmp/vigilens-sampling45/candidate.tar.gz' saved
+/tmp/vigilens-sampling45/candidate.tar.gz: OK
+runtime.env: OK
+vg_metrics_http: OK
+ui/alerts.js: OK
+ui/app.js: OK
+ui/board_config.js: OK
+ui/board_hr_motion.js: OK
+ui/board_hr_trend.js: OK
+ui/board_layout.css: OK
+ui/board_transport.js: OK
+ui/hr_display.js: OK
+ui/index.html: OK
+ui/mock.js: OK
+ui/preview.js: OK
+ui/recording.js: OK
+ui/style.css: OK
+ui/trends.js: OK
+ui/ui_state.js: OK
+ui/icons/camera.svg: OK
+ui/icons/LICENSE: OK
+ui/icons/pulse.svg: OK
+ui/icons/shield-checkmark.svg: OK
+ui/icons/trend.svg: OK
+shape_predictor_68_face_landmarks.dat: OK
+libgomp.so.1: OK
+det1.param: OK
+det1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+vigi_camera_autonomy: OK
+VIGILENS_PACKAGE_CHECK_PASS
+stop_requested pid=21786
+start_requested pid=5905
+supervisor_pid=5905
+135b4e4051a869fce2ccfc528d140eb935c6597824fd05c1c486ce1acffbef3c  /tmp/vigilens-sampling45/root/vigilens/app/vigi_camera_autonomy
+c9cfab59e46462f73d0d3c40175124b220d5f6e5eaf87be5bb392b1af4ad2bac  /tmp/vigilens-sampling45/root/vigilens/config.yaml
+SAMPLING45_RUNNING_RAM_ONLY
+# printf '\nSAMPLING45_INSTALL_DONE rc=%s\n' "$?"
+
+SAMPLING45_INSTALL_DONE rc=0
+# 

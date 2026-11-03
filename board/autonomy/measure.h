@@ -33,6 +33,7 @@ typedef struct {
 typedef struct vg_measure vg_measure;
 vg_measure *vg_measure_create(const vg_measure_config *config);
 void vg_measure_destroy(vg_measure *engine);
+int vg_measure_configure_blink(vg_measure *engine, const vg_blink_config *config);
 /* 0=success, -1=invalid/OOM, -2=motion invalid, -3=nonmonotonic frame/time.
  * Rejected frames leave logical state/output unchanged. No backfill or reuse
  * of a previous frame's PL ratio. Successful timestamp/frame IDs strictly rise. */

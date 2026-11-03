@@ -1,0 +1,62 @@
+{
+  "valid_responses": 36,
+  "face_responses": 36,
+  "hr_responses": 0,
+  "blink_counts": [
+    13,
+    14
+  ],
+  "long_close_counts": [
+    8,
+    9,
+    10,
+    11
+  ],
+  "ear_range": [
+    0.14195,
+    0.43584999999999996
+  ],
+  "latest": {
+    "ts": 10300.545777,
+    "frame_id": 16997,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        233,
+        91,
+        198,
+        244
+      ],
+      "pose": {
+        "yaw": 10.225367416361479,
+        "pitch": -0.18562400860991748,
+        "roll": -3.5825170715544847
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3989,
+      "ear_right": 0.3843,
+      "blink_state": "CLOSING",
+      "blink_count": 14,
+      "blink_rate_per_min": 2,
+      "perclos": 0.8896,
+      "long_close_count": 11,
+      "mar": 0.3489,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9472,
+      "motion_score": 0.0294,
+      "overall": 0.9648
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.89 > 0.25；长闭眼 11 次 ≥ 1；眨眼率 2.0/min < 10"
+  }
+}

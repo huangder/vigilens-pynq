@@ -25,6 +25,10 @@ from board.w7_buildroot.boot_delivery import validate_zynq_header
 
 def digest(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
+def write_ready_marker(path,release_id):
+    """The service compares this token exactly; Windows CRLF is not valid."""
+    path.write_bytes((release_id+'\n').encode('ascii'))
+
 def environment(cfg):
     c=cfg['cold_boot'];values={}
     for key in ('board_ip','netmask','http_bind'):ipaddress.IPv4Address(c[key])
@@ -94,7 +98,7 @@ def assemble(work,out):
     shutil.copytree(work/'application',root/'vigilens/app')
     shutil.copyfile(ROOT/'config.yaml',root/'vigilens/config.yaml')
     shutil.copyfile(work/'boot.env',root/'vigilens/boot.env')
-    (root/'vigilens/READY').write_text(prep['release_id']+'\n',encoding='ascii')
+    write_ready_marker(root/'vigilens/READY',prep['release_id'])
     files={p.relative_to(root).as_posix():{'sha256':digest(p),'bytes':p.stat().st_size} for p in sorted(root.rglob('*')) if p.is_file()}
     manifest={'kind':'copyable_SD_appliance_candidate','release_id':prep['release_id'],'config_sha256':prep['config_sha256'],
               'files':files,'bytes':sum(x['bytes'] for x in files.values()),'legacy_images':uimages,'uboot_fit':fit,'device_tree':dt,

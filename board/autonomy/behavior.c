@@ -15,6 +15,9 @@ struct vg_behavior {
     uint64_t blink_count, long_close_count, yawn_count;
     queue window, blinks;
     size_t closed_samples;
+    vg_blink_config blink;
+    int adaptive, baseline_valid, pending, pending_valid, was_closed, low_previous;
+    double baseline[2], last_face_ts, pending_end, close_duration;
 };
 
 static double distance(vg_point a, vg_point b) { return hypot(a.x-b.x, a.y-b.y); }
@@ -80,6 +83,92 @@ void vg_behavior_destroy(vg_behavior *t) {
     if (!t) return;
     free(t->window.data); free(t->blinks.data); free(t);
 }
+int vg_behavior_configure_blink(vg_behavior *t, const vg_blink_config *c) {
+    if (!t || t->started || !c || !isfinite(c->close_ratio) || !isfinite(c->open_ratio) ||
+        !(0<c->close_ratio && c->close_ratio<c->open_ratio && c->open_ratio<1) ||
+        !isfinite(c->baseline_tau_s) || c->baseline_tau_s<=0 ||
+        !isfinite(c->min_close_ms) || c->min_close_ms<=0 ||
+        !isfinite(c->min_open_ms) || c->min_open_ms<=0 ||
+        !isfinite(c->max_gap_ms) || c->max_gap_ms<=0 ||
+        !isfinite(c->baseline_reset_ms) || c->baseline_reset_ms<c->max_gap_ms ||
+        !isfinite(c->close_threshold) || !isfinite(c->open_threshold) ||
+        !((c->close_threshold==0 && c->open_threshold==0) ||
+          (0<c->close_threshold && c->close_threshold<=c->open_threshold)) ||
+        !isfinite(c->long_close_ms) || c->long_close_ms<0 ||
+        (c->long_close_ms>0 && c->long_close_ms<c->min_close_ms)) return -1;
+    t->blink=*c; t->adaptive=1;
+    return 0;
+}
+static void cancel_blink(vg_behavior *t) {
+    t->below_valid=t->open_valid=t->closed_valid=t->pending=t->pending_valid=0;
+    t->was_closed=t->low_previous=0; t->close_duration=0; t->state=VG_EYE_OPEN;
+}
+static int adaptive_blink(vg_behavior *t, double ts, int face, double left, double right) {
+    const vg_blink_config *c=&t->blink;
+    double dt=t->started ? ts-t->last_ts : 0.0;
+    int low, high;
+    if (t->started && dt*1000.0>c->max_gap_ms) cancel_blink(t);
+    if (t->baseline_valid && (ts-t->last_face_ts)*1000.0>c->baseline_reset_ms)
+        t->baseline_valid=0;
+    if (!face) { cancel_blink(t); return 0; }
+    t->last_face_ts=ts;
+    /* First observation is the initial open-eye reference. There is no claimed
+     * calibration/identity detection: long loss resets, closure freezes it. */
+    if (!t->baseline_valid && c->close_threshold==0) {
+        if (!(left>0 && right>0)) { cancel_blink(t); return 0; }
+        t->baseline[0]=left; t->baseline[1]=right; t->baseline_valid=1;
+        cancel_blink(t);
+    }
+    if (c->close_threshold>0) {
+        double mean=0.5*(left+right);
+        low=mean<c->close_threshold;
+        high=mean>=c->open_threshold;
+    } else {
+        low=left<c->close_ratio*t->baseline[0] && right<c->close_ratio*t->baseline[1];
+        high=left>=c->open_ratio*t->baseline[0] && right>=c->open_ratio*t->baseline[1];
+    }
+    /* Attribute an observed interval to its preceding low observation. The
+     * first non-low sample closes that interval; subsequent hysteresis/open
+     * confirmation time cannot turn a short blink into a long closure. */
+    if(t->below_valid && t->low_previous)t->close_duration+=dt;
+    t->low_previous=low;
+    if (low) {
+        t->open_valid=0; t->pending=0;
+        if (!t->below_valid) { t->below_since=ts; t->below_valid=1; t->close_duration=0; }
+        if (t->close_duration*1000.0>=c->min_close_ms) t->state=VG_EYE_CLOSED;
+        else t->state=VG_EYE_CLOSING;
+        t->was_closed=1;
+    } else if (high) {
+        if (t->below_valid && !t->pending) {
+            /* Evaluate on reopening too: the last low frame need not coincide
+             * with the exact min-duration instant. Gaps already cancel above. */
+            t->pending=1; t->pending_end=ts;
+            t->pending_valid=t->close_duration*1000.0>=c->min_close_ms;
+        }
+        if (!t->open_valid) { t->open_since=ts; t->open_valid=1; }
+        if (t->below_valid) t->state=VG_EYE_OPENING;
+        if ((ts-t->open_since)*1000.0>=c->min_open_ms) {
+            if (t->pending && t->pending_valid) {
+                if (t->close_duration*1000.0>=(c->long_close_ms>0?c->long_close_ms:t->cfg.long_close_ms))
+                    ++t->long_close_count;
+                else { ++t->blink_count; append(&t->blinks,t->pending_end,0); }
+            }
+            cancel_blink(t);
+            t->open_valid=1; t->open_since=ts-c->min_open_ms/1000.0;
+            /* Only confirmed bilateral open observations update the baseline;
+             * EWMA limits the influence of a single high landmark outlier. */
+            if (c->close_threshold==0) { double alpha=-expm1(-dt/c->baseline_tau_s);
+              t->baseline[0]+=alpha*(left-t->baseline[0]);
+              t->baseline[1]+=alpha*(right-t->baseline[1]); }
+        }
+        t->was_closed=0;
+    } else {
+        /* Hysteresis band or one-eye wink: never create a new closure. An
+         * interrupted reopening must earn a new continuous open confirmation. */
+        t->open_valid=0;
+    }
+    return t->was_closed;
+}
 int vg_behavior_update(vg_behavior *t, double ts, const vg_behavior_observation *o,
                        vg_behavior_result *out) {
     vg_behavior_result r={0};
@@ -97,7 +186,12 @@ int vg_behavior_update(vg_behavior *t, double ts, const vg_behavior_observation 
     closed=has_face && ear_avg<t->cfg.ear_close_threshold;
     opened=has_face && ear_avg>=t->cfg.ear_close_threshold;
     threshold_s=t->cfg.min_close_ms/1000.0;
-    if (closed) {
+    if (t->adaptive) {
+        int valid=has_face && o->left.present && o->right.present &&
+            distance(o->left.p[0],o->left.p[3])>1e-9 && distance(o->right.p[0],o->right.p[3])>1e-9 &&
+            isfinite(r.ear_left) && isfinite(r.ear_right);
+        closed=adaptive_blink(t,ts,valid,r.ear_left,r.ear_right);
+    } else if (closed) {
         t->open_valid=0;
         if (!t->below_valid) { t->below_since=ts; t->below_valid=1; }
         if (t->state==VG_EYE_OPEN) t->state=VG_EYE_CLOSING;

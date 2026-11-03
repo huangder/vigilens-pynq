@@ -26,10 +26,15 @@
 #include <time.h>
 #include <unistd.h>
 #include <jpeglib.h>
+#include <sys/prctl.h>
 #include "camera_pl.h"
 #include "dma_gray.h"
 #include "camera_geometry.h"
 #include "yuyv_rgb.h"
+#include "jpeg_rows.h"
+#ifdef VIGI_CONFIGURED_CAMERA
+#include "vg_vision_config.h"
+#endif
 #ifdef VIGI_LANDMARK
 #include "../autonomy/landmark_runner.h"
 static void landmark_submit(const unsigned char *rgb);
@@ -38,6 +43,7 @@ static void *landmark_worker(void *unused);
 #include "camera_stream.h"
 #ifdef VIGI_AUTONOMY
 #include "../autonomy/autonomy_camera.h"
+#include "../autonomy/camera_preview.h"
 #endif
 
 /* Existing S4/contract register map; geometry matches system_wrapper_720p60.bit. */
@@ -48,7 +54,10 @@ static void *landmark_worker(void *unused);
 _Static_assert(GRAY_OFF % 4 == 0, "aligned gray DDR word reads");
 #define SINK_MARGIN 384u
 #define QUEUE_CAP 2
-#define POOL_BUFFERS 6
+#ifndef VG_RGB_POOL_BUFFERS
+#define VG_RGB_POOL_BUFFERS 6
+#endif
+#define POOL_BUFFERS VG_RGB_POOL_BUFFERS
 #define MAX_DECODE_WORKERS 2
 /* Explicit ownership protects both active decoders and PL's current/history. */
 _Static_assert(POOL_BUFFERS >= MAX_DECODE_WORKERS + 2, "RGB history must outlive decoding");
@@ -223,6 +232,15 @@ static int decode(const unsigned char *data, size_t length, unsigned char *out);
 static int process_rgb(const unsigned char *rgb, const unsigned char *jpeg, size_t jpeg_size,
                        uint64_t ts_us, unsigned sequence, double decode_ms, double decode_cpu_ms) {
     double t0 = now(), referenced = t0, finished;
+#if defined(VIGI_AUTONOMY) && defined(VG_PREVIEW_CAMERA_MJPEG) && VG_PREVIEW_CAMERA_MJPEG
+    static double preview_at=-1e300;
+    const double source_ts=(double)ts_us/1e6;
+    const char *preview=getenv("VIGI_PREVIEW_LATEST");
+    if(jpeg&&preview&&*preview&&source_ts-preview_at>=VG_PREVIEW_INTERVAL_S) {
+        preview_at=source_ts;
+        if(vg_preview_publish_jpeg(preview,jpeg,jpeg_size))fputs("CAMERA_PREVIEW_PUBLISH_FAILED\n",stderr);
+    }
+#endif
 #ifdef VIGI_LANDMARK
     if (p.landmark_every && (p.frames % p.landmark_every) == 0)
         landmark_submit(rgb);
@@ -479,6 +497,7 @@ static job *ready_take(void) {
 }
 
 static void *decode_worker(void *arg) {
+    (void)prctl(PR_SET_NAME,"vg_decode",0,0,0);
     (void)arg;
     for (;;) {
         job *j = queue_take();
@@ -511,6 +530,7 @@ static void *decode_worker(void *arg) {
 }
 
 static void *pl_worker(void *arg) {
+    (void)prctl(PR_SET_NAME,"vg_pl",0,0,0);
     (void)arg;
     for (;;) {
         job *j = ready_take();
@@ -754,10 +774,7 @@ static int decode(const unsigned char *data, size_t length, unsigned char *out) 
     if (d.output_components != 3 || d.output_width != p.g.width || d.output_height != p.g.height) {
         jpeg_destroy_decompress(&d); return -1;
     }
-    while (d.output_scanline < d.output_height) {
-        JSAMPROW row = out + d.output_scanline * p.g.width * 3u;
-        if (jpeg_read_scanlines(&d, &row, 1) != 1) { jpeg_destroy_decompress(&d); return -1; }
-    }
+    if(vg_jpeg_read_rgb_rows(&d,out,(size_t)p.g.width*3)) { jpeg_destroy_decompress(&d);return -1; }
     jpeg_finish_decompress(&d); jpeg_destroy_decompress(&d);
     return 0;
 }

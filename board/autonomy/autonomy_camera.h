@@ -11,7 +11,8 @@ typedef struct {
     double capture_seconds, analysis_seconds;
 } vg_camera_stats;
 /* One producer, one lifecycle owner; finish/destroy must not race submit.
- * Two owned RGB slots, including the one in inference. No overwrite on full.
+ * Bounded owned RGB slots, including the one in inference (default two).
+ * No overwrite on full; configured builds use VG_ANALYSIS_SLOTS.
  * Paths must name distinct regular output files, never stdout. New runs truncate
  * JSONL and remove old latest before model initialization. NULL on init failure.
  * All vision operations run exclusively on the worker thread. */

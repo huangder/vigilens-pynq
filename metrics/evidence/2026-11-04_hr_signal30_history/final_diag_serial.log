@@ -1,0 +1,85 @@
+
+# sha256sum /tmp/vigilens-signal30/root/vigilens/app/vigi_camera_autonomy /tmp/v
+igilens-signal30/root/vigilens/config.yaml /tmp/vigilens-signal30/root/vigilens/
+app/ui/board_hr_history.js
+VIGILENS_BOOT_CONFIG=/tmp/vigilens-signal30/boot.env /tmp/vigilens-signal30/vigilens-service status
+cat /run/vigilens-signal30/camera.log.previous /run/vigilens-signal30/camera.log | awk '
+/^AUTONOMY_SAMPLE / {
+ for(i=2;i<=NF;i++){split($i,a,"=");v[a[1]]=a[2]}
+ if(v["rc"]!=0)next
+ n++;if(n==1){first=v["ts"];fid=v["frame_id"]}
+85ba677e9558adfa8ef256afbe69db065d618f6f07374dbf1efa8a0a9cfd85f2  /tmp/vigilens-signal30/root/vigilens/app/vigi_camera_autonomy
+0e5167afda5e4f850dc65bc3c32b08f934083266e11eea75946f6942b37af720  /tmp/vigilens-signal30/root/vigilens/config.yaml
+d27b73253c1b2c0b4ea1962fe6af928a8383543f08067072b3a5543f563ac482  /tmp/vigilens-signal30/root/vigilens/app/ui/board_hr_history.js
+# VIGILENS_BOOT_CONFIG=/tmp/vigilens-signal30/boot.env /tmp/vigilens-signal30/vi
+gilens-service status
+ last=v["ts"];lastid=v["frame_id"]
+running camera_pid=12041 http_pid=12039
+supervisor_pid=12022
+# cat /run/vigilens-signal30/camera.log.previous /run/vigilens-signal30/camera.l
+og | awk '
+> /^AUTONOMY_SAMPLE / {
+>  for(i=2;i<=NF;i++){split($i,a,"=");v[a[1]]=a[2]}
+>  if(v["rc"]!=0)next
+>  n++;if(n==1){first=v["ts"];fid=v["frame_id"]}
+>  last=v["ts"];lastid=v["frame_id"]
+>  faces+=v["visible"]==1
+>  reasons[v["vital_reject"]]++;gates[v["vital_gate"]]++;filters[v["hr_filter"]]
+++
+>  if(v["vital_history_samples"]+0>hist)hist=v["vital_history_samples"]+0
+>  if(v["vital_samples"]+0>samples)samples=v["vital_samples"]+0
+>  roi+=v["roi_pixels"]+0
+>  if(v["raw_hr"]!="nan")hr++
+>  for(i=1;i<=6;i++){key=keys[i];sum[key]+=v[key];if(v[key]+0>maximum[key])maxim
+um[key]=v[key]+0}
+> }
+> BEGIN {keys[1]="worker_ms";keys[2]="total_ms";keys[3]="landmark_ms";keys[4]="q
+ueue_ms";keys[5]="publish_ms";keys[6]="landmark_model_ms"}
+> END {
+>  printf "ROLLING_DIAG samples=%d faces=%d first_ts=%.9f last_ts=%.9f first_id=
+%d last_id=%d analysis_hz=%.6f max_samples=%d max_history=%d raw_hr_finite=%d me
+an_roi=%.2f\n",n,faces,first,last,fid,lastid,(n-1)/(last-first),samples,hist,hr,
+roi/n
+>  for(k in reasons)printf "REJECT %s %d\n",k,reasons[k]
+>  for(k in gates)printf "GATE %s %d\n",k,gates[k]
+>  for(k in filters)printf "FILTER %s %d\n",k,filters[k]
+>  for(i=1;i<=6;i++){k=keys[i];printf "TIMING %s mean=%.6f max=%.6f\n",k,sum[k]/
+n,maximum[k]}
+> }'
+tail -n 6 /run/vigilens-signal30/camera.log
+printf '\nSIGNAL30_FINAL_DIAG_DONE rc=%s\n' "$?"
+ROLLING_DIAG samples=3490 faces=2849 first_ts=15846.662221000 last_ts=15917.240716000 first_id=38529 last_id=42239 analysis_hz=49.434321 max_samples=75 max_history=535 raw_hr_finite=492 mean_roi=3643.63
+REJECT recovering 6
+REJECT vitals_blocked 645
+REJECT below_report_min 36
+REJECT window_not_full 653
+REJECT short_window_low_confidence 351
+REJECT harmonic_ambiguity 180
+REJECT - 435
+REJECT no_dominant_peak 1163
+REJECT unstable 21
+GATE accepted 2845
+GATE face_missing 641
+GATE quality_or_pose 4
+FILTER warming 2563
+FILTER below_report_min 36
+FILTER accepted 435
+FILTER paused 435
+FILTER unstable 21
+TIMING worker_ms mean=14.986351 max=96.057000
+TIMING total_ms mean=14.396109 max=95.099000
+TIMING landmark_ms mean=9.764700 max=93.114000
+TIMING queue_ms mean=18.324681 max=228.485000
+TIMING publish_ms mean=0.472697 max=11.280000
+TIMING landmark_model_ms mean=2.504167 max=90.818000
+# tail -n 6 /run/vigilens-signal30/camera.log
+CAMERA_PL_FRAME n=42248 seq=46948 ts_us=15917377004 mismatch=0 audit=0 roi_g=41116617 roi_count=307200 motion_valid=1 motion_ratio_q16=4340 decode_ms=29.271 reference_ms=0.000 transfer_pl_ms=7.066 decode_cpu_ms=13.755 transfer_pl_cpu_ms=3.521
+AUTONOMY_HANDOFF frame_id=42247 gray_ms=0.331 submit_ms=0.028 accepted=1
+ERT_TRACK_REJECT frame_id=42247 reason=no_anchor geometry_failure=-1 corrected=0
+AUTONOMY_SAMPLE frame_id=42247 ts=15917.377004000 rc=0 detections=0 visible=0 detector_ms=0.009 landmark_ms=0.005 total_ms=0.323 detect_path=0 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=0.005 vital_hz=61.690 vital_reject=vitals_blocked roi_pixels=0 vital_samples=0 vital_history_samples=0 vital_gate=face_missing raw_hr=nan raw_hr_conf=nan hr_filter=warming preview_ms=0.000 publish_ms=0.560 worker_ms=0.962 queue_ms=0.323 roi_sum_r=0 roi_sum_g=0 roi_sum_b=0
+CAPTURE_FRAME n=42251 sequence=46951 bytes=42009 ts=15917.424688
+SAMPLE_FRAME n=42251 source_sequence=46951 ts_us=15917424688
+# printf '\nSIGNAL30_FINAL_DIAG_DONE rc=%s\n' "$?"
+
+SIGNAL30_FINAL_DIAG_DONE rc=0
+# 

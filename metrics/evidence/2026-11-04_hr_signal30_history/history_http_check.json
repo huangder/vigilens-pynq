@@ -1,0 +1,10 @@
+{
+  "page_HTTP": 200,
+  "history_HTTP": 200,
+  "history_panel": true,
+  "history_export": true,
+  "history_sha256": "d27b73253c1b2c0b4ea1962fe6af928a8383543f08067072b3a5543f563ac482",
+  "matches_local": true,
+  "history_min60": true,
+  "visual_browser_QA_performed": false
+}

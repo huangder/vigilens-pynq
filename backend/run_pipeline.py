@@ -142,12 +142,16 @@ def update_rppg(rppg: GreenRppg, engine: DecisionEngine, *, obs: Any,
     Face loss/empty ROI immediately clears history. Configured short quality or
     pose failures pause the raw window, but never return a stale estimate.
     """
-    def finish(raw):
+    def finish(raw, *, allow_recovery=False):
         rppg.last_raw_hr = raw["hr_bpm"]
         rppg.last_raw_hr_conf = raw["hr_conf"]
         if stabilizer is None:
             return raw
-        value, conf = stabilizer.update(raw["hr_bpm"], raw["hr_conf"], ts if ts is not None else frame_id / rppg.fps)
+        estimate_ts = ts if ts is not None else frame_id / rppg.fps
+        if raw["hr_bpm"] is None and allow_recovery:
+            stabilizer.pause(estimate_ts)
+            return raw
+        value, conf = stabilizer.update(raw["hr_bpm"], raw["hr_conf"], estimate_ts)
         return {**raw, "hr_bpm": value, "hr_conf": conf}
 
     face = {"visible": float(obs.visible), "pose": obs.pose}
@@ -157,7 +161,7 @@ def update_rppg(rppg: GreenRppg, engine: DecisionEngine, *, obs: Any,
         else:
             reason = "quality_invalid" if quality["overall"] < max(engine.quality_min, engine.vital_require_quality) else "pose_invalid"
             rppg.invalidate(reason, ts, allow_recovery=True)
-        return finish(rppg.estimate())
+        return finish(rppg.estimate(), allow_recovery=getattr(rppg, "samples", 0) > 0)
     fw, fh = image_size(image, fallback=fallback)
     roi = obs.forehead if obs.forehead is not None else forehead_roi(obs.bbox, fw, fh)
     sum_g, count = roi_channel_sum(image, roi, channel=1)
@@ -174,7 +178,12 @@ def update_rppg(rppg: GreenRppg, engine: DecisionEngine, *, obs: Any,
             rppg.push_rgb((sum_r, sum_g, sum_b), count, frame_id, ts=ts)
         else:
             rppg.push(q15_from_roi_sum(sum_g, count), frame_id, ts=ts)
-    return finish(rppg.estimate())
+    raw = rppg.estimate()
+    # Only a bounded soft pause or a failed spectrum may retain smoothing.
+    # Timestamp/rate errors, source loss and a newly empty window reset it.
+    recoverable = getattr(rppg, "last_reject", None) in {
+        "recovering", "no_dominant_peak", "short_window_low_confidence", "harmonic_ambiguity"}
+    return finish(raw, allow_recovery=getattr(rppg, "recovery_s", 0) > 0 and recoverable)
 
 
 def load_pl_motion(path: str | Path) -> dict[int, float]:

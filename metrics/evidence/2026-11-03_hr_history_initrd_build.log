@@ -1,0 +1,17 @@
+Image Name:   VigiLens-SD-autonomy
+Created:      Tue Nov  3 20:24:51 2026
+Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+Data Size:    11604603 Bytes = 11332.62 KiB = 11.07 MiB
+Load Address: 00000000
+Entry Point:  00000000
+Image Name:   VigiLens-SD-autonomy
+Created:      Tue Nov  3 20:24:51 2026
+Image Type:   ARM Linux Script (uncompressed)
+Data Size:    619 Bytes = 0.60 KiB = 0.00 MiB
+Load Address: 00000000
+Entry Point:  00000000
+Contents:
+   Image 0: 611 Bytes = 0.60 KiB = 0.00 MiB
+COLD_BOOT_DT_KERNEL_INITRD_PASS
+MIZAR_FIT_PAYLOADS_AND_DEFAULT_CONFIG_PASS
+COLD_BOOT_LINUX_PREPARED; physical SD power-on remains unverified

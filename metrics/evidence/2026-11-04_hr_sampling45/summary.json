@@ -1,0 +1,124 @@
+{
+  "date_local": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "candidate_unsigned": true,
+  "contract_version_upgraded": false,
+  "deployed_to_RAM": true,
+  "SD_cold_boot_updated": false,
+  "raw_face_media_saved_or_uploaded": false,
+  "reference_HR_available": false,
+  "continuous_HR_verified": false,
+  "profile": {
+    "config_sha256": "c9cfab59e46462f73d0d3c40175124b220d5f6e5eaf87be5bb392b1af4ad2bac",
+    "camera_sha256": "135b4e4051a869fce2ccfc528d140eb935c6597824fd05c1c486ce1acffbef3c",
+    "archive_sha256": "6a5873351181a3ab2d88e5634e79f1a11af9058fa6f1cde78d706f5f748a4453",
+    "source_min_hz": 45,
+    "processing_fps": 60,
+    "release_id": "VigiLens-DEV-Sampling45-c9cfab59e46462f7",
+    "archive_bytes": 1269676,
+    "contains_raw_face_media": false,
+    "contains_models": false
+  },
+  "before": {
+    "analysis_samples": 4017,
+    "visible_samples": 3917,
+    "first_ts": 12758.244083,
+    "last_ts": 12836.614415,
+    "analysis_hz": 51.243881,
+    "max_history_samples": 550,
+    "sampling_too_slow": 2575,
+    "no_dominant_peak": 440,
+    "warmup_history_unavailable": 362,
+    "window_not_full": 296,
+    "short_window_low_confidence": 174,
+    "vitals_blocked": 100,
+    "harmonic_ambiguity": 10,
+    "raw_HR_finite": 60
+  },
+  "live_sessions": {
+    "initial": {
+      "requested_seconds": 60.0,
+      "elapsed_seconds": 60.0,
+      "observations": 300,
+      "unique_frames": 300,
+      "visible_frames": 212,
+      "nonnull_HR_observations": 2,
+      "request_errors": [],
+      "contract_errors": [],
+      "first_source_ts": 13993.159692,
+      "last_source_ts": 14052.914423,
+      "source_monotonic": true,
+      "human_action_timing_independently_annotated": false,
+      "accuracy_verified": false,
+      "raw_face_media_saved": false
+    },
+    "user_confirmed_still": {
+      "requested_seconds": 60.0,
+      "elapsed_seconds": 60.0,
+      "observations": 300,
+      "unique_frames": 300,
+      "visible_frames": 273,
+      "nonnull_HR_observations": 41,
+      "request_errors": [],
+      "contract_errors": [],
+      "first_source_ts": 14173.703857,
+      "last_source_ts": 14233.530789,
+      "source_monotonic": true,
+      "human_action_timing_independently_annotated": false,
+      "accuracy_verified": false,
+      "raw_face_media_saved": false
+    }
+  },
+  "confirmed_runtime_slice": {
+    "scope": "Only retained 21.75s of the 60s confirmed-still capture; rotation removed earlier frames",
+    "first_ts": 14211.779645,
+    "last_ts": 14233.530789,
+    "samples": 1077,
+    "visible": 1076,
+    "analysis_hz": 49.468662,
+    "max_history_samples": 525,
+    "raw_HR_finite": 207,
+    "reject_counts": {
+      "sampling_too_slow": 17,
+      "no_dominant_peak": 647,
+      "short_window_low_confidence": 109,
+      "harmonic_ambiguity": 22,
+      "window_not_full": 74,
+      "vitals_blocked": 1,
+      "accepted": 199,
+      "unstable": 8
+    }
+  },
+  "validation": {
+    "floor45_related_tests": "37 passed, 14 subtests passed",
+    "root_pytest": "585 passed, 2 warnings",
+    "check_all": "26 PASS, 0 FAIL",
+    "ARM_build": "NATIVE_VISION_BUILD_PASS; NATIVE_CAMERA_BUILD_PASS; PL_ONLY_BUILD_PASS",
+    "frontend_mock": "22 checked, 0 failures",
+    "cross_language": "24 frames, all 6 status values valid",
+    "frontend_wiring": "passed",
+    "video_bypass": "15/15 passed with synthetic fixtures",
+    "git_diff_check": "passed; pre-existing line-ending notices"
+  },
+  "corrections": [
+    "Initial new test used a 69 BPM off-bin stimulus with an unjustified sub-bin precision assertion. Final tests use an on-bin 72 BPM signal plus a separate explicit half-bin resolution check; legacy rejection assertions retained.",
+    "Initial gap stimulus had already left the selected contiguous suffix. The final gap test puts the gap inside the startup window, preserving its rejection assertion.",
+    "Board BusyBox tar lacks -z; changed test installer to gzip -dc piped to tar.",
+    "Windows-generated READY initially contained CRLF; fixed LF before passing package checks. Old service remained running until checks passed."
+  ],
+  "network_and_control": {
+    "diagnostic_HTTP_export": "Auto-review rejected new board log export service; used direct serial statistics instead",
+    "program_delivery": "PC interface-bound server allowed only the user board IP and two fixed program/config download paths; stopped after installation",
+    "serial": "COM11 exclusively opened per command and closed in finally",
+    "old_service": "stopped, RAM files retained for rollback",
+    "new_service": "/tmp/vigilens-sampling45/vigilens-service",
+    "JTAG_reset_performed": false
+  },
+  "limitations": [
+    "Actual analysis throughput is not stable full 60fps.",
+    "HR output remains intermittent due to spectral rejection and some face/quality loss.",
+    "No synchronized reference; non-null observations are not independent HR measurements or accuracy scores.",
+    "Human action timing was not independently annotated.",
+    "Human collaboration record and formal co-signing remain human responsibilities."
+  ]
+}

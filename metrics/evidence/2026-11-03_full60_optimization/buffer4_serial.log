@@ -1,0 +1,32 @@
+
+# wget -T 15 -O /tmp/full60_buffer4_run.sh http://169.254.73.28:8767/buffer4_run
+.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/full60_buffer4_run.sh'
+full60_buffer4_run.s 100% |********************************|  1887  0:00:00 ETA
+'/tmp/full60_buffer4_run.sh' saved
+# sh /tmp/full60_buffer4_run.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/vigilens-full60/buffer4'
+printf '\nFULL60_BUFFER4_SERIAL_END\n'
+buffer4               58% |******************              | 6224k  0:00:00 ETAbuffer4              100% |********************************| 10.4M  0:00:00 ETA
+'/tmp/vigilens-full60/buffer4' saved
+d64a8dfd63a8638dda7df5bd0f24629d24ea0569418b49c97862369d366e469e  /tmp/vigilens-full60/buffer4
+stop_requested pid=18105
+CAPTURE_MODE 640x480 fourcc=0x47504a4d interval=1/60
+SAMPLE_RESULT input=900 kept=900 dropped=0 driver_sequence_gaps=38 empty_slots=0 input_fps=56.943038 output_fps=56.943038 native_30fps=no requested_fps=60 native_requested_fps=yes
+AUTONOMY_SUMMARY submitted=900 accepted=839 skipped=61 processed=839 succeeded=838 rejected=1 failed=0 rc=0 camera_submit_fps=56.943038 analysis_update_fps=52.889275
+AUDIT_SUMMARY frames=900 audits=30 failures=0 reference_ms_total=694
+CAMERA_PL_PASS compared_frames=900 native_camera_mode_verified=1
+FULL60_WORKLOAD frames=839 face=779 mean_analysis_ms=14.233 max_history=546
+reject  1
+reject vitals_blocked 60
+reject warmup_history_unavailable 58
+reject window_not_full 180
+reject sampling_too_slow 540
+start_requested pid=20446
+FULL60_BUFFER4_FINISHED_rc=0
+# printf '\nFULL60_BUFFER4_SERIAL_END\n'
+
+FULL60_BUFFER4_SERIAL_END
+# 

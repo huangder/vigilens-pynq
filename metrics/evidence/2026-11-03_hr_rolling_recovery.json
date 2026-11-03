@@ -1,0 +1,70 @@
+{
+  "date_local": "2026-11-03",
+  "timezone": "Asia/Shanghai",
+  "kind": "software regression; synthetic signal and geometry inputs",
+  "candidate_unsigned": true,
+  "contract_version_upgraded": false,
+  "thresholds_changed": false,
+  "hardware_deployed": false,
+  "ARM_build_performed": false,
+  "physiological_accuracy_verified": false,
+  "live_HR_continuity_verified": false,
+  "raw_face_media_saved_or_uploaded": false,
+  "validation": {
+    "root_pytest": {
+      "passed": 585,
+      "warnings": 2,
+      "exit_code": 0,
+      "log": "2026-11-03_hr_rolling_recovery_pytest.log"
+    },
+    "board_related_pytest": {
+      "passed": 25,
+      "subtests_passed": 23,
+      "exit_code": 0,
+      "log": "2026-11-03_hr_rolling_recovery_board_tests.log",
+      "scope": "vital C/Python parity; native 30/60Hz rolling recovery; original native engine regression; full60 synthetic engine; configuration export"
+    },
+    "check_all": {
+      "passed": 26,
+      "failed": 0,
+      "exit_code": 0,
+      "log": "2026-11-03_hr_rolling_recovery_check_all.log"
+    },
+    "frontend_mock": {
+      "checked": 22,
+      "failures": 0,
+      "exit_code": 0
+    },
+    "cross_language_contract": {
+      "frames": 24,
+      "status_values": 6,
+      "exit_code": 0,
+      "temporary_frames": "metrics/logs/hr_rolling_js_frames.jsonl"
+    },
+    "frontend_wiring_exit_code": 0,
+    "video_bypass": {
+      "passed": 15,
+      "exit_code": 0,
+      "input": "synthetic JPEG and contract fixtures"
+    }
+  },
+  "source_sha256": {
+    "backend/hr_filter.py": "28a9d994042c1b0dba75b6e248b52d35a1df0c135784a3ee29789de59dc58790",
+    "backend/run_pipeline.py": "3b8609e087229357a4c8f8e7681fd93413c04a5732b1a993632fcab7b8b3d348",
+    "backend/vital.py": "e3ab0c9cd6f52e67f94d048fcc110fd564e7c8b501fde64cd656f4f71d92b13c",
+    "board/autonomy/hr_filter.h": "0db80e0a8b75a05aaa4cd1ade83ae649f03fb80fff5673ae8665026685a5ff8e",
+    "board/autonomy/autonomy_engine.c": "647adb8f3eff2007216bcd0649b7fef9e907e921839e5f1782bc700ea3fcb62c",
+    "board/autonomy/vital.c": "34bdd752508a7f2aaee56a055b4d91aa5e2bad9a2dab4ef34b935fb1328e5ff9",
+    "backend/tests/test_hr_filter.py": "85538215f55f2d209fa195ae609bd257ec869336338877ae721031fb3eb4625f",
+    "backend/tests/test_rppg_history.py": "0bfe460fae155f4adccfb9ad8a8fea9528182d920b1a2ed78f473033c6569dc6",
+    "board/autonomy/tests/autonomy_engine_test.c": "15d97e5e4ce4c497f312ca1eeadb24c0f291e7f7a32dd7c482f90c08d7482a75",
+    "board/autonomy/tests/test_vital_c.py": "9a8f84e4dbd20edd813c5a1c4d374876fd7bfaf6a9b2c66c8e1ff79b71d2923e",
+    "board/autonomy/tests/test_hr_rolling_engine.py": "750ae8078ea1a35aa3ae54d2cc52842e8a0e82be456b18abec7dc461965db5ec"
+  },
+  "limitations": [
+    "Only bounded raw sample gaps can be bridged; existing 200ms raw recovery and spectral/timing guards remain.",
+    "Internal smoothing can pause up to its configured expiry; this does not permit a 1.5s camera gap to be spliced.",
+    "No ARM build, board deployment, live continuity capture or synchronized reference HR was performed.",
+    "Human collaboration record and formal co-signing remain human responsibilities."
+  ]
+}

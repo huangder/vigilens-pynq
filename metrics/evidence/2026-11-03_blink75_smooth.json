@@ -1,0 +1,408 @@
+{
+  "recorded_at": "2026-11-03T19:47:20.391997+08:00",
+  "kind": "installed_candidate_software_reboot_and_http_smoke_verified",
+  "release_id": "VigiLens-SD-1f461bad8836002a",
+  "config_sha256": "1f461bad8836002af97d820456a42c7a592bd02ab5013ecaa817c33c2b551908",
+  "camera_sha256": "6e7316740bd66e93e15e89d64e461ad3a0c21e7358c18d74eef728b6ed47e14a",
+  "blink_policy": {
+    "ear_threshold_mode": "absolute",
+    "ear_close_absolute": 0.4,
+    "ear_open_absolute": 0.43,
+    "ear_close_ratio": 0.65,
+    "ear_open_ratio": 0.8,
+    "ear_baseline_tau_s": 2.0,
+    "blink_min_close_ms": 80,
+    "blink_min_open_ms": 100,
+    "blink_long_close_ms": 1500,
+    "blink_max_gap_ms": 120,
+    "ear_baseline_reset_ms": 1000
+  },
+  "required_hr_samples": 75,
+  "heart_rate_window_seconds": 2.5,
+  "hr_filter": {
+    "enabled": true,
+    "window": 3,
+    "alpha": 0.2,
+    "interval_s": 0.8,
+    "max_gap_s": 1.5,
+    "max_spread_bpm": 12.0,
+    "startup_samples": 1
+  },
+  "short_window_quality": {
+    "short_window_seconds": 3.0,
+    "short_window_min_conf": 0.8
+  },
+  "display_animation": {
+    "hr_display_transition_ms": 1000,
+    "dashboard_animation_hz": 30.0
+  },
+  "fixes": [
+    "Closed duration accumulates only intervals attributed to observed low EAR; hysteresis waiting no longer extends it.",
+    "80 ms close confirmation, 100 ms reopen confirmation, 1500 ms long-close boundary.",
+    "75-sample rolling HR window and lower EMA alpha=0.20.",
+    "Displayed values interpolate toward valid targets with explicit target labels; the source-time viewport moves continuously between received timestamps.",
+    "Short missing data can finish a historical display transition with an explicit non-current label; no animation enters contract samples or alerts.",
+    "75-point seed=7 pure noise was accepted by the old spectrum rule; the new short-window confidence guard rejects that fixture in C and Python."
+  ],
+  "tests": {
+    "root_pytest": "566 passed, 2 warnings in 34.48s",
+    "board_related_pytest": "75 passed, 12 subtests passed in 6.21s",
+    "JS_motion_trend_renderer_transport": "31 passed, 0 failed",
+    "check_all": {
+      "when": "2026-11-03T16:30:56",
+      "elapsed_s": 75.0,
+      "passed": 26,
+      "failed": 0,
+      "rows": [
+        {
+          "section": "环境",
+          "name": "Python",
+          "status": "INFO",
+          "detail": "3.12.13 @ D:\\Desktop\\AMD\\.venv\\Scripts\\python.exe"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 cv2",
+          "status": "PASS",
+          "detail": "4.11.0"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 numpy",
+          "status": "PASS",
+          "detail": "1.26.4"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 mediapipe",
+          "status": "PASS",
+          "detail": "0.10.21"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 yaml",
+          "status": "PASS",
+          "detail": "6.0.3"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 fastapi",
+          "status": "PASS",
+          "detail": "0.141.1"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 uvicorn",
+          "status": "PASS",
+          "detail": "0.52.4"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 pytest",
+          "status": "PASS",
+          "detail": "9.1.1"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 pyserial",
+          "status": "INFO",
+          "detail": "未安装 —— Python 串口工具不可用；现有板端 PowerShell 串口工具不依赖它"
+        },
+        {
+          "section": "环境",
+          "name": "node",
+          "status": "PASS",
+          "detail": "C:\\Program Files\\nodejs\\node.EXE"
+        },
+        {
+          "section": "A 线",
+          "name": "check_a_line_all（A~E 五段）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 52.2s | ============================================================== | A 线自检全部通过：17 项（用时 52.0s）"
+        },
+        {
+          "section": "B 线",
+          "name": "B 线门控阈值一处定义 → /api/status → 前端兜底三处一致",
+          "status": "PASS",
+          "detail": "退出码 0，用时 2.2s | B 线阈值守卫检查：通过 —— 4/4（config.yaml → /api/status → app.js 兜底，三处一致）"
+        },
+        {
+          "section": "B 线",
+          "name": "B 线 /ws 断流兜底（发合法契约的 disconnected，序号不倒退）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 8.6s | B 线 /ws 断流兜底检查：通过 —— 5/5"
+        },
+        {
+          "section": "B 线",
+          "name": "旁路画面链路 + 契约未被污染（15 项）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 5.6s | 全部通过：15/15 项通过"
+        },
+        {
+          "section": "B 线",
+          "name": "年龄档案旁路（年龄档案/收录/同龄基线比对 + Python↔JS 校验一致）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 0.6s | RESULT: PASS (33/33 PASS, 0 FAIL, 0 SKIP)"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/contract.py",
+          "status": "PASS",
+          "detail": "退出码 0"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/config.py",
+          "status": "PASS",
+          "detail": "fpga.device              = xc7z020clg400-1"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/publish.py",
+          "status": "PASS",
+          "detail": "本地契约校验：坏帧会被拦下 —— 拦住了： True 1 条错误"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/regmap.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/bringup_check.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/hw_sw_compare.py --selftest",
+          "status": "PASS",
+          "detail": "⚠️ 本自检只证明'数据与档位配套'；PL 侧数值一致性仍必须上板跑本脚本正文。"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/dma_test.py --selftest",
+          "status": "PASS",
+          "detail": "⚠️ 本自检只证明'测试图可复现 + 黄金参考配套'；DMA 回环/长跑本身必须上板跑。"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/overlay/mmap_overlay.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "metrics/scripts/check_uvc_camera.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS (21/21)"
+        },
+        {
+          "section": "工具自检",
+          "name": "metrics/scripts/probe_rppg_timebase.py",
+          "status": "PASS",
+          "detail": "✅ 全部档位符合验收判据（容差内报数、容差外 null）"
+        },
+        {
+          "section": "语法",
+          "name": "7 个 Python 目标可解析",
+          "status": "PASS",
+          "detail": "全部 OK"
+        },
+        {
+          "section": "语法",
+          "name": "frontend/app.js（node --check）",
+          "status": "PASS",
+          "detail": "OK"
+        },
+        {
+          "section": "语法",
+          "name": "frontend/preview.js 坐标换算自检（含 720p）",
+          "status": "PASS",
+          "detail": "\"failures\": [], | \"ok\": true | }"
+        },
+        {
+          "section": "就绪",
+          "name": "P4 标定素材（4 视频 + 4 标注）",
+          "status": "INFO",
+          "detail": "· turn.csv 标注不存在（放 data\\annotations/，格式见 data/README.md） | → 补齐后重跑本脚本；再按 backend/P4_CALIBRATION_GUIDE.md 逐项标定。"
+        },
+        {
+          "section": "就绪",
+          "name": "board/bitstream/ 里的 bitstream",
+          "status": "INFO",
+          "detail": "找到 2 个文件"
+        },
+        {
+          "section": "就绪",
+          "name": "Vitis HLS 工具链",
+          "status": "INFO",
+          "detail": "已安装"
+        },
+        {
+          "section": "就绪",
+          "name": "data/raw/ 真实视频",
+          "status": "INFO",
+          "detail": "3 个：['blink.mp4', 'blink_1080p_src.mp4', '_probe_rot90.mp4']"
+        }
+      ]
+    },
+    "frontend_mock_selftest": "22 checks, no failures",
+    "frontend_wiring": "passed",
+    "video_bypass": "15/15 synthetic fixture checks passed",
+    "ARM_build": "NATIVE_VISION_BUILD_PASS, NATIVE_CAMERA_BUILD_PASS, PL_ONLY_BUILD_PASS",
+    "packaged_app_and_motion_JS_syntax": "passed",
+    "synthetic_blink_edges": [
+      "750ms closure -> blink, not long",
+      "1500ms continuous closure -> one long event",
+      "250ms low EAR + over 2s hysteresis wait -> blink, not long",
+      "short 32ms dip rejected by the 80ms policy"
+    ],
+    "synthetic_window_probe": {
+      "old_75_point_seed7_noise_conf": 0.7560732995925671,
+      "old_fixture_was_accepted": true,
+      "new_reject": "short_window_low_confidence",
+      "accuracy_claimed": false
+    }
+  },
+  "deployment": {
+    "installed": true,
+    "commands_sent_to_board": true,
+    "reason": "Installed with package SHA checks; rebuilt and installed matching uInitrd; software reboot automatically restored network, camera and HTTP.",
+    "PC_Ethernet_IP": "169.254.73.28/16",
+    "board_IP": "169.254.73.29",
+    "previous_installed_release": "VigiLens-SD-ff0ebe1975a31d50",
+    "update_tar": "D:\\Desktop\\AMD\\.tmp\\autonomy\\blink75_smooth_20261103\\sensitivity-update.tar",
+    "update_tar_sha256": "0d8ed8926d4238395cbd9f27227dcbe8980a5e01e81470bee6a3e74b0ec4b90d",
+    "install_script": "D:\\Desktop\\AMD\\.tmp\\autonomy\\blink75_smooth_20261103\\install_update.sh",
+    "physical_cold_boot_verified": false,
+    "live_accuracy_verified": false,
+    "initial_connection_block": {
+      "installed": false,
+      "commands_sent_to_board": false,
+      "reason": "PC Ethernet adapter Disconnected at 0 bps; board HTTP unreachable; COM11 opened but neither serial helper obtained a root prompt."
+    },
+    "resume_diagnosis": {
+      "PC_link": "Up, 1 Gbps",
+      "board_eth0_initially_down_without_IP": true,
+      "rootfs_boot_release": "VigiLens-SD-6a03c4d16a2ae34c",
+      "SD_application_release": "VigiLens-SD-ff0ebe1975a31d50",
+      "service_initially_failed_package_check": true,
+      "recovery": "Loaded matching SD boot.env into RAM, passed package check and configured Ethernet before installing the new application."
+    },
+    "matching_initrd_sha256": "befde344b1f39e036ee99eb910af93a003b9c842aff7b3105b3769320f7e4d8e",
+    "matching_initrd_bytes": 11604704,
+    "software_reboot_verified": true,
+    "post_reboot_service": "running camera_pid=132 http_pid=130 supervisor_pid=120",
+    "SD_application_mount": "read-only",
+    "http_assets": [
+      {
+        "http_status": 200,
+        "file": "board_config.js",
+        "exact_match": true
+      },
+      {
+        "http_status": 200,
+        "file": "board_hr_motion.js",
+        "exact_match": true
+      },
+      {
+        "http_status": 200,
+        "file": "app.js",
+        "exact_match": true
+      },
+      {
+        "http_status": 200,
+        "file": "index.html",
+        "exact_match": true
+      }
+    ]
+  },
+  "limits": [
+    "Human blink labels and synchronized reference HR are unavailable.",
+    "75 points at 30Hz has a nominal 24 bpm spectrum grid; animation and EMA cannot increase measurement information.",
+    "The stricter short-window guard is an engineering candidate, not a statistical confidence probability or validated physiological threshold.",
+    "The latest package passed software reboot on the physical board; an independent power-off/power-on test has not been performed for this version.",
+    "User was not at the camera, so no current human blink count, HR output or perceptual animation acceptance is claimed."
+  ],
+  "contract_version_upgraded": false,
+  "candidate_unsigned": true,
+  "raw_face_media_saved_or_uploaded": false,
+  "live_data_smoke": {
+    "frames": 15,
+    "first_ts": 84.368083,
+    "last_ts": 87.335976,
+    "first_frame_id": 1820,
+    "last_frame_id": 1909,
+    "visible_frames": 0,
+    "valid_hr_frames": 0,
+    "user_report": "User explicitly reported not being in front of the camera.",
+    "scope": "HTTP service progression with no detected face; not blink/HR accuracy evidence."
+  },
+  "boot_verification": {
+    "dt_kernel_initrd": {
+      "passed": true,
+      "device_tree": {
+        "sd_status": "okay",
+        "sd_bus_width": "4",
+        "sd_max_frequency": "25000000",
+        "sd_broken_cd": "",
+        "sd_disable_wp": "",
+        "usb_status": "okay",
+        "usb_role": "host",
+        "gem_status": "okay",
+        "phy_max_speed": "100",
+        "dram": "100000 1ff00000",
+        "dma_reservation": "12000000 1000000",
+        "pl_profile": "720p-3of8"
+      },
+      "kernel_builtins": [
+        "CONFIG_MMC",
+        "CONFIG_MMC_BLOCK",
+        "CONFIG_MMC_SDHCI",
+        "CONFIG_MMC_SDHCI_OF_ARASAN",
+        "CONFIG_FAT_FS",
+        "CONFIG_VFAT_FS",
+        "CONFIG_BLK_DEV_INITRD",
+        "CONFIG_DEVTMPFS"
+      ],
+      "uvc_driver": {
+        "state": "module",
+        "files": [
+          "lib/modules/6.6.158/kernel/drivers/media/usb/uvc/uvcvideo.ko"
+        ]
+      },
+      "rootfs_uncompressed_bytes": 32706048,
+      "rootfs_sha256": "03541cfa9885c5f91d605e2a79b883fb5343f37c9df7328a52f923a52ee28078",
+      "contains_autostart_service": true,
+      "contains_model_weights": false,
+      "hardware_sd_boot_verified": false
+    },
+    "FIT": {
+      "passed": true,
+      "sha256": "d5c7b31e71fac3ec88d261dd3ba9369e7cf50cd9b777b94c77b1ac18c2149011",
+      "images": {
+        "firmware-1": {
+          "type": "firmware",
+          "description": "U-Boot 2024.10 for zynq board",
+          "bytes": 1036664,
+          "hash_algorithm": "crc32",
+          "hash_verified": true
+        },
+        "fdt-1": {
+          "type": "flat_dt",
+          "description": "zynq-mizar-candidate",
+          "bytes": 13976,
+          "hash_algorithm": "crc32",
+          "hash_verified": true
+        }
+      },
+      "default_configuration": "conf-1",
+      "firmware": "firmware-1",
+      "fdt": "fdt-1",
+      "sole_board": "zynq-mizar-candidate",
+      "hardware_boot_verified": false
+    }
+  }
+}

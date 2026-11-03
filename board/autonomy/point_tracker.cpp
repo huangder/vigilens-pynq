@@ -53,16 +53,17 @@ static void finish_pyramid(Pyramid& p,int levels) {
         p.images.push_back(std::move(dst));
     }
 }
-Pyramid from_rgb(const uint8_t *rgb,int width,int height,int levels) {
+static Pyramid from_rgb_window(const uint8_t *rgb,int width,int height,int levels,int x0,int y0,int x1,int y1) {
     Pyramid p;
     if(!rgb||width<32||height<32||levels<1||levels>8)return p;
     p.source_width=width;p.source_height=height;
-    Image base;base.width=width/2;base.height=height/2;
+    p.origin_x=float(x0);p.origin_y=float(y0);
+    Image base;base.width=(x1-x0)/2;base.height=(y1-y0)/2;
     base.pixels.resize(static_cast<size_t>(base.width)*base.height);
     for(int y=0;y<base.height;++y) {
         int x=0;
 #if defined(__ARM_NEON)
-        const uint8_t *row=rgb+static_cast<size_t>(y*2)*width*3;
+        const uint8_t *row=rgb+(static_cast<size_t>(y*2+y0)*width+x0)*3;
         const uint8_t *next=row+static_cast<size_t>(width)*3;
         for(;x+8<=base.width;x+=8) {
             const uint8x16x3_t a=vld3q_u8(row+x*6),b=vld3q_u8(next+x*6);
@@ -78,7 +79,7 @@ Pyramid from_rgb(const uint8_t *rgb,int width,int height,int levels) {
         }
 #endif
         for(;x<base.width;++x) {
-        const uint8_t *pixel=rgb+(static_cast<size_t>(y*2)*width+x*2)*3;
+        const uint8_t *pixel=rgb+(static_cast<size_t>(y*2+y0)*width+x*2+x0)*3;
         const uint8_t *next=pixel+static_cast<size_t>(width)*3;
         const unsigned r=unsigned(pixel[0])+pixel[3]+next[0]+next[3];
         const unsigned g=unsigned(pixel[1])+pixel[4]+next[1]+next[4];
@@ -88,6 +89,25 @@ Pyramid from_rgb(const uint8_t *rgb,int width,int height,int levels) {
         }
     }
     p.images.push_back(std::move(base));finish_pyramid(p,levels);return p;
+}
+Pyramid from_rgb(const uint8_t *rgb,int width,int height,int levels) {
+    return from_rgb_window(rgb,width,height,levels,0,0,width,height);
+}
+Pyramid from_rgb_half_region(const uint8_t *rgb,int width,int height,const int *box,double expansion,int levels) {
+    if(!box||levels<1||levels>8||!std::isfinite(expansion)||expansion<1||box[0]<0||box[1]<0||
+       box[2]>width||box[3]>height||box[2]<=box[0]||box[3]<=box[1])return {};
+    const double cx=(double(box[0])+box[2])/2,cy=(double(box[1])+box[3])/2;
+    // Preserve the full-frame pyramid's sampling phase at every level, not
+    // merely at the first 2x reduction. A shifted coarse grid changes LK/FB.
+    const int alignment=1<<levels;
+    const int x0=int(std::max(0.0,std::floor(cx-(box[2]-box[0])*expansion/2)))/alignment*alignment;
+    const int y0=int(std::max(0.0,std::floor(cy-(box[3]-box[1])*expansion/2)))/alignment*alignment;
+    const int right=int(std::min(double(width),std::ceil(cx+(box[2]-box[0])*expansion/2)));
+    const int bottom=int(std::min(double(height),std::ceil(cy+(box[3]-box[1])*expansion/2)));
+    const int x1=std::min(width,((right+alignment-1)/alignment)*alignment)/2*2;
+    const int y1=std::min(height,((bottom+alignment-1)/alignment)*alignment)/2*2;
+    if(x1-x0<32||y1-y0<32)return {};
+    return from_rgb_window(rgb,width,height,levels,x0,y0,x1,y1);
 }
 Pyramid from_pl_gray(const uint8_t *gray,int width,int height,int sw,int sh,int levels) {
     Pyramid p;

@@ -39,6 +39,9 @@ void vg_measure_destroy(vg_measure *e) {
     vg_behavior_destroy(e->behavior); vg_decision_destroy(e->decision); free(e);
 }
 static int point_ok(vg_point p) { return isfinite(p.x) && isfinite(p.y); }
+int vg_measure_configure_blink(vg_measure *e, const vg_blink_config *c) {
+    return e && !e->started ? vg_behavior_configure_blink(e->behavior,c) : -1;
+}
 static int observation_ok(const vg_behavior_observation *o) {
     unsigned i;
     if (!isfinite(o->visible)) return 0;

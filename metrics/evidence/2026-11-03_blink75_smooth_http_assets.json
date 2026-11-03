@@ -1,0 +1,22 @@
+[
+  {
+    "http_status": 200,
+    "file": "board_config.js",
+    "exact_match": true
+  },
+  {
+    "http_status": 200,
+    "file": "board_hr_motion.js",
+    "exact_match": true
+  },
+  {
+    "http_status": 200,
+    "file": "app.js",
+    "exact_match": true
+  },
+  {
+    "http_status": 200,
+    "file": "index.html",
+    "exact_match": true
+  }
+]

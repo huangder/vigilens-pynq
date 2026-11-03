@@ -1,0 +1,18 @@
+
+# wget -T 15 -O /tmp/vigilens_sampling45_install.sh http://169.254.73.28:8771/in
+stall.sh
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+saving to '/tmp/vigilens_sampling45_install.sh'
+vigilens_sampling45_ 100% |********************************|  1578  0:00:00 ETA
+'/tmp/vigilens_sampling45_install.sh' saved
+# sh /tmp/vigilens_sampling45_install.sh
+Connecting to 169.254.73.28:8771 (169.254.73.28:8771)
+printf '\nSAMPLING45_INSTALL_DONE rc=%s\n' "$?"
+saving to '/tmp/vigilens-sampling45/candidate.tar.gz'
+candidate.tar.gz     100% |********************************| 1239k  0:00:00 ETA
+'/tmp/vigilens-sampling45/candidate.tar.gz' saved
+/tmp/vigilens-sampling45/candidate.tar.gz: OK
+# printf '\nSAMPLING45_INSTALL_DONE rc=%s\n' "$?"
+
+SAMPLING45_INSTALL_DONE rc=1
+# 

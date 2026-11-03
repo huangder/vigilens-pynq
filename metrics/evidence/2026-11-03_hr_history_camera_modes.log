@@ -1,0 +1,19 @@
+
+# wget -T 15 -O /tmp/uvc_modes_history http://169.254.73.28:8766/uvc_modes
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/uvc_modes_history'
+uvc_modes_history    100% |********************************| 12092  0:00:00 ETA
+'/tmp/uvc_modes_history' saved
+# chmod 755 /tmp/uvc_modes_history
+# /tmp/uvc_modes_history
+UVC_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+UVC_MODE format=MJPG width=1280 height=720 interval=1/60
+UVC_MODE format=MJPG width=640 height=480 interval=1/60
+UVC_MODE format=MJPG width=960 height=720 interval=1/60
+UVC_MODE format=YUYV width=1280 height=720 interval=1/10
+UVC_MODE format=YUYV width=640 height=480 interval=1/30
+UVC_MODE format=YUYV width=960 height=720 interval=1/10
+# printf '\nFPS60_ENUM_SERIAL_END\n'
+
+FPS60_ENUM_SERIAL_END
+# 

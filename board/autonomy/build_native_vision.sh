@@ -17,7 +17,11 @@ if [ "$runtime" = ert_hybrid ] || [ "$runtime" = ert_temporal ]; then vision_fla
 if [ "$runtime" = ert_temporal ]; then vision_flags="$vision_flags -DVIGI_ERT_TEMPORAL"; fi
 mkdir -p "$out/$mode"
 python3 board/autonomy/export_config.py --config "$config" --output "$out/vg_config.h"
-python3 board/autonomy/export_vital_config.py --config "$config" --output "$out/vg_vital_config.h"
+if [ -n "${VG_FIR_HEADER:-}" ];then
+    python3 board/autonomy/export_vital_config.py --config "$config" --output "$out/vg_vital_config.h" --fir-header "$VG_FIR_HEADER" --board-profile
+else
+    python3 board/autonomy/export_vital_config.py --config "$config" --output "$out/vg_vital_config.h" --board-profile
+fi
 python3 board/autonomy/export_vision_config.py --config "$config" --output "$out/vg_vision_config.h"
 if [ "$mode" = host ]; then
     cc=gcc; cxx=g++; linker=g++
@@ -72,15 +76,16 @@ echo "NATIVE_VISION_BUILD_PASS mode=$mode runtime=$runtime executable=$out/vg_vi
 if [ "$mode" = arm ]; then
     camera_objects=""
     for source in uvc_probe camera_pl; do
-        "$cc" -O2 -std=gnu11 $arch $runtime_flags -DVIGI_CAMERA_PL -DVIGI_AUTONOMY \
-            -I board/w7_buildroot -I board/autonomy \
+        "$cc" -O2 -std=gnu11 $arch $runtime_flags -DVIGI_CAMERA_PL -DVIGI_AUTONOMY -DVIGI_CONFIGURED_CAMERA \
+            -I board/w7_buildroot -I board/autonomy -I "$out" \
             -idirafter /root/vigilens/buildroot/output/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include \
             -c "board/w7_buildroot/$source.c" -o "$out/$mode/$source.o"
         camera_objects="$camera_objects $out/$mode/$source.o"
     done
-    for source in camera_local autonomy_camera; do
-        "$cc" -O2 -std=c11 -Wall -Wextra -Werror $arch \
-            -I board/w7_buildroot -I board/autonomy \
+    for source in camera_local autonomy_camera camera_preview; do
+        "$cc" -O2 -std=c11 -Wall -Wextra -Werror $arch -DVIGI_CAMERA_PREVIEW \
+            -I board/w7_buildroot -I board/autonomy -I "$out" \
+            -idirafter /root/vigilens/buildroot/output/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include \
             -c "board/autonomy/$source.c" -o "$out/$mode/$source.o"
         camera_objects="$camera_objects $out/$mode/$source.o"
     done
@@ -92,8 +97,8 @@ if [ "$mode" = arm ]; then
     # Same pixel path/compiler/JPEG library, no analysis. Benchmark baseline;
     # this target is never substituted for the production measurement program.
     for source in uvc_probe camera_pl; do
-        "$cc" -O2 -std=gnu11 $arch -DVIGI_CAMERA_PL \
-            -I board/w7_buildroot -I board/autonomy \
+        "$cc" -O2 -std=gnu11 $arch -DVIGI_CAMERA_PL -DVIGI_CONFIGURED_CAMERA \
+            -I board/w7_buildroot -I board/autonomy -I "$out" \
             -idirafter /root/vigilens/buildroot/output/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include \
             -c "board/w7_buildroot/$source.c" -o "$out/$mode/${source}_plonly.o"
     done

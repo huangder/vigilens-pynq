@@ -1,0 +1,82 @@
+{
+  "input_kind": "synthetic_eye_geometry_not_human_accuracy",
+  "python_C_parity_verified": true,
+  "min_close_ms": 100,
+  "source_timestamps": [
+    -0.1,
+    0.0,
+    0.05,
+    0.1,
+    0.30000000000000004
+  ],
+  "eye_EAR": [
+    0.3,
+    0.05,
+    0.05,
+    0.3,
+    0.3
+  ],
+  "outputs": [
+    {
+      "ear_left": 0.3,
+      "ear_right": 0.3,
+      "blink_rate_per_min": 0.0,
+      "perclos": 0.0,
+      "mar": 0.0,
+      "blink_count": 0,
+      "long_close_count": 0,
+      "yawn_count": 0,
+      "blink_state": "OPEN",
+      "_dt": 0.0
+    },
+    {
+      "ear_left": 0.05,
+      "ear_right": 0.05,
+      "blink_rate_per_min": 0.0,
+      "perclos": 0.5,
+      "mar": 0.0,
+      "blink_count": 0,
+      "long_close_count": 0,
+      "yawn_count": 0,
+      "blink_state": "CLOSING",
+      "_dt": 0.1
+    },
+    {
+      "ear_left": 0.05,
+      "ear_right": 0.05,
+      "blink_rate_per_min": 0.0,
+      "perclos": 0.6667,
+      "mar": 0.0,
+      "blink_count": 0,
+      "long_close_count": 0,
+      "yawn_count": 0,
+      "blink_state": "CLOSING",
+      "_dt": 0.05
+    },
+    {
+      "ear_left": 0.3,
+      "ear_right": 0.3,
+      "blink_rate_per_min": 0.0,
+      "perclos": 0.5,
+      "mar": 0.0,
+      "blink_count": 0,
+      "long_close_count": 0,
+      "yawn_count": 0,
+      "blink_state": "OPENING",
+      "_dt": 0.05
+    },
+    {
+      "ear_left": 0.3,
+      "ear_right": 0.3,
+      "blink_rate_per_min": 0.0,
+      "perclos": 0.4,
+      "mar": 0.0,
+      "blink_count": 0,
+      "long_close_count": 0,
+      "yawn_count": 0,
+      "blink_state": "OPEN",
+      "_dt": 0.20000000000000004
+    }
+  ],
+  "limitation": "No below-threshold sample reaches min_close_ms before reopening; the reopening branch clears below_since before checking that interval."
+}

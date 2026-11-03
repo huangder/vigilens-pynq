@@ -1,0 +1,78 @@
+
+# echo BLINK75_RESUME_STATUS
+BLINK75_RESUME_STATUS
+# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 02:56:49:47:49:01  
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+          Interrupt:39 Base address:0xb000 
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+sit0      Link encap:IPv6-in-IPv4  
+          NOARP  MTU:1480  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+# cat /proc/mounts
+rootfs / rootfs rw 0 0
+devtmpfs /dev devtmpfs rw,relatime,size=166204k,nr_inodes=41551,mode=755 0 0
+proc /proc proc rw,relatime 0 0
+devpts /dev/pts devpts rw,relatime,gid=5,mode=620,ptmxmode=666 0 0
+tmpfs /dev/shm tmpfs rw,relatime 0 0
+tmpfs /tmp tmpfs rw,relatime 0 0
+tmpfs /run tmpfs rw,nosuid,nodev,relatime,mode=755 0 0
+sysfs /sys sysfs rw,relatime 0 0
+/dev/mmcblk0p1 /mnt/vigilens-boot vfat ro,nosuid,nodev,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0
+# ls -l /mnt/vigilens-boot/vigilens/READY /etc/vigilens/boot.env
+-rwxr-xr-x    1 root     root           589 Nov  3  2026 [1;32m/etc/vigilens/boot.env[m
+-rwxr-xr-x    1 root     root            29 Nov  3  2026 [1;32m/mnt/vigilens-boot/vigilens/READY[m
+# /usr/sbin/vigilens-service status
+not_running
+# cat /run/vigilens/service.status
+stopped
+# tail -n 12 /run/vigilens/supervisor.log
+VIGILENS_STATE package_check_failed
+VIGILENS_STATE stopped
+# cat /etc/vigilens/boot.env
+VG_BOARD_IP=169.254.73.29
+VG_NETMASK=255.255.0.0
+VG_NETWORK_INTERFACE=eth0
+VG_CAMERA_DEVICE=/dev/video0
+VG_HTTP_BIND=0.0.0.0
+VG_HTTP_PORT=8080
+VG_MOUNT_WAIT_SECONDS=30
+VG_RETRY_SECONDS=3
+VG_HEALTH_POLL_SECONDS=1
+VG_STARTUP_GRACE_SECONDS=45
+VG_FRAME_STALE_SECONDS=10
+VG_STOP_GRACE_SECONDS=10
+VG_LOG_MAX_BYTES=2097152
+VG_BOOT_ENABLED=1
+VG_BOOT_DEVICE=/dev/mmcblk0p1
+VG_BOOT_ROOT=/mnt/vigilens-boot
+VG_APP_DIR=/mnt/vigilens-boot/vigilens/app
+VG_RUN_DIR=/run/vigilens
+VG_CONFIG_SHA256=6a03c4d16a2ae34ca5dac1aafa15e17a1086c146794593e9c71ea2c863eea39c
+VG_RELEASE_ID=VigiLens-SD-6a03c4d16a2ae34c
+# echo BLINK75_RESUME_STATUS_END
+BLINK75_RESUME_STATUS_END
+# printf '\nBLINK75_STATUS_SERIAL_END\n'
+
+BLINK75_STATUS_SERIAL_END
+# 

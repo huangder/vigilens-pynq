@@ -199,8 +199,99 @@ static void hr_filter_integration(void) {
         if(isfinite(vg_autonomy_raw_hr(e))){CHECK(r.vital.present[0]);had=1;break;}}
     CHECK(had);vg_autonomy_destroy(e);puts("PASS progressive filter starts on the first valid estimate");
 }
+static void capture60_vital30(void) {
+    vg_autonomy *e=create(0);vg_autonomy_result r;int had=0;
+    CHECK(!vg_autonomy_configure_capture_rate(e,60));
+    for(int i=1;i<=1800;++i) {
+        vg_autonomy_frame f=frame((uint64_t)i);f.ts=i/60.;
+        CHECK(!vg_autonomy_update(e,&f,&r));had|=r.vital.present[0];
+        CHECK(vg_autonomy_vital_samples(e)<=i/2+1);
+    }
+    CHECK(had);CHECK(vg_autonomy_configure_capture_rate(e,60)==-1);
+    vg_autonomy_frame f=frame(1801);f.ts=1801/60.;f.visible=0;f.count=0;memset(f.sums,0,sizeof(f.sums));
+    CHECK(!vg_autonomy_update(e,&f,&r));CHECK(!r.vital.present[0]);CHECK(!vg_autonomy_vital_samples(e));
+    f=frame(1802);f.ts=1802/60.;CHECK(!vg_autonomy_update(e,&f,&r));CHECK(vg_autonomy_vital_samples(e)==1);
+    vg_autonomy_destroy(e);puts("PASS 60Hz observations aggregate real RGB into 30Hz FIR; HR produced; face loss clears aggregates/history");
+}
+static void rolling_filter_recovery(void) {
+    vg_autonomy *e=vg_autonomy_create(&vg_exported_config,&vg_exported_vital_config,
+        VG_POSE_REPROJ_MAX_FRAC,1,0);
+    vg_hr_filter_config strict=vg_exported_hr_filter_config;
+    vg_autonomy_result r;
+    int resumed=0,seen_fresh_raw=0;
+    CHECK(e);strict.startup_samples=strict.window;
+    CHECK(!vg_autonomy_configure_temporal(e,NULL,0,1));
+    CHECK(!vg_autonomy_configure_hr_filter(e,&strict));
+    for(int i=1;i<=900;++i) {
+        vg_autonomy_frame f=frame((uint64_t)i);
+        CHECK(!vg_autonomy_update(e,&f,&r));
+    }
+    CHECK(r.vital.present[0]);
+    CHECK(vg_autonomy_vital_history_samples(e)>vg_autonomy_vital_samples(e));
+    double before=r.vital.value[0];
+    {vg_autonomy_frame f=frame(901);f.motion_q16=65536;
+     CHECK(!vg_autonomy_update(e,&f,&r));CHECK(!r.vital.present[0]);
+     CHECK(!strcmp(vg_autonomy_hr_filter_reason(e),"paused"));
+     CHECK(vg_autonomy_vital_samples(e)>0);}
+    int end=902+(int)ceil(vg_exported_vital_config.fps);
+    for(int i=902;i<end;++i) {
+        vg_autonomy_frame f=frame((uint64_t)i);
+        CHECK(!vg_autonomy_update(e,&f,&r));
+        if(i<901+vg_exported_vital_config.recovery_samples)CHECK(!r.vital.present[0]);
+        seen_fresh_raw|=isfinite(vg_autonomy_raw_hr(e));
+        if(r.vital.present[0]) {
+            CHECK(isfinite(vg_autonomy_raw_hr(e)));
+            CHECK(fabs(r.vital.value[0]-before)<=strict.max_spread_bpm);
+            resumed=1;break;
+        }
+    }
+    /* Strict startup would need three new spaced estimates if pause reset it.
+     * Recovery within one second proves prior valid votes were retained. */
+    CHECK(seen_fresh_raw&&resumed);
+    {vg_autonomy_frame f=frame((uint64_t)(end+1));f.visible=0;f.count=0;memset(f.sums,0,sizeof(f.sums));
+     CHECK(!vg_autonomy_update(e,&f,&r));CHECK(!r.vital.present[0]);
+     CHECK(!vg_autonomy_vital_samples(e));
+     CHECK(!strcmp(vg_autonomy_hr_filter_reason(e),"warming"));}
+    vg_autonomy_destroy(e);
+    puts("ROLLING_RECOVERY_PASS fresh_reestimate=1 bounded_filter_resume=1 hard_loss_clears=1 synthetic=1");
+}
+static void report_floor_integration(void) {
+    vg_autonomy *e=vg_autonomy_create(&vg_exported_config,&vg_exported_vital_config,
+        VG_POSE_REPROJ_MAX_FRAC,1,0);
+    vg_autonomy_result r;
+    CHECK(e);CHECK(!vg_autonomy_configure_temporal(e,NULL,0,1));
+    CHECK(!vg_autonomy_configure_hr_filter(e,&vg_exported_hr_filter_config));
+    for(int i=1;i<=900;++i) {
+        vg_autonomy_frame f=frame((uint64_t)i);
+        /* Deliberate 0.8Hz/48BPM stimulus below the configured report floor. */
+        double pulse=.012*sin(2*acos(-1.0)*.8*f.ts);
+        f.sums[0]=(uint32_t)lround(122000*(1+pulse));
+        f.sums[1]=(uint32_t)lround(118000*(1-pulse));
+        f.sums[2]=(uint32_t)lround(112000*(1+.5*pulse));
+        CHECK(!vg_autonomy_update(e,&f,&r));
+    }
+    CHECK(isfinite(vg_autonomy_raw_hr(e)));
+    CHECK(vg_autonomy_raw_hr(e)<vg_exported_hr_filter_config.min_bpm);
+    CHECK(!r.vital.present[0]&&!r.vital.present[1]);
+    CHECK(!strcmp(vg_autonomy_vital_reject(e),"below_report_min"));
+    CHECK(!strcmp(vg_autonomy_hr_filter_reason(e),"below_report_min"));
+    vg_autonomy_destroy(e);
+    puts("REPORT_FLOOR_PASS low_raw_retained=1 current_output_absent=1 alternate_peak_selected=0 synthetic=1");
+}
 int main(int argc, char **argv) {
     CHECK(setlocale(LC_NUMERIC,"C")); CHECK(!fesetround(FE_TONEAREST));
+    if(argc==2&&!strcmp(argv[1],"--rolling-recovery")) {rolling_filter_recovery();return 0;}
+    if(argc==2&&!strcmp(argv[1],"--report-floor")) {report_floor_integration();return 0;}
+    if(argc==2&&!strcmp(argv[1],"--full60")) {
+        CHECK(vg_exported_vital_config.fps==60);
+        CHECK(lround(vg_exported_vital_config.fps*vg_exported_vital_config.window_seconds)==75);
+        vg_autonomy *e=vg_autonomy_create(&vg_exported_config,&vg_exported_vital_config,VG_POSE_REPROJ_MAX_FRAC,1,0);
+        CHECK(e);vg_autonomy_result r;int had=0;
+        CHECK(!vg_autonomy_configure_capture_rate(e,60));
+        for(int i=1;i<=2400;++i) {vg_autonomy_frame f=frame((uint64_t)i);CHECK(!vg_autonomy_update(e,&f,&r));had|=r.vital.present[0];}
+        CHECK(had);CHECK(vg_autonomy_vital_samples(e)==75);CHECK(vg_autonomy_vital_history_samples(e)>75);
+        vg_autonomy_destroy(e);puts("FULL60_ENGINE_PASS capture=60 vital=60 real_minimum=75 overlapping_history_grows=1 synthetic_hr_present=1");return 0;
+    }
     if (argc==2 && !strcmp(argv[1],"--fixture")) {
         int i,k;
         for (i=1;i<=1200;++i) {
@@ -214,6 +305,6 @@ int main(int argc, char **argv) {
         }
         return 0;
     }
-    pose_and_dimensions(); loss_and_rejection(); vital_cadence();source_jitter_and_short_recovery();observable_metrics();hr_filter_integration();
+    pose_and_dimensions(); loss_and_rejection(); vital_cadence();source_jitter_and_short_recovery();observable_metrics();hr_filter_integration();capture60_vital30();
     puts("PASS autonomy native integration"); return 0;
 }

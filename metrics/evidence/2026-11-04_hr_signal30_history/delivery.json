@@ -1,0 +1,11 @@
+{
+  "config_sha256": "0e5167afda5e4f850dc65bc3c32b08f934083266e11eea75946f6942b37af720",
+  "camera_sha256": "85ba677e9558adfa8ef256afbe69db065d618f6f07374dbf1efa8a0a9cfd85f2",
+  "archive_sha256": "e3ad1303a4a19faed61030f1bc673e32ce4315b8dfe2743060b99ca4a8360efe",
+  "source_min_hz": 30,
+  "processing_fps": 60,
+  "release_id": "VigiLens-DEV-Signal30-0e5167afda5e4f85",
+  "archive_bytes": 1334945,
+  "contains_raw_face_media": false,
+  "contains_models": false
+}

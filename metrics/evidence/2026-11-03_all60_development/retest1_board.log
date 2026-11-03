@@ -1,0 +1,36 @@
+
+# wget -T 15 -O /tmp/full60_retest1_run.sh http://169.254.73.28:8767/retest1_run
+.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+sh /tmp/full60_retest1_run.sh
+saving to '/tmp/full60_retest1_run.sh'
+full60_retest1_run.s 100% |********************************|  2364  0:00:00 ETA
+'/tmp/full60_retest1_run.sh' saved
+# sh /tmp/full60_retest1_run.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/vigilens-full60/retest1'
+printf '\nFULL60_RETEST1_SERIAL_END\n'
+retest1               77% |************************        | 8215k  0:00:00 ETAretest1              100% |********************************| 10.4M  0:00:00 ETA
+'/tmp/vigilens-full60/retest1' saved
+b396345d08cffa8205029d88adf5aa94432b7fde3ff715762f76b8ef138ddb10  /tmp/vigilens-full60/retest1
+stop_requested pid=30351
+CAPTURE_MODE 640x480 fourcc=0x47504a4d interval=1/60
+SAMPLE_RESULT input=1800 kept=1800 dropped=0 driver_sequence_gaps=93 empty_slots=0 input_fps=56.457679 output_fps=56.457679 native_30fps=no requested_fps=60 native_requested_fps=yes
+AUTONOMY_SUMMARY submitted=1800 accepted=1710 skipped=90 processed=1710 succeeded=1709 rejected=1 failed=0 rc=0 camera_submit_fps=56.457679 analysis_update_fps=53.556021
+AUDIT_SUMMARY frames=1800 audits=60 failures=0 reference_ms_total=1172
+CAMERA_PL_PASS compared_frames=1800 native_camera_mode_verified=1
+FULL60_WORKLOAD frames=1710 face=1059 mean_analysis_ms=9.54567 max_history=567
+reject  1
+reject vitals_blocked 685
+reject window_not_full 360
+reject sampling_too_slow 95
+reject - 60
+reject no_dominant_peak 509
+start_requested pid=3115
+stopped
+supervisor_pid=3115
+FULL60_RETEST1_FINISHED_rc=0
+# printf '\nFULL60_RETEST1_SERIAL_END\n'
+
+FULL60_RETEST1_SERIAL_END
+# 

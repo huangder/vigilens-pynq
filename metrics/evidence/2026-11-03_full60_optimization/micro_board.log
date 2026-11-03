@@ -1,0 +1,43 @@
+
+# wget -T 15 -O /tmp/full60_micro_run.sh http://169.254.73.28:8767/micro_run.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/full60_micro_run.sh'
+full60_micro_run.sh  100% |********************************|   344  0:00:00 ETA
+'/tmp/full60_micro_run.sh' saved
+# sh /tmp/full60_micro_run.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/vigilens-full60/patch_0'
+printf '\nFULL60_MICRO_SERIAL_END\n'
+patch_0              100% |********************************| 5391k  0:00:00 ETA
+'/tmp/vigilens-full60/patch_0' saved
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/vigilens-full60/patch_1'
+patch_1               59% |******************              | 3198k  0:00:00 ETApatch_1              100% |********************************| 5391k  0:00:00 ETA
+'/tmp/vigilens-full60/patch_1' saved
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/vigilens-full60/tracker_simd4_test'
+tracker_simd4_test   100% |********************************| 5424k  0:00:00 ETA
+'/tmp/vigilens-full60/tracker_simd4_test' saved
+stop_requested pid=21706
+ARM_TEST patch_0
+POINT_PATCH_PASS cases=6432 radius3_calls=200000 elapsed_ms=280.342 checksum=25698140
+ARM_TEST patch_1
+POINT_PATCH_PASS cases=6432 radius3_calls=200000 elapsed_ms=486.368 checksum=25698140
+ARM_TEST patch_0
+POINT_PATCH_PASS cases=6432 radius3_calls=200000 elapsed_ms=280.451 checksum=25698140
+ARM_TEST patch_1
+POINT_PATCH_PASS cases=6432 radius3_calls=200000 elapsed_ms=486.364 checksum=25698140
+ARM_TEST tracker_simd4_test
+POINT_TRACKER_BOX_PASS reversible_motion=1000 rotation_cycle=1 invalid_rejected=1
+POINT_TRACKER_RGB_GRAY_PASS cases=32 scalar_neon_exact=1
+POINT_TRACKER_PL_GRID_PASS actual_3of8_coordinates=1 invalid_profile=1
+POINT_TRACKER_HISTORY_PASS expired_source=1 bounded=1 nonmonotonic_clear=1
+POINT_TRACKER_ROI_MOTION_PASS translation_cases=9 error_bound=0.5 levels=3 radius=3 iterations=12
+POINT_TRACKER_BRIDGE_PASS intermediate_steps=16 total_motion=64 black_rejected=1
+POINT_TRACKER_ROI_ORIGIN_PASS different_origins=1 full_resolution=1
+POINT_TRACKER_TEST_PASS translation_cases=15 black_loss=1 flat_rejected=1 malformed=1
+start_requested pid=22973
+# printf '\nFULL60_MICRO_SERIAL_END\n'
+
+FULL60_MICRO_SERIAL_END
+# 

@@ -1,0 +1,33 @@
+{
+  "config_sha256": "c4de11c7aba76917d0a25211d5f26f16a494cae0cf64a0bbaf743e3289bd8e73",
+  "fir_sha256": "26eae364960bec7d663779b1ef3d55743e6da343cb7524270bcaea4736704c67",
+  "vital": {
+    "fps": 60.0,
+    "fs_tol": 0.1,
+    "window_seconds": 2.5,
+    "color_window_seconds": 1.6,
+    "f_lo": 0.7,
+    "f_hi": 3.5,
+    "harmonic_ratio_min": 0.05,
+    "max_gap_s": 0.2,
+    "jitter_ratio_max": 3.0,
+    "history_seconds": 10.0,
+    "recovery_s": 0.2,
+    "recovery_samples": 3,
+    "method": 1,
+    "short_window_seconds": 3.0,
+    "short_window_min_conf": 0.8,
+    "shift": 15
+  },
+  "coeffs": 63,
+  "hr_filter": {
+    "enabled": true,
+    "window": 3,
+    "alpha": 0.2,
+    "interval_s": 0.8,
+    "max_gap_s": 1.5,
+    "max_spread_bpm": 12.0,
+    "startup_samples": 1
+  },
+  "thresholds_calibrated_by_export": false
+}

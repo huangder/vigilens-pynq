@@ -1,0 +1,21 @@
+
+# VIGILENS_BOOT_CONFIG=/etc/vigilens/boot.env /usr/sbin/vigilens-service stop
+stop_requested pid=3115
+sleep 3
+VIGILENS_BOOT_CONFIG=/tmp/vigilens-dev60/boot.env /tmp/vigilens-dev60/vigilens-service status
+ps | grep -E 'vigi_camera|vg_metrics_http'
+printf '\nDEV60_TAKEOVER_END\n'
+# sleep 3
+# VIGILENS_BOOT_CONFIG=/tmp/vigilens-dev60/boot.env /tmp/vigilens-dev60/vigilens
+-service status
+camera_starting pid=9135
+supervisor_pid=7964
+# ps | grep -E 'vigi_camera|vg_metrics_http'
+ 3112 root     /mnt/vigilens-boot/vigilens/app/vg_metrics_http --bind 169.254.73.29 --port 8082 --latest /tmp/vigilens-full60/latest.json --display /mnt/vigilens-boot/vigilens/app/ui/index.html --assets /tmp/vigilens-full60 --stale-seconds 3
+ 9135 root     /tmp/vigilens-dev60/root/vigilens/app/vigi_camera_autonomy /dev/video0 640 480 0 60 16
+ 9151 root     /tmp/vigilens-dev60/root/vigilens/app/vg_metrics_http --bind 0.0.0.0 --port 8080 --latest /run/vigilens-dev60/latest.json --display /tmp/vigilens-dev60/root/vigilens/app/ui/index.html --assets /tmp/vigilens-dev60/root/vigilens/app/ui --preview /run/vigilens-dev60/preview.jpg --stale-seconds 3.0
+ 9173 root     grep -E vigi_camera|vg_metrics_http
+# printf '\nDEV60_TAKEOVER_END\n'
+
+DEV60_TAKEOVER_END
+# 

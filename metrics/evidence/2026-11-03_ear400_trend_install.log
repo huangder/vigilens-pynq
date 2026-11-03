@@ -1,0 +1,90 @@
+
+# wget -T 30 -O /tmp/install-ear400-ff0ebe19.sh http://169.254.73.28:8766/instal
+l_update.sh
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/install-ear400-ff0ebe19.sh'
+install-ear400-ff0eb 100% |********************************|  2370  0:00:00 ETA
+'/tmp/install-ear400-ff0ebe19.sh' saved
+# sh /tmp/install-ear400-ff0ebe19.sh
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/vigilens-ear400-ff0ebe19/update.tar'
+printf '\nEAR400_INSTALL_SERIAL_END\n'
+update.tar            28% |*********                       | 6006k  0:00:02 ETAupdate.tar            81% |**************************      | 17.0M  0:00:00 ETAupdate.tar           100% |********************************| 20.8M  0:00:00 ETA
+'/tmp/vigilens-ear400-ff0ebe19/update.tar' saved
+/tmp/vigilens-ear400-ff0ebe19/update.tar: OK
+vigi_camera_autonomy: OK
+vg_vision_replay_arm: OK
+vg_metrics_http: OK
+shape_predictor_68_face_landmarks.dat: OK
+libgomp.so.1: OK
+display.html: OK
+install_native.sh: OK
+run_native.sh: OK
+det1.param: OK
+det1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+ui/alerts.js: OK
+ui/app.js: OK
+ui/board_config.js: OK
+ui/board_layout.css: OK
+ui/board_transport.js: OK
+ui/hr_display.js: OK
+ui/icons/camera.svg: OK
+ui/icons/LICENSE: OK
+ui/icons/pulse.svg: OK
+ui/icons/shield-checkmark.svg: OK
+ui/icons/trend.svg: OK
+ui/index.html: OK
+ui/mock.js: OK
+ui/preview.js: OK
+ui/recording.js: OK
+ui/style.css: OK
+ui/trends.js: OK
+ui/ui_state.js: OK
+VIGILENS_PACKAGE_CHECK_PASS
+stop_requested pid=21642
+vigi_camera_autonomy: OK
+vg_vision_replay_arm: OK
+vg_metrics_http: OK
+shape_predictor_68_face_landmarks.dat: OK
+libgomp.so.1: OK
+display.html: OK
+install_native.sh: OK
+run_native.sh: OK
+det1.param: OK
+det1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+ui/alerts.js: OK
+ui/app.js: OK
+ui/board_config.js: OK
+ui/board_hr_trend.js: OK
+ui/board_layout.css: OK
+ui/board_transport.js: OK
+ui/hr_display.js: OK
+ui/icons/camera.svg: OK
+ui/icons/LICENSE: OK
+ui/icons/pulse.svg: OK
+ui/icons/shield-checkmark.svg: OK
+ui/icons/trend.svg: OK
+ui/index.html: OK
+ui/mock.js: OK
+ui/preview.js: OK
+ui/recording.js: OK
+ui/style.css: OK
+ui/trends.js: OK
+ui/ui_state.js: OK
+VIGILENS_PACKAGE_CHECK_PASS
+start_requested pid=29645
+EAR400_TREND_UPDATE_INSTALLED
+# printf '\nEAR400_INSTALL_SERIAL_END\n'
+
+EAR400_INSTALL_SERIAL_END
+# 

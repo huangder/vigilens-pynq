@@ -1,0 +1,56 @@
+{
+  "valid_responses": 35,
+  "face_responses": 0,
+  "hr_responses": 0,
+  "blink_counts": [
+    0
+  ],
+  "ear_range": [
+    null,
+    null
+  ],
+  "hr_note_hidden": true,
+  "latest": {
+    "ts": 8362.421159,
+    "frame_id": 4099,
+    "face": {
+      "visible": 0,
+      "bbox": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pose": {
+        "yaw": 0,
+        "pitch": 0,
+        "roll": 0
+      }
+    },
+    "behavior": {
+      "ear_left": 0,
+      "ear_right": 0,
+      "blink_state": "OPEN",
+      "blink_count": 0,
+      "blink_rate_per_min": 0,
+      "perclos": 0,
+      "long_close_count": 0,
+      "mar": 0,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.8102,
+      "motion_score": 0.0002,
+      "overall": 0.7051
+    },
+    "status": "adjust_posture",
+    "advice": "请正对摄像头，保持面部完整出现在画面内",
+    "reason": "人脸可见率 0.00 低于下限 0.70"
+  }
+}

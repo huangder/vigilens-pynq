@@ -1,0 +1,74 @@
+
+# echo VIDEO_PARAMETERS_BEGIN
+VIDEO_PARAMETERS_BEGIN
+# cat /proc/uptime
+774.21 656.36
+# cat /etc/vigilens/boot.env
+VG_BOARD_IP=169.254.73.29
+VG_NETMASK=255.255.0.0
+VG_NETWORK_INTERFACE=eth0
+VG_CAMERA_DEVICE=/dev/video0
+VG_HTTP_BIND=0.0.0.0
+VG_HTTP_PORT=8080
+VG_MOUNT_WAIT_SECONDS=30
+VG_RETRY_SECONDS=3
+VG_HEALTH_POLL_SECONDS=1
+VG_STARTUP_GRACE_SECONDS=45
+VG_FRAME_STALE_SECONDS=10
+VG_STOP_GRACE_SECONDS=10
+VG_LOG_MAX_BYTES=2097152
+VG_BOOT_ENABLED=1
+VG_BOOT_DEVICE=/dev/mmcblk0p1
+VG_BOOT_ROOT=/mnt/vigilens-boot
+VG_APP_DIR=/mnt/vigilens-boot/vigilens/app
+VG_RUN_DIR=/run/vigilens
+VG_CONFIG_SHA256=1f461bad8836002af97d820456a42c7a592bd02ab5013ecaa817c33c2b551908
+VG_RELEASE_ID=VigiLens-SD-1f461bad8836002a
+# cat /mnt/vigilens-boot/vigilens/app/runtime.env
+# Generated from config.yaml; source sha256 1f461bad8836002af97d820456a42c7a592bd02ab5013ecaa817c33c2b551908
+VG_CAPTURE_FPS=30
+VG_CAPTURE_WIDTH=640
+VG_CAPTURE_HEIGHT=480
+VG_CAMERA_FORMAT=yuyv
+VG_RUNTIME=ert_temporal
+VG_LANDMARK_FILE=shape_predictor_68_face_landmarks.dat
+VG_MOTION_THRESHOLD=16
+VG_STALE_SECONDS=3.0
+# sha256sum /mnt/vigilens-boot/vigilens/config.yaml /mnt/vigilens-boot/vigilens/
+app/vigi_camera_autonomy /mnt/vigilens-boot/uInitrd
+1f461bad8836002af97d820456a42c7a592bd02ab5013ecaa817c33c2b551908  /mnt/vigilens-boot/vigilens/config.yaml
+/usr/sbin/vigilens-service status
+grep 'MemTotal' /proc/meminfo
+grep -E 'model name|Hardware|processor' /proc/cpuinfo
+grep -E '^AUTONOMY_(READY|CONFIG)|^CAMERA_|^SAMPLE_RESULT' /run/vigilens/camera.log | head -n 8
+echo VIDEO_PARAMETERS_END
+printf '\nVIDEO_PARAMETERS_SERIAL_END\n'
+6e7316740bd66e93e15e89d64e461ad3a0c21e7358c18d74eef728b6ed47e14a  /mnt/vigilens-boot/vigilens/app/vigi_camera_autonomy
+befde344b1f39e036ee99eb910af93a003b9c842aff7b3105b3769320f7e4d8e  /mnt/vigilens-boot/uInitrd
+# /usr/sbin/vigilens-service status
+running camera_pid=132 http_pid=130
+supervisor_pid=120
+# grep 'MemTotal' /proc/meminfo
+MemTotal:         476868 kB
+# grep -E 'model name|Hardware|processor' /proc/cpuinfo
+processor	: 0
+model name	: ARMv7 Processor rev 0 (v7l)
+processor	: 1
+model name	: ARMv7 Processor rev 0 (v7l)
+Hardware	: Xilinx Zynq Platform
+# grep -E '^AUTONOMY_(READY|CONFIG)|^CAMERA_|^SAMPLE_RESULT' /run/vigilens/camer
+a.log | head -n 8
+CAMERA_PL_FRAME n=22407 seq=22406 ts_us=771237509 mismatch=0 audit=0 roi_g=41042373 roi_count=307200 motion_valid=1 motion_ratio_q16=829 decode_ms=20.788 reference_ms=0.000 transfer_pl_ms=7.255 decode_cpu_ms=9.568 transfer_pl_cpu_ms=3.043
+CAMERA_PL_FRAME n=22408 seq=22407 ts_us=771273320 mismatch=0 audit=0 roi_g=41053001 roi_count=307200 motion_valid=1 motion_ratio_q16=848 decode_ms=15.129 reference_ms=0.000 transfer_pl_ms=33.658 decode_cpu_ms=11.234 transfer_pl_cpu_ms=2.571
+CAMERA_PL_FRAME n=22409 seq=22408 ts_us=771305256 mismatch=0 audit=0 roi_g=41049753 roi_count=307200 motion_valid=1 motion_ratio_q16=822 decode_ms=12.063 reference_ms=0.000 transfer_pl_ms=7.031 decode_cpu_ms=9.984 transfer_pl_cpu_ms=3.759
+CAMERA_PL_FRAME n=22410 seq=22409 ts_us=771337268 mismatch=0 audit=0 roi_g=41034145 roi_count=307200 motion_valid=1 motion_ratio_q16=811 decode_ms=13.231 reference_ms=0.000 transfer_pl_ms=5.149 decode_cpu_ms=10.730 transfer_pl_cpu_ms=2.393
+CAMERA_PL_FRAME n=22411 seq=22410 ts_us=771373244 mismatch=0 audit=1 roi_g=41043550 roi_count=307200 motion_valid=1 motion_ratio_q16=851 decode_ms=10.608 reference_ms=15.019 transfer_pl_ms=6.320 decode_cpu_ms=9.514 transfer_pl_cpu_ms=3.613
+CAMERA_PL_FRAME n=22412 seq=22411 ts_us=771405333 mismatch=0 audit=0 roi_g=41038618 roi_count=307200 motion_valid=1 motion_ratio_q16=817 decode_ms=11.631 reference_ms=0.000 transfer_pl_ms=5.898 decode_cpu_ms=9.961 transfer_pl_cpu_ms=3.141
+CAMERA_PL_FRAME n=22413 seq=22412 ts_us=771437836 mismatch=0 audit=0 roi_g=41036902 roi_count=307200 motion_valid=1 motion_ratio_q16=796 decode_ms=11.219 reference_ms=0.000 transfer_pl_ms=6.563 decode_cpu_ms=9.698 transfer_pl_cpu_ms=3.812
+CAMERA_PL_FRAME n=22414 seq=22413 ts_us=771473237 mismatch=0 audit=0 roi_g=41043579 roi_count=307200 motion_valid=1 motion_ratio_q16=778 decode_ms=11.547 reference_ms=0.000 transfer_pl_ms=6.191 decode_cpu_ms=9.974 transfer_pl_cpu_ms=2.838
+# echo VIDEO_PARAMETERS_END
+VIDEO_PARAMETERS_END
+# printf '\nVIDEO_PARAMETERS_SERIAL_END\n'
+
+VIDEO_PARAMETERS_SERIAL_END
+# 

@@ -40,6 +40,7 @@ stop_child() {
 cleanup() {
     trap - EXIT HUP INT TERM
     stop_child "$camera_pid";stop_child "$http_pid"
+    rm -f "$run/preview.jpg"
     rm -f "$lock/pid"
     rmdir "$lock" 2>/dev/null || true
     state stopped
@@ -98,20 +99,22 @@ if ! check;then state package_check_failed;exit 1;fi
 export LD_LIBRARY_PATH="$app${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export VIGI_DETECTOR_DIR="$app" VIGI_LANDMARK_MODEL="$app/$VG_LANDMARK_FILE"
 export VIGI_CAMERA_FORMAT="$VG_CAMERA_FORMAT" OMP_WAIT_POLICY=PASSIVE GOMP_SPINCOUNT=0
+export VIGI_CAMERA_FPS="$VG_CAPTURE_FPS"
 export VIGI_CONTRACT_LOG=/dev/null VIGI_CONTRACT_LATEST="$run/latest.json"
-export VIGI_JPEG_FAST=1 VIGI_PIPELINE=threaded VIGI_DECODE_WORKERS=2 VIGI_PL_WAIT=yield VIGI_AUDIT_EVERY=30
+export VIGI_PREVIEW_LATEST="$run/preview.jpg"
+export VIGI_JPEG_FAST=1 VIGI_PIPELINE=threaded VIGI_DECODE_WORKERS="${VG_DECODE_WORKERS:-2}" VIGI_PL_WAIT=yield VIGI_AUDIT_EVERY=30
 unset VIGI_STREAM_BIND VIGI_VERIFY VIGI_LANDMARK_EVERY VIGI_ERT_SYNC VIGI_TRACKER_SYNC VIGI_ERT_TRACE
 if ! ifconfig "$VG_NETWORK_INTERFACE" "$VG_BOARD_IP" netmask "$VG_NETMASK" up;then
     state network_configuration_failed
 fi
-rm -f "$run/latest.json"
+rm -f "$run/latest.json" "$run/preview.jpg"
 camera_started=0
 state waiting_for_camera
 while :;do
     if ! alive "$http_pid";then
         [ -z "$http_pid" ] || wait "$http_pid" 2>/dev/null || true
         "$app/vg_metrics_http" --bind "$VG_HTTP_BIND" --port "$VG_HTTP_PORT" \
-            --latest "$run/latest.json" --display "$app/display.html" --stale-seconds "$VG_STALE_SECONDS" >> "$run/http.log" 2>&1 &
+            --latest "$run/latest.json" --display "$app/ui/index.html" --assets "$app/ui" --preview "$run/preview.jpg" --stale-seconds "$VG_STALE_SECONDS" >> "$run/http.log" 2>&1 &
         http_pid=$!
         echo "HTTP_STARTED pid=$http_pid port=$VG_HTTP_PORT"
     fi
@@ -134,7 +137,8 @@ while :;do
     if alive "$camera_pid";then
         now=$(date +%s)
         if [ -f "$run/latest.json" ];then
-            modified=$(stat -c %Y "$run/latest.json")
+            # The target BusyBox provides date -r, but has no stat applet.
+            modified=$(date -r "$run/latest.json" +%s)
             if [ "$((now-modified))" -gt "$VG_FRAME_STALE_SECONDS" ];then
                 state frame_stream_stale;stop_child "$camera_pid";camera_pid=
                 rm -f "$run/latest.json";sleep "$VG_RETRY_SECONDS"

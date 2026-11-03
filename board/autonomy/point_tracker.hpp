@@ -20,6 +20,7 @@ struct Result {
     float a=1,b=0,tx=0,ty=0; // image-observed similarity, original-image coordinates
 };
 Pyramid from_rgb(const uint8_t *rgb,int width,int height,int levels);
+Pyramid from_rgb_half_region(const uint8_t *rgb,int width,int height,const int *box,double expansion,int levels);
 Pyramid from_pl_gray(const uint8_t *gray,int width,int height,int source_width,int source_height,int levels);
 Pyramid from_rgb_region(const uint8_t *rgb,int width,int height,const int *box,double expansion,int levels);
 /* Current-image LK observations drive eyes/mouth. Noncritical missing points

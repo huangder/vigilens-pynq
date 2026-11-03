@@ -1,0 +1,588 @@
+{
+  "recorded_at": "2026-11-03T15:40:08.824755+08:00",
+  "kind": "experimental_board_sensitivity_fix_verified_software_and_limited_live_run",
+  "config_sha256": "70af3b1f8ef8d289b1fe3c2b14a099bc97adbc007f339eeb0e3f037a80123215",
+  "release_id": "VigiLens-SD-70af3b1f8ef8d289",
+  "camera_sha256": "1aa04e3b4b6abe1cdc4de0adbc114027f46d9e22d548e2166bae5163619b3f97",
+  "required_hr_samples": 100,
+  "heart_rate_window_seconds": 3.3333333333333335,
+  "blink_policy": {
+    "ear_close_ratio": 0.65,
+    "ear_open_ratio": 0.8,
+    "ear_baseline_tau_s": 2.0,
+    "blink_min_close_ms": 60,
+    "blink_min_open_ms": 60,
+    "blink_max_gap_ms": 120,
+    "ear_baseline_reset_ms": 1000
+  },
+  "preview_hz": 5.0,
+  "implementation": {
+    "ERT_board_only": true,
+    "PC_algorithm_changed": false,
+    "legacy_behavior_tests_preserved": true,
+    "raw_EAR_formula_changed": false,
+    "contract_schema_changed": false,
+    "contract_version_upgraded": false,
+    "candidate_unsigned": true,
+    "preview_encoded_at_most_configured_cadence": true
+  },
+  "verification": {
+    "targeted_pytest": "69 passed, 12 subtests passed in 7.06s",
+    "backend_pytest": "565 passed, 2 warnings in 30.50s",
+    "check_all": {
+      "when": "2026-11-03T15:31:17",
+      "elapsed_s": 75.4,
+      "passed": 26,
+      "failed": 0,
+      "rows": [
+        {
+          "section": "环境",
+          "name": "Python",
+          "status": "INFO",
+          "detail": "3.12.13 @ D:\\Desktop\\AMD\\.venv\\Scripts\\python.exe"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 cv2",
+          "status": "PASS",
+          "detail": "4.11.0"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 numpy",
+          "status": "PASS",
+          "detail": "1.26.4"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 mediapipe",
+          "status": "PASS",
+          "detail": "0.10.21"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 yaml",
+          "status": "PASS",
+          "detail": "6.0.3"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 fastapi",
+          "status": "PASS",
+          "detail": "0.141.1"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 uvicorn",
+          "status": "PASS",
+          "detail": "0.52.4"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 pytest",
+          "status": "PASS",
+          "detail": "9.1.1"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 pyserial",
+          "status": "INFO",
+          "detail": "未安装 —— Python 串口工具不可用；现有板端 PowerShell 串口工具不依赖它"
+        },
+        {
+          "section": "环境",
+          "name": "node",
+          "status": "PASS",
+          "detail": "C:\\Program Files\\nodejs\\node.EXE"
+        },
+        {
+          "section": "A 线",
+          "name": "check_a_line_all（A~E 五段）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 51.2s | ============================================================== | A 线自检全部通过：17 项（用时 51.1s）"
+        },
+        {
+          "section": "B 线",
+          "name": "B 线门控阈值一处定义 → /api/status → 前端兜底三处一致",
+          "status": "PASS",
+          "detail": "退出码 0，用时 1.6s | B 线阈值守卫检查：通过 —— 4/4（config.yaml → /api/status → app.js 兜底，三处一致）"
+        },
+        {
+          "section": "B 线",
+          "name": "B 线 /ws 断流兜底（发合法契约的 disconnected，序号不倒退）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 8.5s | B 线 /ws 断流兜底检查：通过 —— 5/5"
+        },
+        {
+          "section": "B 线",
+          "name": "旁路画面链路 + 契约未被污染（15 项）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 7.3s | 全部通过：15/15 项通过"
+        },
+        {
+          "section": "B 线",
+          "name": "年龄档案旁路（年龄档案/收录/同龄基线比对 + Python↔JS 校验一致）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 0.6s | RESULT: PASS (33/33 PASS, 0 FAIL, 0 SKIP)"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/contract.py",
+          "status": "PASS",
+          "detail": "退出码 0"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/config.py",
+          "status": "PASS",
+          "detail": "fpga.device              = xc7z020clg400-1"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/publish.py",
+          "status": "PASS",
+          "detail": "本地契约校验：坏帧会被拦下 —— 拦住了： True 1 条错误"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/regmap.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/bringup_check.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/hw_sw_compare.py --selftest",
+          "status": "PASS",
+          "detail": "⚠️ 本自检只证明'数据与档位配套'；PL 侧数值一致性仍必须上板跑本脚本正文。"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/dma_test.py --selftest",
+          "status": "PASS",
+          "detail": "⚠️ 本自检只证明'测试图可复现 + 黄金参考配套'；DMA 回环/长跑本身必须上板跑。"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/overlay/mmap_overlay.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "metrics/scripts/check_uvc_camera.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS (21/21)"
+        },
+        {
+          "section": "工具自检",
+          "name": "metrics/scripts/probe_rppg_timebase.py",
+          "status": "PASS",
+          "detail": "✅ 全部档位符合验收判据（容差内报数、容差外 null）"
+        },
+        {
+          "section": "语法",
+          "name": "7 个 Python 目标可解析",
+          "status": "PASS",
+          "detail": "全部 OK"
+        },
+        {
+          "section": "语法",
+          "name": "frontend/app.js（node --check）",
+          "status": "PASS",
+          "detail": "OK"
+        },
+        {
+          "section": "语法",
+          "name": "frontend/preview.js 坐标换算自检（含 720p）",
+          "status": "PASS",
+          "detail": "\"failures\": [], | \"ok\": true | }"
+        },
+        {
+          "section": "就绪",
+          "name": "P4 标定素材（4 视频 + 4 标注）",
+          "status": "INFO",
+          "detail": "· turn.csv 标注不存在（放 data\\annotations/，格式见 data/README.md） | → 补齐后重跑本脚本；再按 backend/P4_CALIBRATION_GUIDE.md 逐项标定。"
+        },
+        {
+          "section": "就绪",
+          "name": "board/bitstream/ 里的 bitstream",
+          "status": "INFO",
+          "detail": "找到 2 个文件"
+        },
+        {
+          "section": "就绪",
+          "name": "Vitis HLS 工具链",
+          "status": "INFO",
+          "detail": "已安装"
+        },
+        {
+          "section": "就绪",
+          "name": "data/raw/ 真实视频",
+          "status": "INFO",
+          "detail": "3 个：['blink.mp4', 'blink_1080p_src.mp4', '_probe_rot90.mp4']"
+        }
+      ]
+    },
+    "board_windows": "224 passed, 14 skipped, 6 platform setup errors (sys/resource.h missing), 115 subtests passed",
+    "board_Linux_recheck": "same 6 NCNN CLI tests passed; preview cadence ownership fixture passed",
+    "ARM_build": "NATIVE_VISION_BUILD_PASS, NATIVE_CAMERA_BUILD_PASS, PL_ONLY_BUILD_PASS",
+    "frontend_mock_selftest": {
+      "checked": 22,
+      "failures": []
+    },
+    "frontend_wiring": "passed",
+    "video_bypass": "15/15 passed with synthetic JPEG/contract fixture",
+    "git_diff_check": "passed (line-ending notices only)",
+    "initial_regression_failures": "3 tests inherited changed short-window fixture; original 5s inputs and strict assertions restored explicitly, 100-point behavior tested separately. No production rejection guard loosened."
+  },
+  "deployment": {
+    "old_release_id": "VigiLens-SD-6a03c4d16a2ae34c",
+    "rollback_archive": "/run/vigilens-sensitivity-backup-70af3b1f/previous.tar",
+    "SD_updated": true,
+    "SD_read_only_restored": true,
+    "runtime_running": true,
+    "manifest_check_passed": true,
+    "physical_power_cycle_verified": false,
+    "temporary_PC_server_stopped": true,
+    "page_HTTP": 200,
+    "preview_HTTP": 200,
+    "raw_face_media_saved_or_uploaded": false
+  },
+  "live_sessions": {
+    "initial": {
+      "polled_frames": 886,
+      "unique_frames": 870,
+      "duration_s": 64.69460900000013,
+      "contract_errors": [],
+      "visible_frames": 185,
+      "statuses": {
+        "adjust_posture": 867,
+        "unreliable": 3
+      },
+      "hr_nonnull_frames": 0,
+      "HR_output_examples": [],
+      "eye_states": {
+        "OPEN": 868,
+        "OPENING": 2
+      },
+      "first_behavior": {
+        "ear_left": 0,
+        "ear_right": 0,
+        "blink_state": "OPEN",
+        "blink_count": 2,
+        "blink_rate_per_min": 2,
+        "perclos": 0.0411,
+        "long_close_count": 1,
+        "mar": 0,
+        "yawn_count": 0
+      },
+      "last_behavior": {
+        "ear_left": 0,
+        "ear_right": 0,
+        "blink_state": "OPEN",
+        "blink_count": 3,
+        "blink_rate_per_min": 2,
+        "perclos": 0.0012,
+        "long_close_count": 1,
+        "mar": 0,
+        "yawn_count": 0
+      },
+      "visible_pitch_range": [
+        32.872611815307685,
+        37.26024795612709
+      ],
+      "last_frame": {
+        "ts": 4429.801651,
+        "frame_id": 3820,
+        "face": {
+          "visible": 0,
+          "bbox": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pose": {
+            "yaw": 0,
+            "pitch": 0,
+            "roll": 0
+          }
+        },
+        "behavior": {
+          "ear_left": 0,
+          "ear_right": 0,
+          "blink_state": "OPEN",
+          "blink_count": 3,
+          "blink_rate_per_min": 2,
+          "perclos": 0.0012,
+          "long_close_count": 1,
+          "mar": 0,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.8392,
+          "motion_score": 0.0638,
+          "overall": 0.7004
+        },
+        "status": "adjust_posture",
+        "advice": "请正对摄像头，保持面部完整出现在画面内",
+        "reason": "人脸可见率 0.00 低于下限 0.70"
+      }
+    },
+    "after_adjustment_request": {
+      "polled_frames": 799,
+      "unique_frames": 791,
+      "duration_s": 64.66676300000017,
+      "contract_errors": [],
+      "visible_frames": 771,
+      "statuses": {
+        "fatigue_risk": 372,
+        "adjust_posture": 419
+      },
+      "hr_nonnull_frames": 114,
+      "HR_output_examples": [
+        {
+          "ts": 4467.238227,
+          "frame_id": 4941,
+          "face": {
+            "visible": 1,
+            "bbox": [
+              196,
+              27,
+              195,
+              252
+            ],
+            "pose": {
+              "yaw": -3.354396006767873,
+              "pitch": 20.46854558508233,
+              "roll": -1.1612087973284508
+            }
+          },
+          "behavior": {
+            "ear_left": 0.4182,
+            "ear_right": 0.4393,
+            "blink_state": "OPEN",
+            "blink_count": 3,
+            "blink_rate_per_min": 0,
+            "perclos": 0.0805,
+            "long_close_count": 3,
+            "mar": 0.4134,
+            "yawn_count": 0
+          },
+          "vital": {
+            "hr_bpm": 86.5,
+            "hr_conf": 0.8703,
+            "rr_per_min": null,
+            "rr_conf": null
+          },
+          "quality": {
+            "light_score": 0.9766,
+            "motion_score": 0.0338,
+            "overall": 0.9782
+          },
+          "status": "fatigue_risk",
+          "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+          "reason": "触发：长闭眼 3 次 ≥ 1"
+        },
+        {
+          "ts": 4490.729709,
+          "frame_id": 5645,
+          "face": {
+            "visible": 1,
+            "bbox": [
+              186,
+              17,
+              193,
+              252
+            ],
+            "pose": {
+              "yaw": -1.1246801120561425,
+              "pitch": 20.100914523547683,
+              "roll": -0.7063588421781576
+            }
+          },
+          "behavior": {
+            "ear_left": 0.4632,
+            "ear_right": 0.4407,
+            "blink_state": "OPEN",
+            "blink_count": 3,
+            "blink_rate_per_min": 0,
+            "perclos": 0.0353,
+            "long_close_count": 4,
+            "mar": 0.4161,
+            "yawn_count": 0
+          },
+          "vital": {
+            "hr_bpm": 69.9,
+            "hr_conf": 0.5547,
+            "rr_per_min": null,
+            "rr_conf": null
+          },
+          "quality": {
+            "light_score": 0.9849,
+            "motion_score": 0.1152,
+            "overall": 0.9579
+          },
+          "status": "fatigue_risk",
+          "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+          "reason": "触发：长闭眼 4 次 ≥ 1"
+        }
+      ],
+      "eye_states": {
+        "OPEN": 731,
+        "CLOSING": 3,
+        "CLOSED": 52,
+        "OPENING": 5
+      },
+      "first_behavior": {
+        "ear_left": 0.4182,
+        "ear_right": 0.4393,
+        "blink_state": "OPEN",
+        "blink_count": 3,
+        "blink_rate_per_min": 0,
+        "perclos": 0.0805,
+        "long_close_count": 3,
+        "mar": 0.4134,
+        "yawn_count": 0
+      },
+      "last_behavior": {
+        "ear_left": 0.4754,
+        "ear_right": 0.4448,
+        "blink_state": "OPEN",
+        "blink_count": 3,
+        "blink_rate_per_min": 0,
+        "perclos": 0.1177,
+        "long_close_count": 6,
+        "mar": 0.3203,
+        "yawn_count": 0
+      },
+      "visible_pitch_range": [
+        17.226702342138537,
+        30.308752987520275
+      ],
+      "last_frame": {
+        "ts": 4531.90499,
+        "frame_id": 6879,
+        "face": {
+          "visible": 1,
+          "bbox": [
+            254,
+            0,
+            229,
+            289
+          ],
+          "pose": {
+            "yaw": 3.689284490186914,
+            "pitch": 26.968060043059552,
+            "roll": -3.541767559662429
+          }
+        },
+        "behavior": {
+          "ear_left": 0.4754,
+          "ear_right": 0.4448,
+          "blink_state": "OPEN",
+          "blink_count": 3,
+          "blink_rate_per_min": 0,
+          "perclos": 0.1177,
+          "long_close_count": 6,
+          "mar": 0.3203,
+          "yawn_count": 0
+        },
+        "vital": {
+          "hr_bpm": null,
+          "hr_conf": null,
+          "rr_per_min": null,
+          "rr_conf": null
+        },
+        "quality": {
+          "light_score": 0.9396,
+          "motion_score": 0.0233,
+          "overall": 0.9628
+        },
+        "status": "adjust_posture",
+        "advice": "头部偏离过大，请调整姿势正对摄像头",
+        "reason": "头部 pitch = 27.0° 超出 ±25°（连续 204 帧越界）"
+      }
+    }
+  },
+  "runtime_slices": {
+    "initial": {
+      "samples": 924,
+      "first_ts": 4374.482927,
+      "last_ts": 4406.982142,
+      "first_frame_id": 2162,
+      "last_frame_id": 3136,
+      "analysis_hz_from_source_timestamps": 28.40068598580012,
+      "max_vital_samples": 0,
+      "visible_samples": 237,
+      "submitted_handoffs": 975,
+      "skipped_handoffs": 51,
+      "reject_counts": {
+        "vitals_blocked": 924
+      },
+      "gate_counts": {
+        "roi_empty": 138,
+        "face_missing": 687,
+        "quality_or_pose": 99
+      }
+    },
+    "later_face_bearing": {
+      "samples": 1531,
+      "first_ts": 4495.065653,
+      "last_ts": 4548.253412,
+      "first_frame_id": 5775,
+      "last_frame_id": 7369,
+      "analysis_hz_from_source_timestamps": 28.76601738381174,
+      "max_vital_samples": 100,
+      "visible_samples": 1523,
+      "submitted_handoffs": 1599,
+      "skipped_handoffs": 67,
+      "reject_counts": {
+        "vitals_blocked": 1431,
+        "window_not_full": 95,
+        "no_dominant_peak": 5
+      },
+      "gate_counts": {
+        "accepted": 115,
+        "face_missing": 8,
+        "quality_or_pose": 1408
+      }
+    }
+  },
+  "conclusions": {
+    "verified": [
+      "100/100 valid samples were observed on the actual board.",
+      "114 unique polled contract frames in the adjusted session contained non-null HR (not independent HR estimates); other windows reached no_dominant_peak, and most later frames were blocked by quality_or_pose.",
+      "The later slice has predominantly visible faces and analysis throughput above 27 Hz, with remaining skips.",
+      "The new adaptive EAR policy is installed and synthetic event tests pass; live event counters changed."
+    ],
+    "uncertain": [
+      "The user agreed to actions but did not provide explicit completion time or independent event annotations; no real blink precision/recall can be claimed.",
+      "No synchronized reference heart rate was available.",
+      "The relative contribution of preview throttling to throughput is not isolated by a same-input controlled benchmark.",
+      "Cold boot of the updated SD payload has not been physically tested."
+    ]
+  },
+  "references": [
+    {
+      "title": "Soukupova and Cech, Real-Time Eye Blink Detection using Facial Landmarks (2016)",
+      "url": "https://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf"
+    },
+    {
+      "title": "Dewi et al., Adjusting eye aspect ratio for strong eye blink detection based on facial landmarks (2022)",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9044337/"
+    }
+  ]
+}

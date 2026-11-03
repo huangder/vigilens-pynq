@@ -76,7 +76,7 @@ class PosRppg(GreenRppg):
         if self.color_window_samples < 2:
             raise ValueError("POS local window needs at least two samples")
         super().__init__(**kwargs)
-        if self.color_window_samples > self.need:
+        if self.color_window_samples > self.analysis_capacity:
             raise ValueError("POS local window cannot exceed the measurement window")
 
     @property
@@ -85,7 +85,7 @@ class PosRppg(GreenRppg):
 
     @property
     def nominal_history_samples(self) -> int:
-        return self.need + self.warmup_samples
+        return self.analysis_capacity + self.warmup_samples
 
     def reset(self, reason: str = "manual") -> None:
         super().reset(reason)
@@ -103,6 +103,9 @@ class PosRppg(GreenRppg):
             self._rgb.popleft()
 
     def _color_filtered(self, colors, count):
+        if len(colors) < self.color_window_samples:
+            self._signal_error = "color_window_not_full"
+            return None
         try:
             waveform = pos_waveform(colors, self.color_window_samples)
             if not np.isfinite(waveform).all():
@@ -153,8 +156,12 @@ def make_rppg(cfg, fps: float | None = None) -> GreenRppg:
         raise ValueError(f"unsupported rppg_method: {method}")
     return PosRppg(fps=float(fps if fps is not None else cfg["fps_nominal"]),
                    window_seconds=rppg_window_seconds(cfg), hr_band_hz=cfg["hr_band_hz"],
-                   fs_tol=float(cfg["rppg_fs_tol"]), jitter_ratio_max=float(cfg["realtime_jitter_ratio_max"]),
+                   fs_tol=float(cfg["rppg_fs_tol"]), jitter_ratio_max=float(cfg.get("rppg_resample_jitter_ratio_max",cfg["realtime_jitter_ratio_max"])),
                    max_gap_ms=float(cfg["rppg_max_gap_ms"]), recovery_ms=float(cfg["rppg_recovery_ms"]),
                    recovery_samples=int(cfg["rppg_recovery_samples"]),
                    harmonic_ratio_min=float(cfg["rppg_harmonic_ratio_min"]),
-                   color_window_seconds=float(cfg["rppg_color_window_seconds"]))
+                   color_window_seconds=float(cfg["rppg_color_window_seconds"]),
+                   short_window_seconds=cfg.get('rppg_short_window_seconds'),
+                   short_window_min_conf=cfg.get('rppg_short_window_min_conf'),
+                   history_seconds=float(cfg.get('rppg_history_seconds',0)),
+                   source_min_hz=float(cfg.get('rppg_source_min_hz',0)))

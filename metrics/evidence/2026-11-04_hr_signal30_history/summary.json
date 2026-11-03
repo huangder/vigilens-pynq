@@ -1,0 +1,237 @@
+{
+  "date_local": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "candidate_unsigned": true,
+  "contract_version_upgraded": false,
+  "deployment": {
+    "profile": {
+      "config_sha256": "0e5167afda5e4f850dc65bc3c32b08f934083266e11eea75946f6942b37af720",
+      "camera_sha256": "85ba677e9558adfa8ef256afbe69db065d618f6f07374dbf1efa8a0a9cfd85f2",
+      "archive_sha256": "e3ad1303a4a19faed61030f1bc673e32ce4315b8dfe2743060b99ca4a8360efe",
+      "source_min_hz": 30,
+      "processing_fps": 60,
+      "release_id": "VigiLens-DEV-Signal30-0e5167afda5e4f85",
+      "archive_bytes": 1334945,
+      "contains_raw_face_media": false,
+      "contains_models": false
+    },
+    "RAM_only": true,
+    "SD_updated": false,
+    "runtime": "/tmp/vigilens-signal30/root/vigilens/app/vigi_camera_autonomy",
+    "run_directory": "/run/vigilens-signal30",
+    "camera_pid": 12041,
+    "supervisor_pid": 12022,
+    "manifest_check": "passed after full install and JS patch",
+    "history_patch_camera_restart": false,
+    "rollback_directory": "/tmp/vigilens-sampling45",
+    "temporary_PC_delivery_server_stopped": true,
+    "serial_closed_after_commands": true
+  },
+  "parameters": {
+    "source_min_hz": 30,
+    "processing_and_FIR_hz": 60,
+    "minimum_real_samples": 75,
+    "report_min_bpm": 60,
+    "history_storage": "current browser localStorage, per origin",
+    "history_retention_seconds": 86400,
+    "history_max_records": 5000,
+    "history_interval_seconds": 1,
+    "history_list_limit": 100
+  },
+  "software_validation": {
+    "root_pytest": "590 passed, 2 third-party warnings",
+    "related_pytest": "94 passed, 12 subtests passed",
+    "final_boundary_pytest": "47 passed",
+    "history_renderer_transport_node": "19 passed",
+    "check_all": "26 PASS, 0 FAIL",
+    "ARM_build": "NATIVE_VISION_BUILD_PASS; NATIVE_CAMERA_BUILD_PASS; PL_ONLY_BUILD_PASS",
+    "frontend_mock": "22 checked, no failures",
+    "cross_language_contract": "24 frames, all six status values, valid",
+    "frontend_wiring": "passed",
+    "video_bypass": "15/15 passed, synthetic JPEG and contract fixtures",
+    "git_diff_check": "passed with line-ending notices"
+  },
+  "history_HTTP": {
+    "page_HTTP": 200,
+    "history_HTTP": 200,
+    "history_panel": true,
+    "history_export": true,
+    "history_sha256": "d27b73253c1b2c0b4ea1962fe6af928a8383543f08067072b3a5543f563ac482",
+    "matches_local": true,
+    "history_min60": true,
+    "visual_browser_QA_performed": false
+  },
+  "history_actual_input_replay": {
+    "input": "actual HTTP scalar frames replayed in Node with isolated mock localStorage",
+    "observations": 300,
+    "nonnull_HR_observations": 12,
+    "saved_records": 5,
+    "no_low_or_null_records": true,
+    "all_records_match_actual_frames": true,
+    "refresh_reload_matches": true,
+    "duplicate_endpoint_not_saved": true,
+    "csv_rows": 5,
+    "actual_browser_storage_inspected": false,
+    "reference_HR_available": false
+  },
+  "signal_comparison": {
+    "input": "same anonymous ROI integer sums replayed in local reference code",
+    "rows": 3266,
+    "eligible_rows": 1836,
+    "first_ts": 15127.129358,
+    "last_ts": 15192.356336,
+    "methods": {
+      "green": {
+        "reportable_raw_estimates": 280,
+        "reject_counts": {
+          "vitals_blocked": 1430,
+          "window_not_full": 780,
+          "sampling_too_slow": 38,
+          "sampling_jitter": 57,
+          "accepted": 280,
+          "short_window_low_confidence": 377,
+          "harmonic_ambiguity": 42,
+          "no_dominant_peak": 218,
+          "below_report_min": 44
+        },
+        "reference_HR_available": false
+      },
+      "pos": {
+        "reportable_raw_estimates": 189,
+        "reject_counts": {
+          "vitals_blocked": 1430,
+          "window_not_full": 780,
+          "sampling_too_slow": 38,
+          "sampling_jitter": 57,
+          "color_window_not_full": 98,
+          "short_window_low_confidence": 145,
+          "no_dominant_peak": 212,
+          "harmonic_ambiguity": 297,
+          "below_report_min": 20,
+          "accepted": 189
+        },
+        "reference_HR_available": false
+      },
+      "green_linear": {
+        "reportable_raw_estimates": 293,
+        "reject_counts": {
+          "vitals_blocked": 1430,
+          "window_not_full": 780,
+          "sampling_too_slow": 38,
+          "sampling_jitter": 57,
+          "accepted": 293,
+          "short_window_low_confidence": 343,
+          "harmonic_ambiguity": 50,
+          "no_dominant_peak": 219,
+          "below_report_min": 56
+        },
+        "reference_HR_available": false
+      },
+      "pos_linear": {
+        "reportable_raw_estimates": 188,
+        "reject_counts": {
+          "vitals_blocked": 1430,
+          "window_not_full": 780,
+          "sampling_too_slow": 38,
+          "sampling_jitter": 57,
+          "color_window_not_full": 98,
+          "short_window_low_confidence": 145,
+          "no_dominant_peak": 213,
+          "harmonic_ambiguity": 297,
+          "below_report_min": 20,
+          "accepted": 188
+        },
+        "reference_HR_available": false
+      }
+    },
+    "chosen": "retain existing Green",
+    "linear_detrend_enabled": false,
+    "external_framework_executed": false,
+    "limitation": "No synchronized reference; reportable counts do not establish accuracy or improvement"
+  },
+  "live_captures": {
+    "mostly_no_face": {
+      "requested_seconds": 45.0,
+      "elapsed_seconds": 45.0,
+      "unique_frames": 225,
+      "visible_frames": 6,
+      "nonnull_HR_observations": 0,
+      "below60_observations": 0,
+      "request_errors": [],
+      "contract_errors": [],
+      "first_source_ts": 15603.79929,
+      "last_source_ts": 15648.574328,
+      "source_monotonic": true,
+      "independent_reference_available": false,
+      "human_actions_annotated": false,
+      "raw_face_media_saved": false
+    },
+    "user_confirmed_present": {
+      "requested_seconds": 60.0,
+      "elapsed_seconds": 60.0,
+      "unique_frames": 300,
+      "visible_frames": 158,
+      "nonnull_HR_observations": 12,
+      "below60_observations": 0,
+      "request_errors": [],
+      "contract_errors": [],
+      "first_source_ts": 15778.639611,
+      "last_source_ts": 15838.430797,
+      "source_monotonic": true,
+      "independent_reference_available": false,
+      "human_actions_annotated": false,
+      "raw_face_media_saved": false
+    }
+  },
+  "independent_rolling_diagnostics": {
+    "scope": "Separate retained rolling log, not the same time interval as HTTP captures",
+    "first_ts": 15846.662221,
+    "last_ts": 15917.240716,
+    "samples": 3490,
+    "visible": 2849,
+    "analysis_hz": 49.434321,
+    "max_history_samples": 535,
+    "raw_HR_finite": 492,
+    "reject_counts": {
+      "sampling_too_slow": 0,
+      "recovering": 6,
+      "vitals_blocked": 645,
+      "below_report_min": 36,
+      "window_not_full": 653,
+      "short_window_low_confidence": 351,
+      "harmonic_ambiguity": 180,
+      "accepted": 435,
+      "no_dominant_peak": 1163,
+      "unstable": 21
+    }
+  },
+  "source_sha256": {
+    "config.yaml": "0e5167afda5e4f850dc65bc3c32b08f934083266e11eea75946f6942b37af720",
+    "backend/hr_filter.py": "8781638bda97a5399ade72c792d4c954a6548b2857a66b45b9d9b681be8bdbf4",
+    "backend/rppg_color.py": "6b66ea8f7f650528d6d99b90e4669e303c92709194ea0c963f88d8c12ff79e15",
+    "backend/vital.py": "78b0cbfd7a0e9ed5e5151cc1eac81740246b4dcd1e9cbf36ee0baa17284e782d",
+    "backend/run_pipeline.py": "3b8609e087229357a4c8f8e7681fd93413c04a5732b1a993632fcab7b8b3d348",
+    "board/autonomy/hr_filter.h": "b0e30e9ee8dc7b549ff0a40aa4f4dbe7d0a73b7a756485be7edc88c6fd57c749",
+    "board/autonomy/autonomy_engine.c": "18482e3f98ef6fcb6b95eaea7a4b404b7f630622d481bc9042101508c3ef552e",
+    "board/autonomy/vital.c": "373bab2105f0381f5efb7b902d1aca4b52cc6051eac87456104ce2f0724012ee",
+    "board/autonomy/vital.h": "5be85a2e54d3fb3f3a16788a06462105921fa7ba1e618adc2f96fa76654ba0e6",
+    "board/autonomy/export_vital_config.py": "d4f317392b87f42bf92aad064dedc9d717560ff29ace395d378ea1e2b7b2a689",
+    "board/autonomy/autonomy_camera.c": "fa5dd424f57cb324204fa47e485b41cb14e3c16660b032ba6102e3f2c9bb804d",
+    "board/autonomy/ert_runtime.cpp": "d71888a582225579bc7cf12ce34143f65cc944c047201e63ca736cdf18eed437",
+    "board/autonomy/vision_runtime.h": "6323bddf1a2432d0eab58366c2a5e237498b83c1a622d9ec0f72a39a1e40efa6",
+    "board/autonomy/package_dashboard.py": "d5b451386cbd5c48213b2d845ae86660b17ef9fc42abfcacb8dc8ce0e863ea19",
+    "board/autonomy/board_dashboard_adapter.js": "02b9fd22a133a022f5cc18ea93d4a994a6b6b1c35cef33edb98453cb53dfa398",
+    "board/autonomy/board_hr_history.js": "d27b73253c1b2c0b4ea1962fe6af928a8383543f08067072b3a5543f563ac482"
+  },
+  "limitations": [
+    "Continuous effective heart-rate output remains unverified; spectral rejection and face loss still occur.",
+    "No synchronized reference HR or independent human action annotations.",
+    "A 60BPM user-selected reporting floor can discard true low heart rates; not a normal/abnormal classifier.",
+    "The history module was tested in Node and its deployed source verified by HTTP/hash; actual user browser storage and visual layout were not inspected.",
+    "Browser-closed intervals are not collected; retention obeys both age and count limits.",
+    "RAM development payload is not a persistent SD cold-boot update.",
+    "Human collaboration record and final co-signing remain human responsibilities."
+  ],
+  "raw_face_media_saved_or_uploaded": false,
+  "accuracy_claimed": false
+}

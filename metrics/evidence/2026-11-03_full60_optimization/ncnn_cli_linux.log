@@ -1,0 +1,11 @@
+test_bad_models_shapes_counts_nonfinite_and_blob_names_fail (test_ncnn_probe_cli.NcnnProbeCLI.test_bad_models_shapes_counts_nonfinite_and_blob_names_fail) ... ok
+test_file_input_exact_length_finite_little_endian_and_metadata (test_ncnn_probe_cli.NcnnProbeCLI.test_file_input_exact_length_finite_little_endian_and_metadata) ... ok
+test_fp32_zero_input_fresh_extractors_and_little_endian_output (test_ncnn_probe_cli.NcnnProbeCLI.test_fp32_zero_input_fresh_extractors_and_little_endian_output) ... ok
+test_int8_build_reports_permission_without_certifying_model (test_ncnn_probe_cli.NcnnProbeCLI.test_int8_build_reports_permission_without_certifying_model) ... ok
+test_invalid_cli_and_argument_bounds (test_ncnn_probe_cli.NcnnProbeCLI.test_invalid_cli_and_argument_bounds) ... ok
+test_kernel_options_recorded_and_invalid_values_rejected (test_ncnn_probe_cli.NcnnProbeCLI.test_kernel_options_recorded_and_invalid_values_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.121s
+
+OK

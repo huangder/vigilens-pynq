@@ -1,0 +1,38 @@
+
+# echo LIVE_SLICE_BEGIN
+LIVE_SLICE_BEGIN
+# tail -n 8000 /run/vigilens/camera.log | awk 'BEGIN {maxsamples=0;faces=0;skipp
+ed=0} /^AUTONOMY_SAMPLE / {n++;for(i=1;i<=NF;i++){split($i,a,"=");v[a[1]]=a[2]}i
+f(n==1){first_ts=v["ts"];first_id=v["frame_id"]}last_ts=v["ts"];last_id=v["frame
+_id"];r[v["vital_reject"]]++;g[v["vital_gate"]]++;if(v["visible"]==1)faces++;if(
+v["vital_samples"]+0>maxsamples)maxsamples=v["vital_samples"]+0} /^AUTONOMY_HAND
+OFF / {submitted++;if($NF=="accepted=0")skipped++} END {print "samples="n,"first
+_ts="first_ts,"last_ts="last_ts,"first_frame_id="first_id,"last_frame_id="last_i
+d,"processed_rate="(n-1)/(last_ts-first_ts),"max_vital_samples="maxsamples,"face
+_frames="faces,"submitted="submitted,"skipped="skipped;for(k in r)print "reject"
+,k,r[k];for(k in g)print "gate",k,g[k]}'
+tail -n 1500 /run/vigilens/camera.log | grep '^AUTONOMY_SAMPLE ' | tail -n 8
+echo LIVE_SLICE_END
+printf '\nLIVE_SLICE_SERIAL_END\n'
+samples=1531 first_ts=4495.065653000 last_ts=4548.253412000 first_frame_id=5775 last_frame_id=7369 processed_rate=28.766 max_vital_samples=100 face_frames=1523 submitted=1599 skipped=67
+reject vitals_blocked 1431
+reject window_not_full 95
+reject no_dominant_peak 5
+gate accepted 115
+gate face_missing 8
+gate quality_or_pose 1408
+# tail -n 1500 /run/vigilens/camera.log | grep '^AUTONOMY_SAMPLE ' | tail -n 8
+AUTONOMY_SAMPLE frame_id=7419 ts=4549.920482000 rc=0 detections=1 visible=1 detector_ms=0.010 landmark_ms=11.669 total_ms=12.554 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=9.905 vital_hz=31.205 vital_reject=vitals_blocked roi_pixels=4770 vital_samples=0 vital_gate=quality_or_pose raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=7420 ts=4549.953098000 rc=0 detections=1 visible=1 detector_ms=0.014 landmark_ms=17.214 total_ms=18.147 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.008 landmark_caller_cpu_ms=9.456 vital_hz=30.660 vital_reject=vitals_blocked roi_pixels=4929 vital_samples=0 vital_gate=quality_or_pose raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=7421 ts=4549.988436000 rc=0 detections=1 visible=1 detector_ms=0.011 landmark_ms=15.633 total_ms=22.441 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.009 landmark_caller_cpu_ms=9.841 vital_hz=28.298 vital_reject=vitals_blocked roi_pixels=4929 vital_samples=0 vital_gate=quality_or_pose raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=7422 ts=4550.021262000 rc=0 detections=1 visible=1 detector_ms=0.008 landmark_ms=13.829 total_ms=22.284 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.006 landmark_caller_cpu_ms=10.257 vital_hz=30.464 vital_reject=vitals_blocked roi_pixels=4929 vital_samples=0 vital_gate=quality_or_pose raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=7423 ts=4550.052434000 rc=0 detections=1 visible=1 detector_ms=0.009 landmark_ms=22.074 total_ms=23.730 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=10.076 vital_hz=32.080 vital_reject=vitals_blocked roi_pixels=4770 vital_samples=0 vital_gate=quality_or_pose raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=7425 ts=4550.120475000 rc=0 detections=1 visible=1 detector_ms=0.008 landmark_ms=25.070 total_ms=27.827 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.006 landmark_caller_cpu_ms=11.009 vital_hz=14.697 vital_reject=vitals_blocked roi_pixels=4611 vital_samples=0 vital_gate=quality_or_pose raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=7426 ts=4550.152521000 rc=0 detections=1 visible=1 detector_ms=0.013 landmark_ms=9.248 total_ms=18.871 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.009 landmark_caller_cpu_ms=9.252 vital_hz=31.205 vital_reject=vitals_blocked roi_pixels=4640 vital_samples=0 vital_gate=quality_or_pose raw_hr=nan raw_hr_conf=nan hr_filter=warming
+AUTONOMY_SAMPLE frame_id=7427 ts=4550.188871000 rc=0 detections=1 visible=1 detector_ms=19.222 landmark_ms=14.409 total_ms=34.913 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=5.587 landmark_caller_cpu_ms=10.473 vital_hz=27.510 vital_reject=vitals_blocked roi_pixels=4611 vital_samples=0 vital_gate=quality_or_pose raw_hr=nan raw_hr_conf=nan hr_filter=warming
+# echo LIVE_SLICE_END
+LIVE_SLICE_END
+# printf '\nLIVE_SLICE_SERIAL_END\n'
+
+LIVE_SLICE_SERIAL_END
+# 

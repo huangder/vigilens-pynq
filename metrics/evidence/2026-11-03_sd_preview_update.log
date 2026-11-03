@@ -1,0 +1,97 @@
+
+# (
+> set -eu
+> echo SD_FIXED_UPDATE_BEGIN
+> stage=/run/vigilens-sd-update
+> test ! -e "$stage"
+> wget -T 30 -O /tmp/vigilens-sd-update.tar http://169.254.73.28:8765/update.tar
+> printf '%s\n' '05fa0b259a239f96aca70fef0b2ed558e3b3c30a7330a18d792680d5280c291
+d  /tmp/vigilens-sd-update.tar' | sha256sum -c -
+> mkdir "$stage"
+> tar -xf /tmp/vigilens-sd-update.tar -C "$stage"
+> rm /tmp/vigilens-sd-update.tar
+> cd "$stage"
+> sha256sum -c delta.sha256
+> sha256sum -c service.sha256
+> /usr/sbin/vigilens-service stop
+> grep '^/dev/mmcblk0p1 /mnt/vigilens-boot vfat ' /proc/mounts
+> trap 'sync; mount -o remount,ro /mnt/vigilens-boot' EXIT HUP INT TERM
+> mount -o remount,rw /mnt/vigilens-boot
+> while IFS= read -r name; do cp "$name" "/mnt/vigilens-boot/$name.vg-update"; m
+v "/mnt/vigilens-boot/$name.vg-update" "/mnt/vigilens-boot/$name"; done < files.
+list
+> sync
+> mount -o remount,ro /mnt/vigilens-boot
+> trap - EXIT HUP INT TERM
+> cd /mnt/vigilens-boot
+> sha256sum -c "$stage/all.sha256"
+> cp /mnt/vigilens-boot/vigilens/boot.env /etc/vigilens/boot.env
+> cp "$stage/vigilens-service" /usr/sbin/vigilens-service
+> chmod 755 /usr/sbin/vigilens-service
+> /usr/sbin/vigilens-service start
+> echo SD_FIXED_UPDATE_FILES_VERIFIED
+> sleep 12
+> /usr/sbin/vigilens-service status
+> echo SD_FIXED_UPDATE_END
+> )
+SD_FIXED_UPDATE_BEGIN
+Connecting to 169.254.73.28:8765 (169.254.73.28:8765)
+saving to '/tmp/vigilens-sd-update.tar'
+printf '\nSD_REPAIR_COMMAND_END\n'
+vigilens-sd-update.t  23% |*******                         | 7770k  0:00:03 ETAvigilens-sd-update.t  57% |******************              | 18.8M  0:00:01 ETAvigilens-sd-update.t  91% |*****************************   | 29.9M  0:00:00 ETAvigilens-sd-update.t 100% |********************************| 32.8M  0:00:00 ETA
+'/tmp/vigilens-sd-update.tar' saved
+/tmp/vigilens-sd-update.tar: OK
+BOOT.BIN: OK
+boot.scr: OK
+u-boot.img: OK
+uInitrd: OK
+vigilens/app/display.html: OK
+vigilens/app/manifest.sha256: OK
+vigilens/app/package.json: OK
+vigilens/app/runtime.env: OK
+vigilens/app/vg_metrics_http: OK
+vigilens/app/vg_vision_replay_arm: OK
+vigilens/app/vigi_camera_autonomy: OK
+vigilens/boot.env: OK
+vigilens/config.yaml: OK
+vigilens/READY: OK
+vigilens-service: OK
+stop_requested pid=262
+/dev/mmcblk0p1 /mnt/vigilens-boot vfat ro,nosuid,nodev,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0
+BOOT.BIN: OK
+boot.cmd: OK
+boot.scr: OK
+system.bit: OK
+system.dtb: OK
+u-boot.img: OK
+uInitrd: OK
+vigilens/app/det1.bin: OK
+vigilens/app/det1.param: OK
+vigilens/app/det2.bin: OK
+vigilens/app/det2.param: OK
+vigilens/app/det3.bin: OK
+vigilens/app/det3.param: OK
+vigilens/app/display.html: OK
+vigilens/app/install_native.sh: OK
+vigilens/app/libgomp.so.1: OK
+vigilens/app/manifest.sha256: OK
+vigilens/app/package.json: OK
+vigilens/app/run_native.sh: OK
+vigilens/app/runtime.env: OK
+vigilens/app/shape_predictor_68_face_landmarks.dat: OK
+vigilens/app/vg_metrics_http: OK
+vigilens/app/vg_vision_replay_arm: OK
+vigilens/app/vigi_camera_autonomy: OK
+vigilens/boot.env: OK
+vigilens/config.yaml: OK
+vigilens/READY: OK
+zImage: OK
+start_requested pid=5757
+SD_FIXED_UPDATE_FILES_VERIFIED
+camera_starting pid=5770
+supervisor_pid=5757
+SD_FIXED_UPDATE_END
+# printf '\nSD_REPAIR_COMMAND_END\n'
+
+SD_REPAIR_COMMAND_END
+# 

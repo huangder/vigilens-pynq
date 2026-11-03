@@ -1,0 +1,92 @@
+
+# wget -T 30 -O /tmp/install-blink75-1f461bad.sh http://169.254.73.28:8766/insta
+ll_update.sh
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/install-blink75-1f461bad.sh'
+install-blink75-1f46 100% |********************************|  2377  0:00:00 ETA
+'/tmp/install-blink75-1f461bad.sh' saved
+# sh /tmp/install-blink75-1f461bad.sh
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/vigilens-blink75-1f461bad/update.tar'
+printf '\nBLINK75_INSTALL_SERIAL_END\n'
+update.tar            25% |********                        | 5379k  0:00:02 ETA[  208.539896] random: crng init done
+update.tar            79% |*************************       | 16.4M  0:00:00 ETAupdate.tar           100% |********************************| 20.8M  0:00:00 ETA
+'/tmp/vigilens-blink75-1f461bad/update.tar' saved
+/tmp/vigilens-blink75-1f461bad/update.tar: OK
+vigi_camera_autonomy: OK
+vg_vision_replay_arm: OK
+vg_metrics_http: OK
+shape_predictor_68_face_landmarks.dat: OK
+libgomp.so.1: OK
+display.html: OK
+install_native.sh: OK
+run_native.sh: OK
+det1.param: OK
+det1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+ui/alerts.js: OK
+ui/app.js: OK
+ui/board_config.js: OK
+ui/board_hr_trend.js: OK
+ui/board_layout.css: OK
+ui/board_transport.js: OK
+ui/hr_display.js: OK
+ui/icons/camera.svg: OK
+ui/icons/LICENSE: OK
+ui/icons/pulse.svg: OK
+ui/icons/shield-checkmark.svg: OK
+ui/icons/trend.svg: OK
+ui/index.html: OK
+ui/mock.js: OK
+ui/preview.js: OK
+ui/recording.js: OK
+ui/style.css: OK
+ui/trends.js: OK
+ui/ui_state.js: OK
+VIGILENS_PACKAGE_CHECK_PASS
+vigi_camera_autonomy: OK
+vg_vision_replay_arm: OK
+vg_metrics_http: OK
+shape_predictor_68_face_landmarks.dat: OK
+libgomp.so.1: OK
+display.html: OK
+install_native.sh: OK
+run_native.sh: OK
+det1.param: OK
+det1.bin: OK
+det2.param: OK
+det2.bin: OK
+det3.param: OK
+det3.bin: OK
+runtime.env: OK
+ui/alerts.js: OK
+ui/app.js: OK
+ui/board_config.js: OK
+ui/board_hr_motion.js: OK
+ui/board_hr_trend.js: OK
+ui/board_layout.css: OK
+ui/board_transport.js: OK
+ui/hr_display.js: OK
+ui/icons/camera.svg: OK
+ui/icons/LICENSE: OK
+ui/icons/pulse.svg: OK
+ui/icons/shield-checkmark.svg: OK
+ui/icons/trend.svg: OK
+ui/index.html: OK
+ui/mock.js: OK
+ui/preview.js: OK
+ui/recording.js: OK
+ui/style.css: OK
+ui/trends.js: OK
+ui/ui_state.js: OK
+VIGILENS_PACKAGE_CHECK_PASS
+start_requested pid=189
+BLINK75_SMOOTH_UPDATE_INSTALLED
+# printf '\nBLINK75_INSTALL_SERIAL_END\n'
+
+BLINK75_INSTALL_SERIAL_END
+# 

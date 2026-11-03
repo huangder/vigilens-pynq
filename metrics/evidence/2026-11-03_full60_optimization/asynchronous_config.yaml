@@ -1,0 +1,364 @@
+# =============================================================================
+#  config.yaml —— 知倦 / VigiLens 阈值与参数（唯一来源）
+# =============================================================================
+# 纪律（《04》第 6 节 DoD / docs/interface.md 第 2 节）：
+#   所有阈值必须集中在本文件，**不得散落在代码里**。
+#   代码读取入口：backend/config.py → load_config()
+#   新增阈值 = 改本文件 + 在下面注明依据与出处，不要在 .py 里写魔法数字。
+# =============================================================================
+
+# ---- 时间窗口 ---------------------------------------------------------------
+window_seconds: 30                  # PERCLOS / 眨眼率 / 质量评分的滑动窗口长度（s）
+fps_nominal: 60                     # 标称帧率，仅用于时间序列换算；IP 本身不感知帧率
+                                    #   契约依据：docs/interface.md 第 0 节（640x480 RGB888@30fps）
+                                    #   🚧 v1.2 草案（2026-09-20，C 线发起）：45 → 30，
+                                    #      为前期适配低帧率采集源（OpenMV 等）先按 30 Hz 冻结。
+                                    #   ⚠️ 改这里**必须**同步重生成 FIR 系数与黄金参考：
+                                    #      python fpga/sim/design_fir_coeffs.py --fs <新值> --d 0.0
+                                    #      python fpga/sim/gen_fir_vectors.py
+                                    #      两者不同改 = rPPG 频率轴错位（backend/tests/test_vital.py 会拦住）
+
+# ---- A 线：眼部指标 ---------------------------------------------------------
+ear_close_threshold: 0.21           # PC参考旧策略阈值；ERT板端候选采用board_vision中的EAR策略
+                                    #   ⚠️ 占位值，必须用 MediaPipe 实测重标定（《04》7.1 原注）
+min_close_ms: 100                   # 连续闭眼 ≥ 此毫秒数才记为"闭眼"（**与帧率无关**）
+                                    #   依据：旧口径 min_close_frames=3 在契约 30 fps 下 = 3/30 s = 100 ms；
+                                    #   若继续按帧计数，60 fps 下 3 帧只剩 50 ms —— 眨眼判定会**静默变严**
+                                    #   （docs/37 风险表 R8）。所以阈值改成时间表达，帧率变化不再改语义。
+                                    #   ⚠️ 占位值：30 fps 下与旧口径等价，真实素材标定后按 A1 一起重标。
+min_close_frames: 3                 # 【兼容别名】只在未配置 min_close_ms 时生效（按 fps_nominal 折算）
+long_close_ms: 500                  # 单次闭眼 ≥ 此毫秒数记"长闭眼"而非"眨眼"
+                                    #   （正常眨眼 100~400 ms；长闭眼是疲劳的强信号）
+perclos_warning: 0.25               # 窗口内闭眼比例告警线（PERCLOS）
+
+# ---- A 线：嘴部指标 ---------------------------------------------------------
+mar_threshold: 0.6                  # MAR 张口判定阈值
+yawn_min_duration_ms: 800           # 张口持续时长去抖，用于区分"打哈欠"与"说话/正常张口"
+
+# ---- A 线：人脸与姿态 -------------------------------------------------------
+face_visible_min: 0.7               # 人脸可见率下限，低于此值 → adjust_posture
+pose_yaw_max_deg: 30.0              # 头部偏航越界（占位值，待 A 线实测标定）
+pose_pitch_max_deg: 25.0            # 头部俯仰越界（占位值，待 A 线实测标定）
+pose_reproj_max_frac: 0.25          # 头部姿态的**平均重投影误差 / 双眼外角间距**上限（无量纲）
+pose_hold_frames: 3                 # 姿态越界迟滞：连续 N 帧越界才翻 adjust_posture，连续 N 帧
+#   回到范围内才复位（BUG-009 成因 B：真实素材 656 帧里 yaw 相邻跳变 >10° 有 44 次，逐帧判决会让
+#   网页状态一直横跳；置 1 = 旧的逐帧语义，置 3 ≈ 0.1 s @30 fps 的确认窗）
+#   为什么用比值而不是像素：像素阈值随分辨率失效 —— 实测同一段真人素材（720×1280）平均误差
+#   中位 10.4 px，而我先前按 8 px 设的护栏会拦下 94.4% 的帧，把姿态全部清成 0（等于没在测）。
+#   实测比值分布（真人素材 90 帧，2026-10-04）：中位 0.036、p95 0.052、最大 0.073 ⇒
+#   取 0.25（约为实测最大值的 3.4 倍）只拦"明显是垃圾"的解（关键点塌陷、镜像解）。
+#   超限时 backend/face_landmark.py 返回 (0,0,0)，不返回垃圾角度。
+#   依据：docs/16 BUG-007 的验收口径；素材为 30fps 竖屏（非 P4 规范），值仍属**占位**，待规范素材复核。
+
+# ---- 板端视觉后端（PS 移植；不改变 PL 契约）---------------------------------
+board_vision:                       # 板端 MTCNN + Peppa 工程初值，非真人准确性标定
+  camera_width: 640                # 最终候选：720p真人未达标；此档最高可用原生YUYV30，真人复验待做
+  camera_height: 480               # 可切回1280x720+mjpg；960x720尾包审计失败，当前明确禁用
+  camera_format: mjpg              # 保留原生640x480亮度细节并省掉JPEG解码；不表示整机已达30fps
+  tracker_image_mode: roi_half
+  tracker_region_expansion: 1.4
+  min_face: 40                     # 原图最小检测边长（px）；降低会增加图像金字塔成本
+  min_face_fast: 80                # 跟随时全图重检的下限边长（px，须 ≥ min_face）；只用于换框阶段，
+                                   # 冷启动/长时间失脸仍回落到 min_face 深检。近景人脸约 250px，未在真板标定
+  fast_side_margin: 0.6            # 窄档下限随最近人脸边长收缩：clamp(margin×边长, min_face, min_face_fast)
+                                   # 0.6 表示允许人脸在两次重检间缩小 40% 仍被同一档覆盖；工程量，非标定值
+  scale_factor: 0.709               # MTCNN 金字塔步长；与 det1/2/3 本地模型配套
+  score_p: 0.6                     # 三阶段置信门限，来源：级联启动配置，尚待场景验证
+  score_r: 0.7
+  score_o: 0.7
+  nms_p_scale: 0.5
+  nms_p: 0.7
+  nms_r: 0.7
+  nms_o: 0.7
+  max_candidates: 64              # 每阶段候选预算；限制最坏情况开销
+  threads: 2                      # 推理工作线程；不代表实际更新率
+  detector_threads: 1             # 2026-11-01 板测单线程关闭packing达到4.44fps，降低双核争用
+  landmark_threads: 1
+  ncnn_packing: false             # FP32 ARM pack4 路径；本轮先保持旧配置用于对比
+  analysis_nice: 0                # 原生分析保留正常优先级；本轮 nice=10 板测拖慢指标更新，非30fps声明
+  tracker_worker_nice: 10         # 仅实验 tracked 构建的后台模型线程降优先级
+  redetect_seconds: 5.0            # 全图重检采样时间间隔；板测全图耗时达秒级，逐帧仍用 RNet/ONet 验证
+  deep_detect_seconds: 30.0        # 无脸/冷启动持续该秒数后才允许一次 min_face 深检；限制最宽金字塔的频次
+  tracker_levels: 3               # 全板端逐帧跟踪工程初值，尚未真人标定；仅 tracked 构建使用
+  tracker_radius: 3               # LK 每个关键点的局部半窗口（降采样图像像素）
+  tracker_iterations: 12          # 上限；达到 epsilon 即提前退出，不强制执行满次数
+  tracker_epsilon: 0.02           # LK 收敛步长（跟踪图像像素），不是识别阈值
+  tracker_min_eigen: 1.0          # 局部纹理下限（灰度梯度平方的归一化特征值）
+  tracker_max_error: 18.0         # 局部光度残差上限（灰度级）
+  tracker_fb_error: 2.0           # 眼嘴点往返跟踪误差上限（原图像素）
+  tracker_min_fraction: 0.7       # 成功图像观测比例；眼睛与 MAR 点必须全部通过
+  tracker_max_motion: 48.0        # 单次跟踪搜索位移上限（原图像素）
+  tracker_model_hz: 1.0           # 重模型校正上限；不降低逐帧跟踪/指标/采样频率
+  tracker_redetect_seconds: 30.0  # 后台全图重新找脸的周期；丢脸时立即触发
+  tracker_anchor_max_age_s: 5.0    # 迟到模型锚点必须在当前图像重新跟踪验证，超过此龄拒绝
+  ert_patch_side: 32              # 仅 ert 实验入口：检测确认的人脸外观采样网格
+  ert_patch_min_std: 6.0          # 灰度标准差下限；工程初值，未标定，不代表人脸分类置信度
+  ert_patch_max_error: 18.0       # 去均值后的外观 MAE 上限；未标定，防止黑屏/明显掉脸仍报点位
+  preview_async: true
+  preview_worker_nice: 10
+  preview_hz: 5.0                 # 预览降为5Hz；不降低指标采样率，减少分析线程内JPEG编码
+  dashboard_metrics_hz: 5.0       # 板端HTTP页面轮询频率；不改变ws_push_hz或板端HR估计计算节奏
+  ear_threshold_mode: absolute    # 用户要求0.400绝对阈值；adaptive可恢复上一版双眼基线候选
+  ear_close_absolute: 0.400       # 双眼EAR均值严格低于此值开始闭合；用户“400”按0.400解释
+  ear_open_absolute: 0.430        # 重新睁眼迟滞，避免0.400附近波动重复计数；工程候选
+  ear_close_ratio: 0.65           # 板端ERT候选：低于各自睁眼基线65%，双眼同时闭合；非文献标定值
+  ear_open_ratio: 0.80            # 迟滞：双眼回到基线80%才确认睁开；原始EAR仍照常输出
+  ear_baseline_tau_s: 2.0         # 仅稳定睁眼时更新基线，闭眼期间冻结；启动请睁眼
+  blink_min_close_ms: 80          # 用户要求延长眨眼确认时间：30→80ms，抑制短暂点位波动
+  blink_min_open_ms: 100          # 重睁确认60→100ms；等待重睁时间不计入闭眼时长
+  blink_long_close_ms: 1500       # 板端长闭眼界线500→1500ms，减少眨眼被归为长闭眼；未标定
+  blink_max_gap_ms: 120           # 更长观测缺口取消未完成事件，不能把缺帧算作持续闭眼
+  ear_baseline_reset_ms: 1000     # 长失脸/缺口后重新学习；不是身份识别或人物切换检测
+  hr_trend_bridge_seconds: 30.0   # 仅绘图：短缺测前后真实点间虚线连接上限，不生成测量样本
+  hr_trend_hold_seconds: 10.0     # 仅绘图：最新缺测时短暂虚线延续历史值，超时/断网后停止
+  hr_display_transition_ms: 1000  # 有效心率数字的显示动画；保留真实目标值说明，不进入告警
+  dashboard_animation_hz: 30.0    # PC页面绘制节奏；不改变采样、估计或HTTP轮询频率
+  crop_scale: 1.4                 # Peppa ONNX 作者裁剪倍数，沿用 peppa_pipeline.py
+  forehead_inset: 0.08            # 沿用 live_hybrid_demo.py 眉间 ROI 几何启发式
+  forehead_top: 0.65              # 眉眼间距向上延伸倍数；不是皮肤检测/准确率保证
+  forehead_bottom: 0.10
+  forehead_min_pixels: 8
+
+# ---- A 线：图像方向归一化（BUG-013）----------------------------------------
+orientation_probe_frames: 8         # 打开帧源时用前 N 帧探测朝向（试 0/90/180/270 四个角度）
+#   依据：相机装反 / 手机倒拿 / 竖屏读成横屏时 mediapipe 检出率会掉到 0（180° 倒置实测 0%）。
+#   只探测开头这 N 帧（每帧试 4 次），不是逐帧探测；探测不出人脸时保持 0（不动原样）。
+#   想跳过探测：--rotate 0（原样）/ 90 / 180 / 270（强制）。
+
+# ---- A 线：信号质量门控 -----------------------------------------------------
+quality_min_score: 0.60             # 质量总分下限，低于此值 → unreliable（不输出数值）
+light_score_min: 0.5                # 光照分量下限（占位值，待 A 线实测标定）
+motion_score_max: 0.35              # 运动分量上限（占位值，待 A 线实测标定）
+light_target: 0.5                   # 理想平均亮度（0~1）；偏离越远光照分越低
+motion_thresh_gray: 16              # 帧差判定"运动像素"的灰度阈值（严格大于）
+#   依据：契约 §3.3 冻结值与 HLS `motion_quality` 的 motion_thresh 寄存器一致（默认 16）。
+#   2026-09-16 三方拍板：A 线由此前的占位值 25 对齐到 **16**，并同步把灰度式与
+#   3/5 相位抽取（→384×288）统一到契约 §3.4 的冻结口径 —— 见 backend/quality.py::to_gray。
+#   实测依据与差异表见 docs/interface.md §5.4 末节；A↔C 对拍由
+#   metrics/scripts/check_motion_golden.py 验证（要求 9/9 全等、容差 0）。
+motion_score_gain: 4.0              # 运动比例 → 运动分的放大系数（占位标定）
+quality_weights:                    # overall = 加权平均（三项权重和不必为 1，代码会归一化）
+  light: 0.5
+  motion: 0.3
+  face: 0.2
+
+# ---- A 线：疲劳判据 ---------------------------------------------------------
+fatigue_yawn_count: 2               # 窗口内打哈欠次数 ≥ 此值 → fatigue_risk
+fatigue_long_close_count: 1         # 窗口内长闭眼次数 ≥ 此值 → fatigue_risk
+fatigue_blink_rate_low: 10.0        # 眨眼率低于此值（且 >0）→ fatigue_risk
+
+# ---- B 线：持续状态提示 -----------------------------------------------------
+alert_duration_seconds: 10          # 用户 2026-11-01 要求：连续超过 10 秒才弹窗；缺测重计
+hr_alert_high_bpm: 100.0            # ⚠️ 可调原型提示线，未标定；非诊断标准，不修改疲劳判定
+
+# ---- A 线 ↔ C 线：rPPG 带通（与 docs/interface.md 3.4 一致）-----------------
+hr_band_hz: [0.7, 3.5]              # 心率带通
+rr_band_hz: [0.1, 0.5]             # 呼吸带通
+vital_require_quality: 0.75         # 只有在质量高于此值时**才允许**输出心率/呼吸趋势
+                                    #   否则 vital.* 输出 null（前端必须优雅渲染"暂无"）
+rppg_method: green                 # 默认保留实测基线；pos 为可选实验路径，见 docs/52 的同源对比
+rppg_window_seconds: 2.5            # 用户要求75个有效样本：75/30秒；行为/质量仍为30秒
+                                    # 75点名义频率网格间距30/75*60=24bpm，非准确率
+                                    # 插值/平滑不增加真实信息量；缺省沿用window_seconds
+rppg_color_window_seconds: 1.6      # POS 的局部投影窗；不是最终心率测量窗
+rppg_history_seconds: 10.0         # 用户要求复用有效历史：75点启动后逐渐扩展，最近最多10秒；不跨失脸/长缺口
+rppg_resample_jitter_ratio_max: 3.0 # 算法重采样p95间隔/标称周期上限；不改变实时性验收1.5；工程候选
+rppg_short_window_seconds: 3.0     # ≤3秒启用额外短窗谱质量候选，避免少数频点使噪声占比虚高
+rppg_short_window_min_conf: 0.80   # 工程候选：75点seed7噪声0.7561、合成脉动0.92以上；非真人准确率标定
+rppg_fs_tol: 0.10                   # 真实采样率与 fps_nominal 的相对偏差上限（超过 → vital.* 全 null）
+                                    #   依据：FIR 系数是按 fps_nominal 设计的，采样率偏 k 倍时频率轴整体
+                                    #   缩放 k 倍（docs/16 BUG-029：13 fps 下 72 bpm 被报成 166 bpm）。
+                                    #   0.10 = 允许 ±10%，已覆盖实测 30.14 fps vs 标称 30（+0.5%）
+rppg_max_gap_ms: 200                # 真实采样率门控内覆盖短缺口；更长缺口重新积窗；插值不计为真实样本
+rppg_recovery_ms: 200               # 短时质量/姿态暂停保留原始有效样本，恢复后检查；丢脸/空ROI立即清窗
+rppg_recovery_samples: 3            # 短暂停后须有新的连续有效样本再重新计算，期间不输出旧心率
+rppg_harmonic_ratio_min: 0.05       # 主峰半频邻域/主峰邻域能量比达到此值 → 倍频歧义拒报，非准确率
+hr_stabilizer_enabled: true        # 用户要求的输出稳定候选；不代替FIR，不提高频谱质量/准确率
+hr_stabilizer_window: 3            # 最近3次有效估计的中值/一致性窗口；拒报依旧清除当前测量
+hr_stabilizer_startup_samples: 1   # 用户要求更快显示：首个有效值启动，设3恢复原严格确认；不生成缺失值
+hr_stabilizer_alpha: 0.20          # 用户要求更平缓：0.35→0.20；实际EMA步长还乘谱置信指标，增加响应延迟
+hr_stabilizer_interval_s: 0.8      # 纳入新估计的最短间隔，容纳1Hz源时钟抖动；重复帧不累计确认
+hr_stabilizer_max_gap_s: 1.5       # 超过该时间没有新有效估计则清空滤波，不续用旧数
+hr_stabilizer_max_spread_bpm: 12.0 # 3次原始估计范围上限，取5秒名义一个FFT间距；非生理诊断阈值
+
+# ---- B 线：推送与连接 -------------------------------------------------------
+ws_push_hz: 1.0                     # WebSocket 推送节奏（契约：1 帧/秒）
+ws_disconnect_timeout_s: 3.0        # 超过此时长无数据 → 前端显示 disconnected
+alert_duration_seconds: 10          # 同步 GitHub B 线持续提示：连续超过此时长才弹窗
+hr_alert_high_bpm: 100.0            # 可调原型提示线，未标定；非诊断标准，不修改疲劳判定
+
+# ---- B 线：旁路视频流（**不是契约的一部分**）--------------------------------
+# 为什么要有它：契约 §1 的帧只能有那 9 个字段，**不允许塞图像**。
+# 所以画面走独立旁路（POST /api/frame → GET /video.mjpg），与既有 triggers
+# 旁路同一个范式：不污染冻结帧，缺省即不带，行为与从前完全一致。
+# 关掉它 = 不传这三个键也不会坏；前端会自动退回占位画面。
+video_push_hz: 8.0                  # 画面推送节奏（Hz）。**独立于 ws_push_hz**：
+                                    #   指标 1 帧/秒是契约要求；画面要连续才像视频，故更高。
+                                    #   8 Hz 对"人眼确认画面与指标同源"足够，且不吃满 CPU。
+video_jpeg_quality: 80              # 旁路 JPEG 质量（1..100）。有损，**只能用于显示**，
+                                    #   不得当作 C 线黄金参考（契约 §4.3 要求逐点相等）。
+video_max_width: 640                # 旁路画面最长边（等比缩放）。降采样只为省 CPU/带宽，
+                                    #   与测量分辨率无关 —— 测量始终用 fpga.img_width/height。
+
+# ---- 实时性三档口径的**验收阈值**（docs/15 §3.5 / 台账 BUG-015）---------------
+# 为什么单独一段：BUG-015 的根因不是"慢"，是"实时性"没有可验收的定义。
+# 现在把它拆成 R1 采集 fps / R2 处理 fps / R3 展示 Hz（+ 每帧展示延迟）三档；
+# 这里的键是**判定阈值**（不是测量值），实测脚本：metrics/scripts/measure_realtime.py。
+realtime_capture_ratio_min: 0.95    # R1：产出 fps ≥ fps_nominal × 0.95（30 → ≥28.5）
+realtime_jitter_ratio_max: 1.5      # R1/R3：相邻间隔 p95 ≤ 1.5 × 标称周期（30fps→50ms；1Hz→1500ms）
+realtime_process_ratio_min: 1.0     # R2：吞吐 ≥ fps_nominal × 1.0（演示要长稳，建议 ≥1.2 并写进证据）
+realtime_display_hz_tol: 0.10       # R3：|展示 Hz − ws_push_hz| ≤ 10%
+realtime_display_lag_max_ms: 500    # R3：帧 ts → 本机收到 的 p95 上限（本机/局域网演示口径；
+                                    #   跨公网不适用 —— 那时延迟由网络决定，不由本仓库决定）
+
+# ---- C 线：FPGA 口径（改这里等于改契约，必须同步 docs/interface.md）--------
+fpga:
+  board: Mizar-Z7020                # 🚧 v1.3 草案（2026-09-23，待 A/B 会签）：实物板卡是
+                                    #   MicroPhase Mizar-Z7 的 7020 版，原定 PYNQ-Z2。
+                                    #   依据 docs/interface.md §0 与 §6 的 2026-09-23 行。
+                                    #   ⚠️ 板级差异（PS 配置 / 引脚约束 / bitstream）见 board/README.md；
+                                    #      **IP 口径与 data contract 完全不变**，四个 HLS IP 无需重做。
+  device: xc7z020clg400-1           # 器件字符串**两块板相同**：Mizar 的 XC7Z020-1CLG400C
+                                    #   与 PYNQ-Z2 的 xc7z020clg400-1 是同一颗
+                                    #   （`C` 只是商用温度等级后缀）。所以 v1.3 改板卡**不动这一行**。
+  clock_ns: 10                      # 100 MHz（来自 PS FCLK0，不是 PL 侧那颗 50 MHz 晶振）
+  img_width: 640
+  img_height: 480
+  pixel_format: RGB888              # ⚠️ 通道顺序 R-G-B；OpenCV 默认 BGR，比对前须转换
+  roi_is_half_open: true            # ROI 为半开区间 [x0,x1)，等价 img[y0:y1, x0:x1]
+
+# ---- 测量口径档位化（用户 2026-09-30 决策；契约见 docs/interface.md §0 v1.5 草案）----
+# 为什么要有这一段：**"帧率"与"测量分辨率"从此不再是一个全局常量**。
+#   · 契约 v1.1 冻结的是 640x480 @45fps；v1.2 草案改 30fps；v1.5 草案又把测量口径
+#     档位化成 **720p 主 / 1080p 备**。三份口径同时在仓库里 ⇒ 谁都可以引用出不同的数字。
+#   · 用户 2026-09-30 选定两条链路：**45fps/1080p** 与 **60fps/720p**，要求分别落地。
+#   · 实现上**两档的灰度工作尺寸都是 480x270**（720p 抽 3/8、1080p 抽 1/4，
+#     129600 像素 ≤ 2^17）⇒ motion_quality 的片内帧缓存仍是 64 个 BRAM18（23%）。
+#     这是 v1.5 能成立的全部理由，实测数字见 fpga/sim/link_budget.py 的输出表。
+#
+# ⚠️ 沿用扁平键名（tier_720p60_* / tier_1080p45_*）而不是三级嵌套：
+#    backend/config.py 的内置 mini-YAML 解析器**只支持一层嵌套**（PyYAML 缺失时的兜底路径），
+#    写成三段嵌套会让没装 PyYAML 的机器读到空值 —— 那是"静默降级"，比报错更难查。
+# ⚠️ 这两个键组目前是**声明性的**：IP 侧不读它们，C 线靠 run_hls.tcl 的 VIGILENS_TIER 取同一组数字。
+#    改这里**必须同时**核对 docs/interface.md §0 与 fpga/run_hls.tcl 的档位块。
+#
+# 📌 2026-10-24 单档位决策（docs/40、interface.md v1.7 草案）：
+#    · 只开发 **1280×720 一个档位**，帧率定案 **30 fps**（不再是 60）。
+#    · 键名 `tier_720p60_*` 是**历史档位标识**（720p60 = 当初那次档位提案的名字），
+#      里面的 fps 已改为 30；会签 v1.7 后统一改名为 `tier_720p_*`（改名会波及
+#      backend/quality.py、board/regmap.py 与 run_hls.tcl 的档位块，故留到会签时一次做完）。
+#    · `tier_1080p45_*`（原 1920×1080 备档）**已取消**：保留键值只为让 board/regmap.py 的
+#      三档自检仍能跑；它不再是开发目标，不要按它排计划。
+tier_720p60_width: 1280             # 唯一开发档位：1280x720 @30fps（PL 侧实测 9.23 ms/帧 ≈108 fps，余量 3.6×）
+tier_720p60_height: 720
+tier_720p60_fps: 30                 # 2026-10-24 定案：30 fps（理由见 docs/40 §1）
+tier_720p60_gray_decim: [3, 8]      # rgb2gray 抽取比 -> 灰度 480x270
+tier_1080p45_width: 1920            # ⛔ 已取消的备档（仅为 regmap 三档自检保留）
+tier_1080p45_height: 1080
+tier_1080p45_fps: 45
+tier_1080p45_gray_decim: [1, 4]     # rgb2gray 抽取比 -> 灰度 480x270（与主档同一片内台阶）
+
+# ---- A 线：年龄分层疲劳对照（**旁路功能，不影响冻结的 9 字段契约帧**）----------
+# 为什么走旁路：`docs/interface.md` §1 把指标帧冻结为恰好 9 个顶层字段，
+#   多一个字段就是非法帧（`validate_frame` 会拒收）。年龄档案是"人群基线与个体推断"
+#   这类附加解释，与 `triggers`（证据链）、旁路画面（/api/frame）是同一个范式。
+#   因此本段所有键**都不是契约的一部分**，改它们不需要 A/B 会签，
+#   但**必须**同步 `backend/age_contract.py`（schema 唯一来源）与本注释。
+# ⚠️ 命名沿用扁平的 `age_*` / `couple_*`：`backend/config.py` 的内置 mini-YAML
+#    解析器只支持一层嵌套，写成多级嵌套会让没装 PyYAML 的机器读到空值（静默降级）。
+age_enabled: true                   # 是否启用年龄档案旁路（关掉 = 行为与从前逐字节一致）
+age_infer_hz: 1.0                   # 图像年龄推断的调用节奏（Hz）。
+                                    #   为什么不是每帧：年龄是慢变量，1 Hz 足够，
+                                    #   而每帧调 CNN 会让 PS 侧（Cortex-A9）白烧算力。
+age_engine_order: [opencv_caffe, heuristic]   # 引擎优先级：前面的可用就用前面的。
+                                    #   全都不可用时 engine=none（**不猜**，前端显示"未做推断"）
+age_model_dir: data/models/age      # OpenCV Caffe 年龄模型的目录（deploy_age.prototxt +
+                                    #   age_net.caffemodel）。权重在 .gitignore 里，需要时用
+                                    #   `python metrics/scripts/fetch_age_model.py` 取。
+                                    #   缺权重 ⇒ 自动降级到 heuristic，**不报错**（链路优先）
+age_bands_path: data/reference/age_bands.json   # 参照基线（每条都带出处与核实状态）
+age_db_path: data/fatigue_db/vigilens_fatigue.sqlite3   # 测量库（入库文件是 schema.sql，
+                                    #   数据库本体在 .gitignore 里 —— 它含个体数据）
+age_enroll_window_s: 20.0           # 【判断是否收录人脸】的观察窗口长度（s）。
+                                    #   依据：用户要求"给予年龄识别机制一个判断是否收录
+                                    #   人脸的时间"。20 s 是按 1 Hz 采样约 20 个样本、
+                                    #   足以让"同一张脸"的距离判决稳定；⚠️ 未标定，占位值。
+age_enroll_min_samples: 12          # 窗口内至少这么多个**有效**样本才允许收录（占位值）
+age_enroll_min_quality: 0.65        # 样本的 quality.overall 低于此值不计入观察（占位值）
+age_enroll_restart_frames: 3        # 观察期间连续这么多帧"不像同一个人"就重启观察（换人了）。
+                                    #   占位值：太小会被姿态抖动频繁打断，太大则会把两个人
+                                    #   的签名混进同一份档案（那正是最坏的数据污染）。
+age_signature_dim: 16               # 人脸签名边长：16x16 灰度 → 256 维 int8。
+                                    #   **不是照片**：降采样 + 去均值 + 量化，不可逆还原人脸。
+age_signature_match_max_distance: 0.35   # 两张脸判为"同一个人"的最大距离（占位值，待标定）
+age_stores_face_image: false        # 【隐私红线】默认不保存人脸裁剪图。
+                                    #   改 true 只允许在获得被采集者授权的本地场景，
+                                    #   且仍**不得**上传任何外部服务（《05》铁律 4）。
+age_confirm_locks_inference: true   # 一次正式确认年龄后是否停用图像推测。
+                                    #   用户明确要求的行为；改 false = 违反需求，别改。
+couple_prior_logit: -2.2            # 耦合模型的先验 logit（未疲劳的先验占优）。
+                                    #   依据：无任何证据时风险应低（≈0.10），
+                                    #   而不是从 0.5 起步乱报警。⚠️ 未标定，占位值。
+couple_gain_perclos: 1.6            # 各指标标准化偏离量 (z) → 证据强度的增益。
+couple_gain_long_close: 1.2         #   形式：logLR_i = gain_i * z_i（见 fatigue_coupling.py）。
+couple_gain_yawn: 1.0               #   ⚠️ 全部未标定：需真实标注 session 做逻辑回归拟合。
+couple_gain_blink_low: 0.9
+couple_gain_trend: 0.8              # 趋势项（PERCLOS 斜率）的增益
+couple_interaction_perclos_longclose: 0.7   # 显式**耦合项**：高 PERCLOS 且出现长闭眼时
+                                    #   额外增加证据 —— 单看任一指标都可能落在正常范围，
+                                    #   两者同时出现才是"闭眼-再闭合"的疲劳模式。
+couple_interaction_perclos_blinksupp: 0.5   # 高 PERCLOS 且眨眼率被抑制（< 同龄基线）时的耦合项
+couple_weight_floor: 0.15           # 质量收缩的下限：质量再差也不把权重压到 0，
+                                    #   而是让证据整体变弱 + 由门控决定是否 comparable
+couple_clip: 3.0                    # 单个证据项的截断（防止单一指标独大）
+couple_memory_alpha: 0.25           # 时序累积的指数记忆系数（0~1，越大越跟手）
+couple_risk_medium: 0.45            # 风险档位分界（占位值）
+couple_risk_high: 0.70              # 风险档位分界（占位值）
+
+# ---- 独立SD启动的部署参数（不改变测量阈值；候选，待实卡断电验收）--------------
+cold_boot:
+  enabled: true
+  board_ip: 169.254.73.29
+  netmask: 255.255.0.0
+  network_interface: eth0
+  camera_device: /dev/video0
+  http_bind: 0.0.0.0
+  http_port: 8080
+  mount_wait_seconds: 30
+  retry_seconds: 3
+  health_poll_seconds: 1
+  startup_grace_seconds: 45
+  frame_stale_seconds: 10
+  stop_grace_seconds: 10
+  log_max_bytes: 2097152
+
+# ---- 年龄 × 指标耦合的证据权重（**本功能最关键的一条科学依据**）--------------
+# 依据（真实可核实，见 report/research/age_fatigue_reference_sources.md §3）：
+#   Cai et al. 2021, Sci Rep 11:21561, DOI 10.1038/s41598-021-99133-y（CC BY，全文已读）：
+#     29 h 完全睡眠剥夺 + 实车，年轻组 16 人 vs 老年组 17 人。原文结论：
+#     "Ocular measures of drowsiness, including blink duration, number of long eye
+#      closures and PERCLOS increased following sleep loss **for younger adults only**
+#      (p < 0.05)." 老年组仍有驾驶损害（车道偏离 3.5×），但**眼部指标不升高**。
+#   独立佐证：Abe 2023, Sleep Advances 4(1):zpad006（CC BY，全文已读）把
+#     "in older adults" 明确列为 PERCLOS **不**随困倦变化的情形之一。
+# ⇒ 含义：**统一的 PERCLOS 阈值会对老年用户系统性漏报**（false negative），
+#    而漏报在安全方向上是更坏的错误。因此本模型对"眼部证据"按年龄**下调权重**，
+#    并相对提高非眼部证据（哈欠 / 姿态漂移）的权重。
+# ⚠️ 下面的具体数值是**占位值**：文献给的是"方向与显著性"，没有给可移植的权重。
+#    真正标定需要本设备上带年龄标注的 session（当前不存在，见 docs/28 §9（未验证清单））。
+age_scenario: reading               # 眨眼率的场景口径（reading / primary_gaze / conversation）。
+                                    #   依据 Doughty 2001（Optom Vis Sci 78(10):712-725，题录已核）：
+                                    #   95% 参考带 reading 1.4~14.4、primary gaze 8.0~21.0、
+                                    #   conversation 10.5~32.5 blinks/min —— **场景差 5.8 倍**，
+                                    #   比年龄差异大得多。本项目是"桌面专注"场景 → reading。
+                                    #   不写明场景就引用眨眼率 = 结论不可复现（原文明确反对笼统给值）。
+couple_eye_sensitivity_default: 1.0 # 眼部证据（PERCLOS / 长闭眼 / 眨眼率）的年龄权重基准
+couple_eye_sensitivity_older: 0.5   # 60+ 组的眼部证据权重（占位值；方向有文献依据，数值没有）
+couple_non_eye_sensitivity_older: 1.2   # 60+ 组的非眼部证据权重（哈欠/姿态），同上为占位值
+couple_gain_pose_drift: 0.5         # 姿态漂移项的增益：在阈值内的漂移也计入弱证据
+                                    #   （老年组的损害被作者归因于 inattention/distraction，
+                                    #    而姿态与可见率正是本项目里"非眼动"的可测代理）
+couple_trend_ref_per_min: 0.10      # 趋势项的基准：PERCLOS 每分钟上升多少算 1 个尺度。
+                                    #   ⚠️ 未标定，占位值。
+
+

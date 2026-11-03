@@ -38,7 +38,12 @@ class MetricsHTTP(unittest.TestCase):
 
     def setUp(self):
         self.latest = self.work / "latest.json"
+        self.preview = self.work / "preview.jpg"
+        self.preview.unlink(missing_ok=True)
         self.display = ROOT / "board/autonomy/display.html"
+        self.assets = self.work / 'ui'
+        self.assets.mkdir(exist_ok=True)
+        (self.assets/'app.js').write_bytes(b'/* explicit static asset fixture */')
         self.fixture = {"ts": 1.0, "frame_id": 1,
             "face": {"visible": 0, "bbox": [0, 0, 0, 0], "pose": {"yaw": 0, "pitch": 0, "roll": 0}},
             "behavior": {"ear_left": 0, "ear_right": 0, "blink_state": "OPEN", "blink_count": 0,
@@ -51,7 +56,7 @@ class MetricsHTTP(unittest.TestCase):
             sock.bind(("127.0.0.1", 0))
             self.port = sock.getsockname()[1]
         self.process = subprocess.Popen([str(self.binary), "--bind", "127.0.0.1", "--port", str(self.port),
-            "--latest", str(self.latest), "--display", str(self.display), "--stale-seconds", "3"],
+            "--latest", str(self.latest), "--display", str(self.display), "--preview", str(self.preview), "--assets", str(self.assets), "--stale-seconds", "3"],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         ready, _, _ = select.select([self.process.stdout], [], [], 5)
         self.assertTrue(ready, "server did not become ready")
@@ -107,6 +112,37 @@ class MetricsHTTP(unittest.TestCase):
         for path in ("/config.yaml", "/../config.yaml", "/%2e%2e/config.yaml", "/api/latest?file=x", "/video.mjpg"):
             self.assertEqual(self.get(path)[0], 404, path)
         self.assertEqual(self.get(method="POST")[0], 405)
+
+    def test_preview_is_separate_bounded_fresh_and_atomic(self):
+        self.assertEqual(self.get('/api/frame.jpg')[0], 503)
+        # Transport fixture only; actual JPEG encoding is tested separately.
+        image=b'\xff\xd8explicit software transport fixture\xff\xd9'
+        self.preview.write_bytes(image)
+        code, headers, body=self.get('/api/frame.jpg?t=fixture')
+        self.assertEqual(code,200)
+        self.assertEqual(headers['Content-Type'],'image/jpeg')
+        self.assertEqual(body,image)
+        self.assertEqual(json.loads(self.get()[2]),self.fixture)
+        os.utime(self.preview,(time.time()-10,time.time()-10))
+        code, _, body=self.get('/api/frame.jpg')
+        self.assertEqual(code,503)
+        self.assertEqual(json.loads(body)['error'],'preview_stale')
+        temp=self.preview.with_suffix('.tmp')
+        temp.write_bytes(image+b'incomplete')
+        os.replace(temp,self.preview)
+        self.assertEqual(self.get('/api/frame.jpg')[0],503)
+        self.preview.write_bytes(image)
+        self.assertEqual(self.get('/api/frame.jpg')[0],200)
+        self.assertEqual(self.get('/api/frame.jpg/other')[0],404)
+        self.assertEqual(self.get('/api/frame.jpgx')[0],404)
+
+    def test_static_dashboard_assets_and_path_rejection(self):
+        code,headers,body=self.get('/app.js')
+        self.assertEqual(code,200)
+        self.assertIn('javascript',headers['Content-Type'])
+        self.assertEqual(body,(self.assets/'app.js').read_bytes())
+        for path in ['/../app.js','/%2e%2e/app.js','/app.js?file=other','/missing.js','/config.yaml']:
+            self.assertEqual(self.get(path)[0],404,path)
 
     def test_malformed_and_partial_files_are_never_served(self):
         for raw in ('{"ts":1}', json.dumps(self.fixture)[:-1], json.dumps(self.fixture)+" garbage",

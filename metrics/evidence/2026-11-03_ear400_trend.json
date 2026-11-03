@@ -1,0 +1,380 @@
+{
+  "recorded_at": "2026-11-03T16:02:31.617465+08:00",
+  "kind": "EAR_0.400_and_board_HR_trend_experimental_candidate",
+  "release_id": "VigiLens-SD-ff0ebe1975a31d50",
+  "config_sha256": "ff0ebe1975a31d50aa48a52eb9dd77b10a031a9e45dcf8c160f5d7eabdadbca6",
+  "camera_sha256": "988b3d8d689998a64e7080f7655fad526485d7b128679a35ebc48cf9e088ef3f",
+  "user_400_interpretation": "0.400 in the three-decimal EAR display",
+  "blink_policy": {
+    "ear_threshold_mode": "absolute",
+    "ear_close_absolute": 0.4,
+    "ear_open_absolute": 0.43,
+    "ear_close_ratio": 0.65,
+    "ear_open_ratio": 0.8,
+    "ear_baseline_tau_s": 2,
+    "blink_min_close_ms": 30,
+    "blink_min_open_ms": 60,
+    "blink_max_gap_ms": 120,
+    "ear_baseline_reset_ms": 1000
+  },
+  "displayed_EAR": "bilateral mean; raw left/right contract fields unchanged",
+  "HR_trend": {
+    "poll_hz": 5,
+    "bridge_max_seconds": 30,
+    "historical_tail_max_seconds": 10,
+    "solid": "valid contract values only",
+    "dashed": "missing-data bridge or explicitly historical tail, presentation only",
+    "missing_measurements_replaced": false,
+    "measurements_or_alerts_from_history": false,
+    "bridge_across_disconnect_or_restart": false,
+    "history_seconds": 120,
+    "derived_capacity": 601
+  },
+  "tests": {
+    "targeted_pytest": "52 passed, 4 subtests passed in 4.98s",
+    "JS_trend_transport_and_injected_renderer": "23 passed, 0 failed",
+    "root_pytest": "565 passed, 2 warnings in 37.63s",
+    "check_all": {
+      "when": "2026-11-03T15:55:50",
+      "elapsed_s": 77.7,
+      "passed": 26,
+      "failed": 0,
+      "rows": [
+        {
+          "section": "环境",
+          "name": "Python",
+          "status": "INFO",
+          "detail": "3.12.13 @ D:\\Desktop\\AMD\\.venv\\Scripts\\python.exe"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 cv2",
+          "status": "PASS",
+          "detail": "4.11.0"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 numpy",
+          "status": "PASS",
+          "detail": "1.26.4"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 mediapipe",
+          "status": "PASS",
+          "detail": "0.10.21"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 yaml",
+          "status": "PASS",
+          "detail": "6.0.3"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 fastapi",
+          "status": "PASS",
+          "detail": "0.141.1"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 uvicorn",
+          "status": "PASS",
+          "detail": "0.52.4"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 pytest",
+          "status": "PASS",
+          "detail": "9.1.1"
+        },
+        {
+          "section": "环境",
+          "name": "依赖 pyserial",
+          "status": "INFO",
+          "detail": "未安装 —— Python 串口工具不可用；现有板端 PowerShell 串口工具不依赖它"
+        },
+        {
+          "section": "环境",
+          "name": "node",
+          "status": "PASS",
+          "detail": "C:\\Program Files\\nodejs\\node.EXE"
+        },
+        {
+          "section": "A 线",
+          "name": "check_a_line_all（A~E 五段）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 55.1s | ============================================================== | A 线自检全部通过：17 项（用时 54.9s）"
+        },
+        {
+          "section": "B 线",
+          "name": "B 线门控阈值一处定义 → /api/status → 前端兜底三处一致",
+          "status": "PASS",
+          "detail": "退出码 0，用时 1.6s | B 线阈值守卫检查：通过 —— 4/4（config.yaml → /api/status → app.js 兜底，三处一致）"
+        },
+        {
+          "section": "B 线",
+          "name": "B 线 /ws 断流兜底（发合法契约的 disconnected，序号不倒退）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 8.5s | B 线 /ws 断流兜底检查：通过 —— 5/5"
+        },
+        {
+          "section": "B 线",
+          "name": "旁路画面链路 + 契约未被污染（15 项）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 5.7s | 全部通过：15/15 项通过"
+        },
+        {
+          "section": "B 线",
+          "name": "年龄档案旁路（年龄档案/收录/同龄基线比对 + Python↔JS 校验一致）",
+          "status": "PASS",
+          "detail": "退出码 0，用时 0.6s | RESULT: PASS (33/33 PASS, 0 FAIL, 0 SKIP)"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/contract.py",
+          "status": "PASS",
+          "detail": "退出码 0"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/config.py",
+          "status": "PASS",
+          "detail": "fpga.device              = xc7z020clg400-1"
+        },
+        {
+          "section": "工具自检",
+          "name": "backend/publish.py",
+          "status": "PASS",
+          "detail": "本地契约校验：坏帧会被拦下 —— 拦住了： True 1 条错误"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/regmap.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/bringup_check.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/hw_sw_compare.py --selftest",
+          "status": "PASS",
+          "detail": "⚠️ 本自检只证明'数据与档位配套'；PL 侧数值一致性仍必须上板跑本脚本正文。"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/dma_test.py --selftest",
+          "status": "PASS",
+          "detail": "⚠️ 本自检只证明'测试图可复现 + 黄金参考配套'；DMA 回环/长跑本身必须上板跑。"
+        },
+        {
+          "section": "工具自检",
+          "name": "board/overlay/mmap_overlay.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS"
+        },
+        {
+          "section": "工具自检",
+          "name": "metrics/scripts/check_uvc_camera.py --selftest",
+          "status": "PASS",
+          "detail": "RESULT: PASS (21/21)"
+        },
+        {
+          "section": "工具自检",
+          "name": "metrics/scripts/probe_rppg_timebase.py",
+          "status": "PASS",
+          "detail": "✅ 全部档位符合验收判据（容差内报数、容差外 null）"
+        },
+        {
+          "section": "语法",
+          "name": "7 个 Python 目标可解析",
+          "status": "PASS",
+          "detail": "全部 OK"
+        },
+        {
+          "section": "语法",
+          "name": "frontend/app.js（node --check）",
+          "status": "PASS",
+          "detail": "OK"
+        },
+        {
+          "section": "语法",
+          "name": "frontend/preview.js 坐标换算自检（含 720p）",
+          "status": "PASS",
+          "detail": "\"failures\": [], | \"ok\": true | }"
+        },
+        {
+          "section": "就绪",
+          "name": "P4 标定素材（4 视频 + 4 标注）",
+          "status": "INFO",
+          "detail": "· turn.csv 标注不存在（放 data\\annotations/，格式见 data/README.md） | → 补齐后重跑本脚本；再按 backend/P4_CALIBRATION_GUIDE.md 逐项标定。"
+        },
+        {
+          "section": "就绪",
+          "name": "board/bitstream/ 里的 bitstream",
+          "status": "INFO",
+          "detail": "找到 2 个文件"
+        },
+        {
+          "section": "就绪",
+          "name": "Vitis HLS 工具链",
+          "status": "INFO",
+          "detail": "已安装"
+        },
+        {
+          "section": "就绪",
+          "name": "data/raw/ 真实视频",
+          "status": "INFO",
+          "detail": "3 个：['blink.mp4', 'blink_1080p_src.mp4', '_probe_rot90.mp4']"
+        }
+      ]
+    },
+    "frontend_mock_selftest": "22 checks, no failures",
+    "frontend_wiring": "passed",
+    "video_bypass": "15/15 synthetic fixture checks passed",
+    "ARM_build": "NATIVE_VISION_BUILD_PASS, NATIVE_CAMERA_BUILD_PASS, PL_ONLY_BUILD_PASS",
+    "packaged_app_and_helper_syntax": "node --check passed"
+  },
+  "deployment": {
+    "manifest_check": true,
+    "service_running": true,
+    "SD_read_only_restored": true,
+    "physical_cold_boot_of_new_payload_verified": false,
+    "temporary_local_update_server_stopped": true,
+    "rollback_archive": "/run/vigilens-ear400-backup-ff0ebe19/previous.tar",
+    "HTTP_assets": {
+      "app.js": {
+        "status": 200,
+        "type": [
+          "text/javascript; charset=utf-8"
+        ],
+        "matches_local": true
+      },
+      "board_hr_trend.js": {
+        "status": 200,
+        "type": [
+          "text/javascript; charset=utf-8"
+        ],
+        "matches_local": true
+      },
+      "board_config.js": {
+        "status": 200,
+        "type": [
+          "text/javascript; charset=utf-8"
+        ],
+        "matches_local": true
+      }
+    }
+  },
+  "live": {
+    "poll_count": 607,
+    "unique_contract_frames": 589,
+    "duration_seconds": 44.71099299999969,
+    "contract_error_count": 0,
+    "valid_HR_frames": 29,
+    "first_HR_example": {
+      "ts": 5920.60397,
+      "frame_id": 1617,
+      "face": {
+        "visible": 1,
+        "bbox": [
+          250,
+          69,
+          226,
+          289
+        ],
+        "pose": {
+          "yaw": 13.94985229108748,
+          "pitch": -6.005767642349669,
+          "roll": -6.416039526531046
+        }
+      },
+      "behavior": {
+        "ear_left": 0.3996,
+        "ear_right": 0.354,
+        "blink_state": "CLOSED",
+        "blink_count": 1,
+        "blink_rate_per_min": 2,
+        "perclos": 0.9315,
+        "long_close_count": 4,
+        "mar": 0.4657,
+        "yawn_count": 0
+      },
+      "vital": {
+        "hr_bpm": 87.4,
+        "hr_conf": 0.5599,
+        "rr_per_min": null,
+        "rr_conf": null
+      },
+      "quality": {
+        "light_score": 0.9023,
+        "motion_score": 0.0192,
+        "overall": 0.9454
+      },
+      "status": "fatigue_risk",
+      "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+      "reason": "触发：PERCLOS 0.93 > 0.25；长闭眼 4 次 ≥ 1；眨眼率 2.0/min < 10"
+    },
+    "statuses": {
+      "fatigue_risk": 587,
+      "adjust_posture": 2
+    },
+    "eye_states": {
+      "OPEN": 68,
+      "CLOSED": 508,
+      "OPENING": 8,
+      "CLOSING": 5
+    },
+    "first_behavior": {
+      "ear_left": 0.4231,
+      "ear_right": 0.4636,
+      "blink_state": "OPEN",
+      "blink_count": 1,
+      "blink_rate_per_min": 2,
+      "perclos": 0.7756,
+      "long_close_count": 3,
+      "mar": 0.4256,
+      "yawn_count": 0
+    },
+    "last_behavior": {
+      "ear_left": 0.3983,
+      "ear_right": 0.3987,
+      "blink_state": "CLOSED",
+      "blink_count": 2,
+      "blink_rate_per_min": 2,
+      "perclos": 0.8506,
+      "long_close_count": 9,
+      "mar": 0.4514,
+      "yawn_count": 1
+    },
+    "visible_frames": 587,
+    "frames_with_mean_EAR_below_0_400": 461,
+    "mean_EAR_range": [
+      0.16075,
+      0.5430999999999999
+    ]
+  },
+  "limits": [
+    "No independent human blink labels or synchronized reference HR; accuracy and sensitivity improvement are not quantified.",
+    "Higher absolute threshold marks more observations closed. Actual low-EAR occupancy is reported and is not verified as true eye closure.",
+    "Long closures remain separate from blink count; one episode is committed after reopening confirmation, not once per low frame.",
+    "Dashed presentation does not establish a continuous valid HR measurement."
+  ],
+  "raw_face_media_saved_or_uploaded": false,
+  "formal_contract_version_upgraded": false,
+  "human_collaboration_log_written_by_AI": false,
+  "actual_numeric_trend_replay": {
+    "input_kind": "actual_numeric_contract_replay_presentation_only",
+    "input_frames": 183,
+    "valid_measured_frames": 9,
+    "max_bridge_annotations": 1,
+    "historical_tail_steps": 71,
+    "original_frames_unchanged": true,
+    "physiological_accuracy_verified": false
+  }
+}

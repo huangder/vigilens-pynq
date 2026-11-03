@@ -1,0 +1,21 @@
+
+# wget -T 15 -O /tmp/full60_affinity_run.sh http://169.254.73.28:8767/affinity_r
+un.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/full60_affinity_run.sh'
+full60_affinity_run. 100% |********************************|  2129  0:00:00 ETA
+'/tmp/full60_affinity_run.sh' saved
+# sh /tmp/full60_affinity_run.sh
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/vigilens-full60/affinity'
+printf '\nFULL60_AFFINITY_SERIAL_END\n'
+affinity              70% |**********************          | 7484k  0:00:00 ETAaffinity             100% |********************************| 10.4M  0:00:00 ETA
+'/tmp/vigilens-full60/affinity' saved
+e94a8a0177f8d48be4c1c8724868622570efa2b80afe493a2e1c69ad5f16e3b6  /tmp/vigilens-full60/affinity
+stop_requested pid=24105
+/tmp/full60_affinity_run.sh: line 30: taskset: not found
+start_requested pid=24333
+FULL60_AFFINITY_FINISHED_rc=127
+
+VigiLens W7 (Mizar-Z7 7020)
+mizar login: 

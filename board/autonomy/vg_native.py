@@ -125,7 +125,9 @@ class VitalConfig(ct.Structure):
         "f_lo", "f_hi", "harmonic_ratio_min", "max_gap_s", "jitter_ratio_max",
         "recovery_s")]
     _fields_ += [("coeffs", ct.POINTER(ct.c_short)), ("taps", ct.c_int), ("shift", ct.c_int),
-                 ("recovery_samples", ct.c_int)]
+                 ("recovery_samples", ct.c_int),("method",ct.c_int),
+                 ("short_window_seconds",ct.c_double),("short_window_min_conf",ct.c_double),
+                 ("history_seconds",ct.c_double),("source_min_hz",ct.c_double),("green_center_before_fir",ct.c_int)]
 
 
 def _compiler() -> list[str]:
@@ -232,7 +234,9 @@ def vital_config(cfg: dict, coeffs, shift: int) -> tuple[VitalConfig, ct.Array]:
         float(cfg["rppg_harmonic_ratio_min"]),
         float(cfg["rppg_max_gap_ms"]) / 1000.0, float(cfg["realtime_jitter_ratio_max"]),
         float(cfg["rppg_recovery_ms"]) / 1000.0,
-        array, len(coeffs), shift, int(cfg["rppg_recovery_samples"]))
+        array, len(coeffs), shift, int(cfg["rppg_recovery_samples"]),0,
+        float(cfg['rppg_short_window_seconds']),float(cfg['rppg_short_window_min_conf']),
+        float(cfg.get('rppg_history_seconds',0)),float(cfg.get('rppg_source_min_hz',0)),int(cfg.get('rppg_green_center_before_fir',False)))
     return config, array
 
 

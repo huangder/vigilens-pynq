@@ -1,5 +1,5 @@
 /* Read-only HTTP adapter over autonomy_camera's atomically renamed latest file.
- * No capture, inference, image endpoint, external dependencies or shell calls.
+ * Optional display-only JPEG file; no capture, inference or shell calls.
  * Build via build_native_vision.sh (exports canonical HTTP envelope header).
  * All CLI options below are required; stale-seconds comes from config.yaml's
  * existing ws_disconnect_timeout_s. File mtime measures publication freshness;
@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <math.h>
 #include <poll.h>
 #include <signal.h>
@@ -24,7 +25,7 @@
 #include "vg_http_envelope.h"
 
 /* Transport/storage bounds, not measurement thresholds. */
-enum { HEADER_CAP=8192, BODY_CAP=262144, IO_TIMEOUT_MS=2000, JSON_DEPTH=16 };
+enum { HEADER_CAP=8192, BODY_CAP=262144, FRAME_CAP=4194304, IO_TIMEOUT_MS=2000, JSON_DEPTH=16 };
 static volatile sig_atomic_t stopping;
 static void stop(int sig) { (void)sig; stopping=1; }
 static double clock_seconds(clockid_t clock_id) {
@@ -183,12 +184,12 @@ static int contract_envelope(const char *body,size_t n) {
     }
     space(&j); return seen==((1u<<VG_HTTP_KEY_COUNT)-1) && j.p==j.end ? 0 : -1;
 }
-static int read_file(const char *path,char *body,size_t *length,double stale) {
+static int read_file(const char *path,char *body,size_t capacity,size_t *length,double stale) {
     struct stat st;
     size_t used=0;
     int fd=open(path,O_RDONLY|O_NONBLOCK|O_CLOEXEC);
     if(fd<0)return -1;
-    if(fstat(fd,&st) || !S_ISREG(st.st_mode) || st.st_size<=0 || st.st_size>=BODY_CAP) {close(fd);return -1;}
+    if(fstat(fd,&st) || !S_ISREG(st.st_mode) || st.st_size<=0 || (uint64_t)st.st_size>=capacity) {close(fd);return -1;}
     if(stale>0) {
         double age=clock_seconds(CLOCK_REALTIME)-((double)st.st_mtim.tv_sec+st.st_mtim.tv_nsec/1e9);
         if(age<0 || age>stale){close(fd);return -2;}
@@ -202,10 +203,22 @@ static int read_file(const char *path,char *body,size_t *length,double stale) {
     close(fd); body[used]=0; *length=used;
     return 0;
 }
-static void serve(int fd,const char *latest,const char *display,double stale) {
+static const char *asset_type(const char *path) {
+    const char *suffix=strrchr(path,'.');
+    if(path[0]!='/' || strstr(path,"..") || !suffix)return NULL;
+    for(const char *p=path;*p;++p)
+        if(!isalnum((unsigned char)*p) && *p!='/' && *p!='_' && *p!='-' && *p!='.')return NULL;
+    if(!strcmp(suffix,".js"))return "text/javascript; charset=utf-8";
+    if(!strcmp(suffix,".css"))return "text/css; charset=utf-8";
+    if(!strncmp(path,"/icons/",7) && !strcmp(suffix,".svg"))return "image/svg+xml";
+    return NULL;
+}
+static void serve(int fd,const char *latest,const char *display,const char *preview,const char *assets,double stale) {
     char header[HEADER_CAP],method[16],path[512],version[16],extra;
     char *body=NULL,*line_end;
     size_t used=0,length=0;
+    int image_request;
+    const char *static_type;
     double deadline=clock_seconds(CLOCK_MONOTONIC)+IO_TIMEOUT_MS/1000.0;
     for(;;) {
         ssize_t got;
@@ -226,21 +239,34 @@ static void serve(int fd,const char *latest,const char *display,double stale) {
         error_reply(fd,400,"Bad Request","invalid_request");return;
     }
     if(strcmp(method,"GET")){error_reply(fd,405,"Method Not Allowed","get_only");return;}
-    if(strcmp(path,"/") && strcmp(path,"/api/latest")){error_reply(fd,404,"Not Found","not_found");return;}
-    body=malloc(BODY_CAP);
+    image_request=!strcmp(path,"/api/frame.jpg") || !strncmp(path,"/api/frame.jpg?",15);
+    static_type=assets ? asset_type(path) : NULL;
+    if(strcmp(path,"/") && strcmp(path,"/api/latest") && !image_request && !static_type){error_reply(fd,404,"Not Found","not_found");return;}
+    body=malloc(image_request ? FRAME_CAP : BODY_CAP);
     if(!body){error_reply(fd,503,"Service Unavailable","out_of_memory");return;}
-    if(!strcmp(path,"/api/latest")) {
-        int rc=read_file(latest,body,&length,stale);
+    if(static_type) {
+        char filename[PATH_MAX];
+        int n=snprintf(filename,sizeof(filename),"%s%s",assets,path);
+        if(n<0 || (size_t)n>=sizeof(filename) || read_file(filename,body,BODY_CAP,&length,0))error_reply(fd,404,"Not Found","not_found");
+        else response(fd,200,"OK",static_type,body,length);
+    } else if(image_request) {
+        int rc=preview ? read_file(preview,body,FRAME_CAP,&length,stale) : -1;
+        if(rc || length<4 || (unsigned char)body[0]!=0xff || (unsigned char)body[1]!=0xd8 ||
+                (unsigned char)body[length-2]!=0xff || (unsigned char)body[length-1]!=0xd9)
+            error_reply(fd,503,"Service Unavailable",rc==-2 ? "preview_stale" : "preview_unavailable");
+        else response(fd,200,"OK","image/jpeg",body,length);
+    } else if(!strcmp(path,"/api/latest")) {
+        int rc=read_file(latest,body,BODY_CAP,&length,stale);
         if(rc || contract_envelope(body,length))error_reply(fd,503,"Service Unavailable",rc==-2 ? "measurement_stale" : "measurement_unavailable");
         else response(fd,200,"OK","application/json; charset=utf-8",body,length);
     } else {
-        if(read_file(display,body,&length,0))error_reply(fd,503,"Service Unavailable","display_unavailable");
+        if(read_file(display,body,BODY_CAP,&length,0))error_reply(fd,503,"Service Unavailable","display_unavailable");
         else response(fd,200,"OK","text/html; charset=utf-8",body,length);
     }
     free(body);
 }
 int main(int argc,char **argv) {
-    const char *bind_address=NULL,*latest=NULL,*display=NULL;
+    const char *bind_address=NULL,*latest=NULL,*display=NULL,*preview=NULL,*assets=NULL;
     double stale=0;
     long port=0;
     int i,listener,one=1,rc=0;
@@ -253,6 +279,8 @@ int main(int argc,char **argv) {
         if(!strcmp(option,"--bind"))bind_address=argument;
         else if(!strcmp(option,"--latest"))latest=argument;
         else if(!strcmp(option,"--display"))display=argument;
+        else if(!strcmp(option,"--preview"))preview=argument;
+        else if(!strcmp(option,"--assets"))assets=argument;
         else if(!strcmp(option,"--port")) {
             errno=0;port=strtol(argument,&end,10);
             if(errno || end==argument || *end || port<1 || port>65535)goto usage;
@@ -262,7 +290,7 @@ int main(int argc,char **argv) {
         } else goto usage;
     }
     memset(&address,0,sizeof(address));address.sin_family=AF_INET;
-    if(!bind_address || !latest || !display || !*latest || !*display || !port || stale<=0 ||
+    if(!bind_address || !latest || !display || !*latest || !*display || (preview && !*preview) || (assets && !*assets) || !port || stale<=0 ||
         inet_pton(AF_INET,bind_address,&address.sin_addr)!=1)goto usage;
     address.sin_port=htons((uint16_t)port);
     signal(SIGPIPE,SIG_IGN);
@@ -277,10 +305,10 @@ int main(int argc,char **argv) {
         int client=accept(listener,NULL,NULL),flags;
         if(client<0){if(errno==EINTR)continue;perror("accept");rc=1;break;}
         flags=fcntl(client,F_GETFL,0);
-        if(flags>=0 && !fcntl(client,F_SETFL,flags|O_NONBLOCK))serve(client,latest,display,stale);
+        if(flags>=0 && !fcntl(client,F_SETFL,flags|O_NONBLOCK))serve(client,latest,display,preview,assets,stale);
         close(client);
     }
     close(listener);return rc;
 usage:
-    fprintf(stderr,"usage: %s --bind IPv4 --port PORT --latest PATH --display PATH --stale-seconds SECONDS\n",argv[0]);return 2;
+    fprintf(stderr,"usage: %s --bind IPv4 --port PORT --latest PATH --display PATH [--preview PATH] [--assets DIR] --stale-seconds SECONDS\n",argv[0]);return 2;
 }

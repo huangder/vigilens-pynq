@@ -1,0 +1,587 @@
+.................................................................... [ 25%]
+s..............................ssss........................ [ 46%]
+....ss.........ssssss......EEEEEE........................................................ss...................... [ 88%]
+.....................sssss.....                            [100%]
+=================================== ERRORS ====================================
+_ ERROR at setup of NcnnProbeCLI.test_bad_models_shapes_counts_nonfinite_and_blob_names_fail _
+
+cls = <class 'test_ncnn_probe_cli.NcnnProbeCLI'>
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp=tempfile.TemporaryDirectory(prefix="vg_ncnn_cli_")
+        cls.folder=Path(cls.temp.name)
+        (cls.folder/"net.h").write_text(STUB)
+        cls.binary=cls.folder/"probe"
+        args=shlex.split(os.environ.get("CXX","g++"))
+        args += ["-std=c++11","-Wall","-Wextra","-Werror","-I",str(cls.folder),
+                 str(ROOT/"board/autonomy/ncnn_probe/model_probe.cc"),"-o",str(cls.binary)]
+>       subprocess.run(args,check=True,capture_output=True,text=True)
+
+board\autonomy\tests\test_ncnn_probe_cli.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', ...],)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2', 'D:\\Desktop\\AMD\\board\\autonomy\\ncnn_probe\\model_probe.cc', '-o', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2\\probe']' returned non-zero exit status 1.
+
+C:\Users\31158\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py:571: CalledProcessError
+_ ERROR at setup of NcnnProbeCLI.test_file_input_exact_length_finite_little_endian_and_metadata _
+
+cls = <class 'test_ncnn_probe_cli.NcnnProbeCLI'>
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp=tempfile.TemporaryDirectory(prefix="vg_ncnn_cli_")
+        cls.folder=Path(cls.temp.name)
+        (cls.folder/"net.h").write_text(STUB)
+        cls.binary=cls.folder/"probe"
+        args=shlex.split(os.environ.get("CXX","g++"))
+        args += ["-std=c++11","-Wall","-Wextra","-Werror","-I",str(cls.folder),
+                 str(ROOT/"board/autonomy/ncnn_probe/model_probe.cc"),"-o",str(cls.binary)]
+>       subprocess.run(args,check=True,capture_output=True,text=True)
+
+board\autonomy\tests\test_ncnn_probe_cli.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', ...],)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2', 'D:\\Desktop\\AMD\\board\\autonomy\\ncnn_probe\\model_probe.cc', '-o', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2\\probe']' returned non-zero exit status 1.
+
+C:\Users\31158\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py:571: CalledProcessError
+_ ERROR at setup of NcnnProbeCLI.test_fp32_zero_input_fresh_extractors_and_little_endian_output _
+
+cls = <class 'test_ncnn_probe_cli.NcnnProbeCLI'>
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp=tempfile.TemporaryDirectory(prefix="vg_ncnn_cli_")
+        cls.folder=Path(cls.temp.name)
+        (cls.folder/"net.h").write_text(STUB)
+        cls.binary=cls.folder/"probe"
+        args=shlex.split(os.environ.get("CXX","g++"))
+        args += ["-std=c++11","-Wall","-Wextra","-Werror","-I",str(cls.folder),
+                 str(ROOT/"board/autonomy/ncnn_probe/model_probe.cc"),"-o",str(cls.binary)]
+>       subprocess.run(args,check=True,capture_output=True,text=True)
+
+board\autonomy\tests\test_ncnn_probe_cli.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', ...],)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2', 'D:\\Desktop\\AMD\\board\\autonomy\\ncnn_probe\\model_probe.cc', '-o', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2\\probe']' returned non-zero exit status 1.
+
+C:\Users\31158\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py:571: CalledProcessError
+_ ERROR at setup of NcnnProbeCLI.test_int8_build_reports_permission_without_certifying_model _
+
+cls = <class 'test_ncnn_probe_cli.NcnnProbeCLI'>
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp=tempfile.TemporaryDirectory(prefix="vg_ncnn_cli_")
+        cls.folder=Path(cls.temp.name)
+        (cls.folder/"net.h").write_text(STUB)
+        cls.binary=cls.folder/"probe"
+        args=shlex.split(os.environ.get("CXX","g++"))
+        args += ["-std=c++11","-Wall","-Wextra","-Werror","-I",str(cls.folder),
+                 str(ROOT/"board/autonomy/ncnn_probe/model_probe.cc"),"-o",str(cls.binary)]
+>       subprocess.run(args,check=True,capture_output=True,text=True)
+
+board\autonomy\tests\test_ncnn_probe_cli.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', ...],)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2', 'D:\\Desktop\\AMD\\board\\autonomy\\ncnn_probe\\model_probe.cc', '-o', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2\\probe']' returned non-zero exit status 1.
+
+C:\Users\31158\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py:571: CalledProcessError
+_____ ERROR at setup of NcnnProbeCLI.test_invalid_cli_and_argument_bounds _____
+
+cls = <class 'test_ncnn_probe_cli.NcnnProbeCLI'>
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp=tempfile.TemporaryDirectory(prefix="vg_ncnn_cli_")
+        cls.folder=Path(cls.temp.name)
+        (cls.folder/"net.h").write_text(STUB)
+        cls.binary=cls.folder/"probe"
+        args=shlex.split(os.environ.get("CXX","g++"))
+        args += ["-std=c++11","-Wall","-Wextra","-Werror","-I",str(cls.folder),
+                 str(ROOT/"board/autonomy/ncnn_probe/model_probe.cc"),"-o",str(cls.binary)]
+>       subprocess.run(args,check=True,capture_output=True,text=True)
+
+board\autonomy\tests\test_ncnn_probe_cli.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', ...],)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2', 'D:\\Desktop\\AMD\\board\\autonomy\\ncnn_probe\\model_probe.cc', '-o', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2\\probe']' returned non-zero exit status 1.
+
+C:\Users\31158\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py:571: CalledProcessError
+_ ERROR at setup of NcnnProbeCLI.test_kernel_options_recorded_and_invalid_values_rejected _
+
+cls = <class 'test_ncnn_probe_cli.NcnnProbeCLI'>
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp=tempfile.TemporaryDirectory(prefix="vg_ncnn_cli_")
+        cls.folder=Path(cls.temp.name)
+        (cls.folder/"net.h").write_text(STUB)
+        cls.binary=cls.folder/"probe"
+        args=shlex.split(os.environ.get("CXX","g++"))
+        args += ["-std=c++11","-Wall","-Wextra","-Werror","-I",str(cls.folder),
+                 str(ROOT/"board/autonomy/ncnn_probe/model_probe.cc"),"-o",str(cls.binary)]
+>       subprocess.run(args,check=True,capture_output=True,text=True)
+
+board\autonomy\tests\test_ncnn_probe_cli.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', ...],)
+kwargs = {'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['g++', '-std=c++11', '-Wall', '-Wextra', '-Werror', '-I', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2', 'D:\\Desktop\\AMD\\board\\autonomy\\ncnn_probe\\model_probe.cc', '-o', 'C:\\Users\\31158\\AppData\\Local\\Temp\\vg_ncnn_cli_g6unfsm2\\probe']' returned non-zero exit status 1.
+
+C:\Users\31158\AppData\Roaming\uv\python\cpython-3.12.13-windows-x86_64-none\Lib\subprocess.py:571: CalledProcessError
+============================== warnings summary ===============================
+board/autonomy/tests/test_prepare_peppa_calibration.py::PeppaPreparation::test_preparation_with_mock_detections_skips_and_never_crosses_split
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+board/autonomy/tests/test_prepare_peppa_calibration.py::PeppaPreparation::test_preparation_with_mock_detections_skips_and_never_crosses_split
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google._upb._message.ScalarMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] board\autonomy\tests\test_camera_preview.py:12: Linux host gcc required
+SKIPPED [1] board\autonomy\tests\test_ert_probe_cli.py:35: set ERT_PROBE and ERT_MODEL to local evaluation files
+SKIPPED [1] board\autonomy\tests\test_ert_probe_cli.py:49: set ERT_PROBE and ERT_MODEL to local evaluation files
+SKIPPED [1] board\autonomy\tests\test_ert_probe_cli.py:22: set ERT_PROBE and ERT_MODEL to local evaluation files
+SKIPPED [1] board\autonomy\tests\test_ert_probe_cli.py:44: set ERT_PROBE and ERT_MODEL to local evaluation files
+SKIPPED [2] .tools\python312\Lib\site-packages\_pytest\unittest.py:523: Linux host g++ required
+SKIPPED [6] .tools\python312\Lib\site-packages\_pytest\unittest.py:523: Linux host gcc required
+SKIPPED [1] board\autonomy\tests\test_preview_cadence.py:23: Linux pthread compiler required
+SKIPPED [1] board\autonomy\tests\test_preview_cadence.py:14: Linux pthread compiler required
+SKIPPED [1] board\cold_boot\tests\test_service.py:79: POSIX lifecycle tests
+SKIPPED [1] board\cold_boot\tests\test_service.py:71: POSIX lifecycle tests
+SKIPPED [1] board\cold_boot\tests\test_service.py:59: POSIX lifecycle tests
+SKIPPED [1] board\cold_boot\tests\test_service.py:76: POSIX lifecycle tests
+SKIPPED [1] board\cold_boot\tests\test_service.py:67: POSIX lifecycle tests
+ERROR board/autonomy/tests/test_ncnn_probe_cli.py::NcnnProbeCLI::test_bad_models_shapes_counts_nonfinite_and_blob_names_fail
+ERROR board/autonomy/tests/test_ncnn_probe_cli.py::NcnnProbeCLI::test_file_input_exact_length_finite_little_endian_and_metadata
+ERROR board/autonomy/tests/test_ncnn_probe_cli.py::NcnnProbeCLI::test_fp32_zero_input_fresh_extractors_and_little_endian_output
+ERROR board/autonomy/tests/test_ncnn_probe_cli.py::NcnnProbeCLI::test_int8_build_reports_permission_without_certifying_model
+ERROR board/autonomy/tests/test_ncnn_probe_cli.py::NcnnProbeCLI::test_invalid_cli_and_argument_bounds
+ERROR board/autonomy/tests/test_ncnn_probe_cli.py::NcnnProbeCLI::test_kernel_options_recorded_and_invalid_values_rejected
+245 passed, 20 skipped, 2 warnings, 6 errors, 134 subtests passed in 15.87s

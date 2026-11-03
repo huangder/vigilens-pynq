@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import math
 
 INT16_MIN = -32768
 INT16_MAX = 32767
@@ -247,7 +248,10 @@ class GreenRppg:
                  coeffs: list[int] | None = None, shift: int | None = None,
                  fs_tol: float = 0.10, jitter_ratio_max: float | None = None,
                  max_gap_ms: float | None = None, recovery_ms: float = 0,
-                 recovery_samples: int | None = None, harmonic_ratio_min: float | None = None):
+                 recovery_samples: int | None = None, harmonic_ratio_min: float | None = None,
+                 short_window_seconds: float | None = None, short_window_min_conf: float | None = None,
+                 history_seconds: float = 0, source_min_hz: float = 0,
+                 green_center_before_fir: bool = False):
         design_fps = None
         if coeffs is None or shift is None:
             coeffs, shift, _fs = load_fir_coeffs()
@@ -275,8 +279,26 @@ class GreenRppg:
         self.recovery_s = float(recovery_ms) / 1000
         self.recovery_samples = int(defaults["rppg_recovery_samples"] if recovery_samples is None else recovery_samples)
         self.harmonic_ratio_min = float(defaults["rppg_harmonic_ratio_min"] if harmonic_ratio_min is None else harmonic_ratio_min)
+        self.short_window_seconds=float(defaults['rppg_short_window_seconds'] if short_window_seconds is None else short_window_seconds)
+        self.short_window_min_conf=float(defaults['rppg_short_window_min_conf'] if short_window_min_conf is None else short_window_min_conf)
+        self.window_seconds=float(window_seconds)
+        if not math.isfinite(history_seconds) or history_seconds < 0:
+            raise ValueError('invalid rPPG history_seconds')
+        self._bounded_history = history_seconds > 0
+        self.history_seconds=max(self.window_seconds, float(history_seconds))
+        if (not math.isfinite(self.short_window_seconds) or self.short_window_seconds<=0 or
+                not math.isfinite(self.short_window_min_conf) or not .5<=self.short_window_min_conf<1):
+            raise ValueError('invalid rPPG short-window quality configuration')
         self.f_lo, self.f_hi = float(hr_band_hz[0]), float(hr_band_hz[1])
+        self.source_min_hz = float(source_min_hz)
+        if type(green_center_before_fir) is not bool:
+            raise ValueError('green_center_before_fir must be boolean')
+        self.green_center_before_fir = green_center_before_fir
+        if not math.isfinite(self.source_min_hz) or not (
+                self.source_min_hz == 0 or 2*self.f_hi < self.source_min_hz <= self.fps):
+            raise ValueError('invalid source sampling minimum')
         self.need = max(2, int(round(float(window_seconds) * self.fps)))
+        self.analysis_capacity=max(self.need, int(round(self.history_seconds*self.fps)))
         if (not 0 < self.f_lo < self.f_hi < self.fps / 2 or self.max_gap_s <= 0
                 or not 0 <= self.recovery_s <= self.max_gap_s or self.recovery_samples < 1
                 or not 0 < self.harmonic_ratio_min < 1):
@@ -301,10 +323,15 @@ class GreenRppg:
                    window_seconds=rppg_window_seconds(cfg),
                    hr_band_hz=cfg["hr_band_hz"],
                    fs_tol=float(cfg.get("rppg_fs_tol", 0.10)),
-                   jitter_ratio_max=float(cfg["realtime_jitter_ratio_max"]),
+                   jitter_ratio_max=float(cfg.get("rppg_resample_jitter_ratio_max",cfg["realtime_jitter_ratio_max"])),
                    max_gap_ms=float(cfg["rppg_max_gap_ms"]), recovery_ms=float(cfg["rppg_recovery_ms"]),
                    recovery_samples=int(cfg["rppg_recovery_samples"]),
-                   harmonic_ratio_min=float(cfg["rppg_harmonic_ratio_min"]))
+                   harmonic_ratio_min=float(cfg["rppg_harmonic_ratio_min"]),
+                   short_window_seconds=cfg.get('rppg_short_window_seconds'),
+                   short_window_min_conf=cfg.get('rppg_short_window_min_conf'),
+                   history_seconds=float(cfg.get('rppg_history_seconds',0)),
+                   source_min_hz=float(cfg.get('rppg_source_min_hz',0)),
+                   green_center_before_fir=cfg.get('rppg_green_center_before_fir',False))
 
     def reset(self, reason: str = "manual") -> None:
         from collections import deque
@@ -312,16 +339,16 @@ class GreenRppg:
         if getattr(self, "_valid", 0):
             self._reset_counts[reason] += 1
             self.last_reset_reason = reason
-        self._win = deque(maxlen=self.need)      # 带通后的样本
-        self._fid = deque(maxlen=self.need)      # 对应的 frame_id（无时间戳时反推采样率用）
-        self._ts = deque(maxlen=self.need)       # 对应的**采集侧真实时间戳**（活帧源才有；离线为 None）
+        self._win = deque(maxlen=self.analysis_capacity)  # grows from need to bounded history
+        self._fid = deque(maxlen=self.analysis_capacity)
+        self._ts = deque(maxlen=self.analysis_capacity)
         self._hist = None                        # FIR 段间状态（连续流语义）
         # Extra raw history supplies the fixed FIR's warmup before each window.
         # Derived uniform-grid points are never counted as captured samples.
         self._raw = deque()
         # Memory is bounded even for malformed high-rate inputs. Normal
         # retention is by elapsed warmup time, not an assumed local rate.
-        self._raw_limit = 2 * self.need + self.warmup_samples + 1
+        self._raw_limit = 2 * self.analysis_capacity + self.warmup_samples + 1
         self._history_limited = False
         self._blocked_reason = None
         self._recovery_left = 0
@@ -340,6 +367,7 @@ class GreenRppg:
         import math
         self._invalid_counts[reason] += 1
         previous_ts = self._ts[-1] if self._ts else None
+        self._expire_window(ts)
         short = (allow_recovery and self.recovery_s > 0 and self.samples > 0
                  and ts is not None and previous_ts is not None
                  and math.isfinite(ts) and math.isfinite(previous_ts)
@@ -351,6 +379,20 @@ class GreenRppg:
             self.reset(reason)
         self._blocked_reason = reason
 
+    def _expire_window(self, ts):
+        """Age out analysis samples even before the startup minimum is met.
+
+        Raw FIR/POS warmup is separate; it never counts as analysis samples.
+        Fixed-window legacy callers retain their existing rate diagnostics.
+        """
+        if not self._bounded_history or ts is None or not math.isfinite(ts):
+            return
+        while (self._ts and self._ts[0] is not None and math.isfinite(self._ts[0])
+               and ts - self._ts[0] > self.history_seconds):
+            self._ts.popleft()
+            self._fid.popleft()
+            self._win.popleft()
+
     def stats(self) -> dict:
         return {"estimate_calls": sum(self._reject_counts.values()),
                 "reject_counts": dict(self._reject_counts), "reset_counts": dict(self._reset_counts),
@@ -359,14 +401,14 @@ class GreenRppg:
                 "soft_pause_frames": self.soft_pause_frames, "resumed_segments": self.resumed_segments,
                 "resample_calls": self.resample_calls, "last_uniform_samples": self.last_uniform_samples,
                 "last_spectral_fs": self.last_spectral_fs,
-                "raw_history_samples": len(self._raw),
+                "raw_history_samples": len(self._raw), "analysis_samples": self._analysis_count(),
                 "last_harmonic_ratio": self.last_harmonic_ratio, "last_reset_reason": self.last_reset_reason,
                 "recovery_samples_remaining": self._recovery_left}
 
     @property
     def samples(self) -> int:
         """当前窗口内的有效样本数。"""
-        return len(self._win)
+        return min(len(self._win),self.need)
 
     @property
     def ready(self) -> bool:
@@ -383,7 +425,7 @@ class GreenRppg:
 
     @property
     def nominal_history_samples(self) -> int:
-        return self.need
+        return self.analysis_capacity
 
     def push(self, q15: int | None, frame_id: int, ts: float | None = None) -> None:
         """喂一个样本。`q15=None` 表示这一帧按契约被丢弃（不喂、不补值）。
@@ -409,9 +451,9 @@ class GreenRppg:
         self._win.append(ys[0])
         self._fid.append(int(frame_id))
         self._ts.append(None if ts is None else float(ts))
+        self._expire_window(ts)
         self._raw.append((None if ts is None else float(ts), int(q15)))
-        import math
-        first_ts = self._ts[0]
+        first_ts = self._ts[0] if self._ts else None
         if first_ts is not None and math.isfinite(first_ts):
             cutoff = first_ts - self.warmup_samples / self.fps
             while (len(self._raw) > self.need and self._raw[1][0] is not None
@@ -439,15 +481,18 @@ class GreenRppg:
         raw = list(self._raw)
         # Only extend the window's warmup into a valid monotonic prefix.
         first = len(raw) - n
+        cutoff = raw[-n][0] - self.warmup_samples / self.fps
         while first > 0:
             previous, current = raw[first - 1][0], raw[first][0]
+            if current <= cutoff:
+                break
             if (previous is None or not np.isfinite(previous) or previous >= current
                     or current - previous > self.max_gap_s):
                 break
             first -= 1
         context = raw[first:]
         times = np.asarray([p[0] for p in context], dtype=np.float64)
-        end, start = times[-1], float(self._ts[0])
+        end, start = times[-1], float(times[-n])
         if self._history_limited and times[0] > start - self.warmup_samples / self.fps:
             return None
         # Endpoint-aligned grids need no extrapolation. A sub-ULP short window
@@ -469,14 +514,49 @@ class GreenRppg:
         # Same half-away rounding as the frozen Q1.15 interface. These are
         # derived processing samples, not fabricated camera observations.
         quantized = np.where(sampled >= 0, np.floor(sampled + .5), np.ceil(sampled - .5)).astype(np.int64)
-        filtered, _, _ = fir_process(quantized, self.coeffs, self.shift)
+        filtered = self._filter_green(quantized)
+        if filtered is None:
+            return None
         self.resample_calls += 1
         self.last_uniform_samples = count
         return np.asarray(filtered[-count:], dtype=np.float64)
 
     def _nominal_filtered(self, n: int):
         import numpy as np
-        return np.asarray(self._win, dtype=np.float64)
+        if self.green_center_before_fir:
+            filtered = self._filter_green(np.asarray([p[1] for p in self._raw], dtype=np.int64))
+            return None if filtered is None else np.asarray(filtered[-n:], dtype=np.float64)
+        return np.asarray(list(self._win)[-n:], dtype=np.float64)
+
+    def _filter_green(self, quantized):
+        """Remove a measured context's baseline; never infer missing samples."""
+        import numpy as np
+        if self.green_center_before_fir:
+            mean = float(np.mean(quantized))
+            offset = math.floor(mean + .5) if mean >= 0 else math.ceil(mean - .5)
+            quantized = quantized - offset
+            if np.any(quantized < -32768) or np.any(quantized > 32767):
+                self._signal_error = 'green_signal_range'
+                return None
+        filtered, saturated, _ = fir_process(quantized, self.coeffs, self.shift)
+        if self.green_center_before_fir and saturated:
+            self._signal_error = 'color_fir_saturation'
+            return None
+        return filtered
+
+    def _analysis_count(self):
+        """Extend only the minimum window's contiguous, monotonic prefix."""
+        times=list(self._ts); fids=list(self._fid)
+        first=max(0,len(times)-self.need)
+        while first>0:
+            previous,current=times[first-1],times[first]
+            if previous is None and current is None:
+                if fids[first]!=fids[first-1]+1:break
+            elif (previous is None or current is None or not math.isfinite(previous)
+                  or not math.isfinite(current) or not 0<current-previous<=self.max_gap_s):
+                break
+            first-=1
+        return len(times)-first
 
     def _estimate(self) -> dict:
         """返回契约要求的四个键（`hr_bpm` / `hr_conf` / `rr_per_min` / `rr_conf`）。
@@ -508,8 +588,9 @@ class GreenRppg:
 
         import numpy as np
 
-        y = np.asarray(self._win, dtype=np.float64)
-        fids = np.asarray(self._fid, dtype=np.float64)
+        analysis_count=self._analysis_count()
+        y = np.asarray(list(self._win)[-analysis_count:], dtype=np.float64)
+        fids = np.asarray(list(self._fid)[-analysis_count:], dtype=np.float64)
         n = y.size
 
         # ---- 时间基准（docs/16 BUG-029）------------------------------------
@@ -521,7 +602,7 @@ class GreenRppg:
         # 如果只在填满后才算，运维要等半分钟才知道"采样率根本对不上"。
         fs_eff = None
         if n >= 2:
-            ts_list = list(self._ts)
+            ts_list = list(self._ts)[-n:]
             has_any_ts = any(t is not None for t in ts_list)
             has_ts = (len(ts_list) == n and all(t is not None for t in ts_list))
             time_base = "fid_nominal"
@@ -544,14 +625,26 @@ class GreenRppg:
             fs_eff = (n - 1) / span_s
             self.last_fs_eff = float(fs_eff)
             if time_base == "source_ts":
-                # 真实采样率偏离标称值过多：频率轴会整体缩放，报出来的 bpm 不可辩护 → 不报数。
-                if abs(fs_eff - self.fps) > self.fs_tol * self.fps:
+                gap_exceeded=float(np.diff(ts_arr).max())>self.max_gap_s
+                # An isolated gap is more specific than its average-rate
+                # consequence; a uniformly slow source still names its rate.
+                if gap_exceeded and self.last_interval_p95_s<=self.max_gap_s:
+                    self.last_reject = "sampling_gap"
+                    return dict(none4)
+                # Explicit timestamp mode separates acquisition density from
+                # the FIR/FFT grid, which is formed at self.fps below. The
+                # legacy nominal-rate tolerance remains the default.
+                if self.source_min_hz > 0 and fs_eff < self.source_min_hz:
+                    self.last_reject = "sampling_too_slow"
+                    return dict(none4)
+                if ((self.source_min_hz == 0 and abs(fs_eff - self.fps) > self.fs_tol * self.fps)
+                        or fs_eff > self.fps * (1 + self.fs_tol)):
                     self.last_reject = "fs_mismatch"
                     return dict(none4)
                 if self.last_interval_p95_s * self.fps > self.jitter_ratio_max:
                     self.last_reject = "sampling_jitter"
                     return dict(none4)
-                if float(np.diff(ts_arr).max()) > self.max_gap_s:
+                if gap_exceeded:
                     self.last_reject = "sampling_gap"
                     return dict(none4)
             elif not (0 < fs_eff <= self.fps * 1.001):
@@ -623,6 +716,9 @@ class GreenRppg:
                 self.last_reject = "harmonic_ambiguity"
                 return dict(none4)
 
+        if n/fs_eff<=self.short_window_seconds and conf<=self.short_window_min_conf:
+            self.last_reject='short_window_low_confidence'
+            return dict(none4)
         return {
             "hr_bpm": round(float(f_band[k]) * 60.0, 1),
             "hr_conf": round(conf, 4),

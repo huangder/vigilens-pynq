@@ -1,0 +1,1550 @@
+[
+  {
+    "ts": 10265.130523,
+    "frame_id": 15005,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        240,
+        99,
+        198,
+        243
+      ],
+      "pose": {
+        "yaw": 9.558795790573166,
+        "pitch": 4.3296275019851835,
+        "roll": -1.8778876772190176
+      }
+    },
+    "behavior": {
+      "ear_left": 0.4447,
+      "ear_right": 0.427,
+      "blink_state": "OPEN",
+      "blink_count": 13,
+      "blink_rate_per_min": 16,
+      "perclos": 0.6505,
+      "long_close_count": 8,
+      "mar": 0.3416,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.954,
+      "motion_score": 0.032,
+      "overall": 0.9674
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.65 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10266.074502,
+    "frame_id": 15060,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        242,
+        103,
+        193,
+        237
+      ],
+      "pose": {
+        "yaw": 9.473908346262458,
+        "pitch": 4.663826453893989,
+        "roll": -2.588680008754475
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3857,
+      "ear_right": 0.3906,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 16,
+      "perclos": 0.6509,
+      "long_close_count": 8,
+      "mar": 0.3387,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9536,
+      "motion_score": 0.0362,
+      "overall": 0.9659
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.65 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10267.102472,
+    "frame_id": 15119,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        230,
+        84,
+        216,
+        263
+      ],
+      "pose": {
+        "yaw": 9.837564110335622,
+        "pitch": 1.6442033610253433,
+        "roll": -2.0188178793075986
+      }
+    },
+    "behavior": {
+      "ear_left": 0.365,
+      "ear_right": 0.3467,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 14,
+      "perclos": 0.65,
+      "long_close_count": 8,
+      "mar": 0.3387,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9518,
+      "motion_score": 0.0341,
+      "overall": 0.9657
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.65 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10268.178481,
+    "frame_id": 15178,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        240,
+        93,
+        196,
+        245
+      ],
+      "pose": {
+        "yaw": 10.967502605381158,
+        "pitch": 5.080331482797262,
+        "roll": -2.8040538952709664
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3911,
+      "ear_right": 0.3655,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 14,
+      "perclos": 0.6842,
+      "long_close_count": 8,
+      "mar": 0.3428,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9514,
+      "motion_score": 0.0341,
+      "overall": 0.9655
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.68 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10269.186455,
+    "frame_id": 15231,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        234,
+        93,
+        204,
+        248
+      ],
+      "pose": {
+        "yaw": 10.534810291967197,
+        "pitch": 4.911141416460355,
+        "roll": -2.057787285300163
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3356,
+      "ear_right": 0.2971,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 14,
+      "perclos": 0.683,
+      "long_close_count": 8,
+      "mar": 0.3302,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9508,
+      "motion_score": 0.0334,
+      "overall": 0.9654
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.68 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10270.114489,
+    "frame_id": 15283,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        242,
+        92,
+        192,
+        241
+      ],
+      "pose": {
+        "yaw": 11.282663235467195,
+        "pitch": 4.826197349855841,
+        "roll": -2.295950819055325
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3674,
+      "ear_right": 0.3712,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 14,
+      "perclos": 0.683,
+      "long_close_count": 8,
+      "mar": 0.338,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9506,
+      "motion_score": 0.0416,
+      "overall": 0.9628
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.68 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10271.206492,
+    "frame_id": 15342,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        241,
+        92,
+        196,
+        246
+      ],
+      "pose": {
+        "yaw": 10.227456740696473,
+        "pitch": 3.290557636536334,
+        "roll": -2.4296061865574194
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3481,
+      "ear_right": 0.3305,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 14,
+      "perclos": 0.7134,
+      "long_close_count": 8,
+      "mar": 0.3458,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9501,
+      "motion_score": 0.0331,
+      "overall": 0.9651
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.71 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10272.182398,
+    "frame_id": 15399,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        238,
+        94,
+        197,
+        243
+      ],
+      "pose": {
+        "yaw": 10.867281797829154,
+        "pitch": 4.161401504920333,
+        "roll": -2.022696625612227
+      }
+    },
+    "behavior": {
+      "ear_left": 0.1678,
+      "ear_right": 0.2138,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 14,
+      "perclos": 0.7137,
+      "long_close_count": 8,
+      "mar": 0.3746,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9498,
+      "motion_score": 0.0318,
+      "overall": 0.9654
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.71 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10273.194413,
+    "frame_id": 15456,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        237,
+        93,
+        198,
+        245
+      ],
+      "pose": {
+        "yaw": 10.527217658772294,
+        "pitch": 4.148462821647909,
+        "roll": -2.465402609560152
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3413,
+      "ear_right": 0.3427,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 14,
+      "perclos": 0.7204,
+      "long_close_count": 8,
+      "mar": 0.3524,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9493,
+      "motion_score": 0.0286,
+      "overall": 0.9661
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.72 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10274.186391,
+    "frame_id": 15511,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        238,
+        98,
+        191,
+        233
+      ],
+      "pose": {
+        "yaw": 10.422310679923669,
+        "pitch": 5.662863773941229,
+        "roll": -2.7296604777396856
+      }
+    },
+    "behavior": {
+      "ear_left": 0.2972,
+      "ear_right": 0.2941,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7511,
+      "long_close_count": 8,
+      "mar": 0.388,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9488,
+      "motion_score": 0.0379,
+      "overall": 0.963
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.75 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10275.266362,
+    "frame_id": 15569,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        237,
+        93,
+        197,
+        243
+      ],
+      "pose": {
+        "yaw": 9.650897889060477,
+        "pitch": 2.340505521885526,
+        "roll": -2.6991128269995794
+      }
+    },
+    "behavior": {
+      "ear_left": 0.2784,
+      "ear_right": 0.2535,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7642,
+      "long_close_count": 8,
+      "mar": 0.3419,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9486,
+      "motion_score": 0.0276,
+      "overall": 0.966
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.76 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10276.090356,
+    "frame_id": 15610,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        237,
+        94,
+        196,
+        242
+      ],
+      "pose": {
+        "yaw": 9.77735977545087,
+        "pitch": 2.4422535644555463,
+        "roll": -2.8530728780784815
+      }
+    },
+    "behavior": {
+      "ear_left": 0.2723,
+      "ear_right": 0.2437,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7676,
+      "long_close_count": 8,
+      "mar": 0.3488,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9487,
+      "motion_score": 0.0338,
+      "overall": 0.9642
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.77 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10277.250383,
+    "frame_id": 15670,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        238,
+        90,
+        197,
+        244
+      ],
+      "pose": {
+        "yaw": 9.888994742869238,
+        "pitch": 4.15116358732104,
+        "roll": -2.3072707746590573
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3869,
+      "ear_right": 0.3974,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7669,
+      "long_close_count": 8,
+      "mar": 0.362,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9487,
+      "motion_score": 0.033,
+      "overall": 0.9645
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.77 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10278.242256,
+    "frame_id": 15726,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        235,
+        92,
+        202,
+        247
+      ],
+      "pose": {
+        "yaw": 9.901864778645276,
+        "pitch": 6.102854549905316,
+        "roll": -2.700685842343127
+      }
+    },
+    "behavior": {
+      "ear_left": 0.1599,
+      "ear_right": 0.1704,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7649,
+      "long_close_count": 8,
+      "mar": 0.3546,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9486,
+      "motion_score": 0.0296,
+      "overall": 0.9654
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.76 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10279.222246,
+    "frame_id": 15784,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        238,
+        96,
+        195,
+        240
+      ],
+      "pose": {
+        "yaw": 10.53735611484504,
+        "pitch": 6.318281461095143,
+        "roll": -2.562196417462645
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3658,
+      "ear_right": 0.33,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7837,
+      "long_close_count": 8,
+      "mar": 0.3434,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9495,
+      "motion_score": 0.0355,
+      "overall": 0.9641
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.78 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10280.282212,
+    "frame_id": 15847,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        237,
+        91,
+        200,
+        246
+      ],
+      "pose": {
+        "yaw": 10.016222153414134,
+        "pitch": 3.999433766327416,
+        "roll": -2.7612207855960977
+      }
+    },
+    "behavior": {
+      "ear_left": 0.2101,
+      "ear_right": 0.2968,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7836,
+      "long_close_count": 8,
+      "mar": 0.3546,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9492,
+      "motion_score": 0.0291,
+      "overall": 0.9659
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.78 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10281.29039,
+    "frame_id": 15905,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        240,
+        96,
+        193,
+        235
+      ],
+      "pose": {
+        "yaw": 9.873801342547656,
+        "pitch": 2.8854222144982096,
+        "roll": -2.670668820275617
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3698,
+      "ear_right": 0.3616,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7838,
+      "long_close_count": 8,
+      "mar": 0.3597,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9481,
+      "motion_score": 0.0294,
+      "overall": 0.9652
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.78 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10282.218202,
+    "frame_id": 15956,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        238,
+        95,
+        196,
+        243
+      ],
+      "pose": {
+        "yaw": 10.166999766427313,
+        "pitch": 3.8480318449146256,
+        "roll": -1.8916983287175149
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3597,
+      "ear_right": 0.3109,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7807,
+      "long_close_count": 8,
+      "mar": 0.3563,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9481,
+      "motion_score": 0.0308,
+      "overall": 0.9648
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.78 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10283.29413,
+    "frame_id": 16015,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        234,
+        88,
+        202,
+        251
+      ],
+      "pose": {
+        "yaw": 9.778193718840123,
+        "pitch": 3.9439341700865116,
+        "roll": -2.688425976677985
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3671,
+      "ear_right": 0.3496,
+      "blink_state": "CLOSED",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.78,
+      "long_close_count": 8,
+      "mar": 0.3678,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9476,
+      "motion_score": 0.0314,
+      "overall": 0.9644
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.78 > 0.25；长闭眼 8 次 ≥ 1"
+  },
+  {
+    "ts": 10284.302113,
+    "frame_id": 16075,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        239,
+        98,
+        191,
+        235
+      ],
+      "pose": {
+        "yaw": 9.8533512097134,
+        "pitch": 2.258159373241819,
+        "roll": -2.5979490722598166
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3989,
+      "ear_right": 0.4071,
+      "blink_state": "OPENING",
+      "blink_count": 13,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7669,
+      "long_close_count": 9,
+      "mar": 0.3587,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9487,
+      "motion_score": 0.032,
+      "overall": 0.9647
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.77 > 0.25；长闭眼 9 次 ≥ 1"
+  },
+  {
+    "ts": 10285.346275,
+    "frame_id": 16136,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        240,
+        99,
+        189,
+        233
+      ],
+      "pose": {
+        "yaw": 10.048125938732403,
+        "pitch": 1.8974179483737506,
+        "roll": -2.8286995006582463
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3744,
+      "ear_right": 0.4316,
+      "blink_state": "OPEN",
+      "blink_count": 14,
+      "blink_rate_per_min": 14,
+      "perclos": 0.7327,
+      "long_close_count": 9,
+      "mar": 0.3635,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9476,
+      "motion_score": 0.0291,
+      "overall": 0.9651
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.73 > 0.25；长闭眼 9 次 ≥ 1"
+  },
+  {
+    "ts": 10286.374359,
+    "frame_id": 16196,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        240,
+        88,
+        193,
+        244
+      ],
+      "pose": {
+        "yaw": 10.345632757441257,
+        "pitch": 1.666796972399304,
+        "roll": -2.616811817655316
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3217,
+      "ear_right": 0.3453,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 14,
+      "perclos": 0.7114,
+      "long_close_count": 9,
+      "mar": 0.3527,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9478,
+      "motion_score": 0.03,
+      "overall": 0.9649
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.71 > 0.25；长闭眼 9 次 ≥ 1"
+  },
+  {
+    "ts": 10287.40205,
+    "frame_id": 16253,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        233,
+        90,
+        201,
+        243
+      ],
+      "pose": {
+        "yaw": 9.852862453347031,
+        "pitch": -0.5404827954047334,
+        "roll": -3.704350107834724
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3493,
+      "ear_right": 0.3445,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7383,
+      "long_close_count": 9,
+      "mar": 0.3398,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9479,
+      "motion_score": 0.0334,
+      "overall": 0.9639
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.74 > 0.25；长闭眼 9 次 ≥ 1"
+  },
+  {
+    "ts": 10288.342261,
+    "frame_id": 16308,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        234,
+        89,
+        199,
+        248
+      ],
+      "pose": {
+        "yaw": 10.607774965721784,
+        "pitch": 1.7272412568954596,
+        "roll": -2.770634875945853
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3509,
+      "ear_right": 0.3135,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 12,
+      "perclos": 0.7464,
+      "long_close_count": 9,
+      "mar": 0.3664,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9478,
+      "motion_score": 0.0355,
+      "overall": 0.9632
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.75 > 0.25；长闭眼 9 次 ≥ 1"
+  },
+  {
+    "ts": 10289.405999,
+    "frame_id": 16368,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        237,
+        85,
+        201,
+        251
+      ],
+      "pose": {
+        "yaw": 9.752540340447636,
+        "pitch": 3.436763913884772,
+        "roll": -2.6672368814535377
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3621,
+      "ear_right": 0.3478,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 10,
+      "perclos": 0.7748,
+      "long_close_count": 9,
+      "mar": 0.3537,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.948,
+      "motion_score": 0.0272,
+      "overall": 0.9658
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.77 > 0.25；长闭眼 9 次 ≥ 1"
+  },
+  {
+    "ts": 10290.362328,
+    "frame_id": 16421,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        238,
+        84,
+        199,
+        247
+      ],
+      "pose": {
+        "yaw": 10.473083895829879,
+        "pitch": -0.2970687576468334,
+        "roll": -3.375378906214994
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3648,
+      "ear_right": 0.2507,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 8,
+      "perclos": 0.7883,
+      "long_close_count": 9,
+      "mar": 0.3514,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9476,
+      "motion_score": 0.0347,
+      "overall": 0.9634
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.79 > 0.25；长闭眼 9 次 ≥ 1；眨眼率 8.0/min < 10"
+  },
+  {
+    "ts": 10291.474014,
+    "frame_id": 16481,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        233,
+        92,
+        198,
+        243
+      ],
+      "pose": {
+        "yaw": 9.23955163416851,
+        "pitch": -0.4137646512166568,
+        "roll": -3.2049510552143126
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3394,
+      "ear_right": 0.308,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 8,
+      "perclos": 0.8165,
+      "long_close_count": 9,
+      "mar": 0.3597,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.948,
+      "motion_score": 0.0336,
+      "overall": 0.9639
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.82 > 0.25；长闭眼 9 次 ≥ 1；眨眼率 8.0/min < 10"
+  },
+  {
+    "ts": 10292.401962,
+    "frame_id": 16533,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        239,
+        94,
+        189,
+        234
+      ],
+      "pose": {
+        "yaw": 10.370769722957233,
+        "pitch": 3.102884683381553,
+        "roll": -3.1990049944512924
+      }
+    },
+    "behavior": {
+      "ear_left": 0.2712,
+      "ear_right": 0.2017,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 6,
+      "perclos": 0.8414,
+      "long_close_count": 9,
+      "mar": 0.3552,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9476,
+      "motion_score": 0.03,
+      "overall": 0.9648
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.84 > 0.25；长闭眼 9 次 ≥ 1；眨眼率 6.0/min < 10"
+  },
+  {
+    "ts": 10293.446078,
+    "frame_id": 16594,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        232,
+        81,
+        204,
+        253
+      ],
+      "pose": {
+        "yaw": 9.993369701221239,
+        "pitch": 1.681159380242465,
+        "roll": -3.2295579137204813
+      }
+    },
+    "behavior": {
+      "ear_left": 0.364,
+      "ear_right": 0.3163,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 4,
+      "perclos": 0.8515,
+      "long_close_count": 9,
+      "mar": 0.343,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9471,
+      "motion_score": 0.0305,
+      "overall": 0.9644
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.85 > 0.25；长闭眼 9 次 ≥ 1；眨眼率 4.0/min < 10"
+  },
+  {
+    "ts": 10294.317961,
+    "frame_id": 16644,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        236,
+        96,
+        197,
+        239
+      ],
+      "pose": {
+        "yaw": 9.472796008420108,
+        "pitch": -0.15693635977047948,
+        "roll": -3.019938546641822
+      }
+    },
+    "behavior": {
+      "ear_left": 0.1248,
+      "ear_right": 0.1591,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 4,
+      "perclos": 0.8761,
+      "long_close_count": 9,
+      "mar": 0.3691,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9466,
+      "motion_score": 0.0323,
+      "overall": 0.9636
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.88 > 0.25；长闭眼 9 次 ≥ 1；眨眼率 4.0/min < 10"
+  },
+  {
+    "ts": 10295.377896,
+    "frame_id": 16703,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        237,
+        86,
+        198,
+        245
+      ],
+      "pose": {
+        "yaw": 9.67480838858167,
+        "pitch": 2.1606664183212376,
+        "roll": -3.6738999439092863
+      }
+    },
+    "behavior": {
+      "ear_left": 0.361,
+      "ear_right": 0.3425,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 2,
+      "perclos": 0.8988,
+      "long_close_count": 9,
+      "mar": 0.3352,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9477,
+      "motion_score": 0.0341,
+      "overall": 0.9636
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.90 > 0.25；长闭眼 9 次 ≥ 1；眨眼率 2.0/min < 10"
+  },
+  {
+    "ts": 10296.490171,
+    "frame_id": 16766,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        237,
+        88,
+        197,
+        241
+      ],
+      "pose": {
+        "yaw": 10.275248400512561,
+        "pitch": 0.8877630383873149,
+        "roll": -3.6122116009277283
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3733,
+      "ear_right": 0.3652,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 2,
+      "perclos": 0.9155,
+      "long_close_count": 9,
+      "mar": 0.3503,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9467,
+      "motion_score": 0.0328,
+      "overall": 0.9635
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.92 > 0.25；长闭眼 9 次 ≥ 1；眨眼率 2.0/min < 10"
+  },
+  {
+    "ts": 10297.533831,
+    "frame_id": 16827,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        238,
+        90,
+        195,
+        235
+      ],
+      "pose": {
+        "yaw": 10.352891844027841,
+        "pitch": 0.4655661583905193,
+        "roll": -3.059403058929558
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3235,
+      "ear_right": 0.1828,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 2,
+      "perclos": 0.9084,
+      "long_close_count": 10,
+      "mar": 0.3734,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9465,
+      "motion_score": 0.027,
+      "overall": 0.9652
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.91 > 0.25；长闭眼 10 次 ≥ 1；眨眼率 2.0/min < 10"
+  },
+  {
+    "ts": 10298.545958,
+    "frame_id": 16885,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        236,
+        89,
+        194,
+        244
+      ],
+      "pose": {
+        "yaw": 9.779277404648878,
+        "pitch": 2.198638926264837,
+        "roll": -3.2017105124973515
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3699,
+      "ear_right": 0.3206,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 2,
+      "perclos": 0.9084,
+      "long_close_count": 10,
+      "mar": 0.3583,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9465,
+      "motion_score": 0.0308,
+      "overall": 0.964
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.91 > 0.25；长闭眼 10 次 ≥ 1；眨眼率 2.0/min < 10"
+  },
+  {
+    "ts": 10299.55425,
+    "frame_id": 16942,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        227,
+        87,
+        209,
+        254
+      ],
+      "pose": {
+        "yaw": 8.840389535490434,
+        "pitch": -3.9084142662952552,
+        "roll": -3.369558343680845
+      }
+    },
+    "behavior": {
+      "ear_left": 0.2491,
+      "ear_right": 0.3417,
+      "blink_state": "CLOSED",
+      "blink_count": 14,
+      "blink_rate_per_min": 2,
+      "perclos": 0.9086,
+      "long_close_count": 10,
+      "mar": 0.3538,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9467,
+      "motion_score": 0.035,
+      "overall": 0.9628
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.91 > 0.25；长闭眼 10 次 ≥ 1；眨眼率 2.0/min < 10"
+  },
+  {
+    "ts": 10300.545777,
+    "frame_id": 16997,
+    "face": {
+      "visible": 1,
+      "bbox": [
+        233,
+        91,
+        198,
+        244
+      ],
+      "pose": {
+        "yaw": 10.225367416361479,
+        "pitch": -0.18562400860991748,
+        "roll": -3.5825170715544847
+      }
+    },
+    "behavior": {
+      "ear_left": 0.3989,
+      "ear_right": 0.3843,
+      "blink_state": "CLOSING",
+      "blink_count": 14,
+      "blink_rate_per_min": 2,
+      "perclos": 0.8896,
+      "long_close_count": 11,
+      "mar": 0.3489,
+      "yawn_count": 0
+    },
+    "vital": {
+      "hr_bpm": null,
+      "hr_conf": null,
+      "rr_per_min": null,
+      "rr_conf": null
+    },
+    "quality": {
+      "light_score": 0.9472,
+      "motion_score": 0.0294,
+      "overall": 0.9648
+    },
+    "status": "fatigue_risk",
+    "advice": "疲劳风险升高，建议休息 5 分钟或远眺放松",
+    "reason": "触发：PERCLOS 0.89 > 0.25；长闭眼 11 次 ≥ 1；眨眼率 2.0/min < 10"
+  }
+]

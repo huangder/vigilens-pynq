@@ -40,7 +40,8 @@ struct vg_vital {
     vg_vital_config cfg;
     sample_t *hist;
     size_t head, count, capacity;
-    int need, color_window, warmup;
+    int need, analysis_capacity, color_window, warmup;
+    int symmetric_fir;
     size_t scratch_capacity;
     double *accum;
     double *support;
@@ -54,6 +55,7 @@ struct vg_vital {
     int64_t *q15;
     char blocked[32];
     int recovery_left;
+    double asof_ts; /* latest observed time, including a quality pause */
     double min_rate_hz; /* fps * (1 - fs_tol): below this the FIR cannot be fed */
 };
 
@@ -127,18 +129,31 @@ vg_vital *vg_vital_create(const vg_vital_config *config)
         !isfinite(config->jitter_ratio_max) || config->jitter_ratio_max <= 0 ||
         !isfinite(config->fs_tol) || config->fs_tol <= 0 || config->fs_tol >= 1 ||
         !isfinite(config->recovery_s) || config->recovery_s < 0 ||
-        config->recovery_samples < 0 || (config->method!=0&&config->method!=1))
+        config->recovery_samples < 0 || (config->method!=0&&config->method!=1) ||
+        !isfinite(config->history_seconds) || config->history_seconds<0 ||
+        !isfinite(config->source_min_hz) || !(config->source_min_hz==0 ||
+            (2*config->f_hi<config->source_min_hz && config->source_min_hz<=config->fps)) ||
+        (config->green_center_before_fir!=0 && config->green_center_before_fir!=1) ||
+        !isfinite(config->short_window_seconds) || !isfinite(config->short_window_min_conf) ||
+        !((config->short_window_seconds==0 && config->short_window_min_conf==0) ||
+          (config->short_window_seconds>0 && config->short_window_min_conf>=.5 && config->short_window_min_conf<1)))
         return NULL;
     vital = calloc(1, sizeof(*vital));
     if (!vital) return NULL;
     vital->cfg = *config;
-    vital->min_rate_hz = config->fps * (1.0 - config->fs_tol);
+    vital->symmetric_fir = 1;
+    for (int k = 0; k < config->taps / 2; ++k)
+        if (config->coeffs[k] != config->coeffs[config->taps - 1 - k])
+            vital->symmetric_fir = 0;
+    vital->asof_ts = NAN;
+    vital->min_rate_hz = config->source_min_hz>0?config->source_min_hz:config->fps*(1.0-config->fs_tol);
     vital->need = (int)lround(config->window_seconds * config->fps);
     if (vital->need < 2) { free(vital); return NULL; }
+    vital->analysis_capacity=(int)lround(fmax(config->window_seconds,config->history_seconds)*config->fps);
     vital->color_window = (int)ceil(config->color_window_seconds * config->fps);
-    if (vital->color_window < 2 || vital->color_window > vital->need) { free(vital); return NULL; }
+    if (vital->color_window < 2 || (config->method==0&&vital->color_window > vital->analysis_capacity)) { free(vital); return NULL; }
     vital->warmup = (config->taps - 1) + (config->method==0?vital->color_window-1:0);
-    vital->capacity = (size_t)vital->need + (size_t)vital->warmup + 1;
+    vital->capacity = (size_t)vital->analysis_capacity + (size_t)vital->warmup + 1;
     /* The ring stores captured samples, but the re-grid runs at fps, so a feed
      * below the design rate expands to more grid points than captured samples.
      * Scratch arrays must cover that expansion; sizing them by the sample count
@@ -190,6 +205,7 @@ void vg_vital_reset(vg_vital *vital)
     vital->count = 0;
     vital->recovery_left = 0;
     vital->blocked[0] = '\0';
+    vital->asof_ts = NAN;
     memset(vital->hist, 0, vital->capacity * sizeof(*vital->hist));
 }
 
@@ -208,13 +224,45 @@ void vg_vital_invalidate(vg_vital *vital, const char *reason, double ts, int all
                 ts > previous && ts - previous <= vital->cfg.recovery_s;
     if (!short_gap) vg_vital_reset(vital);
     else vital->recovery_left = vital->cfg.recovery_samples;
+    if(isfinite(ts)&&ts>0) vital->asof_ts=ts;
     snprintf(vital->blocked, sizeof(vital->blocked), "%s", reason ? reason : "invalid");
 }
 
 int vg_vital_samples(const vg_vital *vital)
 {
+    int n;
     if (!vital) return 0;
+    if(vital->cfg.history_seconds>0) {
+        n=vg_vital_history_samples(vital);
+        return n<vital->need?n:vital->need;
+    }
     return vital->count < (size_t)vital->need ? (int)vital->count : vital->need;
+}
+
+int vg_vital_history_samples(const vg_vital *vital)
+{
+    int n,limit;
+    double seconds;
+    if (!vital) return 0;
+    limit=(int)(vital->count<(size_t)vital->analysis_capacity?vital->count:(size_t)vital->analysis_capacity);
+    n=limit<vital->need?limit:vital->need;
+    while(n<limit) {
+        const sample_t *previous=&vital->hist[(vital->head+vital->count-(size_t)n-1)%vital->capacity];
+        const sample_t *current=&vital->hist[(vital->head+vital->count-(size_t)n)%vital->capacity];
+        if(previous->has_ts && current->has_ts) {
+            if(!(current->ts>previous->ts)||current->ts-previous->ts>vital->cfg.max_gap_s)break;
+        } else if(previous->has_ts||current->has_ts||current->fid!=previous->fid+1)break;
+        ++n;
+    }
+    seconds=fmax(vital->cfg.window_seconds,vital->cfg.history_seconds);
+    while(n>(vital->cfg.history_seconds>0?0:vital->need)) {
+        const sample_t *first=&vital->hist[(vital->head+vital->count-(size_t)n)%vital->capacity];
+        const sample_t *last=&vital->hist[(vital->head+vital->count-1)%vital->capacity];
+        double end=vital->cfg.history_seconds>0&&isfinite(vital->asof_ts)?vital->asof_ts:last->ts;
+        if(!first->has_ts||!last->has_ts||end-first->ts<=seconds)break;
+        --n;
+    }
+    return n;
 }
 
 double vg_vital_required_hz(const vg_vital *vital)
@@ -250,6 +298,7 @@ int vg_vital_push_rgb(vg_vital *vital, const uint32_t sums[3], uint32_t count,
     target->fid = frame_id;
     target->ts = ts;
     target->has_ts = isfinite(ts) && ts > 0.0;
+    vital->asof_ts=target->has_ts?ts:NAN;
     ++vital->count;
     return 0;
 }
@@ -311,14 +360,36 @@ static const char *quantise(vg_vital *vital, const double *wave, int m)
     return NULL;
 }
 
-static const char *fir_window(vg_vital *vital, const int64_t *samples, int m, double *out)
+static const char *fir_window(vg_vital *vital, int64_t *samples, int m, double *out)
 {
     const int taps = vital->cfg.taps;
     int i, k;
+    if(vital->cfg.method==1&&vital->cfg.green_center_before_fir) {
+        int64_t sum=0,offset;
+        for(i=0;i<m;++i)sum+=samples[i];
+        double mean=(double)sum/m;
+        offset=(int64_t)(mean>=0?floor(mean+.5):ceil(mean-.5));
+        for(i=0;i<m;++i) {
+            samples[i]-=offset;
+            if(samples[i]<-32768||samples[i]>32767)return "green_signal_range";
+        }
+    }
     for (i = 0; i < m; ++i) {
         int64_t acc = 0;
         double value;
-        for (k = 0; k < taps && k <= i; ++k) acc += (int64_t)vital->cfg.coeffs[k] * samples[i - k];
+        if (vital->symmetric_fir && i >= taps - 1) {
+            /* Pair equal coefficients only after the full history is present.
+             * Accumulate before the original shift: integer results, startup
+             * transients and saturation rejection remain unchanged. */
+            for (k = 0; k < taps / 2; ++k)
+                acc += (int64_t)vital->cfg.coeffs[k] *
+                       (samples[i - k] + samples[i - (taps - 1 - k)]);
+            if (taps % 2)
+                acc += (int64_t)vital->cfg.coeffs[taps / 2] * samples[i - taps / 2];
+        } else {
+            for (k = 0; k < taps && k <= i; ++k)
+                acc += (int64_t)vital->cfg.coeffs[k] * samples[i - k];
+        }
         value = (double)floor_shift(acc, vital->cfg.shift);
         if (value > 32767.0 || value < -32768.0) return "color_fir_saturation";
         out[i] = value;
@@ -327,14 +398,15 @@ static const char *fir_window(vg_vital *vital, const int64_t *samples, int m, do
 }
 
 /* Linear re-grid at 1/fps, mirroring the selected Python estimator. */
-static const char *uniform_rewindow(vg_vital *vital, int m, int *count_out,int *start_out)
+static const char *uniform_rewindow(vg_vital *vital, int m, int n, int *count_out,int *start_out)
 {
-    const int n = vital->need;
     int first = m - n, i, j, channel, full_count, count, index = 0;
     double end, start, *time = vital->times;
+    double cutoff=slot(vital,(size_t)(m-n))->ts-(double)vital->warmup/vital->cfg.fps;
     while (first > 0) {
         const sample_t *previous = slot(vital, (size_t)(first - 1));
         const sample_t *current = slot(vital, (size_t)first);
+        if(current->has_ts && current->ts<=cutoff)break;
         if (!previous->has_ts || !current->has_ts ||
             !(previous->ts > 0.0) || !(current->ts > 0.0) ||
             previous->ts >= current->ts || current->ts - previous->ts > vital->cfg.max_gap_s)
@@ -347,7 +419,8 @@ static const char *uniform_rewindow(vg_vital *vital, int m, int *count_out,int *
     start = slot(vital, (size_t)(m - n))->ts;
     full_count = (int)floor((end - slot(vital, (size_t)first)->ts) * vital->cfg.fps) + 1;
     count = (int)floor((end - start) * vital->cfg.fps) + 1;
-    if ((vital->cfg.method==0&&full_count<vital->color_window) || count < 2 || count>full_count || full_count > (int)vital->scratch_capacity)
+    if(vital->cfg.method==0&&full_count<vital->color_window)return "color_window_not_full";
+    if (count < 2 || count>full_count || full_count > (int)vital->scratch_capacity)
         return "warmup_history_unavailable";
     for (j = 0; j < full_count; ++j) time[j] = end - (double)(full_count - 1 - j) / vital->cfg.fps;
     for (j = 0; j < full_count; ++j) {
@@ -409,16 +482,18 @@ int vg_vital_estimate(vg_vital *vital, vg_vital_result *out)
     const char *reject;
     if (!vital || !out) return -1;
     memset(out, 0, sizeof(*out));
-    n = vital->need;
+    n = vg_vital_history_samples(vital);
     m = (int)(vital->count < (size_t)vital->capacity ? vital->count : vital->capacity);
     if (vital->blocked[0]) { out->reject = vital->blocked; return 0; }
     if (vital->recovery_left) { out->reject = "recovering"; return 0; }
-    if (m < n) { out->reject = "window_not_full"; return 0; }
+    if (n < vital->need) { out->reject = "window_not_full"; return 0; }
 
     source_ts = 0;
     for (i = m - n; i < m; ++i) if (slot(vital, (size_t)i)->has_ts) source_ts = 1;
     if (source_ts) {
         double *diffs = vital->times; /* scratch: window diffs */
+        double p95;
+        int gap_exceeded=0;
         for (i = m - n; i < m; ++i)
             if (!slot(vital, (size_t)i)->has_ts) { out->reject = "invalid_timestamps"; return 0; }
         for (i = m - n + 1; i < m; ++i)
@@ -427,18 +502,25 @@ int vg_vital_estimate(vg_vital *vital, vg_vital_result *out)
         span = slot(vital, (size_t)(m - 1))->ts - slot(vital, (size_t)(m - n))->ts;
         if (!(span > 0)) { out->reject = "no_time_span"; return 0; }
         fs_eff = (double)(n - 1) / span;
+        for (i = 0; i < n - 1; ++i) {
+            diffs[i] = slot(vital, (size_t)(m - n + 1 + i))->ts - slot(vital, (size_t)(m - n + i))->ts;
+            if(diffs[i]>vital->cfg.max_gap_s)gap_exceeded=1;
+        }
+        p95=percentile95(diffs,n-1);
+        if(gap_exceeded&&p95<=vital->cfg.max_gap_s){out->reject="sampling_gap";return 0;}
         /* Name the real cause before the generic tolerance check: a caller that
          * feeds the estimator from a slow analysis loop must be told the rate
          * is unusable, not that it missed the design rate by some fraction. */
         if (fs_eff < vital->min_rate_hz) { out->reject = "sampling_too_slow"; return 0; }
-        if (fabs(fs_eff - vital->cfg.fps) > vital->cfg.fs_tol * vital->cfg.fps)
+        /* Timestamp re-gridding fixes the FIR/frequency grid at cfg.fps. In
+         * explicit density mode the source may be slower; do not relabel it as
+         * nominal-rate acquisition. Legacy callers keep both tolerance guards. */
+        if ((vital->cfg.source_min_hz==0 && fabs(fs_eff - vital->cfg.fps) > vital->cfg.fs_tol * vital->cfg.fps) ||
+            fs_eff>vital->cfg.fps*(1.0+vital->cfg.fs_tol))
             { out->reject = "fs_mismatch"; return 0; }
-        for (i = 0; i < n - 1; ++i)
-            diffs[i] = slot(vital, (size_t)(m - n + 1 + i))->ts - slot(vital, (size_t)(m - n + i))->ts;
-        if (percentile95(diffs, n - 1) * vital->cfg.fps > vital->cfg.jitter_ratio_max)
+        if (p95 * vital->cfg.fps > vital->cfg.jitter_ratio_max)
             { out->reject = "sampling_jitter"; return 0; }
-        for (i = 0; i < n - 1; ++i)
-            if (diffs[i] > vital->cfg.max_gap_s) { out->reject = "sampling_gap"; return 0; }
+        if(gap_exceeded){out->reject="sampling_gap";return 0;}
     } else {
         const sample_t *first = slot(vital, (size_t)(m - n));
         const sample_t *last = slot(vital, (size_t)(m - 1));
@@ -452,7 +534,7 @@ int vg_vital_estimate(vg_vital *vital, vg_vital_result *out)
     }
 
     if (source_ts) {
-        reject = uniform_rewindow(vital, m, &window_count,&window_start);
+        reject = uniform_rewindow(vital, m, n, &window_count,&window_start);
         if (reject) { out->reject = reject; return 0; }
         /* Re-gridded length differs from the captured-sample count whenever
          * actual cadence differs from fps. Select the tail of the DERIVED
@@ -516,7 +598,6 @@ int vg_vital_estimate(vg_vital *vital, vg_vital_result *out)
         conf = local / total;
     }
     if (conf <= 0.5) { free(powers); out->reject = "no_dominant_peak"; return 0; }
-
     best_freq = (double)(k_lo + best) * fs_eff / (double)count;
     {
         double half = best_freq / 2.0;
@@ -549,6 +630,10 @@ int vg_vital_estimate(vg_vital *vital, vg_vital_result *out)
                 }
             }
         }
+    }
+    if(vital->cfg.short_window_seconds>0 && (double)count/fs_eff<=vital->cfg.short_window_seconds &&
+       conf<=vital->cfg.short_window_min_conf) {
+        free(powers);out->reject="short_window_low_confidence";return 0;
     }
     free(powers);
     out->present = 1;

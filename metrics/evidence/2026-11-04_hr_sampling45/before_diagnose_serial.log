@@ -1,0 +1,63 @@
+
+# cat /run/vigilens-ear300/camera.log.previous /run/vigilens-ear300/camera.log |
+ awk '
+> /^AUTONOMY_SAMPLE / {
+>  for(i=2;i<=NF;i++){split($i,a,"=");v[a[1]]=a[2]}
+>  if(v["rc"]!=0)next
+>  n++;if(n==1){first=v["ts"];fid=v["frame_id"]}
+>  last=v["ts"];lastid=v["frame_id"]
+>  faces+=v["visible"]==1
+>  reasons[v["vital_reject"]]++;gates[v["vital_gate"]]++;filters[v["hr_filter"]]
+++
+>  if(v["vital_history_samples"]+0>hist)hist=v["vital_history_samples"]+0
+>  if(v["vital_samples"]+0>samples)samples=v["vital_samples"]+0
+>  roi+=v["roi_pixels"]+0
+>  if(v["raw_hr"]!="nan")hr++
+>  for(i=1;i<=6;i++){key=keys[i];sum[key]+=v[key];if(v[key]+0>maximum[key])maxim
+um[key]=v[key]+0}
+> }
+> BEGIN {keys[1]="worker_ms";keys[2]="total_ms";keys[3]="landmark_ms";keys[4]="q
+ueue_ms";keys[5]="publish_ms";keys[6]="landmark_model_ms"}
+> END {
+>  printf "ROLLING_DIAG samples=%d faces=%d first_ts=%.9f last_ts=%.9f first_id=
+%d last_id=%d analysis_hz=%.6f max_samples=%d max_history=%d raw_hr_finite=%d me
+an_roi=%.2f\n",n,faces,first,last,fid,lastid,(n-1)/(last-first),samples,hist,hr,
+roi/n
+>  for(k in reasons)printf "REJECT %s %d\n",k,reasons[k]
+>  for(k in gates)printf "GATE %s %d\n",k,gates[k]
+>  for(k in filters)printf "FILTER %s %d\n",k,filters[k]
+>  for(i=1;i<=6;i++){k=keys[i];printf "TIMING %s mean=%.6f max=%.6f\n",k,sum[k]/
+n,maximum[k]}
+> }'
+tail -n 6 /run/vigilens-ear300/camera.log
+printf '\nROLLING_DIAG_LONG_DONE rc=%s\n' "$?"
+ROLLING_DIAG samples=4017 faces=3917 first_ts=12758.244083000 last_ts=12836.614415000 first_id=114932 last_id=119213 analysis_hz=51.243881 max_samples=75 max_history=550 raw_hr_finite=60 mean_roi=4518.74
+REJECT vitals_blocked 100
+REJECT warmup_history_unavailable 362
+REJECT window_not_full 296
+REJECT short_window_low_confidence 174
+REJECT harmonic_ambiguity 10
+REJECT sampling_too_slow 2575
+REJECT - 60
+REJECT no_dominant_peak 440
+GATE accepted 3917
+GATE face_missing 100
+FILTER warming 3957
+FILTER accepted 60
+TIMING worker_ms mean=16.149953 max=111.986000
+TIMING total_ms mean=15.508768 max=111.651000
+TIMING landmark_ms mean=10.547718 max=90.986000
+TIMING queue_ms mean=18.716512 max=208.372000
+TIMING publish_ms mean=0.503150 max=18.046000
+TIMING landmark_model_ms mean=2.050602 max=84.365000
+# tail -n 6 /run/vigilens-ear300/camera.log
+AUTONOMY_HANDOFF frame_id=119216 gray_ms=0.657 submit_ms=0.008 accepted=1
+CAPTURE_FRAME n=119222 sequence=126382 bytes=36248 ts=12836.834660
+SAMPLE_FRAME n=119222 source_sequence=126382 ts_us=12836834660
+AUTONOMY_SAMPLE frame_id=119216 ts=12836.698362000 rc=0 detections=1 visible=1 detector_ms=0.009 landmark_ms=6.169 total_ms=24.196 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.007 landmark_caller_cpu_ms=6.176 vital_hz=31.265 vital_reject=sampling_too_slow roi_pixels=4356 vital_samples=75 vital_history_samples=272 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=warming preview_ms=0.000 publish_ms=0.294 worker_ms=24.540 queue_ms=0.147
+CAMERA_PL_FRAME n=119218 seq=126376 ts_us=12836734340 mismatch=0 audit=0 roi_g=39532864 roi_count=307200 motion_valid=1 motion_ratio_q16=599 decode_ms=33.744 reference_ms=0.000 transfer_pl_ms=5.876 decode_cpu_ms=12.676 transfer_pl_cpu_ms=2.807
+AUTONOMY_HANDOFF frame_id=119217 gray_ms=0.343 submit_ms=0.047 accepted=1
+# printf '\nROLLING_DIAG_LONG_DONE rc=%s\n' "$?"
+
+ROLLING_DIAG_LONG_DONE rc=0
+# 

@@ -40,6 +40,9 @@ void vg_autonomy_destroy(vg_autonomy *engine);
 int vg_autonomy_configure_temporal(vg_autonomy *engine,const double model[68][3],
                                    int pose_tracking,int quality_recovery);
 int vg_autonomy_configure_hr_filter(vg_autonomy *engine,const vg_hr_filter_config *config);
+int vg_autonomy_configure_blink(vg_autonomy *engine,const vg_blink_config *config);
+/* All frames still update behavior; faster ROI feeds aggregate into FIR fps. */
+int vg_autonomy_configure_capture_rate(vg_autonomy *engine,double capture_fps);
 double vg_autonomy_raw_hr(const vg_autonomy *engine);
 double vg_autonomy_raw_hr_conf(const vg_autonomy *engine);
 const char *vg_autonomy_hr_filter_reason(const vg_autonomy *engine);
@@ -62,6 +65,7 @@ int vg_autonomy_write(FILE *stream, const vg_autonomy_result *result);
 const char *vg_autonomy_vital_reject(const vg_autonomy *engine);
 double vg_autonomy_vital_rate_hz(const vg_autonomy *engine);
 int vg_autonomy_vital_samples(const vg_autonomy *engine);
+int vg_autonomy_vital_history_samples(const vg_autonomy *engine);
 /* Current-frame gate; distinct from the last spectral-estimation rejection. */
 const char *vg_autonomy_vital_gate(const vg_autonomy *engine);
 #ifdef __cplusplus

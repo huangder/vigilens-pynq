@@ -175,7 +175,7 @@ def test_rppg_needs_full_window() -> None:
     """窗口没填满一律不出数：没测够就是没测够。"""
     est = GreenRppg.from_config(CFG)
     assert not est.ready
-    r = _feed(est, 1.20, seconds=WINDOW / 2.0)
+    r = _feed(est, 1.20, seconds=(est.need // 2) / FPS)
     assert r["hr_bpm"] is None
     assert est.samples == est.need // 2
 
@@ -193,8 +193,9 @@ def test_rppg_noise_reports_no_dominant_peak() -> None:
     以前的现场是：窗口 900/900 已满、`vital.*` 全 null、`rppg_reject` 却是 `null`，
     运维无法区分"没测够 / 没峰 / 采样率不对"。修法 = 每一条 return 都写原因。
     """
-    est = GreenRppg.from_config(CFG)
-    r = _feed(est, 0.0, amp=0, noise=6000, seed=7)
+    # Preserve the original 5s/150-sample noise fixture and exact reason.
+    est = GreenRppg.from_config({**CFG, "rppg_window_seconds": 5})
+    r = _feed(est, 0.0, amp=0, noise=6000, seed=7, seconds=5)
     assert r["hr_bpm"] is None
     assert est.last_reject == "no_dominant_peak", est.last_reject
     assert est.last_conf is not None and est.last_conf <= 0.5
@@ -219,12 +220,23 @@ def test_rppg_success_sets_conf_and_clears_reject() -> None:
 
 def test_rppg_reject_reason_does_not_stick() -> None:
     """原因不许"粘住"：先跑一轮噪声（有原因），reset 后再跑好信号必须变回 None。"""
-    est = GreenRppg.from_config(CFG)
-    _feed(est, 0.0, amp=0, noise=6000, seed=7)
+    est = GreenRppg.from_config({**CFG, "rppg_window_seconds": 5})
+    _feed(est, 0.0, amp=0, noise=6000, seed=7, seconds=5)
     assert est.last_reject == "no_dominant_peak"
     est.reset()
-    r = _feed(est, 1.20)
+    r = _feed(est, 1.20, seconds=5)
     assert r["hr_bpm"] is not None
+    assert est.last_reject is None
+
+
+def test_hundred_sample_noise_remains_refused_with_its_own_spectral_reason() -> None:
+    est=GreenRppg.from_config({**CFG,"rppg_window_seconds":100/30})
+    assert est.need == 100
+    r=_feed(est,0.,amp=0,noise=6000,seed=7,seconds=100/30)
+    assert r['hr_bpm'] is None and r['hr_conf'] is None
+    assert est.last_reject == 'harmonic_ambiguity'
+    est.reset()
+    assert _feed(est,1.20,seconds=100/30)['hr_bpm'] is not None
     assert est.last_reject is None
 
 

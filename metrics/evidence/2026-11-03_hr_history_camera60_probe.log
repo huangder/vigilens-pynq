@@ -1,0 +1,26 @@
+
+# wget -T 15 -O /tmp/capture60_test.sh http://169.254.73.28:8766/capture60_test.
+sh
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/capture60_test.sh'
+capture60_test.sh    100% |********************************|   521  0:00:00 ETA
+'/tmp/capture60_test.sh' saved
+# sh /tmp/capture60_test.sh
+Connecting to 169.254.73.28:8766 (169.254.73.28:8766)
+saving to '/tmp/uvc_probe60_history'
+uvc_probe60_history  100% |********************************| 35268  0:00:00 ETA
+'/tmp/uvc_probe60_history' saved
+printf '\nFPS60_CAPTURE_SERIAL_END\n'
+stop_requested pid=118
+CAPTURE_REQUEST /dev/video0 640x480 MJPG 60fps frames=300
+CAPTURE_DEVICE driver=uvcvideo card=DECXIN: DECXIN
+CAPTURE_SUPPORTED_INTERVAL 640x480 1/60
+CAPTURE_MODE 640x480 fourcc=0x47504a4d interval=1/60
+SAMPLE_POLICY mode=native_passthrough original_timestamps=1
+SAMPLE_RESULT input=300 kept=300 dropped=0 driver_sequence_gaps=0 empty_slots=0 input_fps=59.185653 output_fps=59.185653 native_60fps=yes
+FPS60_CAPTURE_TEST_END
+start_requested pid=2282
+# printf '\nFPS60_CAPTURE_SERIAL_END\n'
+
+FPS60_CAPTURE_SERIAL_END
+# 

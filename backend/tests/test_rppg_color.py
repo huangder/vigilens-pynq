@@ -31,14 +31,27 @@ def feed(est, times, *, timestamps=True):
 
 
 def test_common_illumination_is_reduced_without_lowering_confidence_guard():
-    pos = make_rppg({**CFG, "rppg_method": "pos"})
-    green = make_rppg({**CFG, "rppg_method": "green"})
+    # Preserve the original 150-sample fixture and its strict 2 bpm assertions.
+    pos = make_rppg({**CFG, "rppg_method": "pos", "rppg_window_seconds": 5})
+    green = make_rppg({**CFG, "rppg_method": "green", "rppg_window_seconds": 5})
     times = np.arange(pos.need) / pos.fps
     result, baseline = feed(pos, times), feed(green, times)
     assert result["hr_bpm"] == pytest.approx(72, abs=2)
     assert result["hr_conf"] > .5
     assert baseline["hr_bpm"] == pytest.approx(120, abs=2)
     assert pos.stats()["method"] == "pos"
+
+
+def test_hundred_sample_candidate_exposes_coarser_illumination_frequency_grid():
+    pos=make_rppg({**CFG,"rppg_method":"pos","rppg_window_seconds":100/30})
+    green=make_rppg({**CFG,"rppg_method":"green","rppg_window_seconds":100/30})
+    assert pos.need == green.need == 100
+    times=np.arange(pos.need)/pos.fps
+    result,baseline=feed(pos,times),feed(green,times)
+    assert result['hr_bpm'] == pytest.approx(72,abs=2)
+    assert result['hr_conf'] > .5
+    # 120 bpm lies between the 108 and 126 bpm bins; no invented precision.
+    assert baseline['hr_bpm'] == pytest.approx(126,abs=1e-9)
 
 
 @pytest.mark.parametrize("timestamps", [True, False])

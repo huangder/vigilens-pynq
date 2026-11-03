@@ -1,0 +1,14 @@
+{
+  "board/autonomy/autonomy_camera.c": "f053989c833e53eb66c6c6f0d1290dacd2e363e2bdfab95de89c636c3b43bace",
+  "board/autonomy/camera_preview.c": "680c679fea5046e95378b0c77b22b627edd5d5aafeb1a2665c9f46b890bd9758",
+  "board/autonomy/camera_preview.h": "749a7f35dc588129dc1181d0587746d8e78e5b3e600fee9a9aaca67793165578",
+  "board/autonomy/point_tracker.cpp": "0436cff1b303769226fa2e03187339066fe94fe081592fe1ce7966de8382f7a3",
+  "board/autonomy/point_tracker.hpp": "9597d0f6a706432dde1708b863de9dd74140a50a0def2aac64a683ac6983b768",
+  "board/autonomy/ert_runtime.cpp": "3f8ddb9e02a54249ce7d76c2cddf1ad01951ccd6a2dc09279f4465a9ada8d334",
+  "board/autonomy/export_vision_config.py": "ce54d1e1ad764a5cb1d64bc2cebd36db081250f05f79eab10bf9d43a86874458",
+  "board/autonomy/export_vital_config.py": "8899ea0e603f01f09f413b6790d8f6560496e6b8b153e0bb69fb98a09dec7e38",
+  "board/autonomy/build_native_vision.sh": "2b11dcfc90f9fb06f3c53d162f2764fa93a302f35fe573761a9a6306b987477b",
+  "board/w7_buildroot/camera_pl.c": "f898633d0226fbcc6910cd763e04092731080c93242e65f4ecb21b721022a6fb",
+  "board/w7_buildroot/uvc_probe.c": "53fad48d7d3afb1caa2f66ea8d6cbcabf9ec70b9a997a32a3ad497c021a4787a",
+  "board/w7_buildroot/jpeg_rows.h": "bed6154fc7bca01dea254ce2a5083bd3b51fd5413368f59e33f7f82a67359c40"
+}

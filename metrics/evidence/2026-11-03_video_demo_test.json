@@ -1,0 +1,194 @@
+{
+  "recorded_at": "2026-11-03T20:02:43.498636+08:00",
+  "kind": "physical_board_live_numeric_capture_with_unannotated_human_actions",
+  "parameters": {
+    "release_id": "VigiLens-SD-1f461bad8836002a",
+    "config_sha256": "1f461bad8836002af97d820456a42c7a592bd02ab5013ecaa817c33c2b551908",
+    "capture": {
+      "width": 640,
+      "height": 480,
+      "format": "yuyv",
+      "fps_nominal": 30
+    },
+    "runtime": "ert_temporal",
+    "blink_policy": {
+      "ear_threshold_mode": "absolute",
+      "ear_close_absolute": 0.4,
+      "ear_open_absolute": 0.43,
+      "ear_close_ratio": 0.65,
+      "ear_open_ratio": 0.8,
+      "ear_baseline_tau_s": 2.0,
+      "blink_min_close_ms": 80,
+      "blink_min_open_ms": 100,
+      "blink_long_close_ms": 1500,
+      "blink_max_gap_ms": 120,
+      "ear_baseline_reset_ms": 1000
+    },
+    "heart_rate": {
+      "method": "green",
+      "required_samples": 75,
+      "window_seconds": 2.5,
+      "band_hz": [
+        0.7,
+        3.5
+      ],
+      "fs_tol": 0.1,
+      "max_gap_ms": 100,
+      "quality_min": 0.75,
+      "short_window_seconds": 3.0,
+      "short_window_min_conf": 0.8,
+      "filter": {
+        "enabled": true,
+        "window": 3,
+        "alpha": 0.2,
+        "interval_s": 0.8,
+        "max_gap_s": 1.5,
+        "max_spread_bpm": 12.0,
+        "startup_samples": 1
+      }
+    },
+    "display": {
+      "metrics_hz": 5.0,
+      "preview_hz": 5.0,
+      "hr_display_transition_ms": 1000,
+      "dashboard_animation_hz": 30.0,
+      "hr_trend_bridge_seconds": 30.0,
+      "hr_trend_hold_seconds": 10.0
+    },
+    "behavior_window_seconds": 30,
+    "prototype_prompts": {
+      "perclos_warning": 0.25,
+      "fatigue_long_close_count": 1,
+      "fatigue_yawn_count": 2,
+      "fatigue_blink_rate_low": 10.0,
+      "mar_threshold": 0.6,
+      "yawn_min_duration_ms": 800,
+      "alert_duration_seconds": 10,
+      "hr_alert_high_bpm": 100.0
+    },
+    "actual_human_accuracy_verified": false
+  },
+  "capture": {
+    "started_at": "2026-11-03T19:56:57.584850+08:00",
+    "ended_at": "2026-11-03T19:59:27.762401+08:00",
+    "source_url": "http://169.254.73.29:8080/api/latest",
+    "duration_requested_s": 150,
+    "http_samples": 747,
+    "unique_frames": 747,
+    "request_errors": [],
+    "visible_frames": 736,
+    "valid_hr_frames": 36,
+    "status_counts": {
+      "fatigue_risk": 736,
+      "adjust_posture": 11
+    },
+    "hr_range_bpm": [
+      46.2,
+      91.1
+    ],
+    "human_actions_independently_annotated": false,
+    "accuracy_claimed": false,
+    "raw_face_media_requested_saved_or_uploaded": false,
+    "first_source_ts": 715.350454,
+    "last_source_ts": 865.263201,
+    "first_frame_id": 20731,
+    "last_frame_id": 25224,
+    "blink_count_first": 22,
+    "blink_count_last": 50,
+    "long_close_first": 6,
+    "long_close_last": 9,
+    "device_counters_reset": false,
+    "blink_counter_increase": 28,
+    "long_close_counter_increase": 3
+  },
+  "diagnostic_slice": {
+    "samples": "1514",
+    "first_ts": "788.457573000",
+    "last_ts": "841.707718000",
+    "first_frame_id": "22922",
+    "last_frame_id": "24518",
+    "processed_rate_hz": "28.4131",
+    "max_vital_samples": "75",
+    "face_frames": "1488",
+    "submitted": "1600",
+    "skipped": "85",
+    "reject_counts": {
+      "sampling_jitter": 210,
+      "vitals_blocked": 84,
+      "window_not_full": 300,
+      "short_window_low_confidence": 622,
+      "harmonic_ambiguity": 90,
+      "sampling_too_slow": 47,
+      "-": 96,
+      "no_dominant_peak": 65
+    },
+    "scope": "A rolling camera-log slice during the session, not the complete 150-second capture and not an independent realtime gate pass."
+  },
+  "observed_nonnull_hr_runs": [
+    {
+      "first_ts": 741.209988,
+      "last_ts": 742.041891,
+      "observed_samples": 5
+    },
+    {
+      "first_ts": 771.069272,
+      "last_ts": 771.937264,
+      "observed_samples": 5
+    },
+    {
+      "first_ts": 781.413028,
+      "last_ts": 782.181027,
+      "observed_samples": 5
+    },
+    {
+      "first_ts": 790.688833,
+      "last_ts": 791.524985,
+      "observed_samples": 5
+    },
+    {
+      "first_ts": 824.692073,
+      "last_ts": 824.692073,
+      "observed_samples": 1
+    },
+    {
+      "first_ts": 830.895948,
+      "last_ts": 831.731914,
+      "observed_samples": 5
+    },
+    {
+      "first_ts": 839.439748,
+      "last_ts": 840.239753,
+      "observed_samples": 5
+    },
+    {
+      "first_ts": 851.451588,
+      "last_ts": 852.316032,
+      "observed_samples": 5
+    }
+  ],
+  "verification": {
+    "contract_valid_frames": 747,
+    "csv_matches_JSONL": true,
+    "device_timestamps_and_ids_strictly_increase": true,
+    "config_and_program_hash_match_board": true
+  },
+  "human_notes": {
+    "requested_protocol": "5 seconds open, 5 natural blinks about 2 seconds apart, 2-second closure, 30 seconds stable gaze",
+    "user_reply": "开始",
+    "completed_action_counts": "not provided",
+    "independent_annotations": false,
+    "blink_accuracy_evaluated": false,
+    "synchronized_reference_HR_available": false
+  },
+  "findings": [
+    "75 actual vital samples were reached in the rolling runtime slice.",
+    "The complete capture includes 36 non-null HR responses out of 747 HTTP observations; output was intermittent.",
+    "Engineering spectral rejection, window refilling, cadence jitter and analysis skips were present in the runtime slice.",
+    "Cumulative blink/long-close counters increased by 28/3; unannotated actions prevent an accuracy comparison.",
+    "Displayed HR smoothing and historical bridges do not turn missing estimates into current measurements."
+  ],
+  "raw_face_media_saved_or_uploaded": false,
+  "contract_version_upgraded": false,
+  "candidate_unsigned": true,
+  "artifact_directory": "metrics\\logs\\video_demo_20261103_195657"
+}

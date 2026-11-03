@@ -44,8 +44,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File board/cold_boot/Build-Delive
 
 该入口还依赖 AMD Bootgen、既有 Linux/PL 产物及模型；本仓库不附带大型启动二进制。相关构建步骤已有文件级检查证据，尚未完成无缓存新环境的从零整体复现。
 
-已有交付包使用 `copy_to_sd`：将其内部全部内容复制到 SD 卡第一 FAT32 主分区根目录。校验与连接要求按冷启动 README 执行；默认页面为 `http://169.254.73.29:8080/`，指标原文为 `/api/latest`。
+已有交付包使用 `copy_to_sd`：将其内部全部内容复制到 SD 卡第一 FAT32 主分区根目录。校验与连接要求按冷启动 README 执行；默认页面为 `http://169.254.73.29:8080/`，指标原文为 `/api/latest`，最新相机预览为 `/api/frame.jpg`。预览仅保留RAM中的一帧，缺失或过期返回503。
 
 启动参数来自 `config.yaml:cold_boot`，算法和部分启动配置会编入产物。改 YAML 后须重新导出、编译与封包，单独编辑卡上的 YAML 或 `boot.env` 不会完整生效。
 
-【未验证】最新持续采集版本的独立物理 SD 冷启动和相机拔插恢复仍待实卡验收。文件校验、旧版 JTAG 会话与网页显示不构成这两项的通过证明；详见 [验证](validation.md) 与 [限制](limitations.md)。
+【已验证】2026-11-03 修复包完成一次用户操作的物理断电 SD 启动，无 JTAG 或启动后 RAM 补丁；网页、递增指标帧及变化的640×480 JPEG均自动恢复，SD应用分区只读。对应文件哈希与日志见[本次验证](../metrics/evidence/2026-11-03_sd_preview_verification.json)。
+
+【已验证】同日板端网页恢复2026-11-02拍摄页的紧凑布局，继续使用真实板端指标；六种桌面视口的一屏显示、13张可见指标卡与4:3实时画面通过DOM检查。见[浏览器检查](../metrics/evidence/2026-11-03_sd_dashboard_layout.json)和[SD文件校验](../metrics/evidence/2026-11-03_sd_dashboard_layout_install.log)。此项不代表心率或眨眼效果已通过人体测试。
+
+【不确定】重复冷启动、长时稳定性、物理相机拔插恢复与测量准确性仍待相应验收；详见[验证](validation.md)与[限制](limitations.md)。

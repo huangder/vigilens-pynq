@@ -1,0 +1,23 @@
+{
+  "date_local": "2026-11-03",
+  "full60_throughput_verified": false,
+  "continuous_hr_verified": false,
+  "all_board_rates_configured_hz": 60,
+  "estimation_every_observation": true,
+  "minimum_real_samples": 75,
+  "history_limit_samples": 600,
+  "observed_history_max_in_pre300_window": 554,
+  "capture60_to30_aggregation_active": false,
+  "ear_close_absolute": 0.3,
+  "ear_open_absolute": 0.3,
+  "min_close_ms": 80,
+  "min_open_ms": 100,
+  "long_close_ms": 1500,
+  "live_ear300_12responses_face": 12,
+  "live_ear300_blink_counts": [
+    7,
+    8
+  ],
+  "cold_boot_package_updated": false,
+  "source_binary_sha256": "6dcaafd589dc4dd3e5a897ddfa44c0192eb7530d5c438705ec7ab4efb7915f5c"
+}

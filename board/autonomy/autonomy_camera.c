@@ -2,6 +2,10 @@
 #define _POSIX_C_SOURCE 200809L
 #include "autonomy_camera.h"
 #include "vision_runtime.h"
+#ifdef VIGI_CAMERA_PREVIEW
+#include "camera_preview.h"
+#include "vg_vision_config.h"
+#endif
 #include <errno.h>
 #include <inttypes.h>
 #include <math.h>
@@ -11,13 +15,21 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#ifdef __linux__
+#include <sys/prctl.h>
+#endif
 
-enum { SLOTS = 2, JSON_CAPACITY = 8192 };
+#ifndef VG_ANALYSIS_SLOTS
+#define VG_ANALYSIS_SLOTS 2
+#endif
+_Static_assert(VG_ANALYSIS_SLOTS >= 2 && VG_ANALYSIS_SLOTS <= 8, "bounded analysis queue");
+enum { SLOTS = VG_ANALYSIS_SLOTS, JSON_CAPACITY = 8192 };
 typedef struct {
     unsigned char *rgb;
     size_t capacity;
     int state; /* 0=free, 1=queued, 2=processing */
     uint64_t order;
+    double enqueued_at;
     vg_vision_frame frame;
     void (*release)(void *);
     void *release_context;
@@ -69,10 +81,27 @@ done:
     return rc;
 }
 static void *run(void *arg) {
+#ifdef __linux__
+    (void)prctl(PR_SET_NAME,"vg_analysis",0,0,0);
+#endif
     vg_camera *c = arg;
     vg_vision *v = NULL;
     FILE *log = NULL;
     int init_rc = clear_latest(c);
+#ifdef VIGI_CAMERA_PREVIEW
+    const char *preview = getenv("VIGI_PREVIEW_LATEST");
+#if !VG_PREVIEW_CAMERA_MJPEG
+    double preview_at=-INFINITY;
+#endif
+    if (preview && *preview) (void)unlink(preview);
+#if VG_PREVIEW_ASYNC && !VG_PREVIEW_CAMERA_MJPEG
+    vg_preview_async *preview_worker=NULL;
+    if(!init_rc&&preview&&*preview) {
+        preview_worker=vg_preview_async_open(preview,VG_PREVIEW_JPEG_QUALITY,VG_PREVIEW_WORKER_NICE);
+        if(!preview_worker)init_rc=-ENOMEM;
+    }
+#endif
+#endif
     if (!init_rc) { log = fopen(c->jsonl_path, "w"); if (!log) init_rc = -EIO; }
     if (!init_rc) { v = vg_vision_create(c->directory, c->model); if (!v) init_rc = -ENODEV; }
     pthread_mutex_lock(&c->mutex);
@@ -97,11 +126,28 @@ static void *run(void *arg) {
         s->state = 2;
         if (!c->stats.processed) c->analysis_start = monotonic();
         pthread_mutex_unlock(&c->mutex);
+        const double worker_started=monotonic();
+        const double queue_ms=(worker_started-s->enqueued_at)*1000;
+        double preview_ms=0,publish_ms=0;
         rc = vg_vision_update(v, &s->frame, json, sizeof(json), &info);
+#if defined(VIGI_CAMERA_PREVIEW) && !VG_PREVIEW_CAMERA_MJPEG
+        if (preview && *preview && s->frame.ts-preview_at>=VG_PREVIEW_INTERVAL_S) {
+            preview_at=s->frame.ts;
+            const double preview_started=monotonic();
+#if VG_PREVIEW_ASYNC
+            if(vg_preview_async_submit(preview_worker,s->frame.rgb,s->frame.width,s->frame.height))
+#else
+            if (vg_preview_publish(preview, s->frame.rgb,
+                    s->frame.width, s->frame.height, VG_PREVIEW_JPEG_QUALITY))
+#endif
+                fputs("PREVIEW_PUBLISH_FAILED\n", stderr);
+            preview_ms=(monotonic()-preview_started)*1000;
+        }
+#endif
         rejected = rc == -4 || (rc == -2 && !s->frame.motion_valid);
         if (!rc) {
             if (!memchr(json, 0, sizeof(json)) || !json[0] || strchr(json, '\n')) rc = -EPROTO;
-            else rc = publish(c, log, json);
+            else { const double published=monotonic();rc=publish(c,log,json);publish_ms=(monotonic()-published)*1000; }
         }
         if (rc) {
             int cleanup = clear_latest(c);
@@ -112,13 +158,14 @@ static void *run(void *arg) {
         } else {
             /* Capture logs use stdout too. One shared FILE lock prevents a
              * redirected stderr fragment from splitting another frame's line. */
-            fprintf(stdout, "AUTONOMY_SAMPLE frame_id=%" PRIu64 " ts=%.9f rc=0 detections=%d visible=%d detector_ms=%.3f landmark_ms=%.3f total_ms=%.3f detect_path=%d landmark_model_ms=%.3f detector_caller_cpu_ms=%.3f landmark_caller_cpu_ms=%.3f vital_hz=%.3f vital_reject=%s roi_pixels=%u vital_samples=%d vital_gate=%s raw_hr=%.6f raw_hr_conf=%.6f hr_filter=%s\n",
+            fprintf(stdout, "AUTONOMY_SAMPLE frame_id=%" PRIu64 " ts=%.9f rc=0 detections=%d visible=%d detector_ms=%.3f landmark_ms=%.3f total_ms=%.3f detect_path=%d landmark_model_ms=%.3f detector_caller_cpu_ms=%.3f landmark_caller_cpu_ms=%.3f vital_hz=%.3f vital_reject=%s roi_pixels=%u vital_samples=%d vital_history_samples=%d vital_gate=%s raw_hr=%.6f raw_hr_conf=%.6f hr_filter=%s preview_ms=%.3f publish_ms=%.3f worker_ms=%.3f queue_ms=%.3f roi_sum_r=%u roi_sum_g=%u roi_sum_b=%u\n",
                 s->frame.frame_id, s->frame.ts, info.detections, info.visible,
                 info.detector_ms, info.landmark_ms, info.total_ms,info.detector_path,
                 info.landmark_model_ms,info.detector_caller_cpu_ms,info.landmark_caller_cpu_ms,
-                info.vital_rate_hz, info.vital_reject ? info.vital_reject : "-",info.roi_pixels,info.vital_samples,
+                info.vital_rate_hz, info.vital_reject ? info.vital_reject : "-",info.roi_pixels,info.vital_samples,info.vital_history_samples,
                 info.vital_gate ? info.vital_gate : "-",info.raw_hr,info.raw_hr_conf,
-                info.hr_filter_reason ? info.hr_filter_reason : "-");
+                info.hr_filter_reason ? info.hr_filter_reason : "-",preview_ms,publish_ms,(monotonic()-worker_started)*1000,queue_ms,
+                info.roi_sums[0],info.roi_sums[1],info.roi_sums[2]);
         }
         pthread_mutex_lock(&c->mutex);
         ++c->stats.processed;
@@ -133,6 +180,12 @@ static void *run(void *arg) {
         if(release)release(release_context);
     }
     vg_vision_destroy(v);
+#ifdef VIGI_CAMERA_PREVIEW
+#if VG_PREVIEW_ASYNC && !VG_PREVIEW_CAMERA_MJPEG
+    vg_preview_async_close(preview_worker);
+#endif
+    if (preview && *preview) (void)unlink(preview);
+#endif
     if (log && fclose(log)) {
         clear_latest(c);
         pthread_mutex_lock(&c->mutex);
@@ -200,7 +253,7 @@ static int submit(vg_camera *c, const unsigned char *rgb, int w, int h,
     if(!release)memcpy(s->rgb, rgb, n);
     s->frame = (vg_vision_frame){id,ts,w,h,release?rgb:s->rgb,mean,motion,valid,gray,gray_w,gray_h};
     s->release=release;s->release_context=context;
-    s->order = c->stats.submitted; s->state = 1;
+    s->order = c->stats.submitted; s->enqueued_at=monotonic(); s->state = 1;
     ++c->stats.accepted;
     pthread_cond_signal(&c->ready);
     pthread_mutex_unlock(&c->mutex);

@@ -62,7 +62,7 @@ public:
             count=vg_fd_detect(fd,job.rgb.data(),out.width,out.height,out.width*3,&p,&b,1);
             state.last_full_ts=out.ts;
             if(tier==VG_DETECT_DEEP)state.last_deep_ts=out.ts;
-            if(!count&&tier==VG_DETECT_FAST&&hinted&&p.min_face>vg_exported_detector.min_face&&
+            if(!count&&tier==VG_DETECT_FAST&&p.min_face>vg_exported_detector.min_face&&
                vg_detect_loss_allowed(&state,&policy,out.ts)) {
                 path=5;
                 count=vg_fd_detect(fd,job.rgb.data(),out.width,out.height,out.width*3,&vg_exported_detector,&b,1);
@@ -167,7 +167,11 @@ extern "C" vg_vision *vg_vision_create(const char *directory,const char *path) {
         v->detector=std::make_unique<Detector>();if(!v->detector->open(directory)){active=false;return nullptr;}
         v->engine=vg_autonomy_create(&vg_exported_config,&vg_exported_vital_config,VG_POSE_REPROJ_MAX_FRAC,VG_VITAL_EVERY,1);
         if(!v->engine){active=false;return nullptr;}
-        if(vg_autonomy_configure_hr_filter(v->engine,&vg_exported_hr_filter_config)){active=false;return nullptr;}
+        if(vg_autonomy_configure_blink(v->engine,&vg_exported_blink_config)){active=false;return nullptr;}
+        auto hr_filter_config=vg_exported_hr_filter_config;
+        hr_filter_config.interval_s=std::min(hr_filter_config.interval_s,1.0/VG_HR_ESTIMATE_HZ);
+        if(vg_autonomy_configure_hr_filter(v->engine,&hr_filter_config)){active=false;return nullptr;}
+        if(vg_autonomy_configure_capture_rate(v->engine,VG_CAPTURE_FPS)){active=false;return nullptr;}
 #if defined(VIGI_ERT_TEMPORAL)
         if(vg_autonomy_configure_temporal(v->engine,nullptr,1,1)){active=false;return nullptr;}
 #endif
@@ -248,7 +252,11 @@ extern "C" int vg_vision_update(vg_vision *v,const vg_vision_frame *f,char *json
             const auto& seed=v->have_previous?v->previous_box:a.box;
             bool predicted=false;
 #if defined(VIGI_ERT_HYBRID)
+#if VG_TRACKER_ROI_HALF
+            current_image=vg_track::from_rgb_half_region(f->rgb,f->width,f->height,seed.data(),VG_TRACKER_REGION_EXPANSION,VG_TRACKER_LEVELS);
+#else
             current_image=vg_track::from_rgb(f->rgb,f->width,f->height,VG_TRACKER_LEVELS);
+#endif
             const vg_track::Policy policy{VG_TRACKER_LEVELS,VG_TRACKER_RADIUS,VG_TRACKER_ITERATIONS,
                 VG_TRACKER_MIN_EIGEN,VG_TRACKER_MAX_ERROR,VG_TRACKER_FB_ERROR,
                 VG_TRACKER_MIN_FRACTION,VG_TRACKER_MAX_MOTION,VG_TRACKER_EPSILON};
@@ -365,6 +373,8 @@ extern "C" int vg_vision_update(vg_vision *v,const vg_vision_frame *f,char *json
         timing.visible=visible;timing.detections=visible;timing.total_ms=elapsed(start);
         timing.vital_rate_hz=vg_autonomy_vital_rate_hz(v->engine);timing.vital_reject=vg_autonomy_vital_reject(v->engine);
         timing.roi_pixels=input.count;timing.vital_samples=vg_autonomy_vital_samples(v->engine);
+        for(int c=0;c<3;++c)timing.roi_sums[c]=input.sums[c];
+        timing.vital_history_samples=vg_autonomy_vital_history_samples(v->engine);
         timing.vital_gate=vg_autonomy_vital_gate(v->engine);
         timing.raw_hr=vg_autonomy_raw_hr(v->engine);timing.raw_hr_conf=vg_autonomy_raw_hr_conf(v->engine);
         timing.hr_filter_reason=vg_autonomy_hr_filter_reason(v->engine);

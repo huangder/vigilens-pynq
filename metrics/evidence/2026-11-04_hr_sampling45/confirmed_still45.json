@@ -1,0 +1,16 @@
+{
+  "requested_seconds": 60.0,
+  "elapsed_seconds": 60.0,
+  "observations": 300,
+  "unique_frames": 300,
+  "visible_frames": 273,
+  "nonnull_HR_observations": 41,
+  "request_errors": [],
+  "contract_errors": [],
+  "first_source_ts": 14173.703857,
+  "last_source_ts": 14233.530789,
+  "source_monotonic": true,
+  "human_action_timing_independently_annotated": false,
+  "accuracy_verified": false,
+  "raw_face_media_saved": false
+}

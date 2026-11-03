@@ -1,0 +1,27 @@
+
+# wget -T 20 -O /tmp/vigilens-dev60/detector_test http://169.254.73.28:8767/dev6
+0_detector_test
+Connecting to 169.254.73.28:8767 (169.254.73.28:8767)
+saving to '/tmp/vigilens-dev60/detector_test'
+chmod 755 /tmp/vigilens-dev60/detector_test
+LD_LIBRARY_PATH=/mnt/vigilens-boot/vigilens/app /tmp/vigilens-dev60/detector_test /mnt/vigilens-boot/vigilens/app/shape_predictor_68_face_landmarks.dat > /tmp/vigilens-dev60/detector_test.log 2>&1
+tail -n 4 /tmp/vigilens-dev60/detector_test.log
+tail -n 5000 /run/vigilens-dev60/camera.log | gzip > /tmp/vigilens-full60/dev60_returned.log.js
+printf '\nDEV60_DETECTOR_TEST_END\n'
+detector_test         71% |**********************          | 5933k  0:00:00 ETAdetector_test        100% |********************************| 8281k  0:00:00 ETA
+'/tmp/vigilens-dev60/detector_test' saved
+# chmod 755 /tmp/vigilens-dev60/detector_test
+# LD_LIBRARY_PATH=/mnt/vigilens-boot/vigilens/app /tmp/vigilens-dev60/detector_t
+est /mnt/vigilens-boot/vigilens/app/shape_predictor_68_face_landmarks.dat > /tmp
+/vigilens-dev60/detector_test.log 2>&1
+# tail -n 4 /tmp/vigilens-dev60/detector_test.log
+ERT_TRACK_REJECT frame_id=12 reason=no_anchor geometry_failure=-1 corrected=0
+ERT_HYBRID_SUMMARY foreground_inferences=0 accepted_lk_frames=0
+ERT_SUMMARY observations=6 visible=0 lost=6 model_submitted=6 model_completed=6
+ERT_DETECTOR_HINT_PASS retained_after_landmark_rejection cleared_after_detector_loss no_false_visible=1
+# tail -n 5000 /run/vigilens-dev60/camera.log | gzip > /tmp/vigilens-full60/dev6
+0_returned.log.js
+# printf '\nDEV60_DETECTOR_TEST_END\n'
+
+DEV60_DETECTOR_TEST_END
+# 

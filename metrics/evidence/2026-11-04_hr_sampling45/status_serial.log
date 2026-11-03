@@ -1,0 +1,24 @@
+
+# VIGILENS_BOOT_CONFIG=/tmp/vigilens-sampling45/boot.env /tmp/vigilens-sampling4
+5/vigilens-service status
+ps | grep -E 'vigi_camera_autonomy|vg_metrics_http|vigilens-service' | grep -v grep
+running camera_pid=5924 http_pid=5922
+supervisor_pid=5905
+# ps | grep -E 'vigi_camera_autonomy|vg_metrics_http|vigilens-service' | grep -v
+ grep
+tail -n 4 /run/vigilens-sampling45/camera.log
+ 5905 root     {vigilens-servic} /bin/sh /tmp/vigilens-sampling45/vigilens-service run
+ 5922 root     /tmp/vigilens-sampling45/root/vigilens/app/vg_metrics_http --bind 0.0.0.0 --port 8080 --latest /run/vigilens-sampling45/latest.json --display /tmp/vigilens-sampling45/root/vigilens/app/ui/index.html --assets /tmp/vigilens-sampling45/root/vigilens/app/ui --preview /run/vigilens-sampling45/preview.jpg --stale-seconds 3.0
+ 5924 root     /tmp/vigilens-sampling45/root/vigilens/app/vigi_camera_autonomy /dev/video0 640 480 0 60 16
+# tail -n 4 /run/vigilens-sampling45/camera.log
+AUTONOMY_HANDOFF frame_id=1958 gray_ms=0.300 submit_ms=0.006 accepted=1
+AUTONOMY_SAMPLE frame_id=1956 ts=13972.404151000 rc=0 detections=1 visible=1 detector_ms=4.942 landmark_ms=7.510 total_ms=21.757 detect_path=10 landmark_model_ms=0.000 detector_caller_cpu_ms=0.055 landmark_caller_cpu_ms=7.515 vital_hz=62.551 vital_reject=short_window_low_confidence roi_pixels=5832 vital_samples=75 vital_history_samples=97 vital_gate=accepted raw_hr=nan raw_hr_conf=nan hr_filter=paused preview_ms=0.000 publish_ms=0.320 worker_ms=22.107 queue_ms=46.026
+CAPTURE_FRAME n=1964 sequence=2108 bytes=35492 ts=13972.520382
+SAMPLE_FRAME n=1964 source_sequence=2108 ts_us=13972520382
+cat /run/vigilens-sampling45/service.status
+# cat /run/vigilens-sampling45/service.status
+running camera_pid=5924 http_pid=5922
+# printf '\nSAMPLING45_STATUS_DONE rc=%s\n' "$?"
+
+SAMPLING45_STATUS_DONE rc=0
+# 
